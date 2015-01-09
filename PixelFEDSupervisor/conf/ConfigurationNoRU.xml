@@ -1,0 +1,38 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+<!-- Change this to point to the URL where you will run xdaq -->
+	<xc:Context id="0" url="http://babar7.phys.utk.edu:1973/">
+
+		<xc:Application class="PixelSupervisorGUI" id="50" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelSupervisorGUI/lib/linux/x86/libPixelSupervisorGUI.so</xc:Module>
+
+		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelSupervisor/lib/linux/x86/libPixelSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelFECSupervisor" id="60" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelFECSupervisor/lib/linux/x86/libPixelFECSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelLTCSupervisor" id="80" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelLTCSupervisor/lib/linux/x86/libPixelLTCSupervisor.so</xc:Module>
+
+                <!-- Declare a GlobalErrorDispatcher application -->
+                <xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="local">
+                    <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
+                       <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
+                       <DiagSystemSettings xsi:type="xsd:string">../PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
+                    </properties>
+                </xc:Application>
+                <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/pixel/DiagSystem/modules/GlobalErrorDispatcher/lib/linux/x86/libGlobalErrorDispatcher.so</xc:Module>
+
+		<xc:Application class="PixelFEDSupervisor" id="70" instance="0" network="local">
+                    <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">
+                       <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
+                       <DiagSystemSettings xsi:type="xsd:string">../PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
+                    </properties>
+	        </xc:Application>
+	        <xc:Module>${XDAQ_ROOT}/pixel/PixelFEDSupervisor/lib/linux/x86/libPixelFEDSupervisor.so</xc:Module>
+
+    		
+	</xc:Context>
+</xc:Partition>

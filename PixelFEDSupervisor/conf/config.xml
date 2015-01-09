@@ -1,0 +1,53 @@
+<?xml version='1.0'?>
+<!-- Order of specification will determine the sequence of installation. all modules are loaded prior instantiation of plugins -->
+<xp:Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xp="http://xdaq.web.cern.ch/xdaq/xsd/2005/XMLProfile-10">
+	
+
+	
+	<!-- Executive -->
+
+	<xp:Application class="Executive" id="0"  service="executive" network="local">
+            		<properties xmlns="urn:xdaq-application:Executive" xsi:type="soapenc:Struct">
+                         <logLevel xsi:type="xsd:string">INFO</logLevel>
+                         <!--logUrl xsi:type="xsd:string">xml://babar1.phys.utk.edu:1973</logUrl-->
+                         <logUrl xsi:type="xsd:string">console</logUrl>
+                        </properties>
+	</xp:Application>
+	<xp:Module>${XDAQ_ROOT}/daq/xdaq/executive/lib/linux/x86/libexecutive.so</xp:Module>
+
+	<!-- end of Executive -->
+
+        <!-- PeerTransportHTTP -->
+
+	<xp:Application class="PeerTransportHTTP" id="1"  network="local">
+		 <properties xmlns="urn:xdaq-application:PeerTransportHTTP" xsi:type="soapenc:Struct">
+                        <aliasName xsi:type="xsd:string">tmp</aliasName>
+                        <aliasPath xsi:type="xsd:string">/tmp</aliasPath>
+                </properties>
+	</xp:Application>
+	<xp:Module>${XDAQ_ROOT}/daq/pt/http/lib/linux/x86/libpthttp.so</xp:Module>
+
+        <!-- end of PeerTransportHTTP -->
+
+
+        <!-- PeerTransportFifo -->
+
+	<xp:Application class="PeerTransportFifo" id="2"  network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/pt/fifo/lib/linux/x86/libptfifo.so</xp:Module>
+
+        <!-- end of PeerTransportFifo -->
+	
+	<!-- XRelay -->
+
+	<xp:Application class="XRelay" id="3"  service="xrelay" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/xrelay/lib/linux/x86/libxr.so</xp:Module>
+
+        <!-- end of XRelay --> 
+	
+	<!-- HyperDAQ -->
+	<xp:Application class="HyperDAQ" id="4"  service="hyperdaq" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/xdaq/hyperdaq/lib/linux/x86/libhyperdaq.so</xp:Module>
+
+	<!-- end of HyperDAQ -->
+
+</xp:Profile>

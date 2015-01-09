@@ -1,0 +1,55 @@
+<?xml version='1.0'?>
+<!-- Order of specification will determine the sequence of installation. all modules are loaded prior instantiation of plugins -->
+<xp:Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xp="http://xdaq.web.cern.ch/xdaq/xsd/2005/XMLProfile-11">
+	<!-- Compulsory  Plugins -->
+	<xp:Application class="executive::Application" id="0"  service="executive" network="local">
+		<properties xmlns="urn:xdaq-application:Executive" xsi:type="soapenc:Struct">
+			<logUrl xsi:type="xsd:string">console</logUrl>
+                	<logLevel xsi:type="xsd:string">DEBUG</logLevel>
+                </properties>
+	</xp:Application>
+        <xp:Module>${XDAQ_ROOT}/lib/libb2innub.so</xp:Module>
+	<xp:Module>${XDAQ_ROOT}/lib/libexecutive.so</xp:Module>
+        <xp:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xp:Module>
+
+	
+	<xp:Application class="pt::http::PeerTransportHTTP" id="1"  network="local">
+		 <properties xmlns="urn:xdaq-application:pt::http::PeerTransportHTTP" xsi:type="soapenc:Struct">
+		 	<documentRoot xsi:type="xsd:string">${XDAQ_DOCUMENT_ROOT}</documentRoot>
+                        <aliasName xsi:type="xsd:string">pixel</aliasName>
+                        <aliasPath xsi:type="xsd:string">/nfshome0/pixelpro/TriDAS/pixel</aliasPath>
+                </properties>
+	</xp:Application>
+	<xp:Module>${XDAQ_ROOT}/lib/libpthttp.so</xp:Module>
+
+	<xp:Application class="pt::fifo::PeerTransportFifo" id="8"  network="local"/>
+	<xp:Module>${XDAQ_ROOT}/lib/libptfifo.so</xp:Module>
+	
+	<!-- XRelay -->
+	<xp:Application class="xrelay::Application" id="4"  service="xrelay"  network="local"/>
+	<xp:Module>${XDAQ_ROOT}/lib/libxrelay.so</xp:Module>
+	
+	<!-- HyperDAQ -->
+	<xp:Application class="hyperdaq::Application" id="3"  service="hyperdaq" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/lib/libhyperdaq.so</xp:Module>
+
+        <xp:Application class="pt::tcp::PeerTransportTCP" id="20" network="local">
+          <properties xmlns="urn:xdaq-application:PeerTransportTCP" xsi:type="soapenc:Struct">
+            <autoSize xsi:type="xsd:boolean">true</autoSize>
+            <maxPacketSize xsi:type="xsd:unsignedInt">4096</maxPacketSize>
+          </properties>
+        </xp:Application>
+        <xp:Module>${XDAQ_ROOT}/lib/libpttcp.so</xp:Module>
+
+	<!-- Extra modules for xplore, sentinel, sensor -->
+	<xp:Module>/lib/libslp.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libxslp.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libxploreutils.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libwsaddressing.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libwseventing.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libsentinelutils.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libwsutils.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libxmasutils.so</xp:Module>
+    	<xp:Module>${XDAQ_ROOT}/lib/libwsbrokerutils.so</xp:Module>
+
+</xp:Profile>

@@ -1,0 +1,83 @@
+Data FIFOs <br/>
+Read
+<ul>
+	<li>Spy FIFO 1 <input type="radio" name="FIFO" value="1" onclick="selectFIFO(1)"> </li>
+	<li id="FIFO1">
+			Channel <select name="Channel">
+			<option value="1">1
+			<option value="2">2
+			<option value="3">3
+			<option value="4">4
+			<option value="5">5
+			<option value="6">6
+			<option value="7">7
+			<option value="8">8
+			<option value="9">9
+			<option value="10">10
+			<option value="11">11
+			<option value="12">12
+			<option value="13">13
+			<option value="14">14
+			<option value="15">15
+			<option value="16">16
+			<option value="17">17
+			<option value="18">18
+			<option value="19">19
+			<option value="20">20
+			<option value="21">21
+			<option value="22">22
+			<option value="23">23
+			<option value="24">24
+			<option value="25">25
+			<option value="26">26
+			<option value="27">27
+			<option value="28">28
+			<option value="29">29
+			<option value="30">30
+			<option value="31">31
+			<option value="32">32
+			<option value="33">33
+			<option value="34">34
+			<option value="35">35
+			<option value="36">36
+			</select>
+			Transparent Mode <input type="radio" name="Mode" value="Transparent">, Normal Mode <input type="radio" name="Mode" value="Normal">
+	</li>
+	<li>Spy FIFO 2 Normal Mode <input type="radio" name="FIFO" value="2" onclick="selectFIFO(2)"> </li>
+	<li>Spy FIFO 3 Normal Mode <input type="radio" name="FIFO" value="3" onclick="selectFIFO(3)" checked="checked"> </li>
+</ul>
+
+Ship Spy FIFO data to 
+<ul>	
+	<li> Screen <input type="radio" name="ShipTo" onclick="selectShipTo('Screen')" value="Screen" checked="checked"> </li>
+	<li> RUBuilder <input type="radio" name="ShipTo" onclick="selectShipTo('RUBuilder')" value="RUBuilder"> </li>
+	<li> File <input type="radio" name="ShipTo" onclick="selectShipTo('File')" value="File"> </li>
+
+	<li id="File">Output file for Spy FIFO data <input type="file" name="Filename"></li>
+	<li id="RUBuilder"></li>
+	<li id="Screen"></li>
+				
+</ul>
+
+<input type="Submit" name="Command" value="ReadFIFO"/>
+
+<script type="text/javascript">
+
+	selectShipTo('Screen');
+	document.getElementById('FIFO1').style.display="none";
+
+	function selectFIFO(number)
+	{
+		if (number==1) document.getElementById('FIFO1').style.display="block";
+			else document.getElementById('FIFO1').style.display="none";
+	}
+
+	function selectShipTo(list)
+	{
+		document.getElementById('File').style.display="none";
+		document.getElementById('RUBuilder').style.display="none";
+		document.getElementById('Screen').style.display="none";
+
+		document.getElementById(list).style.display="block";
+	}
+</script>

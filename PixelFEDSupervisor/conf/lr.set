@@ -1,0 +1,54 @@
+## to insert a comment line in this file always begin the line per two '#' plus a blank space
+
+## -----------------------------------------
+## -----------------------------------------
+## LOG READER APPLICATION CONFIGURATION FILE
+## -----------------------------------------
+## -----------------------------------------
+## Available LOGLEVELS are : TRACE DEBUG INFO WARN USERINFO ERROR FATAL
+
+
+## --------------------------------
+## default LOG4C+ appender settings
+## --------------------------------
+## do we want to use the LOG4C+ appender for console outputs ? TRUE/FALSE
+UseDefaultAppender			FALSE
+
+## messages of criticity at least equal to XXX (here INFO) must be routed to the LOG4C+ appender
+DefaultAppenderLogLevel 	INFO
+
+## --------------------------------
+## base class appender settings
+## --------------------------------
+## do we want to directly cout() the logs on the console rather than using an appender? TRUE/FALSE
+DuplicateMsgToLocalConsole	FALSE
+
+
+## --------------------------------
+## Global Error Dispatcher settings
+## --------------------------------
+## do we want to send the emitted messages to the GlobalErrorDispatcher process ? TRUE/FALSE
+UseGlbErrorDispatcher		TRUE
+
+## messages of criticity at least equal to XXX (here WARN) will be routed to the GlobalErrorDispatcher
+GlbErrorDispatcherLogLevel	TRACE
+
+## What's the class name of the XDAQ module acting as GlobalErrorDsipatcher ?
+GlbErrorDispatcherName		GlobalErrorDispatcher
+
+## What's the instance of the XDAQ module acting as GlobalErrorDsipatcher ?
+GlbErrorDispatcherInstance	0
+
+## What's the IP or machine name of the XDAQ module acting as GlobalErrorDsipatcher ?
+GlbErrorDispatcherIP		babar7.phys.utk.edu
+
+## On which port of the machine can we reach the XDAQ module acting as GlobalErrorDsipatcher ?
+GlbErrorDispatcherPort		1972
+
+## --------------------------------
+## Input File Settings
+## --------------------------------
+## Where can we find the logfile to process and display, and what's his name ?
+FilePathAndName 			logFile_a.txt
+
+

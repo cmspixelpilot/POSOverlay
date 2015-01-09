@@ -1,0 +1,68 @@
+## to insert a comment line in this file always begin the line per two '#' plus a blank space
+
+## ------------------------------------------------------
+## ------------------------------------------------------
+## GLOBAL ERROR DISPATCHER APPLICATION CONFIGURATION FILE
+## ------------------------------------------------------
+## ------------------------------------------------------
+## Available LOGLEVELS are : TRACE DEBUG INFO WARN USERINFO ERROR FATAL
+
+
+## --------------------------------
+## default LOG4C+ appender settings
+## --------------------------------
+## do we want to use the LOG4C+ appender for console outputs ? TRUE/FALSE
+UseDefaultAppender			FALSE
+
+## messages of criticity at least equal to XXX (here INFO) must be routed to the LOG4C+ appender
+DefaultAppenderLogLevel 	TRACE
+
+## --------------------------------
+## base class appender settings
+## --------------------------------
+## do we want to directly cout() the logs on the console rather than using an appender? TRUE/FALSE
+DuplicateMsgToLocalConsole	TRUE
+
+
+## --------------------------------
+## Chainsaw settings
+## --------------------------------
+## Do we want to use Chainsaw as log reader? TRUE/FALSE
+UseChainsaw 				TRUE
+
+## What's the IP or machine name on which Chainsaw is running?
+ChainsawServerHost			cmsusr0.cern.ch
+
+## On which port of this machine is Chainsaw listening?
+ChainsawServerPort			1975
+
+## On which Chainsaw receiver do we have to send the logs?
+ChainsawReceiverName		        pixel
+
+## messages of criticity at least equal to XXX (here WARN) must be routed to Chainsaw
+ChainsawLogLevel			TRACE
+
+## --------------------------------
+## Console Output Settings
+## --------------------------------
+## Do we want to have a console output of the received logs? TRUE/FALSE
+UseConsoleLogging			FALSE
+
+## messages of criticity at least equal to XXX (here DEBUG) must be routed to Console
+ConsoleLogLevel 			TRACE
+
+
+## --------------------------------
+## FILE Output Settings
+## --------------------------------
+## Rem : If you say FALSE to UseFileLogging, you will NOT be able to use a LogReader process to visualize logs
+
+## Do we want to have a console output of the received logs? TRUE/FALSE
+UseFileLogging				TRUE
+
+## messages of criticity at least equal to XXX (here INFO) must be routed to File
+FileLogLevel				TRACE
+
+## Where do we want to create our logfile, and what's his name ?
+## Rem:If you want to use a LogReader ensure that this filename and the one given in LogReader configuration file are the same.
+FilePathAndName 			logFile.txt
