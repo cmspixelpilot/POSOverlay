@@ -65,6 +65,14 @@ class PixelFEDInterface {
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
 //int loadEEPROM(void);// Re-programs the EEPROMs via VME
 
+  // For Daughter Cards
+  int resetDigFEDpll(void); // reset Piggy Board pll
+  int resetDigFEDreg(void); // reset Piggy Board register
+  void loadFPGADigFED(); // load fpga to piggy board
+  void readDigFEDStatus(); // read status of the piggy board
+  void readDigFEDTempFifo(); 
+  
+  
   int TTCRX_I2C_REG_READ( int Register_Nr); 
   int TTCRX_I2C_REG_WRITE( int Register_Nr, int Value); 
 
@@ -359,7 +367,23 @@ void storeEnbableBits();
   uint32_t I2C_ADDR_RW;
   uint32_t I2C_RD_DATA;
   uint32_t I2C_RD_STAT;
-
+  
+  // For Daughter Cards
+  unsigned long  TopDauCard_nConfig;
+  unsigned long  BottomDauCard_nConfig;
+  unsigned long  TopDauCard_pll;
+  unsigned long  BottomDauCard_pll;
+  unsigned long  TopDauCard_com;
+  unsigned long  BottomDauCard_com;
+  unsigned long  TopDauCard_UpStatus;
+  unsigned long  TopDauCard_DownStatus;
+  unsigned long  BottomDauCard_UpStatus;
+  unsigned long  BottomDauCard_DownStatus;
+  unsigned long  TopDauCard_UpTempFifo;
+  unsigned long  TopDauCard_DownTempFifo;
+  unsigned long  BottomDauCard_UpTempFifo;
+  unsigned long  BottomDauCard_DownTempFifo;
+  
   // For the CAEN VME 
   long BHandle; // pointer to the device
   CVDataWidth dw; // data width (see CAENVMEtypes.h )

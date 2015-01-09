@@ -29,7 +29,7 @@ PixelFEDInterface::PixelFEDInterface(const HAL::VMEDevice * const vmeDeviceP ) :
   runDegraded(false), vmeDevicePtr(vmeDeviceP)  {
 
   cout<<" PixelFEDInterface constructor "<<endl;
-  Printlevel=0;
+  Printlevel=7;
   // Initilize the FPGA register names for HAL, there is probably a better way of doing it
   FPGAName[0] = "LAD_N"; //
   FPGAName[1] = "LAD_NC"; //
@@ -168,6 +168,23 @@ PixelFEDInterface::PixelFEDInterface(const uint32_t fedBase, long aBHandle) {
   CH_SubAddr[6]= 0xf8000;  //FifoI ch7
   CH_SubAddr[7]= 0x118000; //FifoI ch8
   CH_SubAddr[8]= 0x138000; //FifoI ch9
+  
+  // New Addresses For Daughter Cards
+  TopDauCard_nConfig         = LAD_N+0x1b8000;
+  BottomDauCard_nConfig      = LAD_S+0x1b8000;
+  TopDauCard_pll             = LAD_NC+0x1c0000;
+  BottomDauCard_pll          = LAD_S+0x1c0000;
+  TopDauCard_com             = LAD_N+0x1a8000;
+  BottomDauCard_com          = LAD_S+0x1a8000;
+  TopDauCard_UpStatus        = LAD_N+0x158000;
+  TopDauCard_DownStatus      = LAD_N+0x178000;
+  BottomDauCard_UpStatus     = LAD_S+0x158000;
+  BottomDauCard_DnStatus     = LAD_S+0x178000;
+  TopDauCard_UpTempFifo      = LAD_NC+0x148000;
+  TopDauCard_DownTempFifo    = LAD_NC+0x168000;
+  BottomDauCard_UpTmpFifo    = LAD_S+0x148000;
+  BottomDauCard_DnTmpFifo    = LAD_S+0x168000;
+  
 }
 //////////////////////////////////////////////////////////////////////
 PixelFEDInterface::~PixelFEDInterface(void) {
@@ -652,6 +669,131 @@ int PixelFEDInterface::configFile(string fileName) {
 
 // Methods which use VME access
 
+// Test Method for Piggy Board pll Reset
+int PixelFEDInterface::resetDigFEDpll(void) {
+  // This code is written for Pilot FED
+  // which has 2 daughter boards on it  
+  // with two adresses for pll reset
+  // LAD_S+0x1c0000 and LAD_NC+0x1c0000
+  // uses only bit=1
+  unsigned long data = 0x1; // data for reset
+#ifdef USE_HAL // Use HAL
+  
+  cout<<" --- resetDigFEDPll --- "<< endl;
+  //For North Piggy
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  
+  //For South Piggy
+  data=0x1;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+    
+#else  // Use direct CAEN 
+  //For North Piggy
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+
+  //For South Piggy
+  data=0x1;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+#endif // USE_HAL
+  
+  return(0);
+}
+
+// Test Method for Piggy Board register Reset
+int PixelFEDInterface::resetDigFEDreg(void) {
+  // This code is written for Pilot FED
+  // which has 2 daughter boards on it  
+  // with two adresses for pll reset
+  // LAD_S+0x1c0000 and LAD_NC+0x1c0000
+  // uses only bit=2
+  unsigned long data = 0x2; // data for reset
+#ifdef USE_HAL // Use HAL
+  
+  cout<<" --- resetDigFEDreg --- "<< endl;
+  //For North Piggy
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  
+  //For South Piggy
+  data=0x2;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+  
+#else  // Use direct CAEN 
+  //For North Piggy
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll register "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll register "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+
+  //For South Piggy
+  data=0x2;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll register "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll register "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+#endif // USE_HAL
+  
+  return(0);
+}
+
+
 ///////////////////////////////////////////////////////////////////////
 // General reset, resets everything there is to reset.
 int PixelFEDInterface::reset(void) {
@@ -718,10 +860,15 @@ int PixelFEDInterface::reset(void) {
   usleep(10);
   vmeDevicePtr->write("ResetPls", data );
   usleep(10);
-
-
-
-
+  
+  // Make Sure to execute for pilotFED only!!!!
+  bool pilotFED = true;
+  if ( pilotFED ){
+    cout << " pilotFED resets  "  << endl;
+    resetDigFEDpll();
+    resetDigFEDreg();
+  }
+  
   // Reset LRES
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting LRES"<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting LRES"<<endl;
@@ -800,6 +947,267 @@ int PixelFEDInterface::reset(void) {
   wdcnt=drainDataFifo3(buffer);
   return 0;
 }
+
+void PixelFEDInterface::readDigFEDTempFifo(){
+  uint32_t data = 0x80000000;
+  uint32_t d, i;
+#ifdef USE_HAL // Use HAL
+    
+  printf("\n\n\nTEMP FIFO Sup\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("BottomDauCard_UpTmpFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO Sdown\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("BottomDauCard_DnTmpFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCup\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("TopDauCard_UpTempFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCdown\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("TopDauCard_DownTempFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+#else // Use direct CAEN
+  
+  printf("\n\n\nTEMP FIFO Sup\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_UpTmpFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO Sdown\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_DnTmpFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCup\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,TopDauCard_UpTempFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCdown\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,TopDauCard_DownTempFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+#endif // Use HAL  
+  
+}
+
+void PixelFEDInterface::readDigFEDStatus(){
+  uint32_t CHa_CHb_mux = 0x80000000;
+  uint32_t data = CHa_CHb_mux + 0x2546; 
+  uint32_t d, i;
+  
+#ifdef USE_HAL // Use HAL
+  
+  vmeDevicePtr->write("TopDauCard_com",data);
+  vmeDevicePtr->write("BottomDauCard_com",data);
+  
+  printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    vmeDevicePtr->read("TopDauCard_UpStatus",&d);
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+  printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    vmeDevicePtr->read("TopDauCard_DownStatus",&d);
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+  printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    vmeDevicePtr->read("BottomDauCard_UpStatus",&d);
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+  printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    vmeDevicePtr->read("BottomDauCard_DnStatus",&d);
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+#else // Use direct CAEN
+  
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_com,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret); 
+  }
+  
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_com,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret); 
+  }
+  
+  printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    ret = CAENVME_ReadCycle(BHandle,TopDauCard_UpStatus,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+  printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    ret = CAENVME_ReadCycle(BHandle,TopDauCard_DownStatus,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+  printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_UpStatus,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+  printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
+  for(i=0;i<16;i++)  {
+    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_DnStatus,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    
+    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+  }
+  
+#endif // Use HAL  
+}
+
+void PixelFEDInterface::loadFPGADigFED(){
+  uint32_t data = 0x0; // data for reseta 
+  
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Loading FPGA's from Program EEPROMs"<<endl;
+  data=0x80;
+#ifdef USE_HAL // Use HAL
+  
+  cout<< " --- loadFPGADigFED --- " << endl;
+  vmeDevicePtr->write("TopDauCard_nConfig", data );
+  usleep(10000);
+  data=0x0;
+  vmeDevicePtr->write("TopDauCard_nConfig", data );
+  usleep(1000);
+  
+  data=0x10;
+  vmeDevicePtr->write("BottomDauCard_nConfig", data );
+  usleep(10000);
+  data=0x0;
+  vmeDevicePtr->write("BottomDauCard_nConfig", data );
+  
+    
+#else // Use direct CAEN
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_nConfig,&data,am,dw);
+  usleep(10000); 
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_nConfig,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+  
+  data=0x10;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_nConfig,&data,am,dw);
+  usleep(10000); //min is 40us in manual to initiate
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_nConfig,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+#endif // Use HAL
+}//end
+
+
+
 /////////////////////////////////////////////////////////////////
 // Load the FPGAs -----------------------------------------------
 // Takes the programs in the EEPROM memory and loads it in FPGAs
@@ -820,6 +1228,15 @@ int PixelFEDInterface::reset(void) {
   data=0x0;
   vmeDevicePtr->write("nCONFIG", data );
   usleep(1000000); //10ms in example programs, extra time now for clock
+
+  
+  // Make Sure to execute for pilotFED only!!!!
+  bool pilotFED = true;
+  if ( pilotFED ) {
+    cout << " pilotFED load fpga  "<< endl;
+    loadFPGADigFED();
+  }
+  
 //new sequence for v4
 // load test constants
 // setup for VME trigger and testDAC
@@ -2023,7 +2440,7 @@ datanew=tbuf[count];
     count++;
 //    vmeDevicePtr->read(item,&datanew,offset);  // replace with block transfer?
 
-    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" "<<wordCount<<" "<<datanew<<" "<<dataold<<endl;
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" "<<wordCount<<" "<<hex <<datanew<<" "<<hex<<dataold<<endl;
     //cout<<count<<" "<<wordCount<<" "<<hex<<datanew<<" "<<dataold<<dec<<endl;
 
     if( dataold == datanew ) {

@@ -1,5 +1,5 @@
-FED Base address                         :0x1c000000
-FEDID Number                             :0xa
+FED Base address                         :0x3c000000
+FEDID Number                             :0x28
 Number of ROCs Chnl 1:16
 Number of ROCs Chnl 2:16
 Number of ROCs Chnl 3:16
