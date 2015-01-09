@@ -31,7 +31,7 @@ void PixelCalibConfigurationExtended::fillFedChannelHWandTypeInfo(){
   tmpV.push_back(-1);
   int numberOfRocs=0;			  	 	    
   for(vector<PixelROCName>::iterator iter = rocList_.begin();iter!=rocList_.end() ; ++iter, ++numberOfRocs){
-    if(iter->detsub() == 'F'){
+    if(iter->detsub() == 'F' || iter->detsub() == 'P'){
       unsigned int hub  = thePixelNameTranslation_->getHdwAddress(*iter)->hubaddress();
       unsigned int port = thePixelNameTranslation_->getHdwAddress(*iter)->portaddress();
       unsigned int plaq = iter->plaquet();
