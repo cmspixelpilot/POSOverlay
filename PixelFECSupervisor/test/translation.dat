@@ -1,0 +1,10 @@
+# name                              mfec  mfecchannel hubaddress portadd rocid
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC1      1        2          5         1       0
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC2      1        2          5         1       1
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC3      1        2          5         1       2
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC4      1        2          5         1       3
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC5      1        2          5         1       4
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC6      1        2          5         1       5
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC7      1        2          5         1       6
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC8      1        2          5         1       7
+
