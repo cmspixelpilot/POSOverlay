@@ -1,0 +1,122 @@
+<!-- DTD for the pixel analysis scripts xml initialization files -->
+<!-- Authors: E. Luiggi, B. Heyburn , L. Uplegger -->
+
+
+<!ELEMENT PixelAnalysis ( Calibration, WhichWBC, Logger, Session, ConfigurationFiles, RootOutputFile, NumberOfEvents, Hardware, SCurveCuts* , GainCuts* , PixelAliveCuts* ) >
+
+<!ELEMENT Calibration EMPTY >
+<!ATTLIST Calibration  Type (SCurve|PixelAlive|Gain) "SCurve" >
+
+<!ELEMENT WhichWBC EMPTY>
+<!ATTLIST WhichWBC ChooseWBC CDATA #REQUIRED>
+
+<!ELEMENT Logger EMPTY >
+<!ATTLIST Logger  Type (cout|file) "cout" >
+
+<!ELEMENT Session EMPTY >
+<!ATTLIST Session  Interactive (yes|no) "yes" >
+
+<!ELEMENT ConfigurationFiles ( DefaultDirectory | (CalibFileName, TranslationFileName, DetConfigFileName)) >
+
+<!ELEMENT RootOutputFile EMPTY>
+<!ATTLIST RootOutputFile 
+  Directory CDATA #REQUIRED 
+  FileName  CDATA #REQUIRED>
+
+<!ELEMENT DefaultDirectory EMPTY >
+<!ATTLIST DefaultDirectory Directory CDATA #REQUIRED >
+
+<!ELEMENT CalibFileName EMPTY >
+<!ATTLIST CalibFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT TranslationFileName EMPTY >
+<!ATTLIST TranslationFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT DetConfigFileName EMPTY >
+<!ATTLIST DetConfigFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT NumberOfEvents EMPTY > 
+<!ATTLIST NumberOfEvents Events CDATA #REQUIRED >
+
+<!-- Add fed elements here -->
+<!ELEMENT Hardware ( Feds ) >
+
+<!ELEMENT Feds ( Fed+ ) >
+<!ATTLIST Feds Analyze CDATA #REQUIRED >
+
+<!ELEMENT Fed (DataFileName, Channels, Rocs) >
+<!ATTLIST Fed Id CDATA #REQUIRED >
+
+<!ELEMENT DataFileName EMPTY >
+<!ATTLIST DataFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT Channels EMPTY>
+<!ATTLIST Channels 
+  From CDATA #REQUIRED 
+  To   CDATA #REQUIRED
+  Exclude CDATA #IMPLIED>
+ 
+<!ELEMENT Rocs EMPTY >
+<!ATTLIST Rocs Exclude CDATA #REQUIRED >
+
+<!ELEMENT Fit ((Ntrials, Startcurve, Endcurve)*,(FitFunctions,LinearFit,TanhFit)*) >
+<!ELEMENT Flag ((SaveHistograms, NoiseSigma, RocNoiseMean, RocThresholdMean, RocChisquareMean, RocProbabilityMean, OutputTrimFile, SaveGoodFits)*,(BadPixels)*,(SaveHistograms, RocSlopeMean, RocInterceptMean, LinearChisquareMean, LinearProbabilityMean, TanhLinearityMean)*)>
+
+<!ELEMENT SCurveCuts (Fit, Flag) >
+<!--SCurve Fit Cuts-->
+<!ELEMENT Ntrials EMPTY >
+<!ATTLIST Ntrials Trials CDATA #REQUIRED >
+<!ELEMENT Startcurve EMPTY >
+<!ATTLIST Startcurve Value CDATA #REQUIRED >
+<!ELEMENT Endcurve EMPTY >
+<!ATTLIST Endcurve Value CDATA #REQUIRED >
+
+<!--SCurve Flag Cuts-->
+<!ELEMENT NoiseSigma EMPTY >
+<!ATTLIST NoiseSigma Min CDATA #REQUIRED >
+<!ELEMENT RocNoiseMean EMPTY>
+<!ATTLIST RocNoiseMean Max CDATA #REQUIRED>
+<!ELEMENT RocThresholdMean EMPTY>
+<!ATTLIST RocThresholdMean Max CDATA #REQUIRED>
+<!ELEMENT RocChisquareMean EMPTY>
+<!ATTLIST RocChisquareMean Max CDATA #REQUIRED>
+<!ELEMENT RocProbabilityMean EMPTY>
+<!ATTLIST RocProbabilityMean Min CDATA #REQUIRED>
+<!ELEMENT OutputTrimFile EMPTY>
+<!ATTLIST OutputTrimFile Write (Yes|No) "No">
+<!ELEMENT SaveGoodFits EMPTY>
+<!ATTLIST SaveGoodFits DoIt (Yes|No) "No">
+
+<!ELEMENT GainCuts (Fit, Flag) >
+<!--Gain Fit Cuts-->
+<!ELEMENT FitFunctions EMPTY >
+<!ATTLIST FitFunctions Functions (linear|tanh|linear-tanh|tanh-linear) "linear" >
+<!ELEMENT LinearFit EMPTY >
+<!ATTLIST LinearFit 
+	From CDATA #REQUIRED
+	To   CDATA #REQUIRED>
+<!ELEMENT TanhFit EMPTY >
+<!ATTLIST TanhFit 
+	From CDATA #REQUIRED
+	To   CDATA #REQUIRED>
+<!--Gain Flag Cuts-->
+<!ELEMENT RocSlopeMean EMPTY>
+<!ATTLIST RocSlopeMean Max CDATA #REQUIRED>
+<!ELEMENT RocInterceptMean EMPTY>
+<!ATTLIST RocInterceptMean Max CDATA #REQUIRED>
+<!ELEMENT LinearChisquareMean EMPTY>
+<!ATTLIST LinearChisquareMean Max CDATA #REQUIRED>
+<!ELEMENT LinearProbabilityMean EMPTY>
+<!ATTLIST LinearProbabilityMean Min CDATA #REQUIRED>
+<!ELEMENT TanhLinearityMean EMPTY>
+<!ATTLIST TanhLinearityMean Max CDATA #REQUIRED>
+
+<!--Gain SCurve Flag Cuts-->
+<!ELEMENT SaveHistograms EMPTY>
+<!ATTLIST SaveHistograms Max CDATA #REQUIRED>
+
+
+<!ELEMENT PixelAliveCuts (Flag) >
+<!--PixelAlive Flag Cuts-->
+<!ELEMENT BadPixels EMPTY >
+<!ATTLIST BadPixels Max CDATA #REQUIRED >

@@ -1,0 +1,64 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE PixelAnalysis SYSTEM "../../dtd/PixelAnalysis.dtd">
+<PixelAnalysis>
+  <!--There are 3 types of calibrations available: SCurve,PixelAlive,Gain. -->
+  <Calibration Type="PixelAlive" />
+  <!-- Set to WBC to analyze or 999 for all WBCs-->
+  <WhichWBC ChooseWBC="999"/>
+  <!--Can only be cout or file. -->
+  <Logger      Type="cout" />
+  <Session     Interactive="yes" />
+  <!-- The 3 configuration files necessary to run the analysis using also environment variables-->
+	<!-- calib.dat,translation.dat,detconfig.dat --> 
+	<!-- altenatively you can provide a DefaultDirectory where the 3 files are stored
+	     but they MUST have the 3 standard names calib.dat,translation.dat,detectconfig.dat
+			 and then run the test providing as a second argument just the run number.--> 
+  <ConfigurationFiles>
+		<DefaultDirectory    Directory="$POS_OUTPUT_DIRS" />
+    <!--
+		<CalibFileName       FileName="/FPixDAQ/DAQ/Runs/Run_3045/calib.dat" /> 
+    <TranslationFileName FileName="/FPixDAQ/DAQ/Runs/Run_3045/translation.dat" /> 
+    <DetConfigFileName 	 FileName="/FPixDAQ/DAQ/Runs/Run_3045/detectconfig.dat" /> 
+ 	  -->
+  </ConfigurationFiles>
+  <RootOutputFile     Directory="Default" FileName="Default" />
+  <!--RootOutputFile     Directory="$BUILD_HOME/pixel/PixelAnalysisTools/test/RootOutputFiles" FileName="Default" /-->
+  <!--Number of events that the user wants to process. -1 means that all data will be processed -->
+  <NumberOfEvents Events="-1"/>
+  <Hardware>
+    <!-- Feds that user wants to analyze dash separated-->
+		<Feds Analyze="32-33">
+      <!-- First fed that you want to analyze-->
+      <Fed Id="32">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="36" Exclude=""/>
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <!-- Second fed that you want to analyze-->
+      <Fed Id="33">
+        <DataFileName        FileName="Default" /> 
+        <!--
+        <DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_33_3045.dmp" /> 
+				-->
+        <Channels From="1" To="12" Exclude=""/>
+        <Rocs     Exclude=""/>
+      </Fed>
+    </Feds>
+  </Hardware>  
+  <PixelAliveCuts>
+    <Flag>
+      <!-- Rocs with a number of bad pixels greater than the value are marked as bad-->
+      <BadPixels Max="4"/>
+    </Flag>
+  </PixelAliveCuts>
+</PixelAnalysis>

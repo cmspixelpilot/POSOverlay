@@ -1,0 +1,141 @@
+In order to compile this package you need first to compile other 3 packages
+
+1) Compile pixel/PixelUtilities/PixelFEDDataTools
+  > cd pixel/PixelUtilities/PixelFEDDataTools
+  > make
+
+2) Compile pixel/PixelUtilities/PixelXmlUtilities
+  > cd pixel/PixelUtilities/PixelXmlUtilities
+  > make
+
+3) Compile pixel/PixelUtilities/PixelRootUtilities
+  > cd pixel/PixelUtilities/PixelRootUtilities
+  > make
+Now you can compile the PixelAnalysisTools package.
+
+> make
+
+It will compile both the library libPixelAnalysisTools.so and
+all the executables that are in the test directory.
+
+If you want to run a PixelAlive or SCurve Analysis, you need to run
+the executable PixelAnalysis which is in test/bin/$XDAQ_OS/$XDAQ_PLATFORM.
+
+For both analysis there is only 1 executable which accept as arguments or the type of
+analysis you want to perform (PixelAlive or SCurve) or the path to 
+an xml configuration file that you want to use.
+If you use the default arguments (PixelAlive or SCurve) the executable will 
+use the default xml configuration files that are in the test/configuration directory
+(PixelAliveAnalysis.xml or SCurveAnalysis.xml).
+Those configuration files are commented for you to understand what you need to set in order
+to run the analysis.
+
+ATTENTION!!!!!!!
+To avoid conflicts in cvs between xml files you MUST create the xml files PixelAliveAnalysis.xml or SCurveAnalysis.xml because
+those are the default files that the executable is looking for.
+You can just rename the 2 examples PixelAliveAnalysis_BaseExample.xml SCurveAnalysis_BaseExample.xml 
+to PixelAliveAnalysis.xml and SCurveAnalysis.xml.
+
+
+Here is an example of one of the configuration files
+
+
+
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE PixelAnalysis SYSTEM "../../dtd/PixelAnalysis.dtd">
+<PixelAnalysis>
+  <!--There are 3 types of calibrations available: SCurve,PixelAlive,Gain. -->
+  <Calibration Type="PixelAlive" />
+  <!--Can only be cout or file. -->
+  <Logger      Type="cout" />
+  <!-- The 3 configuration files necessary to run the analysis using also environment variables-->
+	<!-- calib.dat,translation.dat,detconfig.dat --> 
+	<!-- altenatively you can provide a DefaultDirectory where the 3 files are stored
+	     but they MUST have the 3 standard names calib.dat,translation.dat,detectconfig.dat
+			 and then run the test providing as a second argument just the run number.--> 
+  <ConfigurationFiles>
+		<DefaultDirectory    Directory="$POS_OUTPUT_DIRS" />
+    <!--
+		<CalibFileName       FileName="/FPixDAQ/DAQ/Runs/Run_3045/calib.dat" /> 
+    <TranslationFileName FileName="/FPixDAQ/DAQ/Runs/Run_3045/translation.dat" /> 
+    <DetConfigFileName 	 FileName="/FPixDAQ/DAQ/Runs/Run_3045/detectconfig.dat" /> 
+ 	  -->
+  </ConfigurationFiles>
+  <!--Number of events that the user wants to process. -1 means that all data will be processed -->
+  <NumberOfEvents Events="12880"/>
+  <Hardware>
+    <!-- Feds that user wants to analyze dash separated-->
+		<Feds Analyze="33-34">
+      <!-- First fed that you want to analyze-->
+      <Fed Id="33">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="36" Exclude=""/>
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <!-- Second fed that you want to analyze-->
+      <Fed Id="34">
+        <DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_1277/PixelAlive_34_1277.dmp" /> 
+        <Channels From="1" To="24" Exclude=""/>
+        <Rocs     Exclude=""/>
+      </Fed>
+    </Feds>
+  </Hardware>  
+  <!-- Cuts that are used in the SCurve analysis-->
+  <SCurveCuts>
+    <Fit>
+      <!-- Number of times a fit is attempted before giving up-->
+			<Ntrials            Trials="5"/>
+      <!-- Point where to find the beginning of the SCurve here 10%-->
+      <Startcurve         Value="0.1"/>
+      <!-- Point where to find the end of the SCurve here 90%-->
+      <Endcurve           Value="0.9"/>
+      <!-- I don't know, don't touch it!-->
+      <Acceptance         Value="0.2"/>
+    </Fit>
+    <Flag>
+      <!-- This flags the Scurve as noisy based on the rms of the fit. The histogram is saved in the noisy directory-->
+       <NoiseSigma         Min="4"/>
+     <!-- This is the minimum acceptable of the rms of the fit below which the fit is considered failed. The histogram is saved in the error directory-->
+      <ErrorSigma         Max="0.2"/>
+      <!-- Rocs with a mean sigma on the noise greater than the value are printed out and marked as bad-->
+      <RocNoiseMean       Max="3"/>
+      <!-- Rocs with a mean Threshold greater than the value are printed out and marked as bad-->
+      <RocThresholdMean   Max="130"/>
+    </Flag>
+   </SCurveCuts>
+  <!-- Cuts that are used in the PixelAlive analysis
+  <PixelAliveCuts>
+    <Flag>
+      <!-- Rocs with a number of bad pixels greater than the value are marked as bad-->
+      <BadPixels Max="4"/>
+    </Flag>
+   </PixelAliveCuts>
+	 -->
+  <!-- Cuts that are used in the Gain analysis
+  <GainCuts>
+    <Fit>
+      <!--possible functions to fit the data: linear or tanh or both-->
+			<FitFunctions       Functions="linear-tanh"/>
+			<LinearFit          From="20" To="70"/>
+    </Fit>
+    <Flag>
+      <RocSlopeMean       Max="2.5"/>
+      <RocInterceptMean   Max="100"/>
+      <RocChisquareMean   Max="2"/>
+      <RocProbabilityMean Min="0.9"/>
+    </Flag>
+  </GainCuts>
+	 -->
+</PixelAnalysis>
+
+

@@ -1,0 +1,35 @@
+TO PLOT CURRENTS
+===============================================================================
+in main DCS panel, click View
+Go to Node
+choose pixel
+find nodes
+right click and choose nodes of type Power group
+show in histogram
+LV 1.25 channels
+get values
+click on disk
+save all data
+save file as e.g. /tmp/0deg_iter1.csv
+finally: scp pixelshift@SCX5SCR08.cms:/tmp/0deg_iter1.csv YourIterationLogDirectory
+
+after changing input files in currents.pl and currentsPlot.C,
+> perl currents.pl
+> root -l currentsPlot.C++
+
+
+TO PLOT deltaVana DISTRIBUTION
+=================================================================================
+make input file using log and "grep deltaVana_cor" 
+change input file in hist.C
+> root -l hist.C
+
+
+
+TO PLOT DIFFERENCE BETWEEN IN-TIME AND ABSOLUTE THRESHOLD
+=======================================================================================
+make intime.dat and absolute.dat by running PixelIntimeVana.exe with special output line
+cout << "(ben) ROC: " << iMap->first << " avgThr: " << avgThr << endl;
+    cout << "Current Thr Unprotected= " << avgThr << endl;
+
+then run InAbsDiff.pl then inabsdiff.C

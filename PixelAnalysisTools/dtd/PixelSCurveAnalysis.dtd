@@ -1,0 +1,67 @@
+<!-- DTD for the pixel analysis scripts xml initialization files -->
+<!-- Authors: E. Luiggi, B. Heyburn , L. Uplegger -->
+
+
+<!ELEMENT PixelAnalysis ( Calibration, ConfigurationFiles, NumberOfEvents, Hardware, Cuts ) >
+
+<!ELEMENT Calibration EMPTY >
+<!ATTLIST Calibration  Type (SCurve|PixelAlive|Gain) "SCurve" >
+
+<!ELEMENT ConfigurationFiles ( CalibFileName, TranslationFileName, DetConfigFileName) >
+<!ATTLIST ConfigurationFiles CDATA #IMPLIED >
+
+<!ELEMENT CalibFileName EMPTY >
+<!ATTLIST CalibFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT TranslationFileName EMPTY >
+<!ATTLIST TranslationFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT DetConfigFileName EMPTY >
+<!ATTLIST DetConfigFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT NumOfEvents EMPTY > 
+<!ATTLIST NumOfEvents Events CDATA #REQUIRED >
+
+<!-- Add fed elements here -->
+<!ELEMENT Hardware ( Feds ) >
+
+<!ELEMENT Feds ( Fed+ ) >
+<!ATTLIST Feds Analyze CDATA #REQUIRED >
+
+<!ELEMENT Fed (DataFileName, Channels, Rocs) >
+<!ATTLIST Fed Id CDATA #REQUIRED >
+
+<!ELEMENT DataFileName EMPTY >
+<!ATTLIST DataFileName FileName   CDATA #REQUIRED >
+
+<!ELEMENT Channels EMPTY>
+<!ATTLIST Channels 
+  From CDATA #REQUIRED 
+  To   CDATA #REQUIRED
+  Exclude CDATA #IMPLIED >
+ 
+<!ELEMENT Rocs EMPTY >
+<!ATTLIST Exclude CDATA #REQUIRED >
+
+
+<!ELEMENT Cuts (Fit, Flag)>
+<!ELEMENT Fit (Ntrials, Startcurve, Endcurve, Acceptance) >
+<!ELEMENT Ntrials EMPTY >
+<!ATTLIST Ntrials Trials CDATA #REQUIRED >
+<!ELEMENT Startcurve EMPTY >
+<!ATTLIST Startcurve Value CDATA #REQUIRED >
+<!ELEMENT Endcurve EMPTY >
+<!ATTLIST Endcurve Value CDATA #REQUIRED >
+<!ELEMENT Acceptance EMPTY >
+<!ATTLIST Acceptance Value CDATA #REQUIRED >
+
+
+<!ELEMENT Flag (NoisyMean, ErrorMean, RocNoiseMean, RocThrMean) >
+<!ELEMENT NoisyMean EMPTY >
+<!ATTLIST NoisyMean Sigma CDATA #REQUIRED >
+<!ELEMENT ErrorMean EMPTY >
+<!ATTLIST ErrorMean Sigma CDATA #REQUIRED >
+<!ELEMENT RocNoiseMean EMPTY>
+<!ATTLIST RocNoiseMean Sigma CDATA #REQUIRED>
+<!ELEMENT RocThrMean EMPTY>
+<!ATTLIST RocThrMean Thr CDATA #REQUIRED>
