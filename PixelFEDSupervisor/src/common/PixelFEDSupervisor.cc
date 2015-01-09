@@ -2171,7 +2171,8 @@ bool PixelFEDSupervisor::job_Configure ()
   busAdapter_ = new HAL::VMEDummyBusAdapter();
 #else
   diagService_->reportError("I think I own the whole VME crate and will create a bus adapter.",DIAGTRACE);
-  busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
+  busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,0,0,HAL::CAENLinuxBusAdapter::A3818) ;
+  //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
   //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
   diagService_->reportError("Got a CAEN Linux Bus Adapter to the FED",DIAGTRACE);
 #endif  
@@ -2208,6 +2209,13 @@ bool PixelFEDSupervisor::job_Configure ()
       VMEPtr_[vmeBaseAddress]=new HAL::VMEDevice(*addressTablePtr_, *busAdapter_, vmeBaseAddress);
       FEDInterface_[vmeBaseAddress]=new PixelFEDInterface(VMEPtr_[vmeBaseAddress]);
       FEDInterfaceFromFEDnumber_[fednumber]=FEDInterface_[vmeBaseAddress];
+      /////////////////
+      bool pilotFED = true;
+      if ( pilotFED ) {
+	cout << " pilotFED load fpga  "<< endl;
+	FEDInterface_[vmeBaseAddress]->loadFPGADigFED();
+      }
+      /////////////////
       FEDInterface_[vmeBaseAddress]->reset();
       dataFIFO1_[vmeBaseAddress]=new std::stringstream();
       dataFIFO2_[vmeBaseAddress]=new std::stringstream();
