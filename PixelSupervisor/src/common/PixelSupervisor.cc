@@ -2141,11 +2141,11 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
 
       PixelDCSSOAPCommander dcsSoapCommander(this);
 
-      if (psxServers_.size()!=1) {
-	diagService_->reportError("PixelSupervisor::stateRunning psxServers_.size()="+stringF(psxServers_.size())+"\n"+"Expect to have exactly one psxServer in configuration.",DIAGFATAL);
-        ::abort();
-      }
-      PixelDCSPVSSCommander pvssCommander(this, psxServers_.begin()->second);
+//      if (psxServers_.size()!=1) {
+//	diagService_->reportError("PixelSupervisor::stateRunning psxServers_.size()="+stringF(psxServers_.size())+"\n"+"Expect to have exactly one psxServer in configuration.",DIAGFATAL);
+//        ::abort();
+//      }
+//      PixelDCSPVSSCommander pvssCommander(this, psxServers_.begin()->second);
       
       PixelCalibrationFactory calibMaker;
       
@@ -2153,7 +2153,7 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
 						   pixSupConfPtr, 
 						   soapCmdrPtr,
 						   &dcsSoapCommander,
-						   &pvssCommander
+						   0 //&pvssCommander
 						   );
       
       if (theCalibAlgorithm_==0){
