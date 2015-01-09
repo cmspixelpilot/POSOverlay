@@ -1680,6 +1680,8 @@ int PixelFECInterface::rocsetchipcontrolregister(int mfec, int mfecchannel,
 						 int chipdisable,
 						 int halfspeed, 
 						 const bool buffermode) {
+  if (halfspeed)
+    printf("JMT PixelFECInterface::rocsetchipcontrolregister halfspeed is %i and it's not used any more\n", halfspeed);
   unsigned char mydata;
   mydata = 0;
   if (halfspeed > 0) mydata |= 0x01;
@@ -2524,6 +2526,7 @@ int PixelFECInterface::progalldacs(int mfec, int fecchannel,
                                    int hubaddress, int portaddress, int rocid,
                                    int wbc, int chipcontrol,
                                    const std::vector<unsigned char>& dacs) {
+  assert(0);
 #ifndef BLOCKTRANSFER  
   unsigned long *iword;
 #endif
@@ -2635,7 +2638,8 @@ void PixelFECInterface::setAllDAC(const PixelHdwAddress& theROC,
                                   const std::vector<unsigned int>& dacs,
 				  const bool buffermode) {
 
-  assert(dacs.size()==29);
+  assert(dacs.size()==30);
+  printf("JMT remove this hardcoded magicnumber bullshit\n");
 
   //std::cout << "In PixelFECInterface::setAllDAC "<<theROC.mfec()<<" "<<theROC.mfecchannel()<<" "
   //        <<theROC.hubaddress()<<" "<<theROC.portaddress()<<" "<<theROC.rocid()<<" "<<dacs.size()
@@ -2661,7 +2665,7 @@ void PixelFECInterface::setAllDAC(const PixelHdwAddress& theROC,
 	  253,
 	  dacs[28],buffermode);
 
-  // Program the 27 DACs
+  // Program the 27 DACs // JMTBAD readback
   for (unsigned int dacaddress=0;dacaddress<27;dacaddress++){
     //int ret=
     //std::cout<<(dacaddress+1)<<" "<<dacs[dacaddress]<<" ";
