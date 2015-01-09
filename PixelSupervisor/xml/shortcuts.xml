@@ -1,0 +1,48 @@
+<?xml version='1.0'?>
+<xplore:settings xmlns:xplore="http://xdaq.web.cern.ch/xdaq/xsd/2006/XPlore-Settings-10">
+        <xplore:shortcuts>
+                <xplore:shortcut name="Executives">
+                        <xplore:description>Browse for all XDAQ executives</xplore:description>
+                        <xplore:filter>(class=Executive)</xplore:filter>
+                        <xplore:icon>/xplore/images/applications/Executive.gif</xplore:icon>
+                        <xplore:service>peer</xplore:service>
+                        <xplore:zone>default</xplore:zone>
+                </xplore:shortcut>
+                <xplore:shortcut name="MStore">
+                        <xplore:description>Search all MStore applications</xplore:description>
+                        <xplore:filter>(className=MStore)</xplore:filter>
+                        <xplore:icon>/xplore/images/applications/mstore.png</xplore:icon>
+                        <xplore:service>peer</xplore:service>
+                        <xplore:zone>default</xplore:zone>
+                </xplore:shortcut>
+                <xplore:shortcut name="Monitors">
+                        <xplore:description>Search all Monitor applications</xplore:description>
+                        <xplore:filter>(className=Monitor)</xplore:filter>
+                        <xplore:icon>/xplore/images/applications/Monitor.png</xplore:icon>
+                        <xplore:service>peer</xplore:service>
+                        <xplore:zone>default</xplore:zone>
+                </xplore:shortcut>
+                <xplore:shortcut name="Network">
+                        <xplore:description>Display all XDAQ peers</xplore:description>
+                        <xplore:filter></xplore:filter>
+                        <xplore:icon>/xplore/images/Network.png</xplore:icon>
+                        <xplore:service>peer</xplore:service>
+                        <xplore:zone>any</xplore:zone>
+                </xplore:shortcut>
+                <xplore:shortcut name="PSX">
+                        <xplore:description>Search all PSX applications</xplore:description>
+                        <xplore:filter>(class=PSX)</xplore:filter>
+                        <xplore:icon>/xplore/images/applications/PSX.png</xplore:icon>
+                        <xplore:service>peer</xplore:service>
+                        <xplore:zone>default</xplore:zone>
+                </xplore:shortcut>
+                <xplore:shortcut name="TStore">
+                        <xplore:description>Search all TStore applications</xplore:description>
+                        <xplore:filter>(className=TStore)</xplore:filter>
+                        <xplore:icon>/xplore/images/applications/tstore.png</xplore:icon>
+                        <xplore:service>peer</xplore:service>
+                        <xplore:zone>default</xplore:zone>
+                </xplore:shortcut>
+        </xplore:shortcuts>
+</xplore:settings>
+
