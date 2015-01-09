@@ -3,13 +3,13 @@
 	
 <!-- Change this to point to the URL where you will run xdaq -->
 	<!-- <xc:Context id="0" url="http://cmsfpix1.cern.ch:1973/"> -->
-	<xc:Context id="0" url="http://vmepcS2B18-17.cms:1980/">
+	<xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:1973/">
 
 		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
-		<xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86/libPixelSupervisor.so</xc:Module>
+		<xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
 
 		<xc:Application class="PixelFECSupervisor" id="60" instance="1" network="local" group="daq"/>
-		<xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86/libPixelFECSupervisor.so</xc:Module>
+		<xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
 
 		<xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="local">
                     <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
@@ -17,18 +17,20 @@
                        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
                     </properties>
                 </xc:Application>
-                <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86/libGlobalErrorDispatcher.so</xc:Module>
+                <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86_64_slc6/libGlobalErrorDispatcher.so</xc:Module>
 
+		
 		<xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq">
                     <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
                        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
                        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
                     </properties>
                 </xc:Application>
-                <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86/libPixelFEDSupervisor.so</xc:Module>
+                <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
+		
 
 		<!--xc:Application class="PixelLTCSupervisor" id="80" instance="1" network="local" group="daq"/>
-		<xc:Module>${BUILD_HOME}/pixel/PixelLTCSupervisor/lib/linux/x86/libPixelLTCSupervisor.so</xc:Module-->
+		<xc:Module>${BUILD_HOME}/pixel/PixelLTCSupervisor/lib/linux/x86_64_slc6/libPixelLTCSupervisor.so</xc:Module-->
 
                 <!--
     		<xc:Application class="PixelTTCSupervisor" id="90" instance="1" network="local" group="daq">
@@ -42,113 +44,38 @@
 			        <DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
 			</properties>
 		</xc:Application>
-		<xc:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xc:Module>
+		<xc:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86_64_slc6/libPixelTTCSupervisor.so</xc:Module>
 		-->
 
-                <!-- section for TTCci instead of PixelTTCSupervisor -->
-                <xc:Context id="4" url="http://vmepcS2B18-17.cms:1980/">
-                <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="lyopc305.cern.ch" port="1914" network="xmas"/>
-
-                <xc:Application class="TTCciControl" id="90" instance="1" network="xmas" group="daq">
-                <properties xmlns="urn:xdaq-application:TTCciControl" xsi:type="soapenc:Struct">
-                <name xsi:type="xsd:string">Board 1</name>
-                <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
-                <Location xsi:type="xsd:integer">14</Location>
-                <Is64XCompatible xsi:type="xsd:boolean">true</Is64XCompatible>
-                <Configuration xsi:type="xsd:string">
-                TRIGGER_SOURCE BCHANNEL INTERNAL CYCLIC
-                BGO_SOURCE VME CYCLIC
-                ORBIT_SOURCE   INTERNAL
-                CLOCK_SOURCE TTC QPLLReset=YES QPLLAutoRestart=YES FreqBits=0x0
-                BGO_CHANNEL BC0 L=SINGLE REPETITIVE=YES STARTAFTER=0
-                ADDBGODATA BC0 DATA=0x1 MODE=S
-                BGO_CHANNEL TestEnable L=SINGLE REPETITIVE=YES STARTAFTER=0
-                ADDBGODATA TestEnable DATA=0x00 MODE=S
-                BGO_CHANNEL PrivateGap L=SINGLE REPETITIVE=YES DELAY1=3438
-                ADDBGODATA PrivateGap DATA=0x20 MODE=S
-                BGO_CHANNEL PrivateOrbit L=SINGLE REPETITIVE=YES DELAY1=90
-                ADDBGODATA PrivateOrbit DATA=0x1C MODE=S
-                BGO_CHANNEL Resynch L=SINGLE REPETITIVE=YES STARTAFTER=0
-                ADDBGODATA Resynch DATA=0x1C MODE=S
-                BGO_CHANNEL HardReset L=SINGLE REPETITIVE=YES STARTAFTER=0
-                ADDBGODATA HardReset DATA=0x14 MODE=S
-                BGO_CHANNEL EC0 L=SINGLE REPETITIVE=YES STARTAFTER=0
-                ADDBGODATA EC0 DATA=0x2 MODE=S
-                BGO_CHANNEL Start L=SINGLE REPETITIVE=YES STARTAFTER=0
-                ADDBGODATA Start DATA=0x00 MODE=S
-                BGO_CHANNEL Stop L=SINGLE REPETITIVE=NO STARTAFTER=0
-                ADDBGODATA Stop DATA=0x00 MODE=S
-                BGO_CHANNEL 11 L=SINGLE REPETITIVE=YES STARTAFTER=0 POSTSCALE=1
-                ADDBGODATA 11 DATA=0x1 MODE=A
-                BGO_CHANNEL 12 L=DOUBLE REPETITIVE=YES DELAY2=126
-                ADDBGODATA 12 DATA=0x2C MODE=S
-                ADDBGODATA 12 DATA=0x1 MODE=A
-                BGO_CHANNEL 13 L=SINGLE REPETITIVE=YES STARTAFTER=0 POSTSCALE=1
-                ADDBGODATA 13 DATA=0x1C MODE=S
-                BGO_CHANNEL 14 L=SINGLE REPETITIVE=YES STARTAFTER=0 POSTSCALE=1
-                ADDBGODATA 14 DATA=0x14 MODE=S
-                BGO_CHANNEL 15 L=SINGLE REPETITIVE=YES
-                ADDBGODATA 15 DATA=0x2C MODE=S
-                BGO_CHANNEL 0 L=SINGLE REPETITIVE=YES
-                ADDBGODATA 0 DATA=0x1C MODE=S
-                BEGINSEQUENCE Configure
-                DisableL1A
-                ResetCounters
-                BGO EC0
-                BGO OC0
-                BGO 14
-                mSleep 100
-                Periodic Off
-                ENDSEQUENCE
-                BEGINSEQUENCE Enable
-                EnableL1A
-                mSleep 100
-                ENDSEQUENCE
-                BEGINSEQUENCE Suspend
-                BGO Stop
-                mSleep 100
-                DisableL1A
-                Periodic Off
-                ENDSEQUENCE
-                BEGINSEQUENCE Resume
-                EnableL1A
-                mSleep 100
-                ENDSEQUENCE
-                BEGINSEQUENCE Halt
-                BGO Stop
-                DisableL1A
-                Periodic Off
-                ENDSEQUENCE
-                BEGINSEQUENCE Periodic
-                BGO 13
-                ENDSEQUENCE
-                BEGINSEQUENCE User
-                mSleep 100
-                ENDSEQUENCE
-                CYCLICBGO 0 CH=BC0 REPETITIVE=y PERMANENT=y
-                CYCLICBGO 2 CH=15 STARTBX=100 REPETITIVE=n PERMANENT=n POST=1
-                CYCLICTRIGGER 0 STARTBX=225 REPETITIVE=n PERMANENT=n POST=1 INITWAIT=1
-                CYCLICTRIGGER 1 STARTBX=225 REPETITIVE=y PERMANENT=n PRES=1000 DISABLE
-                CYCLICTRIGGER 2 STARTBX=200 REPETITIVE=y PERMANENT=n DISABLE
-                CYCLICBGO 1 CH=12 STARTBX=100 REPETITIVE=y PERMANENT=n PRES=1000 DISABLE
-                CYCLICBGO 3 CH=12 STARTBX=100 REPETITIVE=y PERMANENT=n DISABLE
-                CYCLICBGO 4 CH=0 STARTBX=20 REPETITIVE=y PERMANENT=n DISABLE
-                </Configuration>
-                <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>
-                <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
-                <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
-                </properties>
-                </xc:Application>
-                <xc:Module>${BUILD_HOME}/TTCSoftware/xdaq/libTTCciControl.so</xc:Module>
-                </xc:Context>		
+                <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vmepc-s2b18-08-01.cms" port="1914" network="xmas"/>
 
 		<xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="local" group="daq">
                     <properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
                         <readDCU_workloop_usleep xsi:type="xsd:integer">10000000</readDCU_workloop_usleep>
                     </properties>
 		</xc:Application>
-                <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86/libPixelTKFECSupervisor.so</xc:Module>
+                <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
 
+                <!-- section for TTCci instead of PixelTTCSupervisor -->
+                <xc:Application class="ttc::TTCciControl" id="90" instance="0" network="local" group="daq">
+                   <properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
+                         <name xsi:type="xsd:string">Board 1</name>
+           	      <BusAdapter xsi:type="xsd:string">CAENPCIe</BusAdapter>
+           	      <Location xsi:type="xsd:integer">2</Location>
+           	      <Configuration xsi:type="xsd:string">[file=/nfshome0/pixelpilot/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration.txt]</Configuration> 
+                         <group xsi:type="xsd:string">Pixel</group>
+                         <system xsi:type="xsd:string">CR</system>
+           	      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+           	      <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+                         <DisableMonitoring xsi:type="xsd:boolean">true</DisableMonitoring>
+           	</properties>
+                </xc:Application>
+                <xc:Module>${XDAQ_ROOT}/lib/libttcttcci.so</xc:Module>  
+                <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
+
+                <!-- <xc:Context id="4" url="http://pixp1daq.cern.ch:1980/"> -->
+
+		<!--
                 <xc:Application class="PixelDCSTestApplication" id="101" instance="0" network="local" group="dcs">
                         <properties xmlns="urn:xdaq-application:PixelDCSTestApplication" xsi:type="soapenc:Struct">
                                 <fedDpInterface xsi:type="xsd:string">PixelDCStoFEDDpInterface</fedDpInterface>
@@ -156,13 +83,13 @@
                                 <dcsSupervisor xsi:type="xsd:string">PixelDCSSupervisor</dcsSupervisor>
                         </properties>
                 </xc:Application>
-                <xc:Module>${BUILD_HOME}/pixel/PixelUtilities/PixelDCSUtilities/lib/linux/x86/libPixelDCSUtilities.so</xc:Module>
+                <xc:Module>${BUILD_HOME}/pixel/PixelUtilities/PixelDCSUtilities/lib/linux/x86_64_slc6/libPixelDCSUtilities.so</xc:Module>
 
                 <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="local" group="dcs">
                         <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct">
                         </properties>
                 </xc:Application>
-                <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86/libPixelDCSInterface.so</xc:Module> 
+                <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
 
                 <xc:Application class="PixelDCStoTrkFECDpInterface" id="121" instance="0" network="local" group="dcs">
                          <properties xmlns="urn:xdaq-application:PixelDCStoTrkFECDpInterface" xsi:type="soapenc:Struct">
@@ -180,7 +107,8 @@
                                 <psx_system_name xsi:type="xsd:string">cms_trk_dcs_07:</psx_system_name>
                         </properties>
                 </xc:Application>
-                <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86/libPixelDCSInterface.so</xc:Module> 
+                <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
+		-->
 
                 <!--
                 <xc:Application class="PixelDCStoFEDDpInterface" id="122" instance="0" network="local" group="dcs">
@@ -195,9 +123,10 @@
                                 <oracleTableName_dpCalibration xsi:type="xsd:string">FEDTODCSDPCALIBRATION</oracleTableName_dpCalibration>
                         </properties>
                 </xc:Application>
-                <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86/libPixelDCSInterface.so</xc:Module> 
+                <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
                 -->
 
+		<!--
                 <xc:Application class="tstore::TStore" id="200" instance="0" network="local" group="dcs">
                         <properties xmlns="urn:xdaq-application:TStore" xsi:type="soapenc:Struct">
                 		<configurationRootDirectory xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelDCSInterface/xml/</configurationRootDirectory>
@@ -207,6 +136,7 @@
                 <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
                 <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
                 <xc:Module>${XDAQ_ROOT}/lib/libtstore.so</xc:Module>
+		-->
         </xc:Context>
 
         <!-- TIF PSX server: example of direct connection -->
@@ -235,15 +165,16 @@
         <!-- 9923 is just pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
         <!-- <xc:Context id="6" url="http://srv-c2c03-16.cms:9922"> -->
         <!-- <xc:Context id="6" url="http://cmspsx.cms:9922"> works with PSX running! Otherwise works with 9920 -->
+	<!--
         <xc:Context id="6" url="http://cmspsx.cms:9923">
           <xc:Application class="psx" id="30" instance="0" network="local"
           group="dcs" service="psx"/>
         </xc:Context>
-
+	-->
 
         <!--xc:Context id="1" url="http://vuslink2.cern.ch:1973">
                 <xc:Application class="PixelSlinkMonitor" id="50" instance="0" network="local" group="daq" />
-                <xc:Module>/home/florez/TriDAS/pixel/PixelSlinkMonitor/lib/linux/x86/libPixelSlinkMonitor.so</xc:Module>
+                <xc:Module>/home/florez/TriDAS/pixel/PixelSlinkMonitor/lib/linux/x86_64_slc6/libPixelSlinkMonitor.so</xc:Module>
         </xc:Context-->
 
 
