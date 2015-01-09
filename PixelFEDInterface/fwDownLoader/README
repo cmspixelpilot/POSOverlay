@@ -1,0 +1,29 @@
+
+Fed Firmware Downloader
+
+gmake                 makes a static library
+gmake Set=fed_jam1    makes executable fed_jam1.exe in bin/... directory
+
+As returned by the program:
+Usage: fedjam1 <ACTION> <BASEADDRESS> <FPGA GROUP> <FILENAME> 
+
+(you probably need to use fed_jam1.exe in place of fedjam1)
+    <ACTION> may be PROGRAM or VERIFY
+    <BASEADDRESS> should be hex e.g. 0x1C000000
+    <FPGA GROUP> should be FRONT or CENTER
+
+for example, I think it will work like this with the CMS build stuff
+
+prompt> fed_jam1.exe VERIFY 0x1C000000 CENTER center.jbc
+
+Hopefully I can update this after it is working!
+
+If you are the first person to use this code on your machine, you may
+need to fine tune a parameter if your CPU is fast-ish. Depending on
+your patience, you can increase: (in test/fed_jam1.cpp)
+one_ms_delay = 50000L; 
+to 
+one_ms_delay = 500000L; 
+etc. Until things work for you.   
+
+

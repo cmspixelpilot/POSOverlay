@@ -1,0 +1,10 @@
+Version 1.3
+Split the data decoding cpde and the ASCII file reading part from the 
+PixelFEDInetrface class.
+Create the PixelFEDCard class.
+
+
+
+
+
+
