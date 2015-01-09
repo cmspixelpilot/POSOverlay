@@ -283,13 +283,13 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
 
     toolbox::BSem* phlock_;
     bool workloopContinue_;
-
+#if 0
     map<string, int> analogInputBiasLast_;
     map<string, int> analogOutputBiasLast_;
     map<string, int> analogOutputGainLast_;
 
     vector<string> tbmReadbackBadChannels_;
-
+#endif
     void DIAG_CONFIGURE_CALLBACK();
     void DIAG_APPLY_CALLBACK();
 

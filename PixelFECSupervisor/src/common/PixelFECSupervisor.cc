@@ -711,6 +711,7 @@ void PixelFECSupervisor::ROC (xgi::Input *in, xgi::Output *out) throw (xgi::exce
 	*out<<"   </table>"<<endl;
 	*out<<"  </td>"<<endl;
 
+#if 0
 	*out<<"  <td>"<<endl;
 	ROCDACs(out, url, vmeBaseAddress_string, mFEC, mFECChannel, hub, port, rocid, "Vdd", "1", dacSettings->getVdd(), 4);
 	*out<<"  </td>"<<endl;
@@ -823,6 +824,7 @@ void PixelFECSupervisor::ROC (xgi::Input *in, xgi::Output *out) throw (xgi::exce
 	*out<<" <tr><td>"<<endl;
         ROCDACs(out, url, vmeBaseAddress_string, mFEC, mFECChannel, hub, port, rocid, "ChipControlRegister", "253", dacSettings->getControlRegister(), 8);
         *out<<" </td></tr>"<<endl;
+#endif
 
 	*out<<"  <td align=center>"<<endl;
 	*out<<"    Program Pixels"<<endl;
@@ -1908,7 +1910,7 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
   //configuration data (dac settings, trims, masks, etc). this way we could save time even in the case
   //where only other data (e.g. the fed data) has been updated.
   //But for now we take the simple approach.
-  
+
   try { 
     
     pclock_->take();
@@ -2263,10 +2265,11 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 
 	tempTBMs = theTBMs_.find(*module_name)->second;
         if (tempTBMs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve TBM settings!");
+#if 0
   	analogInputBiasLast_ .insert(pair<string, int>(module_name->modulename(), tempTBMs->getAnalogInputBias() ) );
 	analogOutputBiasLast_.insert(pair<string, int>(module_name->modulename(), tempTBMs->getAnalogOutputBias() ) );
   	analogOutputGainLast_.insert(pair<string, int>(module_name->modulename(), tempTBMs->getAnalogOutputGain() ) );
-
+#endif
 
         configTBMTimer.start();
         bool physics=(theCalibObject_==0);
@@ -2531,7 +2534,8 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
   // Get the VME Bus Adapter
   #ifdef USE_HAL
     // Change for HAL
-     busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
+    busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,0,0,HAL::CAENLinuxBusAdapter::A3818) ;
+    //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
     //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
     diagService_->reportError("Got a CAEN Linux Bus Adapter for the FEC",DIAGTRACE);
     // ASCII address table
@@ -3271,6 +3275,7 @@ xoap::MessageReference PixelFECSupervisor::CalibRunning (xoap::MessageReference 
 				&theMasks_, 
 				&theTrims_, 
 				&theDACs_, 
+				&theTBMs_,
 				calibStateCounter_);
 
   calibStateCounter_++;
@@ -3315,7 +3320,6 @@ xoap::MessageReference PixelFECSupervisor::CalibRunningThreshold (xoap::MessageR
   assert(tempCalibObject!=0);
 
   unsigned int event=atoi(parametersReceived.at(0).value_.c_str());
-
   assert((unsigned int)event==calibStateCounter_*tempCalibObject->nTriggersPerPattern());
 
   tempCalibObject->nextFECState(FECInterfaceByFECNumber_, 
@@ -3324,6 +3328,7 @@ xoap::MessageReference PixelFECSupervisor::CalibRunningThreshold (xoap::MessageR
 				&theMasks_, 
 				&theTrims_, 
 				&theDACs_, 
+				&theTBMs_,
 				calibStateCounter_);
    
   calibStateCounter_++;
@@ -3681,8 +3686,9 @@ void PixelFECSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine &
 	return;
       }
   // Reset the list of bad channels for TBM readout
+#if 0
   tbmReadbackBadChannels_.clear();
-
+#endif
   // Reset all the AnalogLasts to the nominal values
   // This way we'll immediately re-throw DetectSoftError if the problem wasn't actually fixed
   std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
@@ -3691,10 +3697,11 @@ void PixelFECSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine &
   for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
       PixelTBMSettings* tempTBMs = theTBMs_.find(*module_name)->second;
       if (tempTBMs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve TBM settings!");
-
+#if 0
       analogInputBiasLast_[module_name->modulename()] = tempTBMs->getAnalogInputBias();
       analogOutputBiasLast_[module_name->modulename()] = tempTBMs->getAnalogOutputBias();
       analogOutputGainLast_[module_name->modulename()] = tempTBMs->getAnalogOutputBias();
+#endif
   }
     
     toolbox::Event::Reference e(new toolbox::Event("FixingSoftErrorDone", this));
@@ -3760,6 +3767,8 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
   std::vector <PixelModuleName>::iterator module_name;
 
+  assert(0);
+#if 0
   for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
 
     if (find(tbmReadbackBadChannels_.begin(), tbmReadbackBadChannels_.end(), module_name->modulename()) != tbmReadbackBadChannels_.end())
@@ -3861,6 +3870,7 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 
   phlock_->take(); if (workloopContinue_)  phlock_->give(); else {phlock_->give(); return true;}
   usleep(1000000);
+#endif
   return true;
 }
 
