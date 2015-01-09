@@ -1,1 +1,10 @@
 .svn
+JobControl/
+LogReaderWithFileServer
+PixelConfigDBGUI/
+PixelDCSInterface/
+PixelDCSSupervisor/
+PixelFunctionManager/
+PixelHistoViewer/
+PixelMonitor/
+PixelFEDMonitor/
