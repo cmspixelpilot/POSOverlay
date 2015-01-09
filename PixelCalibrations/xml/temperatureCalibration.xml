@@ -1,0 +1,61 @@
+<temperaturecalibration:configuration xmlns:temperaturecalibration="urn:xdaq-dcsinterface:1.0" xmlns:thermalcycle="urn:pvss-xdaq-fsm" xmlns:archiving="urn:pvss-xdaq-fsm" xmlns:plugin="urn:pvss-xdaq-fsm">
+
+ <thermalcycle:parameters>
+  <thermalcycle:parameter numCycles="2"/>
+  <thermalcycle:parameter startCycle="cooling"/>
+  <thermalcycle:parameter minTemperature="-20"/>
+  <thermalcycle:parameter maxTemperature="+30"/>
+  <thermalcycle:parameter stepSizeTemperature="2"/>
+  <!--'real' FluroCarbon Chiller at TIF-->
+  <thermalcycle:parameter dpeNameBathTemperatureReading="OTHER/cms_Pixel_HalfCylinder_C6F14Chiller.readings.Temperature"/>
+  <thermalcycle:parameter dpeNameBathTemperatureSetting="OTHER/cms_Pixel_HalfCylinder_C6F14Chiller.settings.Temperature"/>
+  <!--'dummy' FluroCarbon Chiller simulated by PVSS-->
+  <!--thermalcycle:parameter dpeNameBathTemperatureReading="OTHER/test_C6F14Chiller.readings.Temperature"/>
+  <   thermalcycle:parameter dpeNameBathTemperatureSetting="OTHER/test_C6F14Chiller.settings.Temperature"/-->
+  <thermalcycle:parameter maxTemperatureDeviationBath="0.1"/>
+  <thermalcycle:parameter maxDelayBath="900"/>
+  <!--'slow' parameter setting required for 'real' FluroCarbon Chiller at TIF to reach set temperature-->
+  <thermalcycle:parameter addDelayBath="300"/>
+  <!--'fast' parameter setting to speed-up 'dummy' FluroCarbon Chiller simulated by PVSS-->
+  <!--thermalcycle:parameter addDelayBath="10"/-->
+ </thermalcycle:parameters>
+
+ <archiving:options>
+  <archiving:option fileName="/home/zatserkl/pos_cvs/TriDAS/pixel/PixelCalibrations/data/pixelTemperatureCalibrationData-pilot.xml"/>
+  <!--'real' FluroCarbon Chiller at TIF-->
+  <archiving:dp dpeName="OTHER/cms_Pixel_HalfCylinder_C6F14Chiller.settings.Temperature" dpeAlias="FluroCarbonChiller_setting"/>
+  <archiving:dp dpeName="OTHER/cms_Pixel_HalfCylinder_C6F14Chiller.readings.Temperature" dpeAlias="FluroCarbonChiller_reading"/>
+  <!--'dummy' FluroCarbon Chiller simulated by PVSS-->
+  <!--archiving:dp dpeName="OTHER/test_C6F14Chiller.settings.Temperature" dpeAlias="dummyFluroCarbonChiller_setting"/>
+  <   archiving:dp dpeName="OTHER/test_C6F14Chiller.readings.Temperature" dpeAlias="dummyFluroCarbonChiller_reading"/-->
+  <archiving:dp dpeName="SIEMENS/cms_Pixel_rail01_module09_channel000.readings.calibratedTemperature" dpeAlias="PilotRunDetector_D1_BLDx_PNL2"/>
+  <archiving:dp dpeName="SIEMENS/cms_Pixel_rail01_module09_channel001.readings.calibratedTemperature" dpeAlias="PilotRunDetector_D1_BLDx_PNL1"/>
+  <archiving:dp dpeName="SIEMENS/cms_Pixel_rail01_module09_channel004.readings.calibratedTemperature" dpeAlias="PilotRunDetector_D2_BLDx_PNL2"/>
+  <archiving:dp dpeName="SIEMENS/cms_Pixel_rail01_module09_channel005.readings.calibratedTemperature" dpeAlias="PilotRunDetector_D2_BLDx_PNL1"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board00/channel000.actual.vMon" dpeAlias="PilotRunDetector_Portcard_LV_vMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board00/channel000.actual.iMon" dpeAlias="PilotRunDetector_Portcard_LV_iMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board00/channel001.actual.vMon" dpeAlias="PilotRunDetector_CCU_LV_vMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board00/channel001.actual.iMon" dpeAlias="PilotRunDetector_CCU_LV_iMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel000.actual.vMon" dpeAlias="PilotRunDetector_D1_analogLV_vMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel000.actual.iMon" dpeAlias="PilotRunDetector_D1_analogLV_iMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel001.actual.vMon" dpeAlias="PilotRunDetector_D1_digitalLV_vMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel001.actual.iMon" dpeAlias="PilotRunDetector_D1_digitalLV_iMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel003.actual.vMon" dpeAlias="PilotRunDetector_D2_analogLV_vMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel003.actual.iMon" dpeAlias="PilotRunDetector_D2_analogLV_iMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel004.actual.vMon" dpeAlias="PilotRunDetector_D2_digitalLV_vMon"/>
+  <archiving:dp dpeName="CAEN/pixelTIF_SY1527/board03/channel004.actual.iMon" dpeAlias="PilotRunDetector_D2_digitalLV_iMon"/>
+ </archiving:options>
+
+ <plugin:parameters type="PixelTemperatureCalibrationPluginLastDAC">
+  <plugin:parameter minTempRangeDAC="0"/>
+  <plugin:parameter maxTempRangeDAC="15"/>
+  <plugin:parameter stepSizeTempRangeDAC="1"/>
+  <plugin:parameter numTriggers="5"/>
+ </plugin:parameters>
+
+ <plugin:parameters type="PixelTemperatureCalibrationPluginDCU">
+  <plugin:parameter numPoints="5"/>
+  <plugin:parameter mode="LIR"/>
+ </plugin:parameters>
+
+</temperaturecalibration:configuration>
