@@ -13,5 +13,4 @@ bin
 PixelSupervisorGUI/
 RPM.version
 VERSION
-Makefile
 config
