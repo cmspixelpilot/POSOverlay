@@ -8,3 +8,10 @@ PixelFunctionManager/
 PixelHistoViewer/
 PixelMonitor/
 PixelFEDMonitor/
+lib
+bin
+PixelSupervisorGUI/
+RPM.version
+VERSION
+Makefile
+config
