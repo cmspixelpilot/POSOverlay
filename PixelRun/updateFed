@@ -1,0 +1,2 @@
+#!/bin/sh
+mv params_fed_*.dat $PIXELCONFIGURATIONBASE/fedcard/0/

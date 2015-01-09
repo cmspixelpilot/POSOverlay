@@ -1,0 +1,3 @@
+#!/bin/sh
+mv portcard_*.dat $PIXELCONFIGURATIONBASE/portcard/0
+

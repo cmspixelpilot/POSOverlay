@@ -1,0 +1,20 @@
+#!/bin/sh
+echo ###############################################
+echo # Rebuilding PixelConfigDataFormats and
+echo # relinking xdaq supervisors (Pixel, FED, FEC)
+echo ###############################################
+cd $XDAQ_ROOT/pixel/PixelConfigDataFormats/
+make
+cd ../PixelFEDSupervisor/
+rm lib/linux/x86/libPixelFEDSupervisor.so
+make
+cd ../PixelFECSupervisor/
+rm lib/linux/x86/libPixelFECSupervisor.so
+make
+cd ../PixelTKFECSupervisor/
+rm lib/linux/x86/libPixelTKFECSupervisor.so
+make
+cd ../PixelSupervisor
+rm lib/linux/x86/libPixelSupervisor.so
+make
+cd ../PixelRun/

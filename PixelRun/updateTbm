@@ -1,0 +1,3 @@
+#!/bin/sh
+mv TBM_module_*.dat $PIXELCONFIGURATIONBASE/tbm/0/
+

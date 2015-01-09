@@ -1,0 +1,5 @@
+//--number of temperature to plot
+2
+//--temperature IDs
+32   // ManiFold IN
+53   // Air Temperature 
