@@ -1,0 +1,26 @@
+<?xml version='1.0'?>
+
+<xc:Partition xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+              xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+<xc:Context id="0" url="http://vmepcS2B16-10:1974">
+
+  <xc:Application class="LTCControl" id="30" instance="0" network="local">
+    <properties xmlns="urn:xdaq-application:LTCControl" xsi:type="soapenc:Struct">
+      <name xsi:type="xsd:string">Board 1</name>
+      <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+      <Location xsi:type="xsd:integer">13</Location>
+      <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+      <Configuration xsi:type="xsd:string">[file=/cmssrv0/nfshome0/pixelpro/TriDAS/pixel/PixelLTCSupervisor/LTCConfiguration_P5.txt]</Configuration>
+      <ReloadAtEveryConfigure xsi:type="xsd:boolean">false</ReloadAtEveryConfigure>    
+      <BTimeCorrection xsi:type="xsd:unsignedInt">99</BTimeCorrection>
+      <SlinkSrcId xsi:type="xsd:unsignedInt">824</SlinkSrcId>
+    </properties>
+  </xc:Application>
+  <xc:Module>/cmssrv0/nfshome0/pixelpro/TriDAS/TTCSoftware/xdaq/libLTCControl.so</xc:Module>
+
+</xc:Context>
+
+
+</xc:Partition>

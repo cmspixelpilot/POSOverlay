@@ -1,0 +1,65 @@
+## to insert a comment line in this file always begin the line per two '#' plus a blank space
+
+## -------------------------------------
+## -------------------------------------
+## CLIENT APPLICATION CONFIGURATION FILE
+## -------------------------------------
+## -------------------------------------
+## Available LOGLEVELS are : TRACE DEBUG INFO WARN USERINFO ERROR FATAL
+
+## --------------------------------
+## default LOG4C+ appender settings
+## --------------------------------
+## do we want to use the LOG4C+ appender for console outputs ? TRUE/FALSE
+UseDefaultAppender			TRUE
+
+## messages of criticity at least equal to XXX (here INFO) must be routed to the LOG4C+ appender
+DefaultAppenderLogLevel 	TRACE
+
+
+
+## --------------------------------
+## Local Error Dispatcher settings
+## --------------------------------
+## do we want to send the emitted messages to the GlobalErrorDispatcher process ? TRUE/FALSE
+UseErrorDispatcher		TRUE
+
+## messages of criticity at least equal to XXX (here INFO) will be routed to the GlobalErrorDispatcher
+ErrorDispatcherLogLevel	TRACE
+
+## What's the class name of the XDAQ module acting as GlobalErrorDsipatcher ?
+ErrorDispatcherName		LocalErrorDispatcher
+
+## What's the instance of the XDAQ module acting as GlobalErrorDsipatcher ?
+ErrorDispatcherInstance	31
+
+
+
+## --------------------------------
+## Global Error Dispatcher settings
+## --------------------------------
+## do we want to send the emitted messages to the GlobalErrorDispatcher process ? TRUE/FALSE
+UseGlbErrorDispatcher		FALSE
+
+## messages of criticity at least equal to XXX (here INFO) will be routed to the GlobalErrorDispatcher
+GlbErrorDispatcherLogLevel	TRACE
+
+## What's the class name of the XDAQ module acting as GlobalErrorDsipatcher ?
+GlbErrorDispatcherName		GlobalErrorDispatcher
+
+## What's the instance of the XDAQ module acting as GlobalErrorDsipatcher ?
+GlbErrorDispatcherInstance	0
+
+
+
+## --------------------------------
+## Reconfiguration Module settings
+## --------------------------------
+## Do we want to use a specific module for system reconfiguration
+UseErrorManager 			FALSE
+
+## Name of the system reconfiguration process 
+ErrorManagerName			ReconfigurationModule
+
+## Instance number of the reconfiguration process 
+ErrorManagerInstance		0

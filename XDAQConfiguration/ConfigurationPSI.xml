@@ -1,0 +1,57 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+<!-- Change this to point to the URL where you will run xdaq -->
+	<xc:Context id="0" url="http://pc4226.cern.ch:1973/">
+
+		<xc:Application class="PixelSupervisorGUI" id="50" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelSupervisorGUI/lib/linux/x86/libPixelSupervisorGUI.so</xc:Module>
+
+		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelSupervisor/lib/linux/x86/libPixelSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelFECSupervisor" id="60" instance="1" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelFECSupervisor/lib/linux/x86/libPixelFECSupervisor.so</xc:Module>
+
+		<xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="local">
+                    <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
+                       <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
+                       <DiagSystemSettings xsi:type="xsd:string">../PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
+                    </properties>
+                </xc:Application>
+                <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86/libGlobalErrorDispatcher.so</xc:Module>
+
+		<xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local">
+                    <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">
+                       <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
+                       <DiagSystemSettings xsi:type="xsd:string">../PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
+                    </properties>
+                </xc:Application>
+                <xc:Module>${XDAQ_ROOT}/pixel/PixelFEDSupervisor/lib/linux/x86/libPixelFEDSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelLTCSupervisor" id="80" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelLTCSupervisor/lib/linux/x86/libPixelLTCSupervisor.so</xc:Module>
+
+    		<xc:Application class="PixelTTCSupervisor" id="90" instance="0" network="local">
+      			<properties xmlns="urn:xdaq-application:PixelTTCSupervisor" xsi:type="soapenc:Struct">
+        			<name xsi:type="xsd:string">Board 1</name>
+			        <BusAdapter xsi:type="xsd:string">CAENUSB</BusAdapter>
+			        <Location xsi:type="xsd:integer">8</Location>
+				<Is64XCompatible xsi:type="xsd:boolean">true</Is64XCompatible>
+<!--                                <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel> -->
+			        <Configuration xsi:type="xsd:string">[file=${XDAQ_ROOT}/pixel/PixelTTCSupervisor/TTCciConfigurationPSI.txt]</Configuration> 
+			        <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>
+			        <BTimeCorrection xsi:type="xsd:unsignedLong">100</BTimeCorrection>
+			        <DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
+			</properties>
+		</xc:Application>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="local"/>
+                <xc:Module>${XDAQ_ROOT}/pixel/PixelTKFECSupervisor/lib/linux/x86/libPixelTKFECSupervisor.so</xc:Module>
+
+<!--	        <xc:Application class="PixelDCSSupervisor" id="110" instance="1" network="local"/> 
+                <xc:Module>${XDAQ_ROOT}/pixel/PixelDCSSupervisor/lib/linux/x86/libPixelDCSSupervisor.so</xc:Module> -->
+
+	</xc:Context>
+</xc:Partition>

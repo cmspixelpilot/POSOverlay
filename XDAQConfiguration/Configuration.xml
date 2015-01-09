@@ -1,0 +1,67 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+	<i2o:protocol xmlns:i2o="http://xdaq.web.cern.ch/xdaq/xsd/2004/I2OConfiguration-30">
+		<i2o:target class="EventGenerator" instance="0" tid="30"/>
+     		<i2o:target class="EVM" instance="0" tid="31"/>
+     		<i2o:target class="RU"  instance="0" tid="100"/>
+     		<i2o:target class="BU"  instance="0" tid="200"/>
+     		<i2o:target class="FilterUnit"  instance="0" tid="300"/>
+     		<i2o:target class="PixelFEDSupervisor" instance="0" tid="140"/>
+   	</i2o:protocol>
+
+	<xc:Context id="0" url="http://cmsfpix2.cern.ch:1973/">
+
+		<!-- Required for the RU Builder --> 
+          	<xc:Module>$XDAQ_ROOT/RunControl/tools/xdaq2rc/lib/linux/x86/libxdaq2rc.so</xc:Module>  
+
+         	<!-- the EVM is 40 -->
+         	<xc:Application class="EVM" id="40" instance="0" network="local">
+        		<properties xmlns="urn:xdaq-application:EVM" xsi:type="soapenc:Struct">
+        			<taClass xsi:type="xsd:string">PixelFEDSupervisor</taClass>
+              			<taInstance xsi:type="xsd:unsignedLong">0</taInstance>
+           		</properties>
+         	</xc:Application>
+
+          	<!-- the RU's start at 100 -->
+         	<xc:Application class="RU" id="100" instance="0" network="local"/>  
+         	<xc:Module>$XDAQ_ROOT/daq/evb/ru/lib/linux/x86/libRU.so</xc:Module>
+
+         	<!-- the BU's start at 200 -->
+         	<xc:Application class="BU" id="200" instance="0" network="local"/>
+         	<xc:Module>$XDAQ_ROOT/daq/evb/bu/lib/linux/x86/libBU.so</xc:Module>
+
+  		<xc:Application class="EventGenerator" id="41" instance="0" network="local"/>
+  		<xc:Module>${XDAQ_ROOT}/pixel/RUBuilderExample/EventGenerator/lib/linux/x86/libEventGenerator.so</xc:Module>
+
+		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelSupervisor/lib/linux/x86/libPixelSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelFECSupervisor" id="60" instance="1" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelFECSupervisor/lib/linux/x86/libPixelFECSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelFEDSupervisor/lib/linux/x86/libPixelFEDSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelLTCSupervisor" id="80" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/PixelLTCSupervisor/lib/linux/x86/libPixelLTCSupervisor.so</xc:Module>
+
+    		<xc:Application class="PixelTTCSupervisor" id="90" instance="0" network="local">
+      			<properties xmlns="urn:xdaq-application:PixelTTCSupervisor" xsi:type="soapenc:Struct">
+        			<name xsi:type="xsd:string">Board 1</name>
+			        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+			        <Location xsi:type="xsd:integer">2</Location>
+				<Is64XCompatible xsi:type="xsd:boolean">false</Is64XCompatible>
+			        <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>
+			        <BTimeCorrection xsi:type="xsd:unsignedLong">100</BTimeCorrection>
+			        <DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
+		      </properties>
+		    </xc:Application>
+	    <xc:Module>${XDAQ_ROOT}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xc:Module>
+
+		<xc:Application class="FilterUnit" id="44" instance="0" network="local"/>
+		<xc:Module>${XDAQ_ROOT}/pixel/RUBuilderExample/FilterUnit/lib/linux/x86/libFilterUnit.so</xc:Module>
+     		<xc:Module>$XDAQ_ROOT/daq/evb/evm/lib/linux/x86/libEVM.so</xc:Module>
+
+	</xc:Context>
+</xc:Partition>

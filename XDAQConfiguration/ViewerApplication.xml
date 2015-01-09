@@ -1,0 +1,16 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+  <xc:Context id="0" url="http://vmepcs2b18-17.cms:2002/">
+
+    <xc:Application class="AjaxLogReader" id="21" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:AjaxLogReader" xsi:type="soapenc:Struct">
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/May09/LogViewer_offline.set</DiagSystemSettings>
+     </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/DiagSystem/modules/AjaxLogReader/lib/linux/x86/libAjaxLogReader.so</xc:Module>
+
+  </xc:Context>
+
+</xc:Partition>

@@ -1,0 +1,134 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+
+
+  <xc:Context id="0" url="http://vmepcs2b18-11.cms:1973/">
+
+    <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct">
+        <UseRunInfo xsi:type="xsd:boolean">true</UseRunInfo>
+        <DataBaseConnection xsi:type="xsd:string">jdbc:oracle:thin:@cmsonr1-v:10121/cms_rcms.cern.ch</DataBaseConnection>
+        <DataBaseUsername xsi:type="xsd:string">pixelpro</DataBaseUsername>
+        <RunSequence xsi:type="xsd:string">cms.pixel.pib</RunSequence>        		        
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/XDAQConfiguration_CRUZET2/PixelSupervisor_noLED.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
+    <xc:Module>/opt/xdaq/lib/libxdaq2rc.so</xc:Module>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/PixelSupervisor/lib/linux/x86/libPixelSupervisor.so</xc:Module>        
+
+  </xc:Context>
+
+  <xc:Context id="0" url="http://vmepcs2b18-11.cms:1974">
+  
+    <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="local" group="dcs">
+      <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct">
+        <configuration xsi:type="xsd:string">/nfshome0/pixelpro/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
+      </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/PixelDCSInterface/lib/linux/x86/libPixelDCSInterface.so</xc:Module>
+
+  </xc:Context>
+
+  <xc:Context id="0" url="http://vmepcs2b18-17.cms:1974">
+
+    <xc:Application class="PixelDCSSupervisor" id="110" instance="0" network="local" group="dcs">
+      <properties xmlns="urn:xdaq-application:PixelDCSSupervisor" xsi:type="soapenc:Struct">
+        <pvssFSMNodeName xsi:type="xsd:string">CMS_Pixel</pvssFSMNodeName>
+        <pvssFSMNodeType xsi:type="xsd:string">CMS_Pixel_DetectorNode</pvssFSMNodeType>
+        <!-- pvssFSMNodeName xsi:type="xsd:string">CMS_Pixel_Endcap</pvssFSMNodeName -->
+        <!-- pvssFSMNodeType xsi:type="xsd:string">CMS_Pixel_PartitionNode</pvssFSMNodeType -->
+        <pvssFSMNodeOwnership xsi:type="xsd:string">manual</pvssFSMNodeOwnership>
+        <!-- pvssFSMNodeOwnership xsi:type="xsd:string">included</pvssFSMNodeOwnership -->
+        <configuration xsi:type="xsd:string">/nfshome0/veelken/TriDAS/pixel/PixelDCSSupervisor/xml/supervisor.xml</configuration>
+      </properties>
+    </xc:Application>
+    <xc:Module>${BUILD_HOME}/pixel/PixelDCSSupervisor/lib/linux/x86/libPixelDCSSupervisor.so</xc:Module>
+
+  </xc:Context>
+
+  <xc:Context id="1" url="http://vmepcs2b18-12.cms:1973/">
+  
+    <xc:Application class="PixelFEDSupervisor" id="70" instance="3" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/XDAQConfiguration_CRUZET2/PixelFEDSupervisor18_13_noLED.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/PixelFEDSupervisor/lib/linux/x86/libPixelFEDSupervisor.so</xc:Module>
+
+  </xc:Context>
+
+
+  <xc:Context id="2" url="http://vmepcs2b18-15.cms:1974/">
+
+    <xc:Application class="PixelFECSupervisor" id="60" instance="2" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelFECSupervisor" xsi:type="soapenc:Struct">		       
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/XDAQConfiguration_CRUZET2/PixelFECSupervisor_noLED.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/PixelFECSupervisor/lib/linux/x86/libPixelFECSupervisor.so</xc:Module>
+
+  </xc:Context>
+
+
+  <xc:Context id="3" url="http://vmepcs2b18-15.cms:1973/">
+
+    <xc:Application class="PixelTKFECSupervisor" id="100" instance="2" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelTKSupervisor" xsi:type="soapenc:Struct">		        
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/XDAQConfiguration_CRUZET2/PixelTKFECSupervisor_noLED.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/PixelTKFECSupervisor/lib/linux/x86/libPixelTKFECSupervisor.so</xc:Module>
+
+  </xc:Context>
+  
+
+  <xc:Context id="4" url="http://vmepcs2b16-10.cms:1973/">
+
+    <xc:Application class="PixelTTCSupervisor" id="90" instance="2" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelTTCSupervisor" xsi:type="soapenc:Struct">
+        <name xsi:type="xsd:string">Board 1</name>
+        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+        <Location xsi:type="xsd:integer">19</Location>
+        <Is64XCompatible xsi:type="xsd:boolean">true</Is64XCompatible>
+        <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>
+        <BTimeCorrection xsi:type="xsd:unsignedLong">100</BTimeCorrection>
+        <DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/XDAQConfiguration_CRUZET2/PixelTTCSupervisor_noLED.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xc:Module>
+
+  </xc:Context>
+  
+  <!--xc:Context id="4" url="http://vmepcs2b16-10.cms:1974/">
+  
+    <xc:Application class="PixelLTCSupervisor" id="91" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelLTCSupervisor" xsi:type="soapenc:Struct">
+        <name xsi:type="xsd:string">Board 1</name>
+        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+        <Location xsi:type="xsd:integer">13</Location>
+        <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+        <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>
+        <BTimeCorrection xsi:type="xsd:unsignedLong">99</BTimeCorrection>
+        <SlinkSrcId xsi:type="xsd:unsignedLong">824</SlinkSrcId>
+      </properties>
+    </xc:Application>
+    <xc:Module>/nfshome0/pixelpro/TriDAS/pixel/lib/libPixelLTCSupervisor.so</xc:Module>
+  
+  </xc:Context -->
+
+  <xc:Context id="6" url="http://srv-c2c03-16.cms:9923">
+    <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
+  </xc:Context>
+
+  <xc:Context url="http://cmsrc-pixel.cms:17001/rcms/services/replycommandreceiver">
+    <xc:Application class="RCMSStateListener" id="50" instance="0" network="local" />
+  </xc:Context>
+
+</xc:Partition>
+

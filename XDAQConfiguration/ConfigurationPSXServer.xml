@@ -1,0 +1,19 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+
+        <xc:Context id="0" url="http://vuslink2.cern.ch:1981"> 
+                <xc:Application class="psx::Application" id="33" instance="0" network="local" group="dcs">
+                        <properties xmlns="urn:xdaq-application:psx::Application" xsi:type="soapenc:Struct">
+                                <projectName xsi:type="xsd:string">psxServer_20070911</projectName>
+                                <projectNumber xsi:type="xsd:string">11</projectNumber>
+                                <databaseManager xsi:type="xsd:string">PIXEL07.cern.ch:4897</databaseManager>
+                                <eventManager xsi:type="xsd:string">PIXEL07.cern.ch:4998</eventManager>
+                                <dns xsi:type="xsd:string">vuslink2.cern.ch</dns>
+                        </properties>
+                </xc:Application>
+                <xc:Module>${BUILD_HOME}/daq/psx/sapi/lib/linux/x86/libpsxsapi.so</xc:Module>
+                <xc:Module>${BUILD_HOME}/daq/psx/mapi/lib/linux/x86/libpsxmapi.so</xc:Module>
+                <xc:Module>${BUILD_HOME}/daq/psx/lib/linux/x86/libpsx.so</xc:Module>
+        </xc:Context>
+
+</xc:Partition>
