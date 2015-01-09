@@ -1355,6 +1355,74 @@ void PixelTKFECSupervisor::stateConfigured(toolbox::fsm::FiniteStateMachine &fsm
 
 }
 //==========================================================================================================================
+bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
+					  tscType8 ringAddress,
+					  tscType8 ccuAddressEnable,
+					  tscType8 ccuAddressPgood,
+					  tscType8 piaChannelAddress,
+					  bool turnOn,
+					  unsigned int portNumber) {
+
+  bool success = true;
+  
+  keyType enableKey = buildCompleteKey(fecAddress, ringAddress, ccuAddressEnable, piaChannelAddress, 0);
+  keyType pgoodKey  = buildCompleteKey(fecAddress, ringAddress, ccuAddressPgood,  piaChannelAddress, 0);
+
+  try {
+    fecAccess_->addPiaAccess(enableKey, MODE_SHARE); // JMTBAD use PiaChannelAccess
+    fecAccess_->addPiaAccess(pgoodKey,  MODE_SHARE);
+
+    unsigned int bits    = 0x3 << (portNumber * 2);
+    unsigned int invBits = 0xFF ^ bits;
+
+    // Set just the two pins we want to input for pgood.
+    fecAccess_->setPiaChannelDDR(pgoodKey, invBits & fecAccess_->getPiaChannelDDR(pgoodKey));
+
+    // Sleep 5 ms before reading back the pgood bit.
+    usleep(5000);
+      
+    // Read the pgood bit to check state before doing anything.
+    unsigned int initPgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
+    bool initPgood = ((initPgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
+    cout << "Initial pgoodVal = 0x" << std::hex << initPgoodVal << " = " << (initPgood ? "PGOOD" : "NOT PGOOD") << "\n";
+    if (turnOn + initPgood != 1) {
+      cout << " but asked to turn " << (turnOn ? "ON" : "OFF") << " ; bailing out!!!";
+      success = false;
+    }
+    else {
+      // Set just the two pins we want to output for enable;
+      fecAccess_->setPiaChannelDDR(enableKey, bits | fecAccess_->getPiaChannelDDR(enableKey));
+      // and set the inverted bits in the data reg.
+      unsigned int initEnableVal = fecAccess_->getPiaChannelDataReg(enableKey); // JMTBAD the two lines below ere using the pgood values???
+      if (turnOn)
+	fecAccess_->setPiaChannelDataReg(enableKey, invBits & initEnableVal);
+      else
+	fecAccess_->setPiaChannelDataReg(enableKey, bits    | initEnableVal);
+    
+      // Sleep 5 ms before reading back the pgood bit.
+      usleep(5000);
+
+      // Read back the pgood bit and report status. 
+      unsigned pgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
+      bool pgood = ((pgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
+      cout << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << "\n";
+      if (turnOn + pgood != 1) {
+	cout << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!";
+	success = false;
+      }
+    }
+
+    fecAccess_->removePiaAccess(enableKey);
+    fecAccess_->removePiaAccess(pgoodKey);
+  }
+  catch (FecExceptionHandler e) {
+    cout << std::string("Exception caught when doing PIA access: ") + e.what();
+    success = false;
+  }
+    
+  return success;
+}
+
 void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm) //throw (toolbox::fsm::exception::Exception) 
 {
 
@@ -1735,19 +1803,24 @@ end of redundancy ring comment */
 	theTKFECCalibrationBase_ = calibFactory.getTKFECCalibration(mode, pixTKFECSupConfPtr, soapCmdrPtr);
 	
       }
-      
-      
-      
-      std::cout << "Disable the PIA ports "<< std::endl;        
+
+      //std::cout << "Disable the PIA ports "<< std::endl;        
       //program the CCU (this is to disable PIA resets in order not to have the fire by themselves)
       for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); 
 	   ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
+
+	// JMTBAD this needs to be configurable in software. Loop over
+	// ccu or some other config objects and find out whether we're
+	// supposed to send PIA commands to enable DC-DC. For now just do it
+	//printf("JMT pixDCDC slot %i ring %i\n", slot, ringiter->first);
+	//pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
 
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop
 
 	  if ( ccuiter->second == false) continue; //this ccu is bad, so skip it
 	  //	if ( ccuiter->first == dummyAddress ) continue; //skip dummy
+#if 0      
 
 #ifdef MYTEST
 	  // This is a special test to check the PIA ports, use unused port 0x33
@@ -1798,6 +1871,7 @@ end of redundancy ring comment */
 	  // 	fecAccess_->setPiaChannelDDR(accessKey,0xFF); //seems to cause a reset
 	  //	printPIAinfo(slot,ringiter->first,ccuiter->first,0x30);
 
+#endif
 
 	}
       }
