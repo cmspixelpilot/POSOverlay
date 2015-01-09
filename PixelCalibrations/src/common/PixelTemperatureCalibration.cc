@@ -554,7 +554,8 @@ void PixelTemperatureCalibration::archiveDACSettings(std::ostream& stream) const
 	    //dacSettings_readOutChip->writeASCII(std::cout);
 
 	    stream << "  <" << (*readOutChip)->rocname() << ">" << std::endl;
-
+	    assert(0);
+#if 0
 	    stream << "   <Vdd>" << (int)dacSettings_readOutChip->getVdd() << "</Vdd>" << std::endl;
 	    stream << "   <Vana>" << (int)dacSettings_readOutChip->getVana() << "</Vana>" << std::endl;
 	    stream << "   <Vsf>" << (int)dacSettings_readOutChip->getVsf() << "</Vsf>" << std::endl;
@@ -582,7 +583,7 @@ void PixelTemperatureCalibration::archiveDACSettings(std::ostream& stream) const
 	    stream << "   <CalDel>" << (int)dacSettings_readOutChip->getCalDel() << "</CalDel>" << std::endl;	    
 	    stream << "   <WBC>" << (int)dacSettings_readOutChip->getWBC() << "</WBC>" << std::endl;
 	    stream << "   <ControlRegister>" << (int)dacSettings_readOutChip->getControlRegister() << "</ControlRegister>" << std::endl;
-
+#endif
 	    stream << "  </" << (*readOutChip)->rocname() << ">" << std::endl;
 	  }
 	}

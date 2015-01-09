@@ -53,6 +53,8 @@ PixelFEDPHRangeCalibration::PixelFEDPHRangeCalibration(const PixelFEDSupervisorC
 
 xoap::MessageReference PixelFEDPHRangeCalibration::execute(xoap::MessageReference msg)
 {
+  cout << "JMT need to implement for digital ROC\n";
+  assert(0);
 	Attribute_Vector parameters(2);
 	parameters[0].name_="WhatToDo";
 	parameters[1].name_="StateNum";
@@ -519,19 +521,19 @@ void PixelFEDPHRangeCalibration::Analyze()
 				  delta_DAC_values[dac].push_back( (int)(newValue) - (int)(DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getDac(dac)) );
 				  new_DAC_values[dac].push_back( newValue );
 
-				  if(dac.compare(k_DACName_VIbias_PH)==0)
+				  if(0) //dac.compare(k_DACName_VIbias_PH)==0)
 				    {
 				      theBranch_sum.new_VIbias_PH=newValue;
 				      theBranch_sum.delta_VIbias_PH=(int)(newValue)-(int)(DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getDac(dac));
-				    }else if(dac.compare(k_DACName_VOffsetOp)==0)
+				    }else if(0) //dac.compare(k_DACName_VOffsetOp)==0)
 				    {
 				      theBranch_sum.new_VOffsetOp=newValue;
 				      theBranch_sum.delta_VOffsetOp=(int)(newValue)-(int)(DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getDac(dac));
-				    }else if(dac.compare(k_DACName_VIon)==0)
+				    }else if(0) //dac.compare(k_DACName_VIon)==0)
 				    {
 				      theBranch_sum.new_VIon=newValue;
 				      theBranch_sum.delta_VIon=(int)(newValue) - (int)(DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getDac(dac));
-				    }else if(dac.compare(k_DACName_VOffsetRO)==0)
+				    }else if(0) //dac.compare(k_DACName_VOffsetRO)==0)
 				    {
 				      theBranch_sum.new_VOffsetRO=newValue;
 				      theBranch_sum.delta_VOffsetRO=(int)(newValue) - (int)(DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getDac(dac));

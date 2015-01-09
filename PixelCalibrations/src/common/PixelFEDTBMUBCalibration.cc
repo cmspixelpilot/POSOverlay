@@ -44,6 +44,7 @@ PixelFEDTBMUBCalibration::PixelFEDTBMUBCalibration(const PixelFEDSupervisorConfi
 
 xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference msg)
 {
+  assert(0);
 	typedef unsigned char bits8;
 
 	PixelCalibConfiguration* tempCalibObject=dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
@@ -339,22 +340,22 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 			{
 				bits8 new_dac_value = (bits8)(scanInfo.scanValue( *dac_itr, new_scanStep_value )+0.5); // round to the nearest integer
 				new_TBMDAC_values[*dac_itr].push_back(new_dac_value);
-				if      ( *dac_itr == PixelTBMDACScanInfo::kAnalogInputBias )
-				{
-					delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogInputBias());
-					TBMSettingsForThisModule->setAnalogInputBias( new_dac_value );
-				}
-				else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputBias )
-				{
-					delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputBias());
-					TBMSettingsForThisModule->setAnalogOutputBias( new_dac_value );
-				}
-				else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputGain )
-				{
-					delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputGain());
-					TBMSettingsForThisModule->setAnalogOutputGain( new_dac_value );
-				}
-				else assert(0);
+				//if      ( *dac_itr == PixelTBMDACScanInfo::kAnalogInputBias )
+				//{
+				//	delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogInputBias());
+				//	TBMSettingsForThisModule->setAnalogInputBias( new_dac_value );
+				//}
+				//else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputBias )
+				//{
+				//	delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputBias());
+				//	TBMSettingsForThisModule->setAnalogOutputBias( new_dac_value );
+				//}
+				//else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputGain )
+				//{
+				//	delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputGain());
+				//	TBMSettingsForThisModule->setAnalogOutputGain( new_dac_value );
+				//}
+				//else assert(0);
 			}
 
 			// Write out new file.

@@ -52,6 +52,7 @@ PixelFEDROCUBEqualizationCalibration::PixelFEDROCUBEqualizationCalibration(const
 
 xoap::MessageReference PixelFEDROCUBEqualizationCalibration::execute(xoap::MessageReference msg)
 {
+  assert(0);
 	Attribute_Vector parameters(2);
 	parameters[0].name_="WhatToDo";
 	parameters[1].name_="StateNum";
@@ -165,7 +166,7 @@ void PixelFEDROCUBEqualizationCalibration::RetrieveData(unsigned int state)
 					continue;
 				}
 
-				unsigned int VIbias_DAC_value = tempCalibObject->scanValue(k_DACName_VIbias_DAC, state , ROCsOnThisChannel[ROCNumber]);
+				unsigned int VIbias_DAC_value = 0; //tempCalibObject->scanValue(k_DACName_VIbias_DAC, state , ROCsOnThisChannel[ROCNumber]);
 
 				// Fill in UB and B readings for this ROC.
 				ROC_UB_[ROCsOnThisChannel[ROCNumber]].addEntry(VIbias_DAC_value, decodedRawData.ROCOutput(ROCNumber).header().UB());
@@ -213,6 +214,7 @@ class PixelROCOrderer
 
 void PixelFEDROCUBEqualizationCalibration::Analyze()
 {
+#if 0
 	// Remove gray background from plots.
 	TStyle plainStyle("Plain", "a plain style");
 	plainStyle.SetOptStat(0); // Suppress statistics box.
@@ -582,6 +584,7 @@ void PixelFEDROCUBEqualizationCalibration::Analyze()
 	
 	outputFile.Write();
 	outputFile.Close();
+#endif
 }
 
 void PixelFEDROCUBEqualizationCalibration::initializeFED(){
