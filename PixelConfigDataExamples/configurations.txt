@@ -1,0 +1,470 @@
+key 0						# Baseline Calibration of FED with Pixels
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 0
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 1						# Address Level Calibration of FED with large set of Pixels
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 1
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 2						# Address Level Calibration of FED with small set of Pixels
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 2
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 3						# Pixel Alive
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 3
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 4						# Gain Calibration
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 4
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 5						# S-curve
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 5
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 6						# Clock phase and delay calibration
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 6
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 7                                           # Delay25 SDa RSDa scan
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 7
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 8                                           # VcThr CalDelay scan
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 8
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 9						# Physics
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 10						# Baseline Calibration of FED with Pixels
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 0
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 11						# Address Level Calibration of FED with large set of Pixels
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 1
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 12						# S-curve
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 9
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 13						# Gain Calibration
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 4
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 14						# Pixel Alive
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 3
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 15                                         # PeriodicL1A
+ttcciconfig 1
+
+key 16                                         # PeriodicCalSync
+ttcciconfig 2
+
+key 17                                         # PeriodicReset
+ttcciconfig 3
+
+key 18						# Baseline calibration with test dac
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 1
+dac 0
+mask 0
+trim 0
+calib 10
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 19						# ROCUB equalization
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 20
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+
+key 20						# TBMUB
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 19
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 21                                           # VcThr CalDelay scan FIFO1
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 13
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 22						# AOH bias
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 18
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 23                                         # TemperatureCalibration of last DAC + Portcard DCU ADC values
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+tkfecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 21
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+
+key 24						# Vsf
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 24
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+maxvsf 0
+
+key 25						# VHldDel
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 25
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 26						# AOHAndFEDChannelMappingTest
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 26
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 27						# LinearityVsVsf
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 27
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+maxvsf 0
+
+key 28						# AOHGain
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 28
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+maxvsf 0
+
+key 29						# PHRange
+detconfig 0
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 29
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+maxvsf 0
