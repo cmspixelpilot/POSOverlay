@@ -54,7 +54,7 @@ detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 0
+fedcard 1
 dac 0
 mask 0
 trim 0
@@ -122,14 +122,14 @@ detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 0
+fedcard 4
 dac 0
 mask 0
 trim 0
 calib 7
-tbm 0
+tbm 1
 portcard 0
-portcardmap 0
+portcardmap 2
 ttcciconfig 0
 ltcconfig 0
 tkfecconfig 0
@@ -139,7 +139,7 @@ detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 0
+fedcard 1
 dac 0
 mask 0
 trim 0
@@ -235,19 +235,19 @@ ttcciconfig 0
 ltcconfig 0
 tkfecconfig 0
 
-key 14						# Pixel Alive
-detconfig 0
-nametranslation 0
+key 14						# Pixel Alive 
+detconfig 2 # 2 for BmI, 4 for BmO, 5 for both
+nametranslation 2 # 0 for BmI, 1 for BmO, 2 for Both
 fedconfig 0
 fecconfig 0
-fedcard 0
+fedcard 4 # 2 for BmO, 3 for BmI, 4 for Both
 dac 0
 mask 0
 trim 0
-calib 3
-tbm 0
+calib 14 # 10 for all BmI modules, 12 for all BmO modules ,13 for all modules
+tbm 1
 portcard 0
-portcardmap 0
+portcardmap 2 # 0 for BmI, 1 for BmO, 2 for Both
 ttcciconfig 0
 ltcconfig 0
 tkfecconfig 0
@@ -468,3 +468,71 @@ ttcciconfig 0
 ltcconfig 0
 tkfecconfig 0
 maxvsf 0
+
+key 30						# Pixel Alive
+detconfig 3
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 3
+dac 0
+mask 0
+trim 0
+calib 30
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 31                                           # VcThr CalDelay scan
+detconfig 3
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 3
+dac 0
+mask 0
+trim 0
+calib 31
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 32                                           # VcThr CalDelay scan
+detconfig 2
+nametranslation 0
+fedconfig 0
+fecconfig 0
+fedcard 2
+dac 0
+mask 0
+trim 0
+calib 32
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 33						# TBMPhaseScan using Pixel Alive
+detconfig 2 # 2 for BmI, 4 for BmO
+nametranslation 2
+fedconfig 0
+fecconfig 0
+fedcard 4
+dac 0
+mask 0
+trim 0
+calib 33
+tbm 1
+portcard 0
+portcardmap 2
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
