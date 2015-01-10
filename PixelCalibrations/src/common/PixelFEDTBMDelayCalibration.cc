@@ -116,7 +116,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned int state)
 			// Skip if we're in singleROC mode, and this ROC is not being calibrated right now.
 			if ( !(tempCalibObject->scanningROCForState(roc, state)) ) continue;
 
-			std::cout << "JAZZY JMT got a hit on " << roc << " in channel " << channel << " at col " << decode.column(ihit) << " row " << decode.row(ihit);
+			std::cout << "hit " << roc << " ch " << channel << " col " << decode.column(ihit) << " row " << decode.row(ihit);
 
 			std::map<std::string, unsigned int> currentDACValues;
 			for ( unsigned int dacNum = 0; dacNum < tempCalibObject->numberOfScanVariables(); dacNum++ )
@@ -125,8 +125,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned int state)
 				{
 					currentDACValues[tempCalibObject->scanName(dacNum)] = tempCalibObject->scanValue(tempCalibObject->scanName(dacNum), state, roc);
 				}
-				if (tempCalibObject->scanName(dacNum).compare(0,3,"TBM") == 0)
-				  cout << " | current " << tempCalibObject->scanName(dacNum) << " is " << tempCalibObject->scanValue(tempCalibObject->scanName(dacNum), state, roc);
+				//				if (tempCalibObject->scanName(dacNum).compare(0,3,"TBM") == 0)
+				cout << " " << tempCalibObject->scanName(dacNum) << " " << tempCalibObject->scanValue(tempCalibObject->scanName(dacNum), state, roc);
 			}
 			cout << "\n";
 			
