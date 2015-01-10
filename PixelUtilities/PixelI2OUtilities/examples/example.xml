@@ -1,0 +1,16 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+
+   <i2o:protocol xmlns:i2o="http://xdaq.web.cern.ch/xdaq/xsd/2004/I2OConfiguration-30">
+
+     <i2o:target class="I2OExample"  instance="0" tid="100"/>
+     <i2o:target class="I2OExample"  instance="1" tid="101"/>
+
+   </i2o:protocol>	
+
+   <xc:Context url="http://localhost:1972">
+	  <xc:Application class="I2OExample" id="10" instance="0" network="local"/>
+	  <xc:Application class="I2OExample" id="11" instance="1" network="local"/>
+	  <xc:Module>${XDAQ_ROOT}/pixel/PixelUtilities/PixelI2OUtilities/examples/lib/linux/x86/libI2OExample.so</xc:Module>
+   </xc:Context>
+</xc:Partition>

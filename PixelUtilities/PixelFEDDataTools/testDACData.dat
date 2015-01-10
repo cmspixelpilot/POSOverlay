@@ -1,0 +1,7 @@
+TBMHeader (15)
+ROCHeader (5)
+PixelHit (30, 15, 300)
+PixelHit (40, 20, 200)
+ROCHeader (5)
+PixelHit (20, 11, 350)
+TBMTrailer (1)

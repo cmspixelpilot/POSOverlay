@@ -1,0 +1,14 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+
+	<xc:Context id="0" url="http://localhost.localdomain:1973/">
+
+          	<xc:Module>$XDAQ_ROOT/pixel/PixelUtilities/PixelGUIUtilities/examples/dynamic-app-example/lib/$XDAQ_OS/$XDAQ_PLATFORM/libDynamicAppTest.so</xc:Module>  
+
+         	<!-- the EVM is 40 -->
+         	<xc:Application class="tests::MyDynamicApp" id="40" instance="0" network="local">
+         	</xc:Application>
+
+	</xc:Context>
+</xc:Partition>

@@ -1,0 +1,38 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+	<xc:Context id="0" url="http://ppdnwpixelsoft.fnal.gov:1973/">
+
+                <xc:Application class="PixelDCSCreateDataPoints" id="200" instance="0" network="local">
+	                <properties xmlns="urn:xdaq-application:PixelDCSCreateDataPoints" xsi:type="soapenc:Struct">
+                                <oracleViewName_dpNamesFED xsi:type="xsd:string">urn:tstore-view-SQL:dpNamesView</oracleViewName_dpNamesFED>
+                                <oracleTableName_dpNamesFED xsi:type="xsd:string">FEDTODCSDPNAMES</oracleTableName_dpNamesFED>
+                                <oracleViewName_dpNamesTrkFEC_Temperatures xsi:type="xsd:string">urn:tstore-view-SQL:dpNamesView</oracleViewName_dpNamesTrkFEC_Temperatures>
+                                <oracleTableName_dpNamesTrkFEC_Temperatures xsi:type="xsd:string">FEDTODCSDPNAMES</oracleTableName_dpNamesTrkFEC_Temperatures>
+                                <oracleViewName_dpNamesTrkFEC_Voltages xsi:type="xsd:string">urn:tstore-view-SQL:dpNamesView</oracleViewName_dpNamesTrkFEC_Voltages>
+                                <oracleTableName_dpNamesTrkFEC_Voltages xsi:type="xsd:string">FEDTODCSDPNAMES</oracleTableName_dpNamesTrkFEC_Voltages>
+		      	</properties>
+                </xc:Application>
+                <xc:Module>${XDAQ_ROOT}/pixel/PixelUtilities/PixelGUIUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelGUIUtilities.so</xc:Module>
+                <xc:Module>${XDAQ_ROOT}/daq/tstore/lib/linux/x86/libtstore.so</xc:Module>
+                <xc:Module>${XDAQ_ROOT}/daq/tstore/tstore/lib/linux/x86/libTStore.so</xc:Module>
+                <xc:Module>${XDAQ_ROOT}/pixel/PixelUtilities/PixelDCSUtilities/lib/linux/x86/libPixelDCSUtilities.so</xc:Module>
+
+	</xc:Context>
+
+        <xc:Context url="http://cannes.fnal.gov:1972/pvss">
+                <xc:Application class="pvss" id="31" instance="0" network="local" service="psx"/>
+        </xc:Context>  
+
+        <!--xc:Context url="http://cannes.fnal.gov:1972/smi">
+                <xc:Application class="smi" id="31" instance="0" network="local"/>
+        </xc:Context>
+        -->
+       
+        <!--xc:Context url="http://cannes.fnal.gov:1972">
+                <xc:Application class="pvss" id="33" instance="0" network="local" service="psx"/>
+                <xc:Application class="smi" id="34" instance="0" network="local" service="smi"/>
+        </xc:Context>  
+        -->
+
+</xc:Partition>
