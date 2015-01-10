@@ -127,7 +127,7 @@ dac 0
 mask 0
 trim 0
 calib 7
-tbm 1
+tbm 0
 portcard 0
 portcardmap 2
 ttcciconfig 0
@@ -245,7 +245,7 @@ dac 0
 mask 0
 trim 0
 calib 14 # 10 for all BmI modules, 12 for all BmO modules ,13 for all modules
-tbm 1
+tbm 0
 portcard 0
 portcardmap 2 # 0 for BmI, 1 for BmO, 2 for Both
 ttcciconfig 0
@@ -530,7 +530,7 @@ dac 0
 mask 0
 trim 0
 calib 33
-tbm 1
+tbm 0
 portcard 0
 portcardmap 2
 ttcciconfig 0
