@@ -1,31 +1,14 @@
 ConfigurationAliases
-AOHAndFEDChannelMappingTest 26 ;
 Delay25 7 ;
-FEDBaselineCalibrationWithPixels 10 ;
-FEDBaselineCalibrationWithTestDACs 18 ;
-ClockPhaseCalibration 6 ;
-AOHBias 22 ;
-AOHGain 28 ;
-TBMUB 20 ;
-ROCUBEqualization 19 ;
-AddressLevelCalibration 11 ;
-VcThrCalDel 8 ;
-VcThrCalDelFIFO1 21 ;
-LinearityVsVsf 27 ;
-Vsf 24 ;
-VHldDel 25 ;
-PHRange 29 ;
-TemperatureCalibration 23 ;
 PixelAlive 14 ;
-GainCalibration 13 ;
 SCurve 12 ;
-Physics 9 ;
+TBMDelay 33 ;
 TTCPeriodicL1A 15 ;
 TTCPeriodicCalSync 16 ;
 TTCPeriodicReset 17 ;
 VersionAliases
-detconfig 0 Default ;
 nametranslation 0 Default ;
+detconfig 0 Default ;
 fedconfig 0 Default ;
 fecconfig 0 Default ;
 fedcard 0 Default ;
