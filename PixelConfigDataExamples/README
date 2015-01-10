@@ -1,0 +1,59 @@
+Description of configuration files:
+aliases.txt 
+              list of configurations to be used by xdaq
+              each alias points to a key number
+
+configuations.txt
+              configurations listed by key number
+              for each key configurations are fully spec'd
+              by name and version number
+              e.g. dac 1 refers files in ./dac/1/
+
+calib/
+              file specifying calibration sequences
+              e.g. pattern of pixels to inject, range of Vcal,
+              number of events at each setting
+
+dac/
+              file for each module/panel with dac settings
+              organized by ROC
+
+detectconfig/
+              list of panels/modules to configure
+              module names must be found in nametranslation
+
+fecconfig/
+              list of pixel fecs in use and VME addresses
+
+fedcard/
+              params_fed_N.dat contains all FED parameters
+              one such file for each FED in the configuration
+
+fedconfig/
+              list of FEDs in use and VME addresses
+
+mask/
+              file for each module/panel with pixel mask data
+              organized by ROC
+
+nametranslation/
+              map from module/panel names to electronics address
+              includes control (FEC) addressing and
+              readout (FED) addressing
+
+portcard/
+              one file for each portcard
+              data to be sent via TKFEC to portcards
+              (defined by CCU address and I2C channel)
+              currently a simple list of address and data
+
+portcardmap/
+              mapping from module/panel name to portcard name
+              includes AOH channel (1-6)
+
+tbm/
+              file for each module/panel with tbm settings
+
+trim/
+              file for each module/panel with trim data
+              organized by ROC
