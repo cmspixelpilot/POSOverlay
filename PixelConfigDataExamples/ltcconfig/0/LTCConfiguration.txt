@@ -1,0 +1,270 @@
+###########################################################
+#
+# LTC configuration.
+#
+# (from LTCControl::WriteConfigurationFile())
+#
+# Authors: Tim Christiansen, Emlyn Corrin, 2005
+#
+# Automatically created with LTC::WriteConfiguration() 
+# from current configuration on Wed Jun 28 10:58:14 2006 
+# with LTC software version 5.26
+# 
+# (Comments (will be ignored) are indicated by "#". Lines
+#  can be split using the '\' character at end of 1st line.)
+# 
+###########################################################
+
+# QPLL Clock Control: 
+# parameters: EXTERNAL|INTERNAL
+#             Reset=YES|NO
+#             AutoRestart=YES|NO
+#             FreqBits=0x?? (4 (6) bits for EXTERNAL (INTERNAL) mode)
+# e.g.
+# QPLL EXTERNAL AutoRestart=YES FreqBits=0x0	# for external clock
+# QPLL INTERNAL FreqBits=0x20
+QPLL INTERN Reset=NO AutoRestart=YES FreqBits=0x35
+
+# Trigger Selection (key word: TRIGGERS):
+# parameters are: 0..5 for external triggers, RAM for RAM-Trigger,
+# and CYCLIC to enable cyclic triggers
+# E.G.: 
+# TRIGGERS 0 2 5 RAM CYCLIC # enables RAM, CYCLIC and ext. triggers 0,2, & 5
+TRIGGERS RAM
+
+# GIVE EXTERNAL TRIGGERS A RECOGNIZABLE NAME:
+# e.g.: HWTRIGGERNAME i Cosmic_Trigger # i out of [0,5)
+# (don't use blanks or symbols like <,>,#,\)
+HWTRIGGERNAME 0 Trig0_NIM	# Name of 1-th HW trigger (nim)
+HWTRIGGERNAME 1 Trig1_NIM	# Name of 2-th HW trigger (nim)
+HWTRIGGERNAME 2 Trig2_LVDS	# Name of 3-th HW trigger (lvds)
+HWTRIGGERNAME 3 Trig3_LVDS	# Name of 4-th HW trigger (lvds)
+HWTRIGGERNAME 4 Trig4_LVDS	# Name of 5-th HW trigger (lvds)
+HWTRIGGERNAME 5 Trig5_LVDS	# Name of 6-th HW trigger (lvds)
+
+# EXTERNAL TRIGGER DELAYS
+# Set delays (between 0 and 15.5 in steps of 0.5 clocks) for
+# external triggers using e.g.: 
+# TRIGGERDELAY 3 5.5	# 5.5 clock delay for ext. trig. no. 3
+
+# To enable triggers only for fixed size bursts
+# L1ATICKET n         sets burst size to n
+# L1ATICKET 0 or OFF  disables burst mode
+L1ATICKET 0
+
+# RAM TRIGGER SECTION (needs arg "RAM" in trigger selection "TRIGGERS")
+# Set (last) trigger to 1 to stop trigger sequence.
+# (last) trigger = 0 ==> repetitive sequence (default)
+# e.g. with N>0 lines like: 'TRIGGER_INTERVAL 0x20'
+# or with 'TRIGGER_FREQUENCY_HZ 1.5 MODE=EQUI'
+# where 'MODE' can be 'EQUI' (equidistant) or 'RANDOM'
+# TRIGGER_INTERVAL 0x5784
+TRIGGER_FREQUENCY_HZ 100 MODE=RANDOM   # in Hz, MODE=EQUI or MODE=RANDOM
+
+# Timing of VME-BGOs (bunch crossing): e.g. "VMEBGOBX 150"
+VMEBGOBX 99
+
+# LTC MONITORING (sampling through VME):
+# usage: MONITORING enable|disable INTERVAL=n
+# where n is the interval between 2 reads in seconds.
+MONITORING disable INTERVAL=10
+
+# Bit-mask of plots to be provided (0x0=none, 0xffff=all):
+PLOTMASK 0xf   # 0xf -> 0 1 2 3
+
+# Set the default path where images are to be stored (for monitoring):
+SAVEDIRECTORY /tmp # Path for images
+
+# Path where to store the runlog (optional):
+# RUNLOG /path/to/logfile
+
+# Do you want to dump the event FIFO (optional):
+# Usage: SPYFIFODUMP ON|OFF /path/to/file # run number will be added to file
+
+# BST (Beam Synchronous GPS Time):
+# If no BST signal from the LHC is present, the LTC can take the network
+# time instead (for option "enable") through VME:
+# usage: VMEGPSTIME enable|disable 
+# where n is the interval between 2 time updates in seconds.
+VMEGPSTIME enable
+
+# HOW TO ACT UPON BACK-PRESSURE ON THE SLINK:
+# If you want the triggers to stop (does not apply to VME 
+# triggers), then chose "no", otherwise "yes"
+IGNORESLINKBACKPRESSURE yes  # yes|no
+
+#### TTS CONFIGURATION #########################################
+# Enable TTS input using key word "ENABLETTS" 
+# with optional arguments sTTS0, sTTS1, ... , sTTS5, and aTTS, e.g.:
+# ENABLETTS sTTS0 aTTS   # enables 1st sTTS partition and aTTS
+ENABLETTS
+
+# TTS "Warning" Interval (e.g. WARNING_INTERVAL <N>) in BX:
+WARNING_INTERVAL 100  # [BX]
+
+# ARTIFICIALLY IMPOSE BX GAPS:
+# usage: 
+# BXGAP N0 [N1] # disables L1As for BX N0 (or range [N0,N1))
+# (N0>0, N1<=3564, N0>N1 or N1=0 (=until end of orbit))
+
+################################################################
+# Configuration of Sequences: Individual sequences can be configured for 
+# 'Configure', 'Enable', 'Suspend', 'Resume', 'Halt',
+# 'Resync', 'HardReset', and 'Periodic' (predefined)
+# or for any user-defined sequence (use "ADDSEQUENCE ChooseName" first)
+# Example: 
+#   BEGINSEQUENCE Enable 	# or Configure, Suspend, ...
+#   ResetCounters 		# resets evt+orb cntrs. (on LTC only!)
+#   ResetCounters all		# resets evt+orb+trigger cntrs. (on LTC only!)
+#   Cyclic StartPermanent 	# Start permanent (e.g.BC0) cyclic generators
+#   Cyclic StopAll		# Stop ALL (also permanent) cyclic generators
+#   Cyclic Start		# Start (all) cyclic generators
+#   Cyclic Stop 		# Stop non-permanent cyclic generators
+#   Sleep 5 			# sleep for 5 sec
+#   mSleep 10 			# sleep for 10 ms
+#   uSleep 100			# sleep for 10 us
+#   EnableL1A 			# or DisableL1A e.g. for 'Suspend' Sequence
+#   BGO 5 			# BGO-Channel 5 request through VME	
+#   BGO Start 			# BGO-Channel 9 request through VME	
+#   NewRun  			# Increment the run number
+#   Periodic On 		# (On|Off) Use Periodic seq. with care!!!
+#   Periodic 60  		# periodicity of Periodic sequence: 60 sec
+#   Saveplots    		# save monitoring plots, if available
+#   Write [i] ADDRESS 0xfff 	# Write 0xffff to reg. ADDRESS (offset i)
+#   Read [i] ADDRESS 		# Read from reg. ADDRESS (offset i)
+#   ENDSEQUENCE			# closes this sequence
+
+BEGINSEQUENCE Configure
+  NewRun
+  Cyclic StopAll
+  DisableL1A
+  ResetCounters All
+  Cyclic StartPermanent
+  mSleep 100
+  BGO OC0
+  mSleep 100
+  BGO EC0
+  mSleep 100
+  Periodic 1
+  Periodic Off
+ENDSEQUENCE
+
+BEGINSEQUENCE Enable
+  Cyclic StopAll
+  mSleep 100
+  BGO Resync
+  mSleep 100
+  Cyclic StartPermanent
+  mSleep 100
+  BGO EC0
+  mSleep 100
+  EnableL1A
+  BGO Start
+  mSleep 100
+  Cyclic Start
+ENDSEQUENCE
+
+BEGINSEQUENCE Suspend
+  Cyclic Stop
+  BGO Stop
+  mSleep 100
+  DisableL1A
+  Periodic Off
+ENDSEQUENCE
+
+BEGINSEQUENCE Resume
+  Cyclic StopAll
+  mSleep 100
+  BGO Resync
+  mSleep 100
+  Cyclic StartPermanent
+  mSleep 100
+  BGO EC0
+  mSleep 100
+  EnableL1A
+  BGO Start
+  mSleep 100
+  Cyclic Start
+ENDSEQUENCE
+
+BEGINSEQUENCE Halt
+  Cyclic Stop
+  BGO Stop
+  mSleep 100
+  DisableL1A
+  Periodic Off
+ENDSEQUENCE
+
+BEGINSEQUENCE Resync
+  DisableL1A
+  Cyclic StopAll
+  mSleep 100
+  BGO Resync
+  mSleep 500
+  Cyclic StartPermanent
+  BGO EC0
+ENDSEQUENCE
+
+BEGINSEQUENCE HardReset
+  DisableL1A
+  Cyclic StopAll
+  mSleep 100
+  BGO HardReset
+  mSleep 500
+  Cyclic StartPermanent
+  BGO EC0
+ENDSEQUENCE
+
+BEGINSEQUENCE Periodic
+  uSleep 10
+ENDSEQUENCE
+
+ADDSEQUENCE User
+BEGINSEQUENCE User
+  TriggerBurst
+ENDSEQUENCE
+
+################################################################
+# Cyclic Trigger and BGO Generators
+# Usage: CYCLICTRIGGER id [arguments]
+#    or: CYCLICBGO id [arguments]
+# where id denotes the generator, i.e. 0..2 for TRIGGER and 
+# 0..4 for BGO generators.
+# The following arguments can be appended to these commands:
+#   DISABLE 		# Allows set parameters without enabling
+#   STARTBX=i 		# i=Offset in BX
+#   PRES=i 		# i=prescale
+#   POST=i 		# i=postscale (# of times)
+#   INITWAIT=i 		# i=initial orbits to wait
+#   REPETITIVE=y|n 	# repeat sequence
+#   PAUSE=i 		# pause i orbits (for REPETITIVE=y)
+#   PERMANENT=y|n 	# don't listen to BGO Start/Stop
+#   CH=i|Name 		# BGO channel or name. For BGO only!
+# The argument CH denotes the BGO channel to be requested.
+# Its value can either be a number (0..15) or the channel 
+# name, e.g. Resync, HardReset, EC0, OC0, Start, Stop, TestEnable, 
+# PrivateGap, or PrivateOrbit
+#
+CYCLICTRIGGER 0 PRES=11223 REPETITIVE=y PERMANENT=n DISABLE 
+CYCLICTRIGGER 1 STARTBX=400 PRES=11000 REPETITIVE=y PERMANENT=n DISABLE 
+CYCLICTRIGGER 2 STARTBX=325 REPETITIVE=n PERMANENT=n POST=10 INITWAIT=1 DISABLE 
+
+CYCLICBGO 0 CH=BC0 REPETITIVE=y PERMANENT=y DISABLE
+CYCLICBGO 1 CH=TestEnable STARTBX=300 REPETITIVE=y PERMANENT=n DISABLE 
+CYCLICBGO 2 CH=Channel15 STARTBX=200 REPETITIVE=y PERMAENT=y DISABLE
+
+# TRIGGER RULE SETTINGS ###################################
+# There are 8 that can be changed using e.g.:
+# TRIGGERRULE i N_BX   # i = 1...8, N_BX = Min no. of clocks for i triggers
+
+TRIGGERRULE 1 6 	#No more than i trigs in j BX
+TRIGGERRULE 2 25 	#No more than i trigs in j BX
+TRIGGERRULE 3 100 	#No more than i trigs in j BX
+TRIGGERRULE 4 240 	#No more than i trigs in j BX
+TRIGGERRULE 5 0 	#No more than i trigs in j BX
+TRIGGERRULE 6 0 	#No more than i trigs in j BX
+TRIGGERRULE 7 0 	#No more than i trigs in j BX
+TRIGGERRULE 8 0 	#No more than i trigs in j BX
+TRIGGERRULE 9 240 	#No more than i trigs in j BX
+
+########### CONFIGURATION END #############################
