@@ -1812,8 +1812,10 @@ end of redundancy ring comment */
 	// JMTBAD this needs to be configurable in software. Loop over
 	// ccu or some other config objects and find out whether we're
 	// supposed to send PIA commands to enable DC-DC. For now just do it
-	//printf("JMT pixDCDC slot %i ring %i\n", slot, ringiter->first);
-	//pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
+	if (ringiter->first == 8) {
+	  printf("JMT pixDCDC slot %i ring %i\n", slot, ringiter->first);
+	  pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
+	}
 
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop
