@@ -521,7 +521,7 @@ ltcconfig 0
 tkfecconfig 0
 
 key 33						# TBMPhaseScan using Pixel Alive
-detconfig 2 # 2 for BmI, 4 for BmO
+detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
