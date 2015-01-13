@@ -1,0 +1,14 @@
+Mode:  AOHGain
+Parameters:
+SetAnalogInputBias  160
+SetAnalogOutputBias 110
+SetAnalogOutputGain 240
+MaxTBMUB         100
+printFEDRawData  no
+printScan        no
+Rows:
+Cols:
+VcalHigh
+Repeat: 10
+ToCalibrate:
+all

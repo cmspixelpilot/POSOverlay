@@ -1,0 +1,21 @@
+Mode:  AOHBias
+Parameters:
+ScanMin        0
+ScanMax        50
+ScanStepSize   1
+TargetBMin     412
+TargetBMax     612
+SaturationPointOffset 4
+MaxFEDReceiverInputOffset  8
+SetAnalogInputBias      200
+SetAnalogOutputBias     120
+SetAnalogOutputGain     200
+printFEDRawData             no
+printFEDOffsetAdjustments   no
+printAOHBiasAdjustments     no
+Rows:
+Cols:
+VcalHigh
+Repeat: 10
+ToCalibrate:
+all

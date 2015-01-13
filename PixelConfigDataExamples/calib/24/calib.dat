@@ -1,0 +1,12 @@
+MMode:  VsfAndVHldDel
+Rows:
+3 12
+Cols:
+14
+VcalLow
+Scan: Vsf     0 255 3    mix
+Scan: VHldDel 0 255 255
+Set: Vcal 250
+Repeat: 10
+ToCalibrate:
+all

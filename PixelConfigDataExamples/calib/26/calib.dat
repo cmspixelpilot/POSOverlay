@@ -1,0 +1,13 @@
+Mode:  AOHAndFEDChannelMappingTest
+Parameters:
+ScanMin        0
+ScanMax        50
+ScanStepSize   5
+printFEDRawData         no
+printScan               no
+Rows:
+Cols:
+VcalHigh
+Repeat: 10
+ToCalibrate:
+all

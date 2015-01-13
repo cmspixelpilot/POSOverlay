@@ -1,0 +1,14 @@
+Mode: TBMDelay
+Rows:
+10
+Cols:
+10
+VcalHigh
+Scan: TBMDelay 64 255 64
+Scan: TBMPLL 0 255 64
+Scan: CalDel 0 255 64
+Set: Vcal 255
+Repeat: 3
+Rocs:
+Pilt_BmI_D3_BLD3_PNL1_PLQ1_ROC4
+Pilt_BmO_D3_BLD10_PNL2_PLQ1_ROC5
