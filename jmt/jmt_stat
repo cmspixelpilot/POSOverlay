@@ -1,0 +1,1 @@
+svn status JobControl Pixel* XDAQConfiguration | egrep -v '/lib$|/linux$|PixelRun/log|/x86_64_slc6$|/bin$'
