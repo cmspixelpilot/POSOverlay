@@ -1,0 +1,2 @@
+mkdir -p jmt
+for x in PixelAnalysisTools PixelCalibrations PixelConfigDataExamples PixelConfigDBGUI PixelConfigDBInterface PixelDCSInterface PixelDCSSupervisor PixelFECInterface PixelFECSupervisor PixelFEDInterface PixelFEDMonitor PixelFEDSupervisor PixelFunctionManager PixelHistoViewer PixelMonitor PixelSupervisor PixelSupervisorConfiguration PixelSupervisorGUI PixelTKFECSupervisor PixelTTCSupervisor PixelUtilities CalibFormats; do diff -x \*.o -x \*.d -x \*.so -x \*.exe -x .svn -r $x /tmp/tucker/pixel/$x > jmt/$x.diffs; done

@@ -1,4 +1,3 @@
 #!/bin/bash
 set -x
-#tar -czf /tmp/jmt.tgz BPixelTools CalibFormats PixelConfigDataExamples PixelAnalysisTools PixelCalibrations PixelConfigDataExamples PixelConfigDBGUI PixelConfigDBInterface PixelDCSInterface PixelDCSSupervisor PixelFECInterface PixelFECSupervisor PixelFEDInterface PixelFEDMonitor PixelFEDSupervisor PixelFunctionManager PixelHistoViewer PixelMonitor  PixelSupervisor PixelSupervisorConfiguration PixelSupervisorGUI PixelTKFECSupervisor PixelTTCSupervisor PixelUtilities XDAQConfiguration
 tar --exclude=linux --exclude=lib --exclude=bin --exclude=x86_64_slc6 --exclude=PixelRun --exclude=.svn -czvf ~/backups/pixel_`date +%Y%m%d_%H%M%S`.tgz pixel/
