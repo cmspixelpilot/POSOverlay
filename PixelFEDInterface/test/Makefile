@@ -10,19 +10,20 @@ CC_OPTIM=-fPIC -DLINUX
 ADDED_CFLAGS=-DNDEBUG 
 
 CAEN_INCLUDE = /usr/local/CAEN/CAEN-VME/Linux/include/
- 
+
 IncludeDirs = \
         -I$(BUILD_HOME)/pixel \
         -I$(XDAQ_ROOT)/include/hal \
         -I$(XDAQ_ROOT)/include
- 
+
 # XDAQ libraries needed for HAL
 LibraryDirs = \
         -L$(XDAQ_ROOT)/lib \
         -L$(XDAQ_ROOT)/daq/extern/xerces/$(XDAQ_OS)$(XDAQ_PLATFORM)/lib \
+	-L$(BUILD_HOME)/pixel/lib \
         -L$(BUILD_HOME)/pixel/CalibFormats/SiPixelObjects/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM)\
 	-L$(BUILD_HOME)/pixel/PixelUtilities/PixelTestStandUtilities/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) 
- 
+
 # Libraries=toolbox xdata xcept xoap xerces-c log4cplus mimetic
 Libraries= -l xcept -l xerces-c -l SiPixelObjects -l toolbox -l log4cplus -l asyncresolv -l uuid -l PixelTestStandUtilities
 
@@ -30,7 +31,7 @@ HAL = -L$(XDAQ_ROOT)/lib -lCAENLinuxBusAdapter -lGenericHAL -lHALUtilities -lcon
 
 LIBS = $(HAL) -l CAENVME $(LibraryDirs) $(Libraries)  
 
-PIXEL_INCLUDE = $(XDAQ_ROOT)/pixel/ 
+PIXEL_INCLUDE = $(BUILD_HOME)/pixel/
 INC = -I. -I$(CAEN_INCLUDE) $(IncludeDirs) -I$(PIXEL_INCLUDE) 
 
 CFLAGS=$(CC_OPTIM) $(ADDED_CFLAGS) -Wall -Wstrict-prototypes $(INC)
@@ -47,7 +48,7 @@ testPixelFED :	testPixelFED.o PixelFEDInterface.o PixelTTCviInterface.o \
 
 testPixelFED.o : testPixelFED.cpp ../include/PixelFEDInterface.h PixelTTCviInterface.h ../../CalibFormats/SiPixelObjects/interface/PixelFEDCard.h
 	g++ -o testPixelFED.o -c testPixelFED.cpp $(CFLAGS)
-  
+
 loadFPGA :	loadFPGA.o PixelFEDInterface.o \
 	PixelFEDFifoData.o 
 	g++ -o loadFPGA loadFPGA.o PixelFEDInterface.o \
@@ -55,7 +56,7 @@ loadFPGA :	loadFPGA.o PixelFEDInterface.o \
 
 loadFPGA.o : loadFPGA.cpp ../include/PixelFEDInterface.h ../../CalibFormats/SiPixelObjects/interface/PixelFEDCard.h
 	g++ -o loadFPGA.o -c loadFPGA.cpp $(CFLAGS)
-  
+
 PixelFEDInterface.o : ../src/common/PixelFEDInterface.cc ../include/PixelFEDInterface.h ../../CalibFormats/SiPixelObjects/interface/PixelFEDCard.h
 	g++ -o PixelFEDInterface.o -c ../src/common/PixelFEDInterface.cc $(CFLAGS)
 
@@ -65,6 +66,11 @@ PixelFEDFifoData.o : ../src/common/PixelFEDFifoData.cc ../include/PixelFEDFifoDa
 PixelTTCviInterface.o : PixelTTCviInterface.cc PixelTTCviInterface.h
 	g++ -o PixelTTCviInterface.o -c PixelTTCviInterface.cc $(CFLAGS)
 
- 
+FecStatus :	FecStatus.o
+	g++ -o FecStatus FecStatus.o $(LIBS)
+
+FecStatus.o : FecStatus.cpp
+	g++ -o FecStatus.o -c FecStatus.cpp $(CFLAGS)
+
 clean:
-	rm *.o testPixelFED
+	rm *.o testPixelFED FecStatus
