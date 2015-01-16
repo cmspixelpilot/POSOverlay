@@ -1406,7 +1406,7 @@ bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
       unsigned pgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
       bool pgood = ((pgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
       cout << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << "\n";
-      if (turnOn + pgood != 1) {
+      if (turnOn + pgood == 1) {
 	cout << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!";
 	success = false;
       }
