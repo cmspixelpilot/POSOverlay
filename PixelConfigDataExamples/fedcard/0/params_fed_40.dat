@@ -2029,10 +2029,10 @@ TRLR level 1 Channel 36:400
 TRLR level 2 Channel 36:500
 TRLR level 3 Channel 36:600
 TRLR level 4 Channel 36:700
-Channel Enbable bits chnls 1-9  (on = 0):0x0
-Channel Enbable bits chnls 10-18(on = 0):0x1f8
+Channel Enbable bits chnls 1-9  (on = 0):0x030
+Channel Enbable bits chnls 10-18(on = 0):0x1fe
 Channel Enbable bits chnls 19-27(on = 0):0x03f
-Channel Enbable bits chnls 28-36(on = 0):0x0
+Channel Enbable bits chnls 28-36(on = 0):0x186
 TTCrx Coarse Delay Register 2:0
 TTCrc      ClkDes2 Register 3:0x13
 TTCrc Fine Dlay ClkDes2 Reg 1:5
