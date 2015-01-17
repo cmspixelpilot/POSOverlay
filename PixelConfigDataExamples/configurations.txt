@@ -236,15 +236,15 @@ ltcconfig 0
 tkfecconfig 0
 
 key 14						# Pixel Alive 
-detconfig 2 # 2 for BmI, 4 for BmO, 5 for both
+detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 4 # 2 for BmO, 3 for BmI, 4 for Both
+fedcard 4
 dac 0
 mask 0
 trim 0
-calib 14 # 10 for all BmI modules, 12 for all BmO modules ,13 for all modules
+calib 14
 tbm 0
 portcard 0
 portcardmap 0
