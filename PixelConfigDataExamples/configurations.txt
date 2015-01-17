@@ -122,7 +122,7 @@ detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 4
+fedcard 0
 dac 0
 mask 0
 trim 0
@@ -240,7 +240,7 @@ detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 4
+fedcard 0
 dac 0
 mask 0
 trim 0
@@ -525,7 +525,7 @@ detconfig 0
 nametranslation 0
 fedconfig 0
 fecconfig 0
-fedcard 4
+fedcard 0
 dac 0
 mask 0
 trim 0
