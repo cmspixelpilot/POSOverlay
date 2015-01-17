@@ -1,6 +1,7 @@
 ConfigurationAliases
 Delay25 7 ;
 Delay25SwapBmIO 34 ;
+VcThrCalDel 32 ;
 PixelAlive 14 ;
 SCurve 12 ;
 TBMDelay 33 ;
