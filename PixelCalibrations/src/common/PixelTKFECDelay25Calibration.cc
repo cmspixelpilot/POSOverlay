@@ -56,7 +56,7 @@ xoap::MessageReference PixelTKFECDelay25Calibration::execute(xoap::MessageRefere
     //Check whether we compare all modules
     runCompare_ = false;
     string type = portcardConfig_->gettype();
-    if(type=="fpix" && allModules_) {
+    if((type == "pilt" || type=="fpix") && allModules_) {
       cout << "This is an FPix portcard with allModules_=true." << endl;
       cout << "The optimal point will take into account results from all modules." << endl;
       runCompare_=true;
@@ -130,6 +130,7 @@ xoap::MessageReference PixelTKFECDelay25Calibration::execute(xoap::MessageRefere
   unsigned int tbmchannel=module_firstHdwAddress.fedchannel();
   unsigned int hubaddress=module_firstHdwAddress.hubaddress();
   unsigned int portaddress=7; //change from 4 to 7 on advice of Rutgers mFEC experts
+  //printf("JMT fecnum %u feccrate %u vmeaddr %lx mfec %u mfecch %u tbmch %u hubaddr %u portaddr %u\n", fecnumber, feccrate, vmeBaseAddress, mfec, mfecchannel, tbmchannel, hubaddress, portaddress);
   //unsigned int portaddress=module_hdwaddress->portaddress();
   
   parametersToFEC.at(0).value_=itoa(vmeBaseAddress);
@@ -838,6 +839,7 @@ void PixelTKFECDelay25Calibration::WriteRootFile(int newSDA, int newRDA, bool co
      TCanvas* c = new TCanvas(longtitle.c_str(),longtitle.c_str(), 700,800);
      
      TH2F* paramspace = new TH2F(shorttitle.c_str(), longtitle.c_str(), range_, origSData_, maxSDa, range_, origRData_, maxRDa);
+     paramspace->SetStats(0);
      paramspace->GetXaxis()->SetTitle("SDa");
      paramspace->GetYaxis()->SetTitle("RDa");
      paramspace->Draw("colz");
@@ -887,6 +889,7 @@ void PixelTKFECDelay25Calibration::WriteRootFile(int newSDA, int newRDA, bool co
        Canvases[i] = new TCanvas((longtitle+"_command"+name[i]).c_str(),(longtitle+"_command"+name[i]).c_str(), 700,800);
        
        paramspace0[i] = new TH2F((shorttitle+"_command"+name[i]).c_str(),(longtitle+"_command"+name[i]).c_str() , range_, origSData_, maxSDa, range_, origRData_, maxRDa);
+       paramspace0[i]->SetStats(0);
        paramspace0[i]->GetXaxis()->SetTitle("SDa");
        paramspace0[i]->GetYaxis()->SetTitle("RDa");
        paramspace0[i]->Draw("colz");
@@ -931,6 +934,7 @@ void PixelTKFECDelay25Calibration::WriteRootFile(int newSDA, int newRDA, bool co
      TCanvas* c = new TCanvas(longtitle.c_str(),longtitle.c_str(), 700,800);
 
      TH2F* paramspace = new TH2F(shorttitle.c_str(), longtitle.c_str(), range_, origSData_, maxSDa, range_, origRData_, maxRDa);
+     paramspace->SetStats(0);
      paramspace->GetXaxis()->SetTitle("SDa");
      paramspace->GetYaxis()->SetTitle("RDa");
      paramspace->Draw("colz");
