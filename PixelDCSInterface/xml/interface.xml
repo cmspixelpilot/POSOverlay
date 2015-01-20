@@ -1,0 +1,439 @@
+<dcsinterface:configuration xmlns:dcsinterface="urn:xdaq-dcsinterface:1.0" xmlns:fsm="urn:pvss-xdaq-fsm">
+
+ <fsm:node type="FwCaenChannelCtrl">
+  <fsm:state pvssName="ON" xdaqName="LV_ON" color="#33FF33"/>
+  <fsm:state pvssName="OFF" xdaqName="LV_OFF" color="#3333FF"/>
+  <fsm:state pvssName="OVERCURRENT" xdaqName="LV_OFF" color="#FF3333"/>
+  <fsm:state pvssName="UNDERVOLTAGE" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="OVERVOLTAGE" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="MAXVOLTAGE" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="INTERNALTRIP" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="CALIBRATIONERROR" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="UNPLUGGED" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="MAXVCONN" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="NO_COMMUNICATION" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="DISABLED" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="MAXDROP" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="INTERLOCKED" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="INTERNALFAIL" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="POWERFAIL" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="DEAD" xdaqName="UNDEFINED" color="#C0C0C0"/>
+ </fsm:node>
+
+ <fsm:node type="TkPowerGroup">
+  <fsm:state pvssName="OFF" xdaqName="LV_OFF" color="#3333FF"/>
+  <fsm:state pvssName="ON_LV" xdaqName="LV_ON" color="#33FF33"/>
+  <fsm:state pvssName="ON" xdaqName="HV_ON" color="#33FF33"/>
+  <fsm:state pvssName="HVMIXED" xdaqName="HV_ON" color="#33FF33"/>
+  <fsm:state pvssName="HVRAMPINGUP" xdaqName="LV_ON" color="#33FF33"/>
+  <fsm:state pvssName="HVRAMPINGDOWN" xdaqName="LV_ON" color="#33FF33"/>
+  <fsm:state pvssName="HVON_LVOFF" xdaqName="LV_ON" color="#33FF33"/>
+  <fsm:state pvssName="DIGITAL_ON_RED" xdaqName="LV_ON_REDUCED" color="#3333FF"/>
+  <fsm:state pvssName="ANALOG_ON_RED" xdaqName="LV_ON_REDUCED" color="#3333FF"/>
+  <fsm:state pvssName="ANALOG_ON" xdaqName="LV_OFF" color="#3333FF"/>
+  <fsm:state pvssName="ERROR" xdaqName="LV_OFF" color="#FF3333"/>
+  <fsm:state pvssName="UNPLUGGED" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="INTERLOCKED" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="NO_COMMUNICATION" xdaqName="LV_OFF" color="#FFFF33"/>
+  <fsm:state pvssName="DEAD" xdaqName="UNDEFINED" color="#C0C0C0"/>
+ </fsm:node>
+
+ <fsm:device type="CMS_Pixel_XDAQ_InitializationStatus" pvssDpType="bool">
+  <fsm:state xdaqName="INITIALIZED" pvssDpValue="1" color="#33FF33"/>
+  <fsm:state xdaqName="UNINITIALIZED" pvssDpValue="0" color="#3333FF"/>
+ </fsm:device>
+
+
+
+
+<fsm:partition name="FPix_BmI">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D1:ControlPowerChann" domain="PixelEndCap_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D2:ControlPowerChann" domain="PixelEndCap_BmI"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D1:PixelEndCap_BmI_D1_ROG1" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D1:PixelEndCap_BmI_D1_ROG2" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D1:PixelEndCap_BmI_D1_ROG3" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D1:PixelEndCap_BmI_D1_ROG4" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D2:PixelEndCap_BmI_D2_ROG1" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D2:PixelEndCap_BmI_D2_ROG2" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D2:PixelEndCap_BmI_D2_ROG3" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmI:PixelEndCap_BmI_D2:PixelEndCap_BmI_D2_ROG4" domain="PixelEndCap_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="2" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="2" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="FPix_BmO">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D1:ControlPowerChann" domain="PixelEndCap_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D2:ControlPowerChann" domain="PixelEndCap_BmO"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D1:PixelEndCap_BmO_D1_ROG1" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D1:PixelEndCap_BmO_D1_ROG2" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D1:PixelEndCap_BmO_D1_ROG3" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D1:PixelEndCap_BmO_D1_ROG4" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D2:PixelEndCap_BmO_D2_ROG1" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D2:PixelEndCap_BmO_D2_ROG2" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D2:PixelEndCap_BmO_D2_ROG3" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BmO:PixelEndCap_BmO_D2:PixelEndCap_BmO_D2_ROG4" domain="PixelEndCap_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="2" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="2" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="FPix_BpI">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D1:ControlPowerChann" domain="PixelEndCap_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D2:ControlPowerChann" domain="PixelEndCap_BpI"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D1:PixelEndCap_BpI_D1_ROG1" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D1:PixelEndCap_BpI_D1_ROG2" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D1:PixelEndCap_BpI_D1_ROG3" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D1:PixelEndCap_BpI_D1_ROG4" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D2:PixelEndCap_BpI_D2_ROG1" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D2:PixelEndCap_BpI_D2_ROG2" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D2:PixelEndCap_BpI_D2_ROG3" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpI:PixelEndCap_BpI_D2:PixelEndCap_BpI_D2_ROG4" domain="PixelEndCap_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate4\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="2" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="2" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="FPix_BpO">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D1:ControlPowerChann" domain="PixelEndCap_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D2:ControlPowerChann" domain="PixelEndCap_BpO"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D1:PixelEndCap_BpO_D1_ROG1" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D1:PixelEndCap_BpO_D1_ROG2" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D1:PixelEndCap_BpO_D1_ROG3" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D1:PixelEndCap_BpO_D1_ROG4" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D2:PixelEndCap_BpO_D2_ROG1" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D2:PixelEndCap_BpO_D2_ROG2" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D2:PixelEndCap_BpO_D2_ROG3" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:PixelEndCap_BpO:PixelEndCap_BpO_D2:PixelEndCap_BpO_D2_ROG4" domain="PixelEndCap_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate3\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="2" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="2" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="BPix_BmI">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S1:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S2:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S3:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S4:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S5:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S6:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S7:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S8:ControlPowerChann" domain="PixelBarrel_BmI"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S1:PixelBarrel_BmI_S1_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S1:PixelBarrel_BmI_S1_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S2:PixelBarrel_BmI_S2_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S2:PixelBarrel_BmI_S2_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S3:PixelBarrel_BmI_S3_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S3:PixelBarrel_BmI_S3_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S4:PixelBarrel_BmI_S4_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S4:PixelBarrel_BmI_S4_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S5:PixelBarrel_BmI_S5_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard08.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S5:PixelBarrel_BmI_S5_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard09.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S6:PixelBarrel_BmI_S6_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard10.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S6:PixelBarrel_BmI_S6_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard11.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S7:PixelBarrel_BmI_S7_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard12.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S7:PixelBarrel_BmI_S7_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard13.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S8:PixelBarrel_BmI_S8_LAY1" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard14.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmI:PixelBarrel_BmI_S8:PixelBarrel_BmI_S8_LAY3" domain="PixelBarrel_BmI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate0\easyBoard15.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="1" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="1" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="BPix_BmO">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S1:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S2:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S3:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S4:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S5:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S6:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S7:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S8:ControlPowerChann" domain="PixelBarrel_BmO"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S1:PixelBarrel_BmO_S1_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S1:PixelBarrel_BmO_S1_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S2:PixelBarrel_BmO_S2_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S2:PixelBarrel_BmO_S2_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S3:PixelBarrel_BmO_S3_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S3:PixelBarrel_BmO_S3_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S4:PixelBarrel_BmO_S4_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S4:PixelBarrel_BmO_S4_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S5:PixelBarrel_BmO_S5_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard08.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S5:PixelBarrel_BmO_S5_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard09.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S6:PixelBarrel_BmO_S6_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard10.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S6:PixelBarrel_BmO_S6_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard11.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S7:PixelBarrel_BmO_S7_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard12.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S7:PixelBarrel_BmO_S7_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard13.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S8:PixelBarrel_BmO_S8_LAY1" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard14.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BmO:PixelBarrel_BmO_S8:PixelBarrel_BmO_S8_LAY3" domain="PixelBarrel_BmO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate1\easyBoard15.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="1" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="1" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="BPix_BpI">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S1:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S2:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S3:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S4:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S5:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S6:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S7:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S8:ControlPowerChann" domain="PixelBarrel_BpI"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S1:PixelBarrel_BpI_S1_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S1:PixelBarrel_BpI_S1_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S2:PixelBarrel_BpI_S2_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S2:PixelBarrel_BpI_S2_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S3:PixelBarrel_BpI_S3_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S3:PixelBarrel_BpI_S3_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S4:PixelBarrel_BpI_S4_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S4:PixelBarrel_BpI_S4_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S5:PixelBarrel_BpI_S5_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard08.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S5:PixelBarrel_BpI_S5_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard09.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S6:PixelBarrel_BpI_S6_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard10.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S6:PixelBarrel_BpI_S6_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard11.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S7:PixelBarrel_BpI_S7_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard12.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S7:PixelBarrel_BpI_S7_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard13.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S8:PixelBarrel_BpI_S8_LAY1" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard14.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpI:PixelBarrel_BpI_S8:PixelBarrel_BpI_S8_LAY3" domain="PixelBarrel_BpI">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate1\easyBoard15.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="1" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="1" /> 
+ </fsm:partition>
+
+
+
+
+<fsm:partition name="BPix_BpO">
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S1:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S2:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S3:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S4:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S5:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S6:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S7:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S8:ControlPowerChann" domain="PixelBarrel_BpO"/>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S1:PixelBarrel_BpO_S1_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard00.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S1:PixelBarrel_BpO_S1_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard01.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S2:PixelBarrel_BpO_S2_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard02.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S2:PixelBarrel_BpO_S2_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard03.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S3:PixelBarrel_BpO_S3_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard04.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S3:PixelBarrel_BpO_S3_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard05.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S4:PixelBarrel_BpO_S4_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard06.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S4:PixelBarrel_BpO_S4_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard07.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S5:PixelBarrel_BpO_S5_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard08.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S5:PixelBarrel_BpO_S5_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard09.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S6:PixelBarrel_BpO_S6_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard10.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S6:PixelBarrel_BpO_S6_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard11.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S7:PixelBarrel_BpO_S7_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard12.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S7:PixelBarrel_BpO_S7_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard13.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S8:PixelBarrel_BpO_S8_LAY1" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard14.pixelSequence.configured"/>
+</fsm:node>
+<fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelBarrel:PixelBarrel_BpO:PixelBarrel_BpO_S8:PixelBarrel_BpO_S8_LAY3" domain="PixelBarrel_BpO">
+<fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_10:tkPg_CAEN\CMS_TRACKER_SY1527_5\branchController07\easyCrate0\easyBoard15.pixelSequence.configured"/>
+</fsm:node>
+<fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="1" /> 
+<fsm:connection name="PixelFECSupervisor" type="PxlFEC" instance="1" /> 
+ </fsm:partition>
+
+
+  </dcsinterface:configuration>

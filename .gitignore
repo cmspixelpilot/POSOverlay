@@ -1,7 +1,6 @@
 .svn
 LogReaderWithFileServer
 PixelConfigDBGUI/
-PixelDCSInterface/
 PixelDCSSupervisor/
 PixelFunctionManager/
 PixelHistoViewer/
