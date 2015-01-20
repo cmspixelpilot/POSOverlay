@@ -1,0 +1,119 @@
+<?xml version='1.0'?>
+<!-- Order of specification will determine the sequence of installation. all modules are loaded prior instantiation of plugins -->
+<xp:Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xp="http://xdaq.web.cern.ch/xdaq/xsd/2005/XMLProfile-10">
+	
+	<!-- XAccess required Power Pack installation 
+	<xp:Application class="XAccess" id="7"  service="xaccess" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/xaccess/lib/linux/x86/libxaccess.so</xp:Module>
+ -->	
+
+	<!-- Compulsory  Plugins -->
+	<xp:Application class="Executive" id="0"  group="startup" service="executive" network="local">
+		<properties xmlns="urn:xdaq-application:Executive" xsi:type="soapenc:Struct">
+			<!-- logUrl xsi:type="xsd:string">udp://lxcmd101:60000</logUrl -->
+                	<!-- logUrl xsi:type="xsd:string">file:${HOME}/log.txt</logUrl -->
+			<logUrl xsi:type="xsd:string">console</logUrl>
+                	<logLevel xsi:type="xsd:string">DEBUG</logLevel>
+                </properties>
+
+	</xp:Application>
+	<xp:Module>${XDAQ_ROOT}/daq/xdaq/executive/lib/linux/x86/libexecutive.so</xp:Module>
+	
+	<xp:Application class="PeerTransportHTTP" id="1" group="startup" network="local">
+		 <properties xmlns="urn:xdaq-application:PeerTransportHTTP" xsi:type="soapenc:Struct">
+                        <aliasName xsi:type="xsd:string">tmp</aliasName>
+                        <aliasPath xsi:type="xsd:string">/tmp</aliasPath>
+                </properties>
+	</xp:Application>
+	<xp:Module> ${XDAQ_ROOT}/daq/pt/http/lib/linux/x86/libpthttp.so </xp:Module>
+
+	<xp:Application class="PeerTransportFifo" id="8" group="startup"  network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/pt/fifo/lib/linux/x86/libptfifo.so</xp:Module>
+	
+	<!-- XRelay -->
+	<xp:Application class="XRelay" id="4"  service="xrelay" group="startup" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/xrelay/lib/linux/x86/libxr.so</xp:Module>
+	
+	<!-- HyperDAQ -->
+	<xp:Application class="HyperDAQ" id="3"  group="startup" service="hyperdaq" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/xdaq/hyperdaq/lib/linux/x86/libhyperdaq.so</xp:Module>
+	
+	<!-- XPlore requires the installation of Power Pack  -->
+	
+	<!-- xp:Application class="XPlore" id="10"  network="local">
+	 	<properties xmlns="urn:xdaq-application:XPlore" xsi:type="soapenc:Struct">
+                        <platform xsi:type="xsd:string">xslp</platform>
+                        <peergroups xsi:type="xsd:string">default</peergroups>
+                </properties>
+	</xp:Application>	
+	<xp:Module>${XDAQ_ROOT}/daq/extern/slp/linuxx86/lib/libslp.so</xp:Module>
+	<xp:Module>${XDAQ_ROOT}/daq/xplore/lib/linux/x86/libxp.so</xp:Module>
+	<xp:Module>${XDAQ_ROOT}/daq/xplore/xslp/lib/linux/x86/libxslp.so</xp:Module>
+	<xp:Module>${XDAQ_ROOT}/daq/xplore/xplore/lib/linux/x86/libxplore.so</xp:Module -->
+  		
+	<!-- XMem requires the installation of Power Pack -->
+	<!-- xp:Application class="XMem" id="5"  network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/xmem/lib/linux/x86/libxmem.so</xp:Module -->
+	
+	<!-- 
+	<xp:Application class="Monitor" id="9"  network="local" service="monitor" multiview="yes">
+		 <properties xmlns="urn:xdaq-application:Monitor" xsi:type="soapenc:Struct">
+			<collect xsi:type="xsd:boolean">true</collect>
+                        <inprofile xsi:type="soapenc:Array" soapenc:arrayType="xsd:ur-type[2]">
+				<item xsi:type="xsd:string" soapenc:position="[0]">${XDAQ_ROOT}/daq/monitor/etc/profile.xml</item>
+			</inprofile>
+                </properties>
+        </xp:Application>
+	<xp:Module>${XDAQ_ROOT}/daq/monitor/lib/linux/x86/libmonitor.so</xp:Module>
+	-->
+
+	<!--
+	<xp:Application class="DMon" id="20"  network="local" service="dmon" multiview="yes">
+        </xp:Application>
+	<xp:Module>${XDAQ_ROOT}/daq/extern/chartdir/linuxx86/lib/libchartdir.so</xp:Module>
+	<xp:Module>${XDAQ_ROOT}/daq/dmon/lib/linux/x86/libdmon.so</xp:Module>
+	-->
+
+	<!-- xp:Application class="Multiview" id="40"  network="local" service="multiview" multiview="yes">
+		 <properties xmlns="urn:xdaq-application:Multiview" xsi:type="soapenc:Struct">
+                        <profile xsi:type="xsd:string">${XDAQ_ROOT}/daq/multiview/etc/cams.xml</profile>
+                </properties>
+        </xp:Application>
+        <xp:Module>${XDAQ_ROOT}/daq/multiview/lib/linux/x86/libmultiview.so</xp:Module -->
+
+
+	<!-- 
+	<xp:Application class="SimpleWebPlainText" id="60"  network="local"/>
+	<xp:Module>${XDAQ_ROOT}/daq/examples/lib/linux/x86/libSimpleWebPlainText.so</xp:Module>
+	-->
+
+	<!--
+	<xp:Application class="XAct" id="300"  network="local">
+ 		<properties xmlns="urn:xdaq-application:XAct" xsi:type="soapenc:Struct">
+                        <configurations xsi:type="soapenc:Array" soapenc:arrayType="xsd:ur-type[2]">
+                                <item xsi:type="xsd:string" soapenc:position="[0]">${XDAQ_ROOT}/daq/xact/xml/bld32_test_farm.xml</item>
+                                <item xsi:type="xsd:string" soapenc:position="[1]">${XDAQ_ROOT}/daq/xact/xml/preseries_test_farm.xml</item>
+                        </configurations>
+        	</properties>
+        </xp:Application>
+	<xp:Module>${XDAQ_ROOT}/daq/extern/ssh/linuxx86/lib/libssh.so</xp:Module>
+	<xp:Module>${XDAQ_ROOT}/daq/xact/lib/linux/x86/libxact.so</xp:Module>
+	-->
+  <!-- #### BEGIN TTC-CONFIG-AUTO-GENERATED #### -->
+  
+    <xp:Application class="PixelTTCSupervisor" id="40" instance="0" network="local">
+      <properties xmlns="urn:xdaq-application:PixelTTCSupervisor" xsi:type="soapenc:Struct">
+        <name xsi:type="xsd:string">Board 1</name>
+        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+        <Location xsi:type="xsd:integer">2</Location>
+        <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>    
+        <BTimeCorrection xsi:type="xsd:unsignedLong">100</BTimeCorrection>
+        <DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
+      </properties>
+    </xp:Application>
+  
+    <xp:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xp:Module>
+  
+  <!-- #### END TTC-CONFIG-AUTO-GENERATED #### -->
+
+</xp:Profile>

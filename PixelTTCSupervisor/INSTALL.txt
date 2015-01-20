@@ -1,0 +1,93 @@
+~~~Installation Instructions for PixelTTCSupervisor~~~
+
+
+
+~~Preliminaries~~
+
+XDAQ must be installed, and all related environment variables must be
+set. 
+
+If you have not already done so, go to
+$XDAQ_ROOT/pixel/PixelUtilities/PixelTestStandUtilities and enter
+"make" to compile.
+
+
+~~PixelTTCSupervisor and TTCSoftware~~
+
+Before compiling PixelTTCSupervisor, you must install the CERN
+software package TTCSoftware-6.05.  Go to 
+
+http://cmsdoc.cern.ch/cms/TRIDAS/ttc/modules/software/
+
+and download TTCSoftware-6.05.tgz to a directory of your choice.  Then
+do the following:
+
+tar -xzf TTCSoftware-6.05.tgz
+cd TTCSoftware
+./configure
+
+Answer the questions according to the configuration of your system.
+NOTE:  For the number of LTCs in your system, you must answer "1" or
+the software will not compile.  At the end, say "yes" to updating the
+XDAQ configuration files.
+
+When the configuration process has finished, enter "make" to compile
+the software. 
+
+***Note:  PixelTTCSupervisor is guaranteed to work ONLY with version
+   6.05 of TTCSoftware.  Other versions are not necessarily
+   compatible.
+
+Set the environment variable $ENV_TTCSOFTWARE_ROOT to point to the
+TTCSoftware directory:
+
+export ENV_TTCSOFTWARE_ROOT=/[...]/TTCSoftware
+
+PixelTTCSupervisor can now be compiled:
+
+cd $BUILD_HOME/pixel/PixelTTCSupervisor
+make
+
+
+
+~~XML Files~~
+
+If you run XDAQ with a command of the form
+
+./xdaq.sh -c UserConfig.xml
+
+open the file $XDAQ_ROOT/pixel/PixelTTCSupervisor/XDAQConfig.xml.
+Copy the lines
+
+     <xc:Application class="PixelTTCSupervisor" id="40" instance="0" network="local">
+     .
+     .
+     [and everything in between]
+     .
+     .
+     </xc:Application>
+
+     <xc:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xc:Module> 
+
+into UserConfig.xml.
+
+
+If you run XDAQ with a command of the form
+
+./xdaq.sh -e UserProfile.xml
+
+open the file $XDAQ_ROOT/pixel/PixelTTCSupervisor/XDAQProfile.xml.
+Scroll to the end, and copy the lines 
+
+     <xp:Application class="PixelTTCSupervisor" id="40" instance="0" network="local">
+     .
+     .
+     [and everything in between]
+     .
+     .
+     </xp:Application>
+
+     <xp:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xp:Module>
+
+into UserProfile.xml.
+
