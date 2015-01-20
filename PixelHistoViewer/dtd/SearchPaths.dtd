@@ -1,0 +1,10 @@
+<!-- DTD for the PixelHistoServer -->
+<!-- Authors:  R. Rivera, L. Uplegger-->
+
+<!ELEMENT SearchPaths ( Path* ) >
+
+<!ELEMENT Path EMPTY >
+<!ATTLIST Path  
+  Directory CDATA #REQUIRED 
+  ScanSubdirectories (Yes|No) "Yes" 
+>

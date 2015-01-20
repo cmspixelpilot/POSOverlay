@@ -1,0 +1,242 @@
+<html>
+<body>
+<center>
+<table height="100%" width="95%"><td valign="middle" align="left">
+<div class='help'><b>
+<center>
+<font color="yellow">~</font><font color="purple">~</font>
+Help
+<font color="purple">~</font><font color="yellow">~</font>
+</center>
+</b>
+<br/>
+<!-- =========================================== -->
+<center>
+<a name="topics" />
+<u>Help Topics:</u><br/>
+<table><td>
+<li><a href="#gettingStarted">Getting Started</a>
+<li><a href="#quickKeys">Quick Keys</a>
+<li><a href="#browsingBasics">Basics of Browsing</a>
+<li><a href="#cfgCookies">Configuration Cookies</a>
+<li><a href="#summaryFilter">The Filter String</a>
+<li><a href="#speedTips">Speed Tips</a>
+</td></table></center>
+
+<br/>
+<hr width="80%"/>
+<!-- =========================================== -->
+<br/>
+
+<a name="gettingStarted" />
+<font color="yellow">~</font><font color="purple">~</font>
+<u>Getting Started:</u><br/>
+
+The Pixel Histogram Viewer environment is designed to be similar to the
+desktops of common Operating Systems. At the bottom of the browser there is
+the Console. The Console allows for quick navigation between windows. 
+Clicking a window's icon will bring that window to the front.
+
+<br/><br/>
+
+The two most important windows are the File Navigator and Detector Navigator windows.
+As their names suggest, the File Navigator allows the user to browse the available
+data in a file/directory view while the Detector Navigator allows for graphical 
+browsing. 
+
+<br/><br/>
+
+To proceed, you will want to get familiar with the <a href="#quickKeys">Quick Keys</a>
+and read through the <a href="#browsingBasics">Basics of Browsing</a> section.
+
+<br/><br/>
+<div align='right'><a href="#topics">Back to Help Topics</a></div>
+<hr width="80%"/>
+<!-- =========================================== -->
+<br/>
+
+<a name="quickKeys" />
+<font color="yellow">~</font><font color="purple">~</font>
+<u>Quick Keys:</u><br/>
+Quick Keys allow the user to activate macros with a simple key press. To activate
+a Quick Key, hold down SHIFT + CTRL and then press the appropriate key. A list 
+of the available
+macros is shown below:
+<br/><br/>
+<center>
+<table>
+<tr><td width='50px' align='center'><b>Key</b></td><td align='left'><b>Function</b></td></tr>
+<tr><td align='center'>H</td><td align='left'>Toggle Help Window</td></tr>
+<tr><td align='center'>Z</td><td align='left'>Auto-Arrange Windows - Style 1</td></tr>
+<tr><td align='center'>S</td><td align='left'>Auto-Arrange Windows - Style 2</td></tr>
+<tr><td align='center'>M</td><td align='left'>Minimize All Windows</td></tr>
+<tr><td align='center'>N</td><td align='left'>Show All Windows</td></tr>
+<tr><td align='center'>U</td><td align='left'>Close All Histogram Windows</td></tr>
+<tr><td align='center'>O</td><td align='left'>Scroll Window Focus Left</td></tr>
+<tr><td align='center'>P</td><td align='left'>Scroll Window Focus Right</td></tr>
+<tr><td align='center'>C</td><td align='left'>Save Configuration Cookies</td></tr>
+<tr><td align='center'>D</td><td align='left'>Default Configuration(Delete Cookies)</td></tr>
+</table>
+</center>
+
+<br/>
+<div align='right'><a href="#topics">Back to Help Topics</a></div>
+<hr width="80%"/>
+<!-- =========================================== -->
+<br/>
+
+<a name="browsingBasics" />
+<font color="yellow">~</font><font color="purple">~</font>
+<u>Basics of Browsing:</u><br/>
+The File Navigator is where all browsing should begin. In the Files Pane
+(the left pane) a list of available files are shown. If "< no files >" is displayed then
+try clicking the Refresh button; if it persists then there are no files
+currently available on the network.
+<br/><br/>
+The Content Pane (the right pane) displays all the directories and data present in
+the current File. If "< no content - refresh file list >" is displayed try clicking 
+the Refresh button and
+then the desired File in the left pane again; if it persists then the file 
+currently has no
+content.
+<br/><br/>
+Browsing through the directories, the user may find Histograms and Summaries. Clicking on
+a Histogram will open up a new window displaying the chosen Histogram. Clicking on a
+Summary will display a list of Fields from within the Summary. Then clicking on a Field
+will display and re-color the ROC's of the Detector Navigator window based on the Summary
+and Field that was clicked.
+<br/><br/>
+Within the Detector Navigator, the user can interact with each and every ROC of the CMS
+Pixel Detector. By left clicking on a portion of the detector, the user can Zoom in an
+area of interest. When zoomed, the ROC's are interactive - by positioning the mouse 
+over a particular ROC and left clicking, the histograms in the current File related to 
+that ROC will be displayed. By right clicking, the user returns to the full 
+detector view.
+<br/><br/>
+<div align='right'><a href="#topics">Back to Help Topics</a></div>
+<hr width="80%"/>
+<!-- =========================================== -->
+<br/>
+
+<a name="cfgCookies" />
+<font color="yellow">~</font><font color="purple">~</font>
+<u>Configuration Cookies:</u><br/>
+Clicking the Save Cookies icon at the upper-right corner of the desktop will save the 
+state of the Pixel Histogram Viewer. It saves the size and position of all windows as
+well as the Canvas Controls parameters. The browser will remember the user settings
+every time the user returns to the viewer (the cookies expire in one year).
+<br/><br/>
+To return to the default configuration, click the Clear Cookies icon on the desktop.
+<br/><br/>
+<div align='right'><a href="#topics">Back to Help Topics</a></div>
+<hr width="80%"/>
+<!-- =========================================== -->
+<br/>
+
+<a name="summaryFilter" />
+<font color="yellow">~</font><font color="purple">~</font>
+<u>The Filter String:</u><br/>
+The Filter String is used to manipulate the display of Summaries within the 
+Detector Navigator. This section describes the syntax and effect of the Filter String.
+Follow these steps to access the Filter:
+<center>
+<table width="80%"><td>
+<li>Open the File Navigator.</li>
+<li>Open a File by clicking on an item in the left pane.</li>
+<li>Locate in the right pane the folder named "SummaryTrees." If this folder
+does not exist then there are no summaries available for the current file.</li>
+<li>Expand the avaliable Summaries and click a Summary Field. A valid 
+Summary Field must always begin with "Field - ".</li>
+<li>The Detector Navigator should open after a few seconds with the Filter String
+text field visible in the top right.</li>
+</td></table>
+</center> 
+<br/>
+<i>Syntax Rules:</i>
+<br/>
+There are 3 types of commands for filtering the summary data: Sigma(S), Min/Max(M),
+and Bool(B). Sigma commands use a scaled value of the standard deviation 
+to set the min and max of the color scale around the average.
+Min/Max commands set the min and max of the color scale directly. Bool commands
+color the ROC's green or red based on passing or failing a condition.  
+The following conventions were adopted here:<br/>
+<center>
+<table width="80%"><td>
+<li> _ => Any amount of white space including none</li>
+<li>[p#] => A floating point parameter, where # is some integer</li>
+<li>Avg => Average of all values in the Summary</li>
+<li>Sigma => Standard devialtion of all values in the Summary</li>
+<li>{csv} => Comma-separated variables within curly brackets indicate the set of 
+valid values</li>
+<li>O(*) => Indicates * is an optional field</li>
+<li>v => Summary value associated with a roc</li> 
+</td></table>
+</center></br>
+
+<i>Sigma Command Details:</i><br/>
+
+<table><td width="15px"></td><td>
+Syntax: <b>_ S _ [p1] _ </b>
+<br/><br/>
+Example: "S 10000"<br/>
+Result: scale min = Avg - 10000*Sigma, scale max = Avg + 10000*Sigma  
+</td></table>
+
+<br/>
+<i>Min/Max Command Details:</i><br/>
+
+<table><td width="15px"></td><td>
+Syntax: <b>_ M _ {<,>} _ [p1] _ O({<,>} _ [p2] _ )</b>
+<br/>(<= and >= have same effect as < and >)
+<br/><br/>
+Example 1: " M < 1.87" <br/>
+Result: scale max = 1.87
+<br/>
+Example 2: "M > -1.5" <br/>
+Result: scale min = -1.5
+<br/>
+Example 3: "M >-1.5 < 10 " <br/>
+Result: scale min = -1.5, scale max = 10
+</td></table>
+
+<br/>
+<i>Bool Command Details:</i><br/>
+
+<table><td width="15px"></td><td>
+Syntax: <b>_ B _ {<,<=,>,>=,=} _ [p1] _ O({&,|} _ {<,<=,>,>=} _ [p2] _ )</b>
+<br/><br/>
+Example 1: "B = 1.87" <br/>
+Result: green if v = 1.87, else red
+<br/>
+Example 2: " B <5.5 " <br/>
+Result: green if v < 5.5, else red
+<br/>
+Example 3: "B < 5 | >=7.2" <br/>
+Result: green if v < 5 or v >= 7.2, else red
+<br/>
+Example 4: " B > 5 & <= 10  " <br/>
+Result: green if 5 < v <= 10, else red
+</td></table>
+
+<br/>
+<div align='right'><a href="#topics">Back to Help Topics</a></div>
+<hr width="80%"/>
+<!-- =========================================== -->
+<br/>
+
+<a name="speedTips" />
+<font color="yellow">~</font><font color="purple">~</font>
+<u>Speed Tips:</u><br/>
+The Pixel Histogram Viewer has been tested and is known to work with Firefox 2/3 and Safari
+browsers. If possible, use Safari, because the viewer may run significantly faster. If 
+using Firefox, it is recommended to disable Firebug for speed considerations.
+<br/><br/>
+<div align='right'><a href="#topics">Back to Help Topics</a></div>
+
+
+
+</div>
+</td></table>
+</center>
+</body>
+</html>

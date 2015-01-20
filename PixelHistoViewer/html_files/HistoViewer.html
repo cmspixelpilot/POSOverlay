@@ -1,0 +1,55 @@
+<!--html-->
+  <head>
+    <!-- Include stylesheets: -->
+    <link rel="stylesheet" type="text/css" href="/pixel/PixelConfigDBGUI/extjs/resources/css/ext-all.css" />
+    <link rel="stylesheet" type="text/css" href="/pixel/PixelHistoViewer/css_files/HistoViewer.css" />
+    <!-- Include Ext and app-specific scripts: -->
+    <script type="text/javascript" src="/pixel/PixelConfigDBGUI/extjs/adapter/ext/ext-base.js"></script> 
+    <script type="text/javascript" src="/pixel/PixelConfigDBGUI/extjs/ext-all-debug.js"></script> 
+    <!-- Include app-specific scripts: -->
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/HistoViewer.js"></script> 
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/FileTreeWindow.js"></script>
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/Console.js"></script>
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/Canvas.js"></script>
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/DetectorWindow.js"></script>
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/DetectorNavigator.js"></script>
+    <script type="text/javascript" src="/pixel/PixelHistoViewer/js_files/HelpWindow.js"></script>
+  </head>
+  <body>     
+		<a style="text-decoration:none" href="#">
+			 <div id="turtle" style="position:absolute">
+			 <img onclick="HistoViewer.turtleClick();" src="/pixel/PixelHistoViewer/images/turtle.png" />
+			 </div>
+		</a>
+					 
+    <a style="text-decoration:none" href="#">
+		  <div style="position:absolute;left:0px;top:10px;width:100px" onclick="HelpWindow.createWindow();" align="center">
+        <font  style="font-size:200%" color='yellow'>?</font><br/>
+				<font style="font-size:80%" color='yellow'>HELP</font>
+      </div>
+    </a>
+		<a style="text-decoration:none" href="#">
+		  <div style="position:absolute;left:0px;top:80;width:100px" onclick="HistoViewer.saveCookies();" align="center">
+        <font  style="font-size:200%" color='white'>&#167;</font><br/>
+        <font style="font-size:80%" color='white'>Save Cookies</font>
+      </div>
+    </a>
+		<a style="text-decoration:none" href="#">
+		  <div style="position:absolute;left:0px;top:150;width:100px" onclick="HistoViewer.saveCookies(1);" align="center">
+        <font  style="font-size:200%" color='#FFA800'>&#128;</font><br/>
+        <font style="font-size:80%" color='#FFA800'>Clear Cookies</font>
+      </div>
+    </a>
+    <center>
+      <table height="100%">
+				<td valign="middle" align="center">					
+          <p><b>Pixel Histogram<br />Viewer</b></p>
+        </td>				
+      </table>
+      <img id="console_bg" src="/pixel/PixelHistoViewer/images/taskbar_background.gif" />
+      <div id="console"></div>
+    </center>
+  </body>
+</html>
+
+

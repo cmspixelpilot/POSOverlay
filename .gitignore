@@ -7,7 +7,6 @@ bin
 LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelFunctionManager/
-PixelHistoViewer/
 PixelMonitor/
 PixelFEDMonitor/
 PixelSupervisorGUI/

@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# Author: D. Menasce
+# Modified: L. Uplegger
+#
+
+function usage() 
+{
+cat <<EOF
+
+  Usage: 
+
+  ./StartAll  PORT
+
+  where
+
+    - PORT any number between 1025 and 40000
+
+EOF
+}
+
+if [ $# -lt 1 ]; then
+  usage; exit 1;
+fi
+
+SHORTHOSTNAME=`/bin/hostname --short`
+HOSTNAME=`hostname`
+HISTO_VIEWER_DIR="${BUILD_HOME}/pixel/PixelHistoViewer" 
+DOMAIN_NAME=`domainname -d`
+if [ ${SHORTHOSTNAME} == ${HOSTNAME} ]; then
+  HOSTNAME=${SHORTHOSTNAME}.${DOMAIN_NAME}
+fi
+PORT=$1
+GENERATED_DIR="."
+IMAGES_DIR="images/generated"
+BACKUP_EXT="bck"
+
+if [ ! -e ${IMAGES_DIR} ]; then
+  `mkdir ${IMAGES_DIR}`
+fi
+
+cp -f ${HISTO_VIEWER_DIR}/Configuration/_PixelHistoViewer.xml       		       ${HISTO_VIEWER_DIR}/Configuration/${GENERATED_DIR}/PixelHistoViewer.xml
+#cp -f ${HISTO_VIEWER_DIR}/html_files/_HistoViewer.html 	                      ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/HistoViewer.html
+#cp -f ${HISTO_VIEWER_DIR}/html_files/__DetectorNavigator.html 	                ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/DetectorNavigator.html
+#cp -f ${HISTO_VIEWER_DIR}/html_files/_Login.html 	                      		  ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/Login.html
+#cp -f ${HISTO_VIEWER_DIR}/html_files/_LoginFailed.html 	                      ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/LoginFailed.html
+#cp -f ${HISTO_VIEWER_DIR}/js_files/_HelpWindow.js 		 	                        ${HISTO_VIEWER_DIR}/js_files/${GENERATED_DIR}/HelpWindow.js
+
+perl -pi.${BACKUP_EXT} -e "s#SERVER-MACHINE#${HOSTNAME}#g"                     ${HISTO_VIEWER_DIR}/Configuration/${GENERATED_DIR}/PixelHistoViewer.xml
+perl -pi.${BACKUP_EXT} -e "s#SERVER-PORT#${PORT}#g"                            ${HISTO_VIEWER_DIR}/Configuration/${GENERATED_DIR}/PixelHistoViewer.xml
+#perl -pi.${BACKUP_EXT} -e "s#USER-NAME#${USER}#g"                              ${HISTO_VIEWER_DIR}/css_files/navigationBar.css
+#perl -pi.${BACKUP_EXT} -e "s#USER-NAME#${USER}#g"                              ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/HistoViewer.html
+#perl -pi.${BACKUP_EXT} -e "s#USER-NAME#${USER}#g"                              ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/DetectorNavigator.html
+#perl -pi.${BACKUP_EXT} -e "s#USER-NAME#${USER}#g"                              ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/Login.html
+#perl -pi.${BACKUP_EXT} -e "s#USER-NAME#${USER}#g"                              ${HISTO_VIEWER_DIR}/html_files/${GENERATED_DIR}/LoginFailed.html
+#perl -pi.${BACKUP_EXT} -e "s#USER-NAME#${USER}#g"                              ${HISTO_VIEWER_DIR}/js_files/${GENERATED_DIR}/HelpWindow.js
+
+#$XDAQ_ROOT/daq/xdaq/scripts/xdaq.sh -p ${PORT} -e ${HISTO_VIEWER_DIR}/Configuration/Profile.xml -c ${HISTO_VIEWER_DIR}/Configuration/PixelHistoViewer.xml
+$XDAQ_ROOT/bin/xdaq.sh -p ${PORT} -e ${HISTO_VIEWER_DIR}/Configuration/Profile.xml -c ${HISTO_VIEWER_DIR}/Configuration/PixelHistoViewer.xml
