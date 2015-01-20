@@ -1,0 +1,433 @@
+#!/bin/sh
+#
+# chkconfig: 345 99 01
+# description: starts and stops xdaq service processes (RedHat Linux)	
+# proccessname: xdaqd
+#
+# config:      /etc/xdaqd.conf
+
+
+# Source function library.
+if [ -f /etc/init.d/functions ] ; then
+	. /etc/init.d/functions
+else
+    echo -n 'ERROR xdaqd: Could not find /etc/init.d/functions, stopping'
+    exit -1
+fi
+
+# Function returns 0 if file was modified before last reboot, 1 otherwise
+#
+modified_before_reboot ()
+{
+	local localfile=$1 
+
+	#Current time in seconds since the epoch
+	#
+	local cur_timestamp=`last -n 1 reboot | head -1 | awk '{ print $5" "$6" "$7" "$8; }'`
+
+	cur_timestamp=`date +%s -d "$cur_timestamp"`
+
+	# Read file time information, -t means in terse, i.e. seconds form
+	# ENDHERE MUST be at beginning of line
+	#
+	local my_stat=`stat -t $localfile 2>/dev/null` 
+	read name size blocks unk uid gid dev inode links unk2 unk3 last_access last_mod last_change ioblock << ENDHERE
+$my_stat 
+ENDHERE
+
+	# echo "File" $name "was last modified on" $last_mod
+
+	if [ $last_mod ] 
+	then 
+		# Bourne shell syntax
+		local time_diff=`expr $cur_timestamp - $last_mod` 
+
+		# Bash syntax
+		# time_diff=$[$cur_timestamp - $last_mod]
+
+		# If difference is negative, file was modified before reboot
+		#
+		if [ $time_diff -lt 0 ] 
+		then     
+			#echo This file was modified after the reboot 
+			return 1
+		else
+			#echo This file was modified before the reboot
+			return 0
+		fi
+	fi	
+}
+
+SU_CMD=/bin/su
+if [ -x /sbin/runuser ] ; then
+	SU_CMD=/sbin/runuser
+fi
+
+# Default values
+
+# If a commandline service is provided, it can override
+# the default values in xdaqd.conf
+
+CONF_DIR=/etc
+
+HOSTNAME=`hostname -s`
+if [ -s ${CONF_DIR}/$HOSTNAME.conf ] ; then
+. ${CONF_DIR}/$HOSTNAME.conf
+else
+. ${CONF_DIR}/xdaqd.conf
+fi
+
+if [ $# -ge 2 ]; then
+	STARTUP_LIST=$2
+fi
+
+export XDAQ_PLATFORM=`uname -m`
+if test ".$XDAQ_PLATFORM" != ".x86_64"; then
+export XDAQ_PLATFORM=x86
+fi
+checkos=`$XDAQ_ROOT/config/checkos.sh`
+
+export XDAQ_PLATFORM=$XDAQ_PLATFORM"_"$checkos
+
+export XDAQ_OS=`uname`
+if test ".$XDAQ_OS" = ".Linux"; then
+export XDAQ_OS=linux
+fi
+
+# Default LD_LIBRARY_PATH
+# Can be overridden in the package .conf files
+#
+LD_LIBRARY_PATH=${XDAQ_ROOT}/lib:${XDAQ_EXTERN_LIBRARY_PATH}
+
+# FUNCTION DEFINITION BEGIN
+# A function to start a program.
+# $1 is the service name, not the process name 'xdaq.exe', e.g. 'psx'
+#
+xdaqdDaemon() {
+	# Test syntax.
+	local gotbase= force=
+	local base= user= nice= bg= pid=
+	nicelevel=0
+	while [ "$1" != "${1##[-+]}" ]; do
+	  case $1 in
+	    '')    echo $"$0: Usage: myDaemon [+/-nicelevel] {program}"
+	           return 1;;
+	    --check)
+		   base=$2
+		   gotbase="yes"
+		   shift 2
+		   ;;
+	    --check=?*)
+	    	   base=${1#--check=}
+		   gotbase="yes"
+		   shift
+		   ;;
+	    --user)
+		   user=$2
+		   shift 2
+		   ;;
+	    --user=?*)
+	           user=${1#--user=}
+		   shift
+		   ;;
+	    --force)
+	    	   force="force"
+		   shift
+		   ;;
+	    [-+][0-9]*)
+	    	   nice="nice -n $1"
+	           shift
+		   ;;
+	    *)     echo $"$0: Usage: daemon [+/-nicelevel] {program}"
+	           return 1;;
+	  esac
+	done
+
+        # Save basename.
+        [ -z "$gotbase" ] && base=${1##*/}
+
+        # See if it's already running. Look *only* at the pid file.
+	# The name of the pid file is 'service'.pid, e.g. psx.pid
+	#
+	if [ -f ${PID_DIR}/${base}.pid ]; then
+		#If the pid file exists, but since its creation a reboot
+		#has been performed, assume that the file is invalid and 
+		#remove it.
+		modified_before_reboot ${PID_DIR}/${base}.pid
+
+		if [ $? -eq 0 ]; then
+			logger -t xdaqd "File" ${PID_DIR}/${base}.pid "was modified before reboot, is invalid and will be removed"
+			rm ${PID_DIR}/${base}.pid
+		else
+			logger -t xdaqd "File" ${PID_DIR}/${base}.pid "was modified after reboot, is valid and will be used to detect if the process is running"
+		fi
+
+		local line p
+		read line < ${PID_DIR}/${base}.pid
+		
+		for p in $line ; do
+			[ -z "${p//[0-9]/}" -a -d "/proc/$p" ] && pid="$pid $p"
+		done
+	fi
+	
+	# If the pid exists and restartis not forced
+	# just ignore the request and return
+	#
+	[ -n "${pid:-}" -a -z "${force:-}" ] && return
+
+	# make sure it doesn't core dump anywhere unless requested
+	ulimit -S -c ${DAEMON_COREFILE_LIMIT:-0} >/dev/null 2>&1
+	
+	# if they set NICELEVEL in /etc/sysconfig/foo, honor it
+	[ -n "$NICELEVEL" ] && nice="nice -n $NICELEVEL"
+	
+	# Echo daemon
+        [ "${BOOTUP:-}" = "verbose" -a -z "$LSB" ] && echo -n " $base"
+
+	# And start it up.
+	
+	if [ -z "$user" ]; then
+	    # $nice initlog $INITLOG_ARGS -c "$*"
+	    # aohcms: workaround for buggy system initlog/su
+	    # /bin/bash -c "cd $CORE_DIR; $*"
+	    $nice initlog $INITLOG_ARGS -c "$*"
+	else
+	    # $nice initlog $INITLOG_ARGS -c "su -s /bin/bash - $user -c \"$*\""
+	    # aohcms: workaround for buggy system initlog/su
+ 	    # su -m -s /bin/bash - $user -c "cd $CORE_DIR; $*"
+	    $nice initlog $INITLOG_ARGS -c "$SU_CMD -s /bin/bash - $user -c \"$*\""
+
+	fi
+	[ "$?" -eq 0 ] && success $"$base startup" || failure $"$base startup"
+}
+
+xdaqdStatus() {
+	local base=${1##*/}
+	local pid
+
+	# Test syntax.
+	if [ "$#" = 0 ] ; then
+		echo $"Usage: myStatus {program}"
+		return 1
+	fi
+
+	# Only look at ${PID_DIR}/*.pid files
+	#
+	if [ -f ${PID_DIR}/${base}.pid ] ; then
+	        read pid < ${PID_DIR}/${base}.pid
+	        if [ -n "$pid" ]; then
+			if [ -d "/proc/"$pid ]; then
+				echo_success 
+	        		return 0
+			else
+				echo -n $"dead but pid file exists"
+				echo_failure
+	                	return 1
+			fi
+	        fi
+	fi
+
+	# See if ${LOCK_DIR}/${base} exists
+	#
+	if [ -f ${LOCK_DIR}/${base} ]; then
+		echo -n ${base}" dead but subsys locked"
+		echo_failure
+		return 2
+	fi
+	#echo -n $"Starting XDAQ service '"${CONFIGURATION}"': "
+	echo_failure
+	return 3
+}
+
+# A function to stop a program.
+xdaqdKillProc() {
+        RC=0
+        # Test syntax.
+        if [ "$#" -eq 0 ]; then
+                echo $"Usage: killproc {program} [signal]"
+                return 1
+        fi
+
+        notset=0
+        # check for second arg to be kill level
+        if [ -n "$2" ]; then
+                killlevel=$2
+        else
+                notset=1
+                killlevel="-9"
+        fi
+
+        # Save basename.
+        base=${1##*/}
+
+        # Find pid. Only look at pid file
+        pid=	
+	if [ -f ${PID_DIR}/${base}.pid ] ; then
+	        read pid < ${PID_DIR}/${base}.pid
+	fi
+	
+        # Kill it.
+        if [ -n "${pid:-}" ] ; then
+                [ "$BOOTUP" = "verbose" -a -z "$LSB" ] && echo -n "$base "
+                if [ "$notset" -eq "1" ] ; then
+                       if checkpid $pid 2>&1; then
+                           # TERM first, then KILL if not dead
+                           kill -TERM $pid
+                           usleep 100000
+                           if checkpid $pid && sleep 1 &&
+                              checkpid $pid && sleep 3 &&
+                              checkpid $pid ; then
+                                kill -KILL $pid
+                                usleep 100000
+                           fi
+                        fi
+                        checkpid $pid
+                        RC=$?
+                        [ "$RC" -eq 0 ] && failure $"$base shutdown" || success $"$base shutdown"
+                        RC=$((! $RC))
+                # use specified level only
+                else
+                        if checkpid $pid; then
+                                kill $killlevel $pid
+                                RC=$?
+                                [ "$RC" -eq 0 ] && success $"$base $killlevel" || failure $"$base $killlevel"
+                        fi
+                fi
+        else
+            failure $"$base shutdown"
+            RC=1
+        fi
+
+        # Remove pid file if any.
+        if [ "$notset" = "1" ]; then
+            rm -f ${PID_DIR}/${base}.pid
+        fi
+        return $RC
+}
+
+# FUNCTION DEFINITION END
+
+
+
+for CONFIGURATION in ${STARTUP_LIST}; do
+
+	export CONFIGURATION
+
+	# check the existence of the configuration file for the service to be started
+	# The name of the file is ${CONFIGURATION}.conf, e.g. psx.conf
+	#
+	if [ -f ${CONF_DIR}/${CONFIGURATION}.conf ] ; then
+		. ${CONF_DIR}/${CONFIGURATION}.conf
+	else
+	    echo -n 'ERROR xdaqd: Could not find '${CONF_DIR}'/'${CONFIGURATION}'.conf, stopping'
+	    exit -1
+	fi
+
+	export XDAQ_ROOT
+	export LD_LIBRARY_PATH
+
+	# First parameter is after 'service xdaqd configuration'
+	# e.g. 'service xdad tstore status' -> 'status' is $2
+	#
+	case "$1" in
+	'start')
+	    #start xdaq
+	    echo -n $"Starting XDAQ service '"${CONFIGURATION}"': "
+
+	    args="--check ${CONFIGURATION}"
+	    if [ -n "$XDAQ_USER" ]; then 
+    		args="$args --user $XDAQ_USER"
+	    fi
+
+	    if [ -n "$LD_LIBRARY_PATH" ]; then 
+    		args="$args LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+	    fi
+	    
+	     if [ -n "$XDAQ_EXTERN_LIBRARY_PATH" ]; then 
+    		args="$args XDAQ_EXTERN_LIBRARY_PATH=$XDAQ_EXTERN_LIBRARY_PATH"
+	    fi
+
+	    if [ -n "$XDAQ_ROOT" ]; then 
+    		args="$args XDAQ_ROOT=$XDAQ_ROOT"
+	    fi
+
+	    if [ -n "$XDAQ_PLATFORM" ]; then 
+    		args="$args XDAQ_PLATFORM=$XDAQ_PLATFORM"
+	    fi
+
+	    if [ -n "$XDAQ_SETUP_ROOT" ]; then 
+    		args="$args XDAQ_SETUP_ROOT=$XDAQ_SETUP_ROOT"
+	    fi
+
+	    if [ -n "$XDAQ_DOCUMENT_ROOT" ]; then 
+    		args="$args XDAQ_DOCUMENT_ROOT=$XDAQ_DOCUMENT_ROOT"
+	    fi
+
+	    args="$args $XDAQ_ROOT/bin/xdaq.exe --daemon --pidfile ${PID_DIR}/${CONFIGURATION}.pid -u file:/tmp/${CONFIGURATION}.log"
+
+	    if [ -n "$XDAQ_HOSTNAME" ]; then 
+    		args="$args -h $XDAQ_HOSTNAME"
+	    fi
+
+	    if [ -n "$XDAQ_PORT" ]; then 
+    		args="$args -p $XDAQ_PORT"
+	    fi
+
+	    if [ -n "$XDAQ_CONFIG" ]; then 
+    		args="$args -c $XDAQ_CONFIG"
+	    fi
+
+	    if [ -n "$XDAQ_PROFILE" ]; then 
+    		args="$args -e $XDAQ_PROFILE"
+	    fi
+
+	    if [ -n "$XDAQ_ZONE" ]; then 
+    		args="$args -z $XDAQ_ZONE"
+	    fi
+
+	    args="$args >>$XDAQ_LOG 2>&1"
+
+	    # echo $args >> $XDAQ_LOG
+
+	    xdaqdDaemon $args
+
+	    sleep 1
+	    xdaqdStatus ${CONFIGURATION}
+	    if [ $? -eq 0 ]; then
+    		echo `date` ": Started XDAQ service '"${CONFIGURATION}"'" >> $XDAQ_LOG
+	    else
+    		echo `date` ": Failed to start XDAQ service '"${CONFIGURATION}"'" >> $XDAQ_LOG
+	    fi
+	    echo
+	    ;;
+	'stop')
+	    #stop xdaq
+	    echo -n $"Stopping XDAQ service '"${CONFIGURATION}"': "
+	    xdaqdKillProc ${CONFIGURATION}
+	    if [ $? -eq 0 ]; then
+    		echo `date` ": Stopped XDAQ service '"${CONFIGURATION}"'" >> $XDAQ_LOG
+	    else
+    		echo `date` ": Failed to stop XDAQ service '"${CONFIGURATION}"'" >> $XDAQ_LOG
+	    fi
+	    echo
+	    ;;
+	'restart')
+	    #stop and start xdaq
+	    $0 stop ${CONFIGURATION}
+	    sleep 2
+	    $0 start ${CONFIGURATION}
+
+	    ;;
+	'status')
+	    echo -n "Status of XDAQ service '"${CONFIGURATION}"': "
+	    xdaqdStatus ${CONFIGURATION}
+	    echo
+	    ;;
+	*)
+	    # usage
+	    echo "Usage: $0 start|stop|restart|status [configuration]"
+	    ;;
+	esac
+done
+
+exit 0
