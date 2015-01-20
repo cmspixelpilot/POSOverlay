@@ -1,0 +1,93 @@
+<tstore:configuration xmlns:tstore="urn:xdaq-tstore:1.0" xmlns:sql="urn:tstore-view-SQL">
+
+ <tstore:view id="urn:tstore-view-SQL:FEDdpNamesView">
+  <tstore:connection dbname="//uscmsdb03.fnal.gov:1521/cmscald.fnal.gov" username="JOSHI_TEST"/>
+  <sql:query name="FEDTODCSDPNAMES">
+   <sql:table name="FEDTODCSDPNAMES">
+    <sql:column name="FEDBOARDID"/>
+    <sql:column name="FEDCHANNELID"/>
+    <sql:column name="ROCID"/>
+    <sql:column name="LOGICALNAME"/>
+    <sql:column name="DPNAME"/>
+   </sql:table>
+  </sql:query>
+ </tstore:view>
+ 
+ <tstore:view id="urn:tstore-view-SQL:FEDdpFilterView">
+  <tstore:connection dbname="//uscmsdb03.fnal.gov:1521/cmscald.fnal.gov" username="JOSHI_TEST"/>
+  <sql:query name="FEDTODCSDPFILTER">
+   <sql:table name="FEDTODCSDPFILTER">
+    <sql:column name="FEDBOARDID"/>
+    <sql:column name="FEDCHANNELID"/>
+    <sql:column name="ROCID"/>
+    <sql:column name="MINADC"/>
+    <sql:column name="MAXADC"/>
+    <sql:column name="DEADBAND"/>
+   </sql:table>
+  </sql:query>
+ </tstore:view>
+
+ <tstore:view id="urn:tstore-view-SQL:FEDdpCalibrationView">
+  <tstore:connection dbname="//uscmsdb03.fnal.gov:1521/cmscald.fnal.gov" username="JOSHI_TEST"/>
+  <sql:query name="FEDTODCSDPCALIBRATION">
+   <sql:table name="FEDTODCSDPCALIBRATION">
+    <sql:column name="FEDBOARDID"/>
+    <sql:column name="FEDCHANNELID"/>
+    <sql:column name="ROCID"/>
+    <sql:column name="A0"/>
+    <sql:column name="A1"/>
+    <sql:column name="B0"/>
+    <sql:column name="B1"/>
+    <sql:column name="AA"/>
+    <sql:column name="BB"/>
+   </sql:table>
+  </sql:query>
+ </tstore:view>
+
+ <!-- TrkFEC entry for calib db -->
+
+ <tstore:view id="urn:tstore-view-SQL:TrkFECdpNamesView">
+  <tstore:connection dbname="//uscmsdb03.fnal.gov:1521/cmscald.fnal.gov" username="JOSHI_TEST"/>
+  <sql:query name="FECTODCSDPNAMES">
+   <sql:table name="FECTODCSDPNAMES">
+    <sql:column name="FECBOARDID"/>
+    <sql:column name="MFECID"/>
+    <sql:column name="CCUID"/>
+    <sql:column name="CCUCHANNELID"/>
+    <sql:column name="DCUCHANNELID"/>
+    <sql:column name="LOGICALNAME"/>
+    <sql:column name="DPNAME"/>
+   </sql:table>
+  </sql:query>
+ </tstore:view>
+
+ <tstore:view id="urn:tstore-view-SQL:TrkFECdpFilterView">
+  <tstore:connection dbname="//uscmsdb03.fnal.gov:1521/cmscald.fnal.gov" username="JOSHI_TEST"/>
+  <sql:query name="FECTODCSDPFILTER">
+   <sql:table name="FECTODCSDPFILTER">
+    <sql:column name="FECBOARDID"/>
+    <sql:column name="MFECID"/>
+    <sql:column name="CCUID"/>
+    <sql:column name="CCUCHANNELID"/>
+    <sql:column name="DCUCHANNELID"/>
+    <sql:column name="DEADBAND"/>
+   </sql:table>
+  </sql:query>
+ </tstore:view>
+ 
+ <tstore:view id="urn:tstore-view-SQL:TrkFECdpCalibrationView">
+  <tstore:connection dbname="//uscmsdb03.fnal.gov:1521/cmscald.fnal.gov" username="JOSHI_TEST"/>
+  <sql:query name="FECTODCSDPCALIBRATION">
+   <sql:table name="FECTODCSDPCALIBRATION">
+    <sql:column name="FECBOARDID"/>
+    <sql:column name="MFECID"/>
+    <sql:column name="CCUID"/>
+    <sql:column name="CCUCHANNELID"/>
+    <sql:column name="DCUCHANNELID"/>
+    <sql:column name="SLOPE"/>
+    <sql:column name="OFFSET"/>
+   </sql:table>
+  </sql:query>
+ </tstore:view>
+
+</tstore:configuration>
