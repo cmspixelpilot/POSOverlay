@@ -1,0 +1,26 @@
+
+<dcssupervisor:configuration xmlns:dcssupervisor="urn:xdaq-dcssupervisor:1.0" xmlns:fsm="urn:pvss-xdaq-fsm">
+
+ <fsm:node type="CMS_Pixel_DetectorNode">
+  <fsm:state pvssName="STANDBY" xdaqName="Halted" color="#3333FF"/>
+  <fsm:state pvssName="ON" xdaqName="Configured" color="#33FF33"/>
+  <!-- fsm:state pvssName="ERROR" xdaqName="Error" color="#FF3333"/ -->
+  <fsm:command xdaqName="Initialize" pvssName="STANDBY" xdaqState="Initial"/>
+  <fsm:command xdaqName="Configure" pvssName="ON" xdaqState="Halted"/>
+  <fsm:command xdaqName="Halt" pvssName="STANDBY" xdaqState="Running"/>
+  <fsm:command xdaqName="Halt" pvssName="STANDBY" xdaqState="Configured"/>
+  <!-- fsm:command xdaqName="Halt" pvssName="RECOVER" xdaqState="Error"/ -->
+ </fsm:node>
+
+ <fsm:node type="CMS_Pixel_PartitionNode">
+  <fsm:state pvssName="STANDBY" xdaqName="Halted" color="#3333FF"/>
+  <fsm:state pvssName="ON" xdaqName="Configured" color="#33FF33"/>
+  <!-- fsm:state pvssName="ERROR" xdaqName="Error" color="#FF3333"/ -->
+  <fsm:command xdaqName="Initialize" pvssName="STANDBY" xdaqState="Initial"/>
+  <fsm:command xdaqName="Configure" pvssName="ON" xdaqState="Halted"/>
+  <fsm:command xdaqName="Halt" pvssName="STANDBY" xdaqState="Running"/>
+  <fsm:command xdaqName="Halt" pvssName="STANDBY" xdaqState="Configured"/>
+  <!-- fsm:command xdaqName="Halt" pvssName="RECOVER" xdaqState="Error"/ -->
+ </fsm:node>
+
+</dcssupervisor:configuration>
