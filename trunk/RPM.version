@@ -1,0 +1,29 @@
+
+ifndef PackageName
+PackageName=$(Package)
+endif
+
+ifndef PACKAGE_VER_MAJOR
+PACKAGE_VER_MAJOR=$(shell awk 'BEGIN{IGNORECASE=1} /PACKAGE_VER_MAJOR/ {print $$2;}' $(BUILD_HOME)/$(Project)/VERSION)
+endif
+
+ifndef PACKAGE_VER_MINOR
+PACKAGE_VER_MINOR=$(shell awk 'BEGIN{IGNORECASE=1} /PACKAGE_VER_MINOR/ {print $$2;}' $(BUILD_HOME)/$(Project)/VERSION)
+endif
+
+ifndef PACKAGE_VER_PATCH
+PACKAGE_VER_PATCH=$(shell awk 'BEGIN{IGNORECASE=1} /PACKAGE_VER_PATCH/ {print $$2;}' $(BUILD_HOME)/$(Project)/VERSION)
+endif
+
+ifndef PACKAGE_RELEASE
+PACKAGE_RELEASE=$(shell awk 'BEGIN{IGNORECASE=1} /PACKAGE_RELEASE/ {print $$2;}' $(BUILD_HOME)/$(Project)/VERSION)
+endif
+
+ifndef Link
+Link=www
+endif
+
+ifndef Summary
+Summary="Pixel online software"
+endif
+
