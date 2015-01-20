@@ -4,6 +4,7 @@ bin
 *.d
 *.o
 *.so
+*.exe
 LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelFunctionManager/
