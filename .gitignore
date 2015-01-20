@@ -7,7 +7,6 @@ bin
 LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelFunctionManager/
-PixelMonitor/
 PixelFEDMonitor/
 PixelSupervisorGUI/
 RPM.version
