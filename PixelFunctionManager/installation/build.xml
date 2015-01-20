@@ -1,0 +1,80 @@
+<!-- build file for compiling and deploying a RCMS2 User State Machine -->
+
+<project name="statemachine" default="release" basedir=".">
+	
+	<!-- Properties the user needs to modify -->
+	<property name="fm.name" value="PixelFunctionManager" />
+
+	<!--property file="../../../RunControl/framework/installation/configuration/RCMS.properties" /-->
+	<property environment="env" />
+	<property file="${env.RCMS_HOME}/framework/installation/configuration/RCMS.properties" />
+
+	<!-- Other properties -->
+	<property name="jakarta.common" value="${jakarta.home}/common/lib" />
+	<property name="jakarta.fmdeploy" value="${jakarta.home}/webapps/ROOT/functionmanagers" />
+
+	<property name="rcms.webapp" value="${rcms.framework}/rcms" />
+	<property name="rcms.classes" value="${rcms.webapp}/WEB-INF/classes" />
+	<property name="rcms.libs" value="${rcms.webapp}/WEB-INF/lib" />
+	<property name="rcms.src" value="${rcms.webapp}/WEB-INF/src" />
+
+	<property name="fm.classes" value="../classes" />
+	<property name="fm.src" value="../src" />
+	<property name="fm.jar" value="${fm.name}.jar" />
+
+	<!-- classpath for the RCMS services libraries -->
+	<path id="rcms.classpath">
+			<fileset dir="${rcms.libs}">
+				<include name="*.jar"/>
+			</fileset>
+		<pathelement location="${rcms.classes}"/>
+	</path>
+
+	<!-- Compiles this StateMachine -->
+	<target name="compile" depends="clean">
+		<echo message="Compile this FunctionManager code" />
+		<delete dir="${fm.classes}" />
+		<mkdir dir="${fm.classes}" />
+		<javac
+			srcdir="${fm.src}"
+			destdir="${fm.classes}"
+			failonerror="true">
+			<classpath refid="rcms.classpath"/>
+		</javac>
+	</target>
+	
+	<!-- Documents the source code. -->
+	<target name="javadoc">
+		<echo message="Documenting source code..." />
+		<mkdir dir="${fm.javadoc}" />
+		<javadoc packagenames="rcms.fm.app.hello.*"
+			 sourcepath="${fm.src}"
+			 destdir="${fm.javadoc}"
+			 failonerror="true">
+			 <classpath refid="rcms.classpath"/>
+		</javadoc>
+	</target>
+
+	<!-- Builds a jar file for this StateMachine -->
+	<target name="jar" depends="compile">
+		<jar file="${fm.jar}" basedir="${fm.classes}" />
+	</target>
+
+	<!-- Deploys this StateMachine    SKIP THIS d.k. -->
+	<!-- <target name="deploy">
+		<mkdir dir="${jakarta.fmdeploy}" />
+		<copy file="${fm.jar}" todir="/opt/rcms/pixeldev/tomcat/webapps/ROOT/functionmanagers" />
+	</target> -->
+	
+	<!-- Compiles and deploys this StateMachine CANCEL DEPLAY d.k.-->
+	<target name="release" depends="jar">
+	</target>
+	
+	<!-- Cleans compilation and deployment results -->
+	<target name="clean">
+		<delete dir="${fm.classes}" />
+		<delete file="${fm.jar}" />
+		<delete file="${jakarta.fmdeploy}/${fm.jar}" />
+	</target>
+
+</project>

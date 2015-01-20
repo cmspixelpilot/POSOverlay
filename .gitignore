@@ -5,8 +5,7 @@ bin
 *.o
 *.so
 *.exe
+config
 LogReaderWithFileServer
 PixelConfigDBGUI/
-PixelFunctionManager/
 PixelSupervisorGUI/
-config
