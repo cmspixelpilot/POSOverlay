@@ -1,0 +1,19 @@
+2010-03-04  Marco Rovere  <rovere@pcmagni.mib.infn.it>
+
+	* src/common/PixelConfigDBInterface.cc (PixelConfigDBInterface::uploadStatus): again a 
+	patch to try and fix the problem of asserting if a configuration made it to the DB
+	correctly or not. This time I do a double loop, one for partial and one for success.
+
+2010-03-02  Marco Rovere  <rovere@pcmagni.mib.infn.it>
+
+	* src/common/PixelConfigDBInterface.cc (PixelConfigDBInterface::commitToDB): commented
+	out the second (now redundant) check on upload status from the DB. This
+	should make the transaction from 'in progress' to 'success' faster (approx
+	10 secs gain...)
+
+	* src/common/PixelConfigDBInterface.cc (PixelConfigDBInterface::uploadStatus): in case
+	of a 'composite' upload we now test only for the final Success and not for
+	the intermediate ones (marked with the 'Success[*]' label). This should
+	prevent us from triggering a green light in the middle of a still ongoing
+	processing.
+

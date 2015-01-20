@@ -1,0 +1,5 @@
+FPix_BpI_D1_BLD1_PNL1_PLQ2_ROC0
+AnalogInputBias: 127
+AnalogOutputBias: 80
+AnalogOutputGain: 120
+Mode: SingleMode

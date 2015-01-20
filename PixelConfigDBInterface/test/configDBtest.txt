@@ -1,0 +1,69 @@
+rm -rf DB
+rm *.dat
+mkdir DB
+mkdir DB/nametranslation
+mkdir DB/detconfig
+mkdir DB/calib
+mkdir DB/fecconfig
+mkdir DB/fedconfig
+mkdir DB/tkfecconfig
+mkdir DB/portcardmap
+mkdir DB/portcard
+mkdir DB/ltcconfig
+mkdir DB/ttcciconfig
+mkdir DB/fedcard
+mkdir DB/tbm
+mkdir DB/dac
+mkdir DB/trim
+mkdir DB/mask
+cp sampleConfigurationFiles/configurations.txt DB/.
+cp sampleConfigurationFiles/aliases.txt DB/.
+export PIXELCONFIGURATIONBASE=$BUILD_HOME/pixel/PixelConfigDBInterface/test/DB
+
+./bin/linux/x86/PixelConfigDBCmd.exe --printAlias
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData ltcconfig sampleConfigurationFiles/LTCConfiguration.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData ltcconfig sampleConfigurationFiles/LTCConfiguration.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData ttcciconfig sampleConfigurationFiles/TTCciConfiguration.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData calib sampleConfigurationFiles/calib.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData calib sampleConfigurationFiles/delay25.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData nametranslation sampleConfigurationFiles/translation.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData detconfig sampleConfigurationFiles/detectconfig.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData fecconfig sampleConfigurationFiles/fecconfig.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData fedconfig sampleConfigurationFiles/fedconfig.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData tkfecconfig sampleConfigurationFiles/tkfecconfig.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData portcardmap sampleConfigurationFiles/portcardmap.dat
+./bin/linux/x86/PixelConfigDBCmd.exe --insertDataSet fedcard sampleConfigurationFiles/fedcardlist.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertDataSet portcard sampleConfigurationFiles/portcardlist.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertDataSet tbm sampleConfigurationFiles/tbmlist.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertDataSet dac sampleConfigurationFiles/daclist.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertDataSet mask sampleConfigurationFiles/maskslist.txt
+./bin/linux/x86/PixelConfigDBCmd.exe --insertDataSet trim sampleConfigurationFiles/trimslist.txt
+
+./bin/linux/x86/PixelConfigDBCmd.exe --getVersion nametranslation/ 0
+./bin/linux/x86/PixelConfigDBCmd.exe --getVersion detconfig/ 0
+./bin/linux/x86/PixelConfigDBCmd.exe --getVersion fecconfig/ 0
+./bin/linux/x86/PixelConfigDBCmd.exe --getVersion fedconfig/ 0
+./bin/linux/x86/PixelConfigDBCmd.exe --getVersion tkfecconfig/ 0
+./bin/linux/x86/PixelConfigDBCmd.exe --getVersion portcardmap/ 0
+
+./bin/linux/x86/PixelConfigDBCmd.exe --insertConfigAlias PhysicsLowLumi 0 
+
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias dac 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias tbm 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias nametranslation 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias detconfig 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias ltcconfig 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias ttcconfig 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias fecconfig 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias fedconfig 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias tkfecconfig 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias portcardmap 0 Default
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias portcard 0 Default
+
+./bin/linux/x86/PixelConfigDBCmd.exe --insertConfigAlias Physics dac 1 detconfig 0 nametranslation 0
+
+./bin/linux/x86/PixelConfigDBCmd.exe --insertConfigAlias Physics dac Default detconfig Default nametranslation Default fecconfig Default fedconfig Default tkfecconfig Default portcardmap Default 
+
+./bin/linux/x86/PixelConfigDBCmd.exe --insertData detconfig sampleConfigurationFiles/detectconfig.dat
+
+./bin/linux/x86/PixelConfigDBCmd.exe --insertVersionAlias detconfig 1 Default
