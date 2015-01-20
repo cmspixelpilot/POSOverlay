@@ -9,6 +9,4 @@ LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelFunctionManager/
 PixelSupervisorGUI/
-RPM.version
-VERSION
 config
