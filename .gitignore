@@ -1,12 +1,15 @@
 .svn
+lib
+bin
+*.d
+*.o
+*.so
 LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelFunctionManager/
 PixelHistoViewer/
 PixelMonitor/
 PixelFEDMonitor/
-lib
-bin
 PixelSupervisorGUI/
 RPM.version
 VERSION
