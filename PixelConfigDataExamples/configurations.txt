@@ -553,3 +553,37 @@ portcardmap 0
 ttcciconfig 0
 ltcconfig 0
 tkfecconfig 0
+
+key 35						# Pixel Alive  with BmI, O swapped at px mfecs
+detconfig 0
+nametranslation 1
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 14
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
+
+key 36						# TBMPhaseScan using Pixel Alive
+detconfig 0
+nametranslation 1
+fedconfig 0
+fecconfig 0
+fedcard 0
+dac 0
+mask 0
+trim 0
+calib 33
+tbm 0
+portcard 0
+portcardmap 0
+ttcciconfig 0
+ltcconfig 0
+tkfecconfig 0
