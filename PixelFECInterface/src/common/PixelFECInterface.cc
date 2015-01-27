@@ -2639,7 +2639,14 @@ void PixelFECInterface::setAllDAC(const PixelHdwAddress& theROC,
 				  const bool buffermode) {
 
   assert(dacs.size()==30);
-  printf("JMT remove this hardcoded magicnumber bullshit\n");
+  static bool jmt_warned = false;
+  if (!jmt_warned) {
+    printf("****************************************************************************\n");
+    printf("JMT needs to fix the hardcoded magic numbers in PixelFECInterface::setAllDAC\n");
+    printf("                           (this is the only warning)\n");
+    printf("****************************************************************************\n");
+    jmt_warned = true;
+  }
 
   //std::cout << "In PixelFECInterface::setAllDAC "<<theROC.mfec()<<" "<<theROC.mfecchannel()<<" "
   //        <<theROC.hubaddress()<<" "<<theROC.portaddress()<<" "<<theROC.rocid()<<" "<<dacs.size()
