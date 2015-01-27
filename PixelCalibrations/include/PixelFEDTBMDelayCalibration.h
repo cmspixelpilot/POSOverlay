@@ -20,6 +20,7 @@
 #include "PixelUtilities/PixelFEDDataTools/include/PixelScanRecord.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 
+#include <fstream>
 #include <map>
 
 class TGraph2DErrors;
@@ -46,6 +47,8 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   // Calibration steps
   void RetrieveData(unsigned int state);
   void Analyze();
+
+  std::ofstream outf;
 
   typedef std::map<unsigned, unsigned> pixel;
   typedef std::map<std::string,unsigned int> dacsettings;

@@ -54,19 +54,28 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReferen
 }
 
 void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
+  assert(outf.is_open());
+
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
   const std::vector<PixelROCName>& ROCsToCalibrate = tempCalibObject->rocList();
+#if 0
+  cout << "ROCsToCalibrate ";
+  for (size_t i = 0; i < ROCsToCalibrate.size(); ++i)
+    cout << ROCsToCalibrate[i] << " ";
+  cout << endl;
+#endif
+
   const std::vector<std::pair<unsigned, std::vector<unsigned> > >& fedsAndChannels = tempCalibObject->fedCardsAndChannels(crate_, theNameTranslation_, theFEDConfiguration_, theDetectorConfiguration_);
 
-  cout << "RETR state " << state << " ";
+  outf << "RETR event " << event_ << " state " << state << " ";
   std::map<std::string, unsigned int> currentDACValues;
   for (unsigned dacnum = 0; dacnum < tempCalibObject->numberOfScanVariables(); ++dacnum) {
     const std::string& dacname = tempCalibObject->scanName(dacnum);
     const unsigned dacvalue = tempCalibObject->scanValue(tempCalibObject->scanName(dacnum), state);
     currentDACValues[dacname] = dacvalue;
-    cout << dacname << " " << dacvalue << " ";
+    outf << dacname << " " << dacvalue << " ";
   }
 
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
@@ -76,18 +85,20 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     uint64_t buffer64[4096];
     const int status = FEDInterface_[vmeBaseAddress]->spySlink64(buffer64);
     if (status <= 0) {
-      cout << "ERROR reading FIFO3 on FED # " << fednumber << " in crate # " << crate_ << "." << endl;
+      outf << "ERROR reading FIFO3 on FED # " << fednumber << " in crate # " << crate_ << "." << endl;
       continue;
     }
 
     uint32_t errBuffer[36*1024];
     const int errCount = FEDInterface_[vmeBaseAddress]->drainErrorFifo(errBuffer);
     ErrorFIFODecoder errors(errBuffer, errCount);
-    cout << "nerr " << errCount << " ";
+    outf << "nerr " << errCount << " ";
 
     FIFO3Decoder decode(buffer64);
     const unsigned nhits = decode.nhits();
-    cout << "nhits " << nhits << " ";
+    outf << "nhits " << nhits << " {hits ";
+
+    unsigned nskip = 0;
 
     for (unsigned ihit = 0; ihit < nhits; ++ihit) {
       const unsigned channel = decode.channel(ihit);
@@ -96,20 +107,18 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 
       const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
 
-      cout << "hit #" << ihit << " roc " << roc << " (" << rocid << ") ";
-//// Skip if this ROC is not on the list of ROCs to calibrate.
-//vector<PixelROCName>::const_iterator foundROC = find(ROCsToCalibrate.begin(), ROCsToCalibrate.end(), roc);
-//if (foundROC == ROCsToCalibrate.end())
-//	continue;
-//
-//// Skip if we're in singleROC mode, and this ROC is not being calibrated right now.
-//if (!tempCalibObject->scanningROCForState(roc, state))
-//	continue;
+      // Skip if this ROC is not on the list of ROCs to calibrate.
+      // Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
+      vector<PixelROCName>::const_iterator foundROC = find(ROCsToCalibrate.begin(), ROCsToCalibrate.end(), roc);
+      if (foundROC == ROCsToCalibrate.end()) { // || !tempCalibObject->scanningROCForState(roc, state)) {
+	++nskip;
+	continue;
+      }
 
-      cout << " ch " << channel << " col " << decode.column(ihit) << " row " << decode.row(ihit) << " ";
+      outf << "hit #" << ihit << " roc " << roc << " (" << rocid << ") ch " << channel << " col " << decode.column(ihit) << " row " << decode.row(ihit) << " ";
     }
 
-    cout << endl;
+    outf << "hits} nskip " << nskip << endl; 
   }
 }
 
@@ -129,10 +138,15 @@ void PixelFEDTBMDelayCalibration::initializeFED() {
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::MessageReference msg) {
   xoap::MessageReference reply = MakeSOAPMessageReference("BeginCalibrationDone");
+  std::string fn(outputDir() + "/RETR.txt");
+  cout << "writing RETR lines to file " << fn << endl;
+  outf.open(fn);
   return reply;
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::MessageReference msg) {
+  cout << "close output\n";
+  outf.close();
   cout << "In PixelFEDTBMDelayCalibration::endCalibration()" << endl;
   xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
   return reply;
