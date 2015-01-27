@@ -1363,6 +1363,9 @@ bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
 					  bool turnOn,
 					  unsigned int portNumber) {
 
+  printf("Doing pixDCDCCommand slot %i ring %i ccuAddrEnable %x ccuAddressPgood %x piaChannelAddr %x portNumber %i turnOn? %i \n", fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, portNumber, turnOn);
+  usleep(500000);
+
   bool success = true;
   
   keyType enableKey = buildCompleteKey(fecAddress, ringAddress, ccuAddressEnable, piaChannelAddress, 0);
@@ -1376,12 +1379,11 @@ bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
     unsigned int invBits = 0xFF ^ bits;
 
     // Set just the two pins we want to input for pgood.
+    usleep(10000);
     fecAccess_->setPiaChannelDDR(pgoodKey, invBits & fecAccess_->getPiaChannelDDR(pgoodKey));
 
-    // Sleep 5 ms before reading back the pgood bit.
-    usleep(5000);
-      
     // Read the pgood bit to check state before doing anything.
+    usleep(10000);
     unsigned int initPgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
     bool initPgood = ((initPgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
     cout << "Initial pgoodVal = 0x" << std::hex << initPgoodVal << " = " << (initPgood ? "PGOOD" : "NOT PGOOD") << "\n";
@@ -1391,16 +1393,21 @@ bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
     }
     else {
       // Set just the two pins we want to output for enable;
+      usleep(10000);
       fecAccess_->setPiaChannelDDR(enableKey, bits | fecAccess_->getPiaChannelDDR(enableKey));
+
       // and set the inverted bits in the data reg.
+      usleep(10000);
       unsigned int initEnableVal = fecAccess_->getPiaChannelDataReg(enableKey); // JMTBAD the two lines below ere using the pgood values???
+
+      usleep(10000);
       if (turnOn)
 	fecAccess_->setPiaChannelDataReg(enableKey, invBits & initEnableVal);
       else
 	fecAccess_->setPiaChannelDataReg(enableKey, bits    | initEnableVal);
     
       // Sleep 5 ms before reading back the pgood bit.
-      usleep(5000);
+      usleep(50000);
 
       // Read back the pgood bit and report status. 
       unsigned pgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
@@ -1813,7 +1820,6 @@ end of redundancy ring comment */
 	// ccu or some other config objects and find out whether we're
 	// supposed to send PIA commands to enable DC-DC. For now just do it
 	if (ringiter->first == 8) {
-	  printf("JMT pixDCDC slot %i ring %i\n", slot, ringiter->first);
 	  pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
 	}
 
