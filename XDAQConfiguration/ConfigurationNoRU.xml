@@ -3,7 +3,7 @@
 	
 <!-- Change this to point to the URL where you will run xdaq -->
 	<!-- <xc:Context id="0" url="http://cmsfpix1.cern.ch:1973/"> -->
-	<xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:1973/">
+	<xc:Context id="0" url="http://pixp1daq.cern.ch:1973/">
 
 		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
 		<xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
@@ -47,7 +47,7 @@
 		<xc:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86_64_slc6/libPixelTTCSupervisor.so</xc:Module>
 		-->
 
-                <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vmepc-s2b18-08-01.cms" port="1914" network="xmas"/>
+                <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="pixp1daq.cern.ch" port="1914" network="xmas"/>
 
 		<xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="local" group="daq">
                     <properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
@@ -62,7 +62,7 @@
                          <name xsi:type="xsd:string">Board 1</name>
            	      <BusAdapter xsi:type="xsd:string">CAENPCIe</BusAdapter>
            	      <Location xsi:type="xsd:integer">2</Location>
-           	      <Configuration xsi:type="xsd:string">[file=/nfshome0/pixelpilot/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration.txt]</Configuration> 
+           	      <Configuration xsi:type="xsd:string">[/home/cmspixp1/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration.txt]</Configuration> 
                          <group xsi:type="xsd:string">Pixel</group>
                          <system xsi:type="xsd:string">CR</system>
            	      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>

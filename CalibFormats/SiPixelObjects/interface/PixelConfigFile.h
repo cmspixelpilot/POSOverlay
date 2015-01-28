@@ -28,6 +28,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortCardConfig.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelDCDCConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortcardMap.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDelay25Calib.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
@@ -459,6 +460,11 @@ namespace pos{
 	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelPortCardConfig" << std::endl;
 	assert(dir=="portcard");
 	data = (T*) new PixelPortCardConfig(fullpath+"portcard_"+ext+".dat");
+	return;
+      }else if (typeid(data)==typeid(PixelDCDCConfig*)){
+	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelDCDCConfig" << std::endl;
+	assert(dir=="dcdc");
+	data = (T*) new PixelDCDCConfig(fullpath+"dcdc_"+ext+".dat");
 	return;
       }else if (typeid(data)==typeid(PixelPortcardMap*)){
 	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelPortcardMap" << std::endl;

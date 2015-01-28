@@ -1,0 +1,11 @@
+Enabled: yes
+CCUAddressEnable: 0x7e
+CCUAddressPgood: 0x7d
+PIAChannelAddress: 0x30
+PortNumber: 2
+
+# follow example of PixelPortCardConfig object in pixel/CalibFormats/SiPixelObjects/{interface,src}/PixelPortCardConfig.{h,cc}
+# PixelDCDCCardConfig
+# - 4 pairs of DCDC per card
+#   - CCUAddressEnable, Pgood, 
+# it 
