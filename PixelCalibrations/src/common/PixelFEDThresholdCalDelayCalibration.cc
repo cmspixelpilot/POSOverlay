@@ -69,9 +69,9 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 
       uint64_t buffer64[fifo3Depth];
       int status=iFED->spySlink64(buffer64);
-      printf(" status is %i\n", status);
+      //printf(" status is %i\n", status);
       if (status>0) {
-	if(1){
+	if(0){
 	  std::cout<<"Contents of Spy FIFO 3"<<std::endl;
 	  std::cout<<"----------------------"<<std::endl;
 	  for (int i=0; i<=status;++i) {
@@ -93,7 +93,6 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 									 channel,
 									 rocid-1);
 
-	  printf("GOT A roc %s nhits %u caldel %i vcthr %i\n", roc.rocname().c_str(), nhits, icaldelay, ithreshold);
 	  map <PixelROCName, PixelEfficiency2DVcThrCalDel>::iterator it=eff_.find(roc);
 
 	  if (it!=eff_.end()) {
