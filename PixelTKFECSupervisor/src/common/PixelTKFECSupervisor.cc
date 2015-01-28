@@ -1386,9 +1386,9 @@ bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
     usleep(10000);
     unsigned int initPgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
     bool initPgood = ((initPgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
-    cout << "Initial pgoodVal = 0x" << std::hex << initPgoodVal << " = " << (initPgood ? "PGOOD" : "NOT PGOOD") << "\n";
+    cout << "Initial pgoodVal = 0x" << std::hex << initPgoodVal << " = " << (initPgood ? "PGOOD" : "NOT PGOOD") << endl;
     if (turnOn + initPgood != 1) {
-      cout << " but asked to turn " << (turnOn ? "ON" : "OFF") << " ; bailing out!!!";
+      cout << " but asked to turn " << (turnOn ? "ON" : "OFF") << " ; bailing out!!!" << endl;
       success = false;
     }
     else {
@@ -1412,9 +1412,9 @@ bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
       // Read back the pgood bit and report status. 
       unsigned pgoodVal = fecAccess_->getPiaChannelDataReg(pgoodKey);
       bool pgood = ((pgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
-      cout << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << "\n";
+      cout << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << endl;
       if (turnOn + pgood == 1) {
-	cout << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!";
+	cout << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!" << endl;
 	success = false;
       }
     }
