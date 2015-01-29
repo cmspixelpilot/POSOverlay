@@ -7,7 +7,6 @@
 //
 
 #include "CalibFormats/SiPixelObjects/interface/PixelDCDCConfig.h"
-//#include "CalibFormats/SiPixelObjects/interface/PixelPortCardSettingNames.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
 #include <fstream>
 #include <sstream>
@@ -19,7 +18,6 @@
 #include <set>
 
 using namespace std;
-//using namespace pos::PortCardSettingNames;
 using namespace pos;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -50,47 +48,12 @@ PixelDCDCConfig::PixelDCDCConfig(std::string filename):
   else {
     std::cout << __LINE__ << "]\t" << mthn << "Opened: "         << filename << std::endl;
   }
-  
-/*
-  string dummy;
 
-  in >> dummy;
-  if ( dummy == "Name:" ) // check that port card name matches the file name
-  {
-    in >> dummy; assert( dummy==portcardname_ );
-    in >> dummy;
-  }
-  if ( dummy == "Type:" ) // read in the type, defaulting to "fpix" if not specified
-  {
-    in >> type_;
-    assert( type_ == "fpix" || type_ == "bpix" || type_ == "pilt" );
-    in >> dummy;
-  }
-  else
-  {
-    type_ = "fpix";
-  }
-  fillNameToAddress();
-  fillDBToFileAddress() ;
-  assert(dummy=="TKFECID:");        in >> TKFECID_;
-  in >> dummy; assert(dummy=="ringAddress:");    in >> std::hex >> ringAddress_;
-  in >> dummy; assert(dummy=="ccuAddress:");     in >> std::hex >> ccuAddress_;
-  in >> dummy; assert(dummy=="channelAddress:"); in >> std::hex >> channelAddress_;
-  in >> dummy; assert(dummy=="i2cSpeed:");       in >> std::hex >> i2cSpeed_;
-    
-  //std::cout << __LINE__ << "]\t" << mthn 
-  //          <<TKFECAddress_<<", "<<ringAddress_<<", "<<ccuAddress_<<", "<<channelAddress_<<", "<<i2cSpeed_<<std::endl;
-  
-  assert( nameToAddress_.size() != 0 );
-  */
   do {
       
     std::string settingName;
     std::string value;
-    //unsigned int i2c_address;
-    //unsigned int i2c_values;
-    
-    //in >> settingName >> std::hex >> i2c_values >> std::dec;
+
     in >> settingName >> value;
     if (in.eof()) break;
     

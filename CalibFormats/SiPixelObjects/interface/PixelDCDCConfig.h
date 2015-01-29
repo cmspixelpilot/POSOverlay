@@ -66,31 +66,6 @@ namespace pos{
     unsigned int getPortNumber() { return portnumber_; }
     void setPortNumber(unsigned int address) { portnumber_ = address; }
     
-/*
-    unsigned int getdevicesize() const;
-    std::string  getTKFECID() const;
-    unsigned int getringAddress() const;
-    unsigned int getccuAddress() const;
-    unsigned int getchannelAddress() const;
-    unsigned int geti2cSpeed() const;
-    std::string  gettype() const;
-    unsigned int getdeviceAddress(unsigned int i) const;
-    unsigned int getdeviceValues(unsigned int i) const;
-    unsigned int getdeviceAddressForSetting(std::string settingName) const;
-    unsigned int getdeviceValuesForSetting(std::string settingName) const;
-    unsigned int getdeviceValuesForAddress(unsigned int address) const;
-    unsigned int getAOHBias(unsigned int AOHNumber) const {return getdeviceValuesForAddress(AOHBiasAddressFromAOHNumber(AOHNumber));}
-    void setdeviceValues(unsigned int address, unsigned int value);
-    void setdeviceValues(std::string settingName, unsigned int value);
-  
-    unsigned int AOHBiasAddressFromAOHNumber(unsigned int AOHNumber) const;
-    unsigned int AOHGainAddressFromAOHNumber(unsigned int AOHNumber) const;
-    
-    void setAOHGain(unsigned int AOHNumber, unsigned int value) {setAOHGain(AOHGainStringFromAOHNumber(AOHNumber),value);}
-    unsigned int getAOHGain(unsigned int AOHNumber) const;
-    
-    unsigned int new_PLL_CTR2_value(std::string CTR4or5, unsigned int last_CTR2) const;
-  */  
   private:
 	
     std::string dcdcname_;
@@ -103,22 +78,7 @@ namespace pos{
 
     void fillNameToAddress();
     void fillDBToFileAddress();
-/*
-    bool containsDeviceAddress(unsigned int deviceAddress) const;
-    bool containsSetting(std::string settingName) const { return containsDeviceAddress(getdeviceAddressForSetting(settingName)); }
 
-    void setAOHGain(std::string settingName, unsigned int value);
-    void setDataBaseAOHGain(std::string settingName, unsigned int value);
-    std::string AOHGainStringFromAOHNumber(unsigned int AOHNumber) const;
-
-    std::string  TKFECID_;//FEC ID string, as defined in tkfecconfig.dat
-    unsigned int ringAddress_;//ring #
-    unsigned int ccuAddress_;//CCU #
-
-    unsigned int channelAddress_;//there are 8? channels on a CCU board
-    std::vector < std::pair<unsigned int, unsigned int> > device_;//the address on the portcard, and the value of it
-    unsigned int i2cSpeed_;//for the portcard, the slow i2c speed is 100kHz
-*/
 ///key used for sorting device_
     std::vector < unsigned int > key_;
     unsigned int aohcount_;
