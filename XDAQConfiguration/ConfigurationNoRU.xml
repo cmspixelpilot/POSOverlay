@@ -62,7 +62,7 @@
                          <name xsi:type="xsd:string">Board 1</name>
            	      <BusAdapter xsi:type="xsd:string">CAENPCIe</BusAdapter>
            	      <Location xsi:type="xsd:integer">2</Location>
-           	      <Configuration xsi:type="xsd:string">[/nfshome0/pixelpilot/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration.txt]</Configuration> 
+           	      <Configuration xsi:type="xsd:string">[file=/nfshome0/pixelpilot/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration.txt]</Configuration> 
                          <group xsi:type="xsd:string">Pixel</group>
                          <system xsi:type="xsd:string">CR</system>
            	      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
