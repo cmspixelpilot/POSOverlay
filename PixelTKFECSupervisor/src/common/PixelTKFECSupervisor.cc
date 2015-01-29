@@ -1474,7 +1474,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- Power check finished");
     
     if (proceed) {
-      
+
       const long loop = 1 ;
       const unsigned long tms  = 0 ;  // wait tms microseconds
       string fecAccessType = "unset";
@@ -1489,10 +1489,10 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       //it also creates the fecAccess and resets the control rings
       map<unsigned int, set<pair<unsigned int,bool> > > ccuRingMap;
       set<std::string>::const_iterator iiportcard=portcards.begin(); 
-      
+
       for ( ;iiportcard!=portcards.end();iiportcard++) {      // Cycle over portcards
 	
-	cout<<"config portcrad "<<*iiportcard<<endl;
+	cout<<"config portcard "<<*iiportcard<<endl;
 	
 	PixelPortCardConfig* tempPortCard=0;
 	PixelConfigInterface::get(tempPortCard,"pixel/portcard/"+*iiportcard, *theGlobalKey_);
@@ -1576,6 +1576,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	    {
 	      std::cout << "First device, Fec Access already exists" << std::endl;
 	    }
+
 	  // Set the options for the FecAccess
 	  fecAccess_->setForceAcknowledge (fack) ;
 	  fecAccess_->seti2cChannelSpeed (tempPortCard->geti2cSpeed()) ;
@@ -1587,7 +1588,6 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	  if (getErrorCounterFlag()) {
 	    fprintf (getStdchan(), "------------------------------------ Error counting start\ntimestamp=%ld\n", time(NULL)) ;
 	  }
-	  
 	} // if np
 	
 	
@@ -1599,7 +1599,6 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	}
 	
 	if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After resetPlxFec");
-	
 	// this would be where we pull a STATUS flag for the CCU out of the configuration data
 	//for now insert true for everything
 	//for testing, we could arbitrarily insert 'false' for one ccu
@@ -1608,6 +1607,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	
 	if (extratimers_)   GlobalTimer_.printTime("stateConfiguring -- After ccuRingMap");
 	
+
       } //end of loop over portcards
       
       //Each TKFEC controls several CCU rings (4 for FPix, 4 for BPix)
@@ -1781,7 +1781,6 @@ end of redundancy ring comment */
       if(status) cout<<" Error in portcard config "<<status<<endl;
       if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- configure portcards done!");
       suppressHardwareError_=false;
-
       
       // Submit a job to the workloop if it is a Physics Run (Actual start of thread)
       if (theCalibObject_==0) { // This must be a Physics Run
@@ -1804,23 +1803,47 @@ end of redundancy ring comment */
 	
       }
 
+      // get the list of dcdc that need to be turned on
+      std::vector< std::pair<unsigned int, unsigned int> > list_of_dcdc;
+      std::map< std::pair<unsigned int, unsigned int>, string > names_dcdc;
+      map<string, PixelPortCardConfig*>::const_iterator iportcard=mapNamePortCard_.begin();
+      PixelPortCardConfig* tempPortCard=0;
+      for ( ; iportcard != mapNamePortCard_.end() ; ++iportcard) {
+	      string name = iportcard->first;
+	      PixelConfigInterface::get(tempPortCard,"pixel/portcard/"+name, *theGlobalKey_);
+	      const std::string TKFECID = tempPortCard->getTKFECID();
+	      slot = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
+	      ring = tempPortCard->getringAddress();
+	      list_of_dcdc.push_back( std::make_pair(slot,ring) );
+	      names_dcdc[ std::make_pair(slot,ring) ] = name;
+      }
+
+
       //std::cout << "Disable the PIA ports "<< std::endl;        
       //program the CCU (this is to disable PIA resets in order not to have the fire by themselves)
+	PixelDCDCConfig* tempDCDC=0;
       for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); 
 	   ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
 
-	// JMTBAD this needs to be configurable in software. Loop over
-	// ccu or some other config objects and find out whether we're
-	// supposed to send PIA commands to enable DC-DC. For now just do it
-	if (ringiter->first == 8) {
-	  printf("JMT pixDCDC slot %i ring %i\n", slot, ringiter->first);
-	  pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
+	printf("JMT pixDCDC slot %i ring %i\n", slot, ringiter->first);
+	string name = names_dcdc[ std::make_pair(slot,ringiter->first) ];
+	PixelConfigInterface::get(tempDCDC,"pixel/dcdc/"+name, *theGlobalKey_);
+
+	// turn on the dcdc if it's in the list
+	if ( std::find(list_of_dcdc.begin(),list_of_dcdc.end(),std::make_pair(slot,ringiter->first))
+		!= list_of_dcdc.end() ) {
+		if( tempDCDC->getDCDCEnabled() ){
+			pixDCDCCommand(slot, ringiter->first, tempDCDC->getCCUAddressEnable(),
+					tempDCDC->getCCUAddressPgood(), tempDCDC->getPIAChannelAddress(),
+					true, tempDCDC->getPortNumber());
+		}
 	}
 
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop
 
 	  if ( ccuiter->second == false) continue; //this ccu is bad, so skip it
+
 	  //	if ( ccuiter->first == dummyAddress ) continue; //skip dummy
 #if 0      
 
