@@ -21,6 +21,14 @@ using namespace std;
 using namespace pos;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PixelDCDCConfig::PixelDCDCConfig(vector < vector< string> >  &tableMat):PixelConfigBase(" "," "," ")
+{
+  string mthn = "[PixelDCDCConfig::PixelDCDCConfig()]\t\t    " ;
+  std::cout << __LINE__ << "]\t" << mthn << "Method is not yet configured for database access." << std::endl;
+  assert(0);
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 PixelDCDCConfig::PixelDCDCConfig(std::string filename):
   PixelConfigBase(" "," "," "){
 
