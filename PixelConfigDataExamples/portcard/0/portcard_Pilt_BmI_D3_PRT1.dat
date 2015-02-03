@@ -9,7 +9,7 @@ Delay25_SCL: 0x58
 Delay25_TRG: 0x40
 Delay25_SDA: 0x5c
 Delay25_RCL: 0x60
-Delay25_RDA: 0x4c
+Delay25_RDA: 0x52
 POH_Bias1: 0x22
 POH_Bias2: 0x22
 POH_Bias3: 0x22

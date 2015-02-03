@@ -5,11 +5,8 @@ Cols:
 10
 VcalHigh
 Scan: TBMDelay 0 255 1
-Scan: VcThr 0 255 8
-Scan: CalDel 0 255 8
 Set: TBMPLL 0
 Set: Vcal 255
-Repeat: 5
+Repeat: 10
 Rocs:
-Pilt_BmI_D3_BLD2_PNL1_PLQ1_ROC0
-
+Pilt_BmO_D3_BLD11_PNL1_PLQ1_ROC7
