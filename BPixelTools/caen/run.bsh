@@ -1,0 +1,11 @@
+#!/bin/bash
+source setup.bsh
+#setenv caensem= 0x30058007
+export caensem="0x301a860a"
+let lock=`ipcs -s | grep $caensem | wc -l`
+if test $lock -gt 0 ; then
+   ipcrm -S $caensem
+fi
+
+bin/caen -port 2001
+echo  $?

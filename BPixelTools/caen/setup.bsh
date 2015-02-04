@@ -1,0 +1,4 @@
+#
+source ../setup.bsh
+export CAEN_PS=${PIXEL_HOME}/CAEN_PS_cpp
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BPIXELTOOLS}/tools/lib:${CAEN_PS}/lib
