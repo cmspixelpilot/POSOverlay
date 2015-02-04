@@ -1,13 +1,9 @@
 ConfigurationAliases
 Delay25     7   ;
-Delay25SwapBmIO     34   ;
 VcThrCalDel     32   ;
-VcThrCalDelSwapBmIO     37   ;
 PixelAlive     14   ;
-PixelAliveSwapBmIO     35   ;
 SCurve     12   ;
 TBMDelay     33   ;
-TBMDelaySwapBmIO     36   ;
 TTCPeriodicL1A     15   ;
 TTCPeriodicCalSync     16   ;
 TTCPeriodicReset     17   ;
@@ -19,7 +15,7 @@ detconfig  0 Default ;
 fedconfig  0 Default ;
 fecconfig  0 Default ;
 fedcard  0 Default ;
-dac  1 Default ;
+dac  3 Default ;
 mask  0 Default ;
 trim  0 Default ;
 tbm  1 Default ;
