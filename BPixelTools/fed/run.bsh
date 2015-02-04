@@ -1,0 +1,37 @@
+#!/bin/bash
+source setup.bsh
+if test $HOSTNAME = vmepcS2B18-13; then
+   export INITFILE=data/fed1.ini
+elif test $HOSTNAME = vmepcS2B18-14; then
+   export INITFILE=data/fed2.ini
+elif test $HOSTNAME = USC55UCR07; then
+   echo "tt"
+   exit 0
+else
+    echo "unknown host" $HOSTNAME
+    exit 1
+fi
+echo "running setupPixelFED"
+#bin/setupPixelFED 0x11000000 data/params_fed_0x11000000.dat
+#bin/setupPixelFED 0x10000000 data/params_fed_0x10000000.dat
+#bin/setupPixelFED 0x14000000 data/params_fed_0x14000000.dat
+bin/setupPixelFED 0x10000000 data/params_fed.dat
+bin/setupPixelFED 0x11000000 data/params_fed.dat
+bin/setupPixelFED 0x12000000 data/params_fed.dat
+bin/setupPixelFED 0x13000000 data/params_fed.dat
+bin/setupPixelFED 0x14000000 data/params_fed.dat
+bin/setupPixelFED 0x15000000 data/params_fed.dat
+bin/setupPixelFED 0x16000000 data/params_fed.dat
+bin/setupPixelFED 0x17000000 data/params_fed.dat
+bin/setupPixelFED 0x18000000 data/params_fed.dat
+bin/setupPixelFED 0x19000000 data/params_fed.dat
+bin/setupPixelFED 0x1A000000 data/params_fed.dat
+bin/setupPixelFED 0x1B000000 data/params_fed.dat
+bin/setupPixelFED 0x1C000000 data/params_fed.dat
+bin/setupPixelFED 0x1D000000 data/params_fed.dat
+bin/setupPixelFED 0x1E000000 data/params_fed.dat
+bin/setupPixelFED 0x1F000000 data/params_fed.dat
+echo "starting fed server"
+#bin/fed -vmecaenusb -port 2003
+let PORT=${PORT_BASE}+3
+bin/fed -$INTERFACE -port $PORT -init $INITFILE
