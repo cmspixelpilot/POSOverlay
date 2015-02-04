@@ -1,0 +1,11 @@
+#!/bin/bash
+source setup.bsh
+let PORT=${PORT_BASE}
+echo $LD_LIBRARY_PATH
+python ../tools/python/porttest.py $PORT
+if [ $? -eq 0 ] ; then
+ bin/pxfec -port $PORT -$INTERFACE -init $INITFILE
+else
+  echo port $PORT not available
+fi
+

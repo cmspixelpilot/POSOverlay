@@ -1,0 +1,26 @@
+echo this is d.ini
+sys
+fec  11
+mfec 11 7 -6P
+
+cn -6PL12
+#cn -6PL3
+cn hello
+module 0
+
+echo 
+echo before tbm cmd, cn status:
+cn
+status
+echo
+echo now tbm cmd
+echo
+tbm
+dump A
+echo 
+echo after tbm cmd, status
+cn
+status
+echo
+echo d.ini done
+echo

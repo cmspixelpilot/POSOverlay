@@ -1,0 +1,50 @@
+echo this is d.ini
+sys
+fec  11
+mfec 11 7 -6P
+
+cn -6PL12
+#cn -6PL3
+cn hello
+module 0,1,2,3
+
+echo configuring module M_FL_913 , M_RR_901 , M_LL_919 , M_BB_901
+
+echo configuring rocs
+roc 0:15
+Vdig         6
+Vana       130
+Vsh         30
+Vcomp       12
+VwllPr      60
+VwllSh      60
+VhldDel    255
+Vtrim       20 
+VthrComp    50
+VIBias_Bus   5
+Vbias_sf     6
+VoffsetOp   40    
+PHOffset   140
+VIon       100
+Vcomp_ADC  100
+PHScale    160
+VIColOr     20
+Vcal       255
+CalDel     130
+CtrlReg      4
+WBC         92
+mask
+#arm      6 6
+
+echo tbm reset
+tbm
+reset tbm
+fullspeed
+mode cal
+tbmadelay 64 
+tbmbdelay 64
+
+roc 0:15
+ReadBack 12
+
+echo done with d.ini

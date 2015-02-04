@@ -1,0 +1,12 @@
+echo this is d.ini for half-ass POS test
+sys
+fec  11
+mfec 11 8 -6P
+
+cn -6PL12
+#cn -6PL3
+cn hello
+module 6, 7, 14, 15
+roc 0:15
+mask
+arm 4 4

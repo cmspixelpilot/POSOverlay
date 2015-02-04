@@ -1,0 +1,145 @@
+echo this is d.ini
+sys
+fec  11
+mfec 11 8 -6P
+
+cn -6PL12
+#cn -6PL3
+cn hello
+module 15
+echo configuring rocs on module 15
+roc 0:15
+Vdig         8
+Vana        85
+Vsh         30
+Vcomp       12
+VwllPr     150
+VwllSh     150
+VhldDel    250
+Vtrim        0 
+VthrComp   110
+VIBias_Bus  30
+PHOffset   200
+Vcomp_ADC   50
+PHScale    255
+VIColOr    100
+Vcal       200
+CalDel      66
+CtrlReg      0
+WBC         92
+mask
+#arm      6 6
+
+echo tbm reset
+tbm
+reset tbm
+fullspeed
+mode cal
+tbmadelay 219 
+tbmbdelay 219
+
+roc 0:15
+ReadBack 12
+module 14
+echo configuring rocs on module 14
+roc 0:15
+Vdig         8
+Vana        85
+Vsh         30
+Vcomp       12
+VwllPr     150
+VwllSh     150
+VhldDel    250
+Vtrim        0 
+VthrComp   110
+VIBias_Bus  30
+PHOffset   200
+Vcomp_ADC   50
+PHScale    255
+VIColOr    100
+Vcal       200
+CalDel      66
+CtrlReg      0
+WBC         92
+mask
+#arm      6 6
+
+echo tbm reset
+tbm
+reset tbm
+fullspeed
+mode cal
+tbmadelay 219 
+tbmbdelay 219
+
+roc 0:15
+ReadBack 12
+module 7
+echo configuring rocs on module 7
+roc 0:15
+Vdig         8
+Vana        85
+Vsh         30
+Vcomp       12
+VwllPr     150
+VwllSh     150
+VhldDel    250
+Vtrim        0 
+VthrComp   110
+VIBias_Bus  30
+PHOffset   200
+Vcomp_ADC   50
+PHScale    255
+VIColOr    100
+Vcal       200
+CalDel      66
+CtrlReg      0
+WBC         92
+mask
+#arm      6 6
+
+echo tbm reset
+tbm
+reset tbm
+fullspeed
+mode cal
+tbmadelay 219 
+tbmbdelay 219
+
+roc 0:15
+ReadBack 12
+module 6
+echo configuring rocs on module 6
+roc 0:15
+Vdig         8
+Vana        85
+Vsh         30
+Vcomp       12
+VwllPr     150
+VwllSh     150
+VhldDel    250
+Vtrim        0 
+VthrComp   110
+VIBias_Bus  30
+PHOffset   200
+Vcomp_ADC   50
+PHScale    255
+VIColOr    100
+Vcal       200
+CalDel      66
+CtrlReg      0
+WBC         92
+mask
+#arm      6 6
+
+echo tbm reset
+tbm
+reset tbm
+fullspeed
+mode cal
+tbmadelay 219 
+tbmbdelay 219
+
+roc 0:15
+ReadBack 12
+echo done with d.ini
