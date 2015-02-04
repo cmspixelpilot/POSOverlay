@@ -1,0 +1,12 @@
+#!/bin/bash
+source setup.bsh
+let PORT=${PORT_BASE}+2
+python ../tools/python/porttest.py $PORT
+
+if [ $? -eq 0 ] ; then
+  bin/ccu -vmecaenpci -port $PORT
+else
+  echo port $PORT not available
+fi
+
+reset
