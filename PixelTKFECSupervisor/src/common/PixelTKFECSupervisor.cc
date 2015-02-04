@@ -1489,7 +1489,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       
       const std::set<std::string>& portcards=thePortcardMap_->portcards(detconfig);
       unsigned int slot=9999, ring =9999;
-      bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
+      static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
       int np=0;
       
       //this first loop loads the portcard information from the database
@@ -1604,6 +1604,8 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	  resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
 	  ringInit[(ring-1)]=true;
 	}
+	else
+	  cout << "NOT RESETTING slot/mfec " << slot << "/" << ring << " since it was already done" << endl;
 	
 	if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After resetPlxFec");
 	
@@ -1932,7 +1934,7 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
   const long loop = 1 ; // number of resets 
   const unsigned long tms  = 0 ;  // wait tms microseconds after reset
   unsigned int slot=9999, ring =9999;
-  bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
+  static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
   enumDeviceType modeType = PHILIPS ;
   bool problem = false;
 
@@ -2796,10 +2798,10 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
   rclock_->take(); if (workloopContinueRC_) rclock_->give();  else {rclock_->give(); return true;}
   //return true so that cancel() never fails
 
-#ifdef PRINT_MORE
+  //#ifdef PRINT_MORE
   cout<<"Running [checkForResets] "<<wait<<endl;
   //  return true;
-#endif
+  //#endif
 
   try {
 
