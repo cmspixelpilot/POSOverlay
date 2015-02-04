@@ -1,0 +1,5 @@
+*.o
+*.so
+runFedConsumer
+runFedProducer
+runFedScope
