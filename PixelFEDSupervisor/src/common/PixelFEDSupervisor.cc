@@ -3637,9 +3637,26 @@ xoap::MessageReference PixelFEDSupervisor::ReadFIFO (xoap::MessageReference msg)
 	int status=iFED->spySlink64(buffer64);
 	
 	if (status>=0 && fileopen_[vmeBaseAddress]==true) {
-	  
+	  if (iFED->get_Printlevel()&2) {
+	    std::cout << "Contents of Spy FIFO 3 for fedid " << iFED->getPixelFEDCard().fedNumber<<std::endl;
+	    std::cout <<"----------------------"<<std::endl;
+	    for (int i=0; i<=status;++i)
+	      std::cout<<"Clock "<<i<<" = 0x"<<std::hex<<buffer64[i]<<std::dec<<std::endl;
+
+	    FIFO3Decoder decode(buffer64);
+	    std::cout << "here's what the decoder thinks:\n"
+		      << "nhits: " << decode.nhits() << "\n";
+	    for (unsigned jmt = 0; jmt < decode.nhits(); ++jmt) {
+	      std::cout << "#" << jmt << ": channel: " << decode.channel(jmt)
+			<< " rocid: " << decode.rocid(jmt) << " dcol: " << decode.dcol(jmt)
+			<< " pxl: " << decode.pxl(jmt) << " pulseheight: " << decode.pulseheight(jmt)
+			<< " col: " << decode.column(jmt) << " row: " << decode.row(jmt) << std::endl;
+	    }
+	  }
 	  fwrite(buffer64, sizeof(uint64_t), status, fout_[vmeBaseAddress]);
 	}
+	if (status < 0 && iFED->get_Printlevel()&2)
+	  std::cout << "Spy FIFO3 for fedid " << iFED->getPixelFEDCard().fedNumber << " status is  " << status <<std::endl;
 
 	if (parameters[6].value_=="Last" && fileopen_[vmeBaseAddress]==true) {
 	  assert(true==fileopen_[vmeBaseAddress]);
@@ -3721,6 +3738,10 @@ xoap::MessageReference PixelFEDSupervisor::ReadErrorFIFO (xoap::MessageReference
 
       if (errCount>=0 && errBufferOpen_[vmeBaseAddress]==true) {
 	//diagService_->reportError("Errors(s) from FED at VME "+ stringF(vmeBaseAddress),DIAGERROR);
+	if (iFED->get_Printlevel()&2) {
+	  ErrorFIFODecoder decodedErrorFIFO(errBuffer, errCount); // Suppress disabled channels later
+	  decodedErrorFIFO.printToStream(std::cout);
+	}
 	fwrite(errBuffer, sizeof(unsigned long), errCount, errorFile2_[vmeBaseAddress]);
 	
 	
@@ -3818,10 +3839,12 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
 
   static unsigned int counter=0;
   //const int prescale=17;
-  const int prescale=999999;  // disable error&baseline readout to check the time savings
+  //const int prescale=999999;  // disable error&baseline readout to check the time savings
+  const int prescale=1;
 
   if (Receive(ReadFIFO(msg))!="ReadFIFODone") {
     reply_string="ReadDataAndErrorFIFOFailed";
+    cout << reply_string << " after just ReadFIFO" << endl;
     diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading data FIFO failed!",DIAGERROR);
   }
 
@@ -3829,6 +3852,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
 
     if (Receive(ReadErrorFIFO(msg))!="ReadErrorFIFODone") {
       reply_string="ReadDataAndErrorFIFOFailed";
+      cout << reply_string << " after ReadErrorFIFO" << endl;
       diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading error FIFO failed!",DIAGERROR);
     }
 
@@ -3841,6 +3865,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
 
     if (Receive(BaselineMonitor(msg))!="BaselineMonitorDone") {
       reply_string="ReadDataAndErrorFIFOFailed";
+      cout << reply_string << " after BaselineMonitor" << endl;
       diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading baseline correction failed!",DIAGERROR);
     }
   }
