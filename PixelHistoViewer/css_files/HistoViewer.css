@@ -1,0 +1,87 @@
+body {
+	background: #3060A0;
+	color:#5080C0
+}
+
+p {
+	font-size:100px;
+	font-family:'Brush Script MT'
+}
+
+a:link {
+  color:blue;
+}
+	
+a:alink {
+  color: blue;
+}
+	
+a:visited {
+  color: blue;
+}
+	
+input.submit {
+	background: #102070;
+	color: #5080C0
+}
+
+div.help {
+	color: #3060A0;
+	font-size:16px;	
+	font-family:'comic sans ms','garamond'
+}
+
+div.captions {
+	position: absolute;
+	top: -100px;
+	color: #FFFFFF;
+	z-index:1;
+	font-size:16px;	
+	font-family:'comic sans ms','garamond'
+}
+
+div.fedCaptions {
+	position: absolute;
+	top: -100px;
+	color: #FFFFFF;
+	z-index:1;
+	font-size:11px;	
+	font-family:'comic sans ms','garamond'
+}
+
+div.path {
+	position: absolute;
+	top: -100px;
+	color: #3060A0;
+	z-index:1;
+	font-size:16px;	
+	font-family:'comic sans ms','garamond'
+}
+
+div.summary {
+	position: absolute;
+	top: -100px;
+	color: #3060A0;
+	z-index:1;
+	font-size:12px;	
+	font-family:'comic sans ms','garamond'
+}
+
+div.smallSummary {
+	position: absolute;
+	top: -100px;
+	color: #3060A0;
+	z-index:1;
+	font-size:8px;	
+	font-family:'comic sans ms','garamond'
+}
+
+img.goodBad {
+	position: absolute;
+	border: solid white;
+	border-width: thin;
+	top: -500px;
+	width: 30px;
+	height: 10px;
+	z-index:1;
+}

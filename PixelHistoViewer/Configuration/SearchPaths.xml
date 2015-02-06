@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE SearchPaths SYSTEM "../dtd/SearchPaths.dtd">
+<SearchPaths>
+  <!-- List of Directories that the user wants to scan in order to find the root files-->
+  <!-- You can use Environment Variables and there are only 2 parameters:1) the directory path 2) If you want to scan subdirectories-->
+
+  <Path Directory="$POS_OUTPUT_DIRS/" ScanSubdirectories="No"/> 
+<!--
+  <Path Directory="/pixel/data0" ScanSubdirectories="Yes"/> 
+  <Path Directory="/pixel/data1" ScanSubdirectories="Yes"/> 
+  <Path Directory="/pixelscratch/pixelscratch/data0" ScanSubdirectories="Yes"/>
+  <Path Directory="/pixelscratch/pixelscratch/data1" ScanSubdirectories="Yes"/> 
+  <Path Directory="$POS_OUTPUT_DIRS/RootOutputFiles" ScanSubdirectories="Yes"/> 
+
+  <Path Directory="/nfshome0" ScanSubdirectories="Yes"/> 
+-->
+</SearchPaths>

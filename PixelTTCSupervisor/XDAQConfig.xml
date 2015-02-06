@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+
+<xc:Partition xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+              xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <!-- #### BEGIN TTC-CONFIG-AUTO-GENERATED #### -->
+  <xc:Context id="0" url="http://mp202.lns.cornell.edu:1972">
+  
+    <xc:Application class="PixelTTCSupervisor" id="40" instance="0" network="local">
+      <properties xmlns="urn:xdaq-application:PixelTTCSupervisor" xsi:type="soapenc:Struct">
+        <name xsi:type="xsd:string">Board 1</name>
+        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+        <Location xsi:type="xsd:integer">2</Location>
+        <ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>    
+        <BTimeCorrection xsi:type="xsd:unsignedLong">100</BTimeCorrection>
+        <DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
+      </properties>
+    </xc:Application>
+  
+    <xc:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86/libPixelTTCSupervisor.so</xc:Module>
+  
+  </xc:Context>
+  
+  <!-- #### END TTC-CONFIG-AUTO-GENERATED #### -->
+
+
+
+
+
+
+
+</xc:Partition>

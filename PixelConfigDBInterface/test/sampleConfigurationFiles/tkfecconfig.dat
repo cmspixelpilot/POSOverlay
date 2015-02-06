@@ -1,0 +1,2 @@
+#TKFEC ID     crate     VME/PCI    slot/address
+tkfec1          1                     0x09
