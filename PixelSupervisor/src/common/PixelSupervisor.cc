@@ -246,7 +246,7 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
 
   TTCRunning_=false;
   autoDone_=false;
-  autoRefresh_=true;
+  autoRefresh_=false;
   percentageConfigured_=0;
   runBeginCalibration_=false;
 
@@ -297,11 +297,13 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
 
   autoDone_=false;
 
+  std::string currentState=fsm_.getStateName(fsm_.getCurrentState());
+
   out->getHTTPResponseHeader().addHeader("Content-Type", "text/html");
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   //*out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
   *out<<"<head>"<<std::endl;
-  if (autoRefresh_) {
+  if (autoRefresh_ || currentState == "Configuring") {
     *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"2; URL=Default\"/>" <<endl;
   }
   *out<<"</head>"<<std::endl;
@@ -315,8 +317,6 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
   
   std::string url="/"+getApplicationDescriptor()->getURN();
   
-  std::string currentState=fsm_.getStateName(fsm_.getCurrentState());
-
   *out<<"<body>"<<std::endl;
 
   // Rendering State Machine GUI
