@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	<xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:SERVER-PORT/">
+    <xc:Application class="PixelHistoViewer" id="23" network="local"/>
+    <xc:Module>${BUILD_HOME}/pixel/PixelHistoViewer/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelHistoViewer.so</xc:Module>
+  </xc:Context>
+</xc:Partition>
