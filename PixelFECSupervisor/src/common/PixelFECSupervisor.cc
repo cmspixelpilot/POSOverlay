@@ -2603,7 +2603,7 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
 
       // If this is a BPix module, do this
       // FIXME hack!!!!
-      if (1||module_name->detsub()=='B') {  //BPIX
+      if (module_name->detsub()=='B') {  //BPIX
 	// set the bit to ignore the fullbuffRDa 
         FECInterface[fecVMEBaseAddress]->FullBufRDaDisable(module_firstHdwAddress.mfec(),1);
 	// disable the debug check 
