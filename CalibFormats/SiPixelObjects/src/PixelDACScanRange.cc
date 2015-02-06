@@ -39,7 +39,6 @@ PixelDACScanRange::PixelDACScanRange(std::string name, unsigned int first,
   isTBM_ = name.compare(0,3,"TBM") == 0;
 
   setDACChannel(name);
-
 }
 
 PixelDACScanRange::PixelDACScanRange(std::string name, 
@@ -58,7 +57,6 @@ PixelDACScanRange::PixelDACScanRange(std::string name,
   isTBM_ = name.compare(0,3,"TBM") == 0;
 
   setDACChannel(name);
-
 }
 
 
@@ -112,4 +110,14 @@ void PixelDACScanRange::setDACChannel(std::string name){
 	      << "The dac name: " << name << " is unknown!" << std::endl;
     assert(0);
   }
+}
+
+void PixelDACScanRange::dump(bool dump_values) const {
+  std::cout << "name: " << name() << " dacchannel: " << dacchannel() << " isTBM: "<< isTBM();
+  if (dump_values) {
+    std::cout << " values: [";
+    for (size_t i = 0; i < values_.size(); ++i)
+      std::cout << values_[i] << " ";
+  }
+  std::cout << "]";
 }

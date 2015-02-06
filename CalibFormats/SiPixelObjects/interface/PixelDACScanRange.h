@@ -54,6 +54,8 @@ namespace pos{
 
     std::vector<unsigned int> values() const { return values_; }
 
+    void dump(bool dump_values=true) const;
+
   private:
 
     void setDACChannel(std::string name);
