@@ -484,6 +484,13 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::string filename):
       }
     }
 
+    printf("PixelCalibConfiguration: dacs to scan (%i of them):\n", int(dacs_.size()));
+    for (size_t i = 0; i < dacs_.size(); ++i) {
+      printf("%i: ", int(i));
+      dacs_[i].dump();
+      printf("\n");
+    }
+
     assert(tmp=="Repeat:");
 
     in >> ntrigger_;
@@ -916,6 +923,8 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 					   std::map<pos::PixelModuleName,pos::PixelTBMSettings*>* tbms,
 					   unsigned int state) const {
 
+  std::cout << " - - - - - - - - - - nextFECState: " << state << " ; yowza!" << std::endl;
+
   std::string mthn = "[PixelCalibConfiguration::nextFECState()]\t\t    " ;
   std::string modeName=parameterValue("ScanMode");
 
@@ -924,6 +933,8 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
   if (modeName=="maskAllPixel")  mode=0;
   if (modeName=="useAllPixel"||modeName=="")  mode=1;
   if (modeName=="default")  mode=2;
+
+  cout << "SCANMODE IS " << modeName << " = " << mode << endl;
 
   static bool first=true;
 
