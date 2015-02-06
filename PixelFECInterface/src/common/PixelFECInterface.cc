@@ -2394,6 +2394,27 @@ int PixelFECInterface::progdac(int mfec, int fecchannel,
 			      int hubaddress, int portaddress, int rocid,
 			       int dacaddress, int dacvalue,
 			       bool buffermode) {
+  static bool jmt_warned[28] = {0};
+  if (
+      dacaddress == 5 ||
+      dacaddress == 6 ||
+      dacaddress == 8 ||
+      dacaddress == 14 ||
+      dacaddress == 15 ||
+      dacaddress == 16 ||
+      dacaddress == 18 ||
+      dacaddress == 21 ||
+      dacaddress == 23 ||
+      dacaddress == 24 ||
+      dacaddress == 27
+      )
+    {
+      if (!jmt_warned[dacaddress])
+	cout << "JMT needs to prevent the code from trying to program dac address " << dacaddress << "; no more warnings for this address." << endl;
+      jmt_warned[dacaddress] = 1;
+      return 0;
+    }
+
 #ifndef BLOCKTRANSFER  
   unsigned long *iword;
 #endif
