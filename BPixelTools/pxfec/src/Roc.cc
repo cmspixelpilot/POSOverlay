@@ -51,7 +51,7 @@ void Roc::Execute(SysCommand *command){
 
     if(command->narg==0) return;
     int *value1, *value2;
-    static int trimBits=15;
+    static int trimBits=0;
   
     if(command->Keyword("mask")){
       cout << "masking roc " << iroc << "  on hub " << hubaddress << endl;
@@ -75,6 +75,8 @@ void Roc::Execute(SysCommand *command){
 	  cn->interface->dcolenable(cn->mfec, cn->channel, hubaddress, portaddress, iroc, int((*j)/2), 1);//enable
 	  // Enable only 1 pixel
 	  cn->interface->progpix1(cn->mfec, cn->channel, hubaddress, portaddress, iroc, *j, *k, 1, trimBits); //mask,trim
+	  setDAC(253, 4);
+	  cn->interface->clrcal(cn->mfec, cn->channel, hubaddress, portaddress, iroc);
 	  // Cal enable for one pixel
 	  cn->interface->calpix( cn->mfec, cn->channel, hubaddress, portaddress, iroc, *j, *k, 1); // cal
 	}
