@@ -303,8 +303,8 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   //*out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
   *out<<"<head>"<<std::endl;
-  if (autoRefresh_ || currentState == "Configuring") {
-    *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"2; URL=Default\"/>" <<endl;
+  if (autoRefresh_ || currentState == "Configuring" || currentState == "Running") {
+    *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"10; URL=Default\"/>" <<endl;
   }
   *out<<"</head>"<<std::endl;
   xgi::Utils::getPageHeader(*out, "PixelSupervisor", fsm_.getStateName(fsm_.getCurrentState()));
