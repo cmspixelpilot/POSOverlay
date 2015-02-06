@@ -22,8 +22,8 @@ using namespace std;
 using namespace pos;
 
 namespace {
-  const bool PRINT = false;
-  //const bool PRINT = true;
+  //const bool PRINT = false;
+  const bool PRINT = true;
 }
 
 //--------------------------------------------------------------------------
@@ -1995,12 +1995,13 @@ int PixelFECInterface::progpix(int mfec, int fecchannel,
   if (buffermode) {
     if (PRINT) cout<<"progpix buffered databyte"<<endl;
     if (PRINT) cout << "PROGPIX Q ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
-		    <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<endl;
+		    <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" databyte:"<<std::hex<<(unsigned int)(databyte)<<std::dec<< endl;
     
     assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
     
     if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
       //cout << "PixelFECInterface::progpix:ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT("<<qbufn[mfec][fecchannel]<<")"<<endl;
+      if (PRINT) cout << "qbufn = " << qbufn[mfec][fecchannel] << " > maxbufsize = " << maxbuffersize_ << "; qbufsending..." << endl;
       qbufsend(mfec,fecchannel);
     }
     assert(qbufn[mfec][fecchannel] < maxbuffersize_);
@@ -2819,6 +2820,7 @@ int PixelFECInterface::rocinit(int mfec, int fecchannel,
     txdata[current++] = coltemp2;
     // Now send the mask and trim
     txdata[current++] = databyte;
+    //if (PRINT) cout << "databyte: " << hex << unsigned(databyte) << dec << endl;
   }
   
   if (PRINT) cout << "ROCINIT BUFFER USAGE: "<< dec  <<current<< " bytes."<<endl;
@@ -2936,6 +2938,7 @@ int PixelFECInterface::roctrimload(int mfec, int fecchannel,
       for (j=0;j<80;j++) {
 	// Now send the mask and trim
 	databyte = allPixels[pixptr++];
+	//if (PRINT) cout << "databyte=" << hex << (unsigned)(databyte) << dec << endl;
 	//databyte = (char) cdata++;
 	//databyte = (char) 0x60;
 	txdata[current++] = databyte;
