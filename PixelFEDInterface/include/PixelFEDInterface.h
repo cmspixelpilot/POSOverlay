@@ -197,6 +197,7 @@ class PixelFEDInterface {
   uint32_t getFifoStatus(void);
   void dump_FifoStatus(uint32_t fword);
   void set_Printlevel(int level);//0=critical only, 1=all error,2& =info, 4&param file info
+  int get_Printlevel() const { return Printlevel; }
   void set_TTslevels(void);//Sets adjustable TTs consecutive levels for OOS and ERR from Fedcard
   void set_TTslevels(int inmoos,int inmerr);//Sets adjustable TTs consecutive levels for OOS and ERR
                                         //puts values ioos and ierr into Fedcard
@@ -279,7 +280,6 @@ void storeEnbableBits();
 
 #endif // end USE_HAL
 
-  
  private:
 
   // Private variables
