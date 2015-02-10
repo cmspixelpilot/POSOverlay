@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import sys, os
-from JMTucker.Tools.ROOTTools import *
+from JMTTools import *
+from JMTROOTTools import *
 set_style()
-
-#in_fn = sys.argv[1]
-#out_dir = sys.argv[2]
 
 def foo(f, path, out_dir, html):
     path_mang = path.replace('/', '_')
@@ -70,8 +68,6 @@ def foo(f, path, out_dir, html):
                 fnall = these[0]
                 html.write('<img src="%(fnall)s">\n' % locals())
 
-
-
 #foo('/uscms/home/tucker/afshome/delay25_1.root', 'Pilt/Pilt_BmI/Pilt_BmI_D3', '/uscms/home/tucker/asdf/plots/dump_delay25')
 
 def foo2(in_fn, out_dir):
@@ -93,29 +89,15 @@ def foo2(in_fn, out_dir):
 
 #foo2('/uscms/home/tucker/afshome/delay25_1.root', '/uscms/home/tucker/asdf/plots/dump_delay25')
 
-if 0:
-    for date, in_fn in [
-        ('Jan  8 22.25', '/uscms/home/tucker/afshome/delay25_1.root'),
-        ('Jan 10 11.23', '/uscms/home/tucker/afshome/delay25_1-1.root'),
-        ('Jan 10 11.31', '/uscms/home/tucker/afshome/delay25_1-2.root'),
-        ('Jan 10 12.24', '/uscms/home/tucker/afshome/delay25_1-3.root'),
-        ('Jan 10 13.00', '/uscms/home/tucker/afshome/delay25_1-4.root'),
-        ('Jan 15 09.59', '/uscms/home/tucker/afshome/delay25_1-5.root'),
-        ('Jan 15 11.46', '/uscms/home/tucker/afshome/delay25_1-6.root'),
-        ('Jan 15 11.54', '/uscms/home/tucker/afshome/delay25_1-7.root'),
-        ('Jan 15 11.58', '/uscms/home/tucker/afshome/delay25_1-8.root'),
-        ('Jan 16 13.34', '/uscms/home/tucker/afshome/delay25_1-9.root'),
-        ]:
-        print in_fn
-        foo2(in_fn, '/uscms/home/tucker/asdf/plots/dump_delay25/%s' % date)
+run = run_from_argv()
+run_dir = run_dir(run)
+in_fn = os.path.join(run_dir, 'delay25_1.root')
+out_dir = os.path.join(run_dir, 'dump_delay25')
+    
+foo2(in_fn, out_dir)
 
-run = None
-for x in sys.argv:
-    try:
-        run = int(x)
-    except ValueError:
-        pass
-if run is None:
-    raise ValueError('need run #')
+if 'scp' in sys.argv:
+    cmd = 'scp -r %s tucker@lxplus:public/www/zxcv/dump_delay25/%i' % (out_dir, run)
+    print cmd
+    os.system(cmd)
 
-foo2('delay25_1.root', '/uscms/home/tucker/asdf/plots/dump_delay25/Run%s' % run)
