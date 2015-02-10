@@ -3839,8 +3839,8 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
 
   static unsigned int counter=0;
   //const int prescale=17;
-  //const int prescale=999999;  // disable error&baseline readout to check the time savings
-  const int prescale=1;
+  const int prescale=999999;  // disable error&baseline readout to check the time savings
+  //const int prescale=1;
 
   if (Receive(ReadFIFO(msg))!="ReadFIFODone") {
     reply_string="ReadDataAndErrorFIFOFailed";

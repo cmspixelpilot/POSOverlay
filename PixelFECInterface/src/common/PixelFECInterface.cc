@@ -22,8 +22,8 @@ using namespace std;
 using namespace pos;
 
 namespace {
-  //const bool PRINT = false;
-  const bool PRINT = true;
+  const bool PRINT = false;
+  //const bool PRINT = true;
 }
 
 //--------------------------------------------------------------------------
