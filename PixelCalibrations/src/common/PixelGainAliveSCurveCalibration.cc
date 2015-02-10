@@ -19,7 +19,7 @@ using namespace pos;
 using namespace std;
 
 namespace {
-  const bool PRINT = true;
+  const bool PRINT = false;
 }
 
 PixelGainAliveSCurveCalibration::PixelGainAliveSCurveCalibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
