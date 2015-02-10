@@ -9,3 +9,4 @@ config
 LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelSupervisorGUI/
+*.pyc
