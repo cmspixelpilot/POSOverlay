@@ -159,6 +159,8 @@ namespace pos{
     const std::set <PixelModuleName>& moduleList() const {assert(rocAndModuleListsBuilt_); return modules_;}
     const std::set <PixelChannel>& channelList() const {assert( objectsDependingOnTheNameTranslationBuilt_ ); return channels_;}
 
+    const std::vector<PixelDACScanRange>& dacs() const { return dacs_; }
+
     std::string mode() const {return mode_;}
 
     bool singleROC() const {return singleROC_;}
