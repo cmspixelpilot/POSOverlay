@@ -1959,7 +1959,7 @@ int PixelFECInterface::progpix1(int mfec, int fecchannel,
     for (i=0;i<ndata;i+=4) {
       iword = (long unsigned int*) &txdata[i];
       outputbuffer(mfec, fecchannel,  *iword);
-      if (PRINT) cout<<"Final FEC data (ndata:"<<dec<<ndata<<dec")  ("<<i<<"): "<< *iword <<endl;
+      if (PRINT) cout<<"Final FEC data (ndata:"<<dec<<ndata<<dec<<")  ("<<i<<"): "<< *iword <<endl;
     }
 #endif
     writeCSregister(mfec, fecchannel, 0x07);
@@ -2526,7 +2526,7 @@ int PixelFECInterface::progdac(int mfec, int fecchannel,
       outputblock(mfec, fecchannel, (unsigned int*) txdata, ndata);
 #else
     // Now load the data
-    for (i=0;i<ndata;i+=4) {
+    for (int i=0;i<ndata;i+=4) {
       iword = (long unsigned int*) &txdata[i];
       outputbuffer(mfec, fecchannel,  *iword);
       if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
