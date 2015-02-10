@@ -1,11 +1,15 @@
 import sys, os
 from pprint import pprint
-from ROOTTools import *
+from JMTTools import *
+from JMTROOTTools import *
+set_style()
 
-in_fn = sys.argv[1]
-run = in_fn.split('_')[-1].split('.')[0]
-out_dir = '/uscms/home/tucker/asdf/plots/dump_pixelalive/Run%s' % run
-out_dir = '/home/tucker/windows/dump_pixelalive/Run%s' % run
+run = run_from_argv()
+run_dir = run_dir(run)
+in_fn = os.path.join(run_dir, 'PixelAlive_Fed_40_Run_%i.root' % run)
+if not os.path.isfile(in_fn):
+    raise RuntimeError('need to make the root file: /nfshome0/pixelpilot/build/TriDAS/pixel/jmt/pxalive.sh %i' % run)
+out_dir = os.path.join(run_dir, 'dump_pixelalive')
 os.system('mkdir -p %s' % out_dir)
 
 f = ROOT.TFile(in_fn)
@@ -21,25 +25,39 @@ dirs = [
     'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL2/Pilt_BmI_D3_BLD3_PNL2_PLQ1',
     ]
 
-
 by_ntrigs = []
+first = True
+
+c = ROOT.TCanvas('c', '', 1300, 1000)
+c.Divide(4,4)
+c.cd(0)
+#pdf_fn = os.path.join(out_dir, 'all.pdf')
+#c.Print(pdf_fn + '[')
 
 for d in dirs:
-    c = ROOT.TCanvas('c'+d, '', 1300, 1000)
-    c.Divide(4,4)
+    if not f.Get(d):
+        continue
     for ikey, key in enumerate(f.Get(d).GetListOfKeys()):
         obj = key.ReadObj()
         name = obj.GetName().replace(' (inv)', '')
         rest, roc = name.split('ROC')
+        iroc = int(roc)
         if int(roc) < 10:
             name = rest + 'ROC0' + roc
         ntrigs = int(obj.Integral())
         by_ntrigs.append((ntrigs, name))
-        c.cd(ikey+1)
+        c.cd(iroc+1)
         obj.Draw('colz')
     c.cd(0)
-    c.SaveAs(os.path.join(out_dir, d.split('/')[-1] + '.gif'))
+    c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.png')
+    #c.Print(pdf_fn)
+#c.Print(pdf_fn + ']')
 
 by_ntrigs.sort(key=lambda x: x[1])
 by_ntrigs.sort(key=lambda x: x[0], reverse=True)
 pprint(by_ntrigs)
+
+if 'scp' in sys.argv:
+    cmd = 'scp -r %s tucker@lxplus:public/www/zxcv/dump_pixelalive/%i' % (out_dir, run)
+    print cmd
+    os.system(cmd)
