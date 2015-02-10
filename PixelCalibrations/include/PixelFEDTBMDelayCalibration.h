@@ -1,13 +1,3 @@
-/*************************************************************************
- * XDAQ Components for Distributed Data Acquisition                      *
- * Copyright (C) 2000-2004, CERN.			                 *
- * All rights reserved.                                                  *
- * Authors: J. Gutleber and L. Orsini					 *
- *                                                                       *
- * For the licensing terms see LICENSE.		                         *
- * For the list of contributors see CREDITS.   			         *
- *************************************************************************/
-
 #ifndef _PixelFEDTBMDelayCalibration_h_
 #define _PixelFEDTBMDelayCalibration_h_
 
@@ -23,7 +13,9 @@
 #include <fstream>
 #include <map>
 
-class TGraph2DErrors;
+class TFile;
+class TH1F;
+class TH2F;
 
 class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
  public:
@@ -48,11 +40,18 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   void RetrieveData(unsigned int state);
   void Analyze();
 
-  std::ofstream outf;
+  std::ofstream retrf;
+  TFile* rootf;
 
-  typedef std::map<unsigned, unsigned> pixel;
-  typedef std::map<std::string,unsigned int> dacsettings;
-  std::map<pos::PixelROCName, std::map<dacsettings, std::map<pixel, int> > > hit_counts;
+  std::vector<std::string> dacstoscan;
+
+  TH1F* h_nfiforeaderrors;
+  TH1F* h_nerrors;
+  TH1F* h_nhits;
+  TH1F* h_nskip;
+  enum { wrongPix, rightPix, nDecode };
+  std::vector<TH1F*> scans1d[nDecode];
+  std::vector<TH2F*> scans2d[nDecode];
 };
 
 #endif

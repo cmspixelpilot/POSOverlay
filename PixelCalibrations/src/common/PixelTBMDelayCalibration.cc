@@ -22,10 +22,10 @@ void PixelTBMDelayCalibration::beginCalibration() {
     std::cout << "ERROR:  FIFO3 will overflow with more than two hits on each ROC.  To run this calibration, use 2 or less hits per ROC, or use SingleROC mode.  Now aborting..."<<std::endl;
     assert(0);
   }
-	
-  if (!tempCalibObject->containsScan(k_DACName_Vcal)) {
-    std::cout << "ERROR:  Vcal must be one of the scan variables.  Now aborting..."<<std::endl;
-    assert(0); // not elegant, maybe a better way to do this
+
+  if (!tempCalibObject->containsScan("TBMDelay")) {
+    std::cout << "ERROR:  TBMDelay must be one of the scan variables.  Now aborting..."<<std::endl;
+    assert(0);
   }
 }
 
