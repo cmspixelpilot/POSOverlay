@@ -107,5 +107,9 @@ i2c 10 18 22'''
         print ccu.send(cmd).readlines()
         sleep(0.1)
 
+    if bmo:
+        print ccu.send('pixdcdc on 2').readlines()
+        sleep(0.1)
+
 log.printLog()
 log.saveLog("log/testCCU")
