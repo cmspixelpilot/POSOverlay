@@ -23,8 +23,8 @@ void PixelTBMDelayCalibration::beginCalibration() {
     assert(0);
   }
 
-  if (!tempCalibObject->containsScan("TBMDelay")) {
-    std::cout << "ERROR:  TBMDelay must be one of the scan variables.  Now aborting..."<<std::endl;
+  if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMADelay")) {
+    std::cout << "ERROR:  TBMADelay or TBMBDelay must be one of the scan variables.  Now aborting..."<<std::endl;
     assert(0);
   }
 }
