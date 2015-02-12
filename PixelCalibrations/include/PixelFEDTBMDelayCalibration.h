@@ -43,6 +43,8 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   std::ofstream retrf;
   TFile* rootf;
 
+  bool DumpFIFOs;
+
   std::vector<std::string> dacstoscan;
 
   TH1F* h_nfiforeaderrors;
