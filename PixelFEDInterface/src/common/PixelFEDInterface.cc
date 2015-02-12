@@ -184,7 +184,6 @@ PixelFEDInterface::PixelFEDInterface(const uint32_t fedBase, long aBHandle) {
   TopDauCard_DownTempFifo    = LAD_NC+0x168000;
   BottomDauCard_UpTmpFifo    = LAD_S+0x148000;
   BottomDauCard_DnTmpFifo    = LAD_S+0x168000;
-  
 }
 //////////////////////////////////////////////////////////////////////
 PixelFEDInterface::~PixelFEDInterface(void) {
@@ -1065,15 +1064,16 @@ void PixelFEDInterface::readDigFEDTempFifo(){
 
 void PixelFEDInterface::readDigFEDStatus(bool verbose){
   uint32_t CHa_CHb_mux = 0x80000000;
-  uint32_t data = CHa_CHb_mux + 0x2546; 
+  uint32_t dataTop = CHa_CHb_mux + 0x2546; 
+  uint32_t dataBot = CHa_CHb_mux + 0x2343; 
   uint32_t d, i;
   
   int nlock[4] = {0};
 
 #ifdef USE_HAL // Use HAL
   
-  vmeDevicePtr->write("TopDauCard_com",data);
-  vmeDevicePtr->write("BottomDauCard_com",data);
+  vmeDevicePtr->write("TopDauCard_com",dataTop);
+  vmeDevicePtr->write("BottomDauCard_com",dataBot);
 
   if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
   for(i=0;i<16;i++)  {
@@ -1109,15 +1109,15 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose){
   
 #else // Use direct CAEN
   
-  ret = CAENVME_WriteCycle(BHandle,TopDauCard_com,&data,am,dw);
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_com,&dataTop,am,dw);
   if(ret != cvSuccess) {  // Error
-    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+    cout<<"Error in write "<<hex<<ret<<" "<<dataTop<<dec<<endl;
     analyzeError(ret); 
   }
   
-  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_com,&data,am,dw);
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_com,&dataBot,am,dw);
   if(ret != cvSuccess) {  // Error
-    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+    cout<<"Error in write "<<hex<<ret<<" "<<dataBot<<dec<<endl;
     analyzeError(ret); 
   }
   
