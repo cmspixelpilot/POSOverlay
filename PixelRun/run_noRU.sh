@@ -1,6 +1,6 @@
 #!/bin/sh
 DTSTAMP=`awk "BEGIN{print strftime(\"%y%b%d_%H%M\");}" `
-LOGFN=log.$DTSTAMP
+LOGFN=Logs/log.$DTSTAMP
 rm -f lastlog
 ln -s $LOGFN lastlog
 echo $LOGFN
