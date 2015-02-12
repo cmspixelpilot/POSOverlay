@@ -51,6 +51,7 @@ namespace pos{
     bool negative() const { return negative_; }
 
     bool isTBM() const { return isTBM_; }
+    unsigned int tbmchannel() const { return tbmchannel_; }
 
     std::vector<unsigned int> values() const { return values_; }
 
@@ -79,6 +80,7 @@ namespace pos{
     bool negative_; //Used to flag that relative value is negative
 
     bool isTBM_; //Flag that this is a TBM DAC setting
+    unsigned int tbmchannel_; // 14 or 15
   };
 }
 #endif

@@ -979,7 +979,6 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
       //cout<<" tbm channel "<<tbmChannel<<endl; 
       rocInfo.tbmChannel_ = tbmChannel;
       assert(tbmChannel == "A" || tbmChannel == "B");
-      rocInfo.tbmChannelNum_ = tbmChannel == "A" ? 14 : 15;
 #else
 #error hahaha
 #endif
@@ -987,7 +986,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
       typedef std::map<std::string, unsigned int> defaultDACMap;
       defaultDACMap defaultDACValues, defaultTBMDACValues;
       (*dacs)[PixelModuleName(rocs_[i].rocname())]->getDACSettings(rocs_[i])->getDACs(defaultDACValues);
-      (*tbms)[PixelModuleName(rocs_[i].rocname())]->getDACs(tbmChannel, defaultTBMDACValues);
+      (*tbms)[PixelModuleName(rocs_[i].rocname())]->getDACs(defaultTBMDACValues);
 
       for ( std::vector<PixelDACScanRange>::const_iterator dacs_itr = dacs_.begin(); dacs_itr != dacs_.end(); dacs_itr++ )
       {
@@ -1093,7 +1092,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 	if (dacs_[j].isTBM()) {
 	  pixelFECs[theROC.fecnumber()]->tbmcmd(theROC.mfec(),
 						theROC.mfecchannel(),
-						rocInfo_[i].tbmChannelNum_,
+						dacs_[j].tbmchannel(),
 						theROC.hubaddress(),
 						4,
 						rocInfo_[i].defaultDACs_[j].first,
@@ -1130,7 +1129,13 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
   }
   
   // Set each ROC with the new settings for this state.
+  // For "DACs" that are TBM register values, only program them once for the module.
+  std::map<PixelModuleName, std::vector<int> > dacProgCount;
+
   for(unsigned int i=0;i<rocs_.size();i++){
+    PixelModuleName moduleName(rocs_[i]);
+    if (dacProgCount.find(moduleName) == dacProgCount.end())
+      dacProgCount[moduleName].assign(dacs_.size(), 0);
 
     if (!rocInfo_[i].use_) continue;
 
@@ -1153,6 +1158,9 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 	}
       }
 
+      if (dacs_[ii].isTBM() && dacProgCount[moduleName][ii] > 0)
+	continue;
+
       int dacvalue = scanValue(ii, state, rocs_[i]);
 
       //cout << "dacname ii:"<<dacs_[ii].name()<<" "<<ii<<endl;
@@ -1172,10 +1180,10 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
       if (dacs_[ii].isTBM()) {
 	pixelFECs[theROC.fecnumber()]->tbmcmd(theROC.mfec(),
 					      theROC.mfecchannel(),
-					      rocInfo_[i].tbmChannelNum_,
+					      dacs_[ii].tbmchannel(),
 					      theROC.hubaddress(),
 					      4,
-					      rocInfo_[i].defaultDACs_[i].first,
+					      dacs_[ii].dacchannel(),
 					      dacvalue,
 					      0);
       }
@@ -1194,6 +1202,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 	//cout << "Changed WBC 2"<<endl;
       }
 
+      ++dacProgCount[moduleName][ii];
     }
 
     // At the beginning of a scan, set the pixel pattern.

@@ -37,6 +37,7 @@ PixelDACScanRange::PixelDACScanRange(std::string name, unsigned int first,
   }
 
   isTBM_ = name.compare(0,3,"TBM") == 0;
+  tbmchannel_ = 14;
 
   setDACChannel(name);
 }
@@ -101,8 +102,11 @@ void PixelDACScanRange::setDACChannel(std::string name){
     dacchannel_=pos::k_DACAddress_ChipContReg  ;
   } else if (name==pos::k_DACName_Readback)    {
     dacchannel_=pos::k_DACAddress_Readback     ;
-  } else if (name==pos::k_DACName_TBMDelay)         {
-    dacchannel_ = pos::k_DACAddress_TBMDelay ;
+  } else if (name==pos::k_DACName_TBMADelay)  {
+    dacchannel_ = pos::k_DACAddress_TBMADelay ;
+  } else if (name==pos::k_DACName_TBMBDelay)  {
+    dacchannel_ = pos::k_DACAddress_TBMBDelay ;
+    tbmchannel_ = 15;
   } else if (name==pos::k_DACName_TBMPLL)    {
     dacchannel_ = pos::k_DACAddress_TBMPLL   ;
   } else {

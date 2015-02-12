@@ -54,10 +54,12 @@ namespace pos{
   const unsigned int k_DACAddress_ChipContReg=253;
   const unsigned int k_DACAddress_Readback=255;
 
-  const std::string k_DACName_TBMDelay="TBMDelay";
+  const std::string k_DACName_TBMADelay="TBMADelay";
+  const std::string k_DACName_TBMBDelay="TBMBDelay";
   const std::string k_DACName_TBMPLL="TBMPLL";
   
-  const unsigned int k_DACAddress_TBMDelay=5;
+  const unsigned int k_DACAddress_TBMADelay=5;
+  const unsigned int k_DACAddress_TBMBDelay=5;
   const unsigned int k_DACAddress_TBMPLL=7;
   
 }
