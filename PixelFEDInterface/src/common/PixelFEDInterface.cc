@@ -1063,38 +1063,48 @@ void PixelFEDInterface::readDigFEDTempFifo(){
   
 }
 
-void PixelFEDInterface::readDigFEDStatus(){
+void PixelFEDInterface::readDigFEDStatus(bool verbose){
   uint32_t CHa_CHb_mux = 0x80000000;
   uint32_t data = CHa_CHb_mux + 0x2546; 
   uint32_t d, i;
   
+  int nlock[4] = {0};
+
 #ifdef USE_HAL // Use HAL
   
   vmeDevicePtr->write("TopDauCard_com",data);
   vmeDevicePtr->write("BottomDauCard_com",data);
-  
-  printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
+
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
   for(i=0;i<16;i++)  {
     vmeDevicePtr->read("TopDauCard_UpStatus",&d);
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[0];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
-  printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
   for(i=0;i<16;i++)  {
     vmeDevicePtr->read("TopDauCard_DownStatus",&d);
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[1];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
-  printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
   for(i=0;i<16;i++)  {
     vmeDevicePtr->read("BottomDauCard_UpStatus",&d);
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[2];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
-  printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
   for(i=0;i<16;i++)  {
     vmeDevicePtr->read("BottomDauCard_DnStatus",&d);
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[3];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
 #else // Use direct CAEN
@@ -1111,48 +1121,56 @@ void PixelFEDInterface::readDigFEDStatus(){
     analyzeError(ret); 
   }
   
-  printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
   for(i=0;i<16;i++)  {
     ret = CAENVME_ReadCycle(BHandle,TopDauCard_UpStatus,&d,am,dw);
     if(ret != cvSuccess) {
       cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
       analyzeError(ret);   
     }
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[0];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
-  printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
   for(i=0;i<16;i++)  {
     ret = CAENVME_ReadCycle(BHandle,TopDauCard_DownStatus,&d,am,dw);
     if(ret != cvSuccess) {
       cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
       analyzeError(ret);   
     }
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[1];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
-  printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
   for(i=0;i<16;i++)  {
     ret = CAENVME_ReadCycle(BHandle,BottomDauCard_UpStatus,&d,am,dw);
     if(ret != cvSuccess) {
       cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
       analyzeError(ret);   
     }
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[2];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
-  printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
   for(i=0;i<16;i++)  {
     ret = CAENVME_ReadCycle(BHandle,BottomDauCard_DnStatus,&d,am,dw);
     if(ret != cvSuccess) {
       cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
       analyzeError(ret);   
     }
-    
-    printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    const bool islocked = (d>>24)&0x1;
+    if (islocked) ++nlock[3];
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
   
 #endif // Use HAL  
+  printf("lock stats: %i %i %i %i\n", nlock[0], nlock[1], nlock[2], nlock[3]);
 }
 
 void PixelFEDInterface::loadFPGADigFED(){

@@ -69,7 +69,7 @@ class PixelFEDInterface {
   int resetDigFEDpll(void); // reset Piggy Board pll
   int resetDigFEDreg(void); // reset Piggy Board register
   void loadFPGADigFED(); // load fpga to piggy board
-  void readDigFEDStatus(); // read status of the piggy board
+  void readDigFEDStatus(bool); // read status of the piggy board
   void readDigFEDTempFifo(); 
   
   
