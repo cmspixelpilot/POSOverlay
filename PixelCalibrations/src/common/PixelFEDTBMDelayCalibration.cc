@@ -152,9 +152,6 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
     PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
 
-    std::cout << "readDigFEDStatus(): ";
-    iFED->readDigFEDStatus(false);
-
     uint64_t buffer3[pos::slinkDepth];
     uint32_t bufferErr[36*1024];
     const int status3 = iFED->spySlink64(buffer3);
@@ -164,6 +161,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       retrf << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
       std::cout << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
       h_nfiforeaderrors->Fill(0);
+      usleep(1000);
+      std::cout << "readDigFEDStatus(): ";
+      iFED->readDigFEDStatus(false);
       continue;
     }
 
@@ -258,6 +258,11 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 
     h_nskip->Fill(nskip);
     retrf << "hits} nskip " << nskip << endl; 
+
+    usleep(1000);
+    std::cout << "readDigFEDStatus(): ";
+    iFED->readDigFEDStatus(false);
+
   }
 }
 
