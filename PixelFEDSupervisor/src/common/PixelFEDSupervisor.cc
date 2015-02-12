@@ -3652,6 +3652,8 @@ xoap::MessageReference PixelFEDSupervisor::ReadFIFO (xoap::MessageReference msg)
 			<< " pxl: " << decode.pxl(jmt) << " pulseheight: " << decode.pulseheight(jmt)
 			<< " col: " << decode.column(jmt) << " row: " << decode.row(jmt) << std::endl;
 	    }
+	    std::cout << "readDigFEDStatus(): ";
+	    iFED->readDigFEDStatus(true);
 	  }
 	  fwrite(buffer64, sizeof(uint64_t), status, fout_[vmeBaseAddress]);
 	}
