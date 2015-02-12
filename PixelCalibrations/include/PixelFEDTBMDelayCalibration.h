@@ -39,6 +39,7 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   // Calibration steps
   void RetrieveData(unsigned int state);
   void Analyze();
+  void FillEm(unsigned state, int which);
 
   std::ofstream retrf;
   TFile* rootf;
@@ -51,7 +52,7 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   TH1F* h_nerrors;
   TH1F* h_nhits;
   TH1F* h_nskip;
-  enum { wrongPix, rightPix, nDecode };
+  enum { fifoErr, wrongRoc, wrongPix, rightPix, nDecode };
   std::vector<TH1F*> scans1d[nDecode];
   std::vector<TH2F*> scans2d[nDecode];
 };
