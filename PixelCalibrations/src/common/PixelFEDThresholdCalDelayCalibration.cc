@@ -102,7 +102,7 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 	  }
 
 	  else{
-	    cout << "Could not find ROC with fednumber="<<fednumber
+	    cout << "Could not find ROC " << roc.rocname() << " with fednumber="<<fednumber
 		      << " channel="<<channel<<" rocid="<<rocid<<endl;
 	  }	  
 	}
@@ -177,7 +177,8 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::beginCalibration(xo
 				     name1_,nThr,
 				     VcThrMin-0.5*VcThrStep,
 				     VcThrMax+0.5*VcThrStep);
-      
+
+    std::cout << "Booking PixelEfficiency2DVcThrCalDel #" << i_aROC << " with name " << aROC_string[i_aROC].rocname() << std::endl;
     eff_[aROC_string[i_aROC]]=tmp;
 
   }
