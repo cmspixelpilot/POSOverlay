@@ -58,6 +58,10 @@ by_ntrigs.sort(key=lambda x: x[0], reverse=True)
 pprint(by_ntrigs)
 
 if 'scp' in sys.argv:
-    cmd = 'scp -r %s tucker@lxplus:public/www/zxcv/dump_pixelalive/%i' % (out_dir, run)
+    remote_dir = 'public_html/qwer/dump_vcthrcaldel/%i' % run
+    cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
+    print cmd
+    os.system(cmd)
+    cmd = 'scp -r %s/* jmt46@lnx201.lns.cornell.edu:%s' % (out_dir, remote_dir)
     print cmd
     os.system(cmd)
