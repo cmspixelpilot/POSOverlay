@@ -34,7 +34,7 @@ bool PixelTBMDelayCalibration::execute() {
   assert(tempCalibObject != 0);
 
   unsigned int state = event_/(tempCalibObject->nTriggersPerPattern());
-  reportProgress(event_ / double(tempCalibObject->nTriggersTotal()));
+  reportProgress(0.05);
 
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
   if (event_ % tempCalibObject->nTriggersPerPattern() == 0) 

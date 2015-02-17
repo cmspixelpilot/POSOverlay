@@ -189,7 +189,7 @@ int a[4]={0,0,0,0};
   cout << "rocheader = " << rocheader << endl;
   cout << "correctdata = " << correctdata << endl;
   cout << "tbmtrailer = " << tbmtrailer << endl;
-  
+  cout << "a[] = " << a[0] << " "  << a[1] << " "  << a[2] << " "  << a[3] << endl;
   return;
       
       
@@ -369,20 +369,22 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       for (int chip = 1; chip <= 7; chip += 2) {
 	status2[chip] = iFED->drainDataFifo2(chip, buffer2[chip]);
 	std::cout << "----------------------------------" << std::endl;
-	std::cout << "Contents of Spy FIFO 2 for chip = " << chip << std::endl;
-	std::cout << "----------------------------------" << std::endl;
-	for (int i = 0; i <= status2[chip]; ++i)
-	  std::cout << "Clock " << i << " = 0x" << std::hex << buffer2[i] << std::dec << std::endl;
-	//std::cout << "FIFO2Decoder thinks:\n";
-	//FIFO2Decoder decode2(buffer2[chip], status2[chip]);
-	//decode2.printToStream(std::cout);
-	std::cout << "----------------------------------" << std::endl;
+	if (status2[chip] < 0)
+	  std::cout << "Spy FIFO 2 for chip = " << chip << " status = " << status2[chip] << std::endl;
+	else {
+	  std::cout << "Contents of Spy FIFO 2 for chip = " << chip << "(status2 = " << status2[chip] << ")" <<std::endl;
+	  std::cout << "----------------------------------" << std::endl;
+	  for (int i = 0; i <= status2[chip]; ++i)
+	    std::cout << "Clock " << i << " = 0x" << std::hex << buffer2[chip][i] << std::dec << std::endl;
+	  std::cout << "----------------------------------" << std::endl;
+	}
       }
-      cout<<"decodePTrans return: " << decodePTrans(buffer2[1],buffer2[3],16)<<endl;
-      cout<<"decodePTrans2 return: " << decodePTrans2(buffer2[1],buffer2[3],16)<<endl;
-      cout << "decode: " << endl;
-      decode(buffer2[1],buffer2[3],64);
-
+      if (status2[1] > 0 && status2[3] > 0) {
+	cout<<"decodePTrans return: " << decodePTrans(buffer2[1],buffer2[3],16)<<endl;
+	cout<<"decodePTrans2 return: " << decodePTrans2(buffer2[1],buffer2[3],16)<<endl;
+	cout << "decode: " << endl;
+	decode(buffer2[1],buffer2[3],64);
+      }
 
       std::cout << "----------------------" << std::endl;
       std::cout << "Contents of Spy FIFO 3" << std::endl;
