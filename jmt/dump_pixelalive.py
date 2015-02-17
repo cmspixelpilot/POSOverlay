@@ -58,7 +58,7 @@ by_ntrigs.sort(key=lambda x: x[0], reverse=True)
 pprint(by_ntrigs)
 
 if 'scp' in sys.argv:
-    remote_dir = 'public_html/qwer/dump_vcthrcaldel/%i' % run
+    remote_dir = 'public_html/qwer/dump_pixelalive/%i' % run
     cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
     print cmd
     os.system(cmd)
