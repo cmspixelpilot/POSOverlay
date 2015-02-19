@@ -10,6 +10,7 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include <iomanip>
 
 using namespace pos;
 using namespace std;
@@ -232,7 +233,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
       dacstoscan.push_back(dacname);
   }
 
-  if (dacstoscan.empty()) {
+  if (dacstoscan.empty() && tempCalibObject->parameterValue("NoScanOK") != "yes") {
     cout << "no dacs in scan?" << endl;
     assert(0);
   }
@@ -366,7 +367,11 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     if (DumpFIFOs) {
       uint32_t buffer2[9][pos::fifo2Depth];
       int status2[9] = {0};
-      for (int chip = 1; chip <= 7; chip += 2) {
+      for (int chip = 1; chip <= 8; chip += 1) {
+	//if (chip > 4) {
+	//  std::cout << "not dumping fifo2 except for chip1,2,3\n";
+	//  continue;
+	//}
 	status2[chip] = iFED->drainDataFifo2(chip, buffer2[chip]);
 	std::cout << "----------------------------------" << std::endl;
 	if (status2[chip] < 0)
@@ -375,7 +380,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	  std::cout << "Contents of Spy FIFO 2 for chip = " << chip << "(status2 = " << status2[chip] << ")" <<std::endl;
 	  std::cout << "----------------------------------" << std::endl;
 	  for (int i = 0; i <= status2[chip]; ++i)
-	    std::cout << "Clock " << i << " = 0x" << std::hex << buffer2[chip][i] << std::dec << std::endl;
+	    std::cout << "Clock " << std::setw(2) << i << " = 0x" << std::hex << buffer2[chip][i] << std::dec << std::endl;
 	  std::cout << "----------------------------------" << std::endl;
 	}
       }
@@ -390,7 +395,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       std::cout << "Contents of Spy FIFO 3" << std::endl;
       std::cout << "----------------------" << std::endl;
       for (int i = 0; i <= status3; ++i)
-	std::cout << "Clock " << i << " = 0x" << std::hex << buffer3[i] << std::dec << std::endl;
+	std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer3[i]>>32) << " " << std::setw(8) << (buffer3[i] & 0xFFFFFFFF) << std::dec << std::endl;
       std::cout << "FIFO3Decoder thinks:\n"
 		<< "nhits: " << decode3.nhits() << "\n";
       for (unsigned i = 0; i < decode3.nhits(); ++i)
