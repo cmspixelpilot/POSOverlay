@@ -367,7 +367,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     if (DumpFIFOs) {
       uint32_t buffer2[9][pos::fifo2Depth];
       int status2[9] = {0};
-      for (int chip = 1; chip <= 8; chip += 1) {
+      for (int chip = 1; chip <= 7; chip += 2) {
 	//if (chip > 4) {
 	//  std::cout << "not dumping fifo2 except for chip1,2,3\n";
 	//  continue;
