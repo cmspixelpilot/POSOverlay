@@ -142,6 +142,8 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::SetFEDOffsetsEnMass, "SetFEDOffsetsEnMass", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ResetFEDsEnMass, "ResetFEDsEnMass", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetPrivateWord, "SetPrivateWord", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channel, "SetSpyFIFO2Channel", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channels, "SetSpyFIFO2Channels", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadTTSFIFO, "ReadTTSFIFO", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadLastDACFIFO, "ReadLastDACFIFO", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetPhasesDelays, "SetPhasesDelays", XDAQ_NS_URI);
@@ -4072,6 +4074,53 @@ xoap::MessageReference PixelFEDSupervisor::SetPrivateWord (xoap::MessageReferenc
 
 }
 
+xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channel(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  Attribute_Vector parametersReceived(2);
+  parametersReceived[0].name_ = "Which";
+  parametersReceived[1].name_ = "Ch";
+  Receive(msg, parametersReceived);
+
+  unsigned int ch = atoi(parametersReceived[1].value_.c_str());
+  assert(ch <= 8);
+  int which = -1;
+  if      (parametersReceived[0].value_ == "N")  which = 0;
+  else if (parametersReceived[0].value_ == "NC") which = 1;
+  else if (parametersReceived[0].value_ == "SC") which = 2;
+  else if (parametersReceived[0].value_ == "S")  which = 3;
+  else {
+    which = atoi(parametersReceived[0].value_.c_str());
+    if (which < 0 || which > 3)
+      assert(0);
+  }
+
+  cout << " PixelFEDSupervisor::SetSpyFifo2Channel which = " << parametersReceived[0].value_ << " = " << which << ", channel = " << parametersReceived[1].value_ << " = " << ch << endl;
+  for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
+    iFED->second->set_SpyFifo2Channel(which, ch);
+
+  xoap::MessageReference reply=MakeSOAPMessageReference("SetSpyFIFO2ChannelDone");
+  return reply;
+}
+
+xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channels(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  Attribute_Vector parametersReceived(4);
+  parametersReceived[0].name_ = "Nch";
+  parametersReceived[1].name_ = "NCch";
+  parametersReceived[2].name_ = "SCch";
+  parametersReceived[3].name_ = "Sch";
+  Receive(msg, parametersReceived);
+
+  unsigned int Nch  = atoi(parametersReceived[0].value_.c_str());
+  unsigned int NCch = atoi(parametersReceived[1].value_.c_str());
+  unsigned int SCch = atoi(parametersReceived[2].value_.c_str());
+  unsigned int Sch  = atoi(parametersReceived[3].value_.c_str());
+
+  for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
+    iFED->second->set_SpyFifo2Channels(Nch, NCch, SCch, Sch);
+
+  xoap::MessageReference reply=MakeSOAPMessageReference("SetSpyFIFO2ChannelsDone");
+  return reply;
+}
+
 xoap::MessageReference PixelFEDSupervisor::SetPhasesDelays (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   xoap::MessageReference reply=MakeSOAPMessageReference("SetPhasesDelaysDone");
   Attribute_Vector parametersReceived(4);
@@ -4241,6 +4290,14 @@ void PixelFEDSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
 
     receiveMsg = Receive(this->ResetFEDsEnMass(soapMsg));
 
+  }
+  else if(action=="SetSpyFIFO2Channel"){
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetSpyFIFO2Channel", attrib);
+    std::string reciveMsg = Receive(this->SetSpyFIFO2Channel(soapMsg));
+  }
+  else if(action=="SetSpyFIFO2Channels"){
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetSpyFIFO2Channels", attrib);
+    std::string reciveMsg = Receive(this->SetSpyFIFO2Channels(soapMsg));
   }
   else if(action=="SetADC1V2VEnMass"){
 
