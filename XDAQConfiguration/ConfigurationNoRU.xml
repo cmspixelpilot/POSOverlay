@@ -87,6 +87,7 @@
 
                 <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="local" group="dcs">
                         <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct">
+			  <configuration xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
                         </properties>
                 </xc:Application>
                 <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
