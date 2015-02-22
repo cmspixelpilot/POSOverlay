@@ -170,6 +170,7 @@ class PixelFEDInterface {
   int drainTripple(const int trip,uint32_t *data);
    
   // Read fifos for each channel
+  void drainDigTransFifo(const int chip, uint32_t* data);
   int drainFifo1(int chan,uint32_t *data); 
   int drain_transBuffer(int chan, uint32_t *data); 
   int drainFifo1(int chnl, uint32_t *data, 

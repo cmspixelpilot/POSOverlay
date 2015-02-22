@@ -2063,8 +2063,17 @@ if(status<0)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error Setting Mode Word! s
 
 }
 
+void PixelFEDInterface::drainDigTransFifo(const int chip, uint32_t* data) {
+  std::string chipname;
+  if      (chip == 1) chipname = "BLAD_N";
+  else if (chip == 3) chipname = "BLAD_NC";
+  else if (chip == 5) chipname = "BLAD_SC";
+  else if (chip == 7) chipname = "BLAD_S";
+  else
+    return;
 
-
+  vmeDevicePtr->readBlock(chipname, 4096, (char*)data, HAL::HAL_NO_INCREMENT, 0x20000);
+}
 
 //////////////////////////////////////////////////////////////////////
 // Read transparent data from FIFO1 for all channels.
