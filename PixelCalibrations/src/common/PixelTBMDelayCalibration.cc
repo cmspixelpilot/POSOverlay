@@ -19,14 +19,12 @@ void PixelTBMDelayCalibration::beginCalibration() {
   // Check that PixelCalibConfiguration settings make sense.
 	
   if (!tempCalibObject->singleROC() && tempCalibObject->maxNumHitsPerROC() > 2) {
-    std::cout << "ERROR:  FIFO3 will overflow with more than two hits on each ROC.  To run this calibration, use 2 or less hits per ROC, or use SingleROC mode.  Now aborting..."<<std::endl;
+    std::cout << "ERROR:  FIFO3 will overflow with more than two hits on each ROC.  To run this calibration, use 2 or less hits per ROC, or use SingleROC mode.  Now aborting..." << std::endl;
     assert(0);
   }
 
-  if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMADelay")) {
-    std::cout << "ERROR:  TBMADelay or TBMBDelay must be one of the scan variables.  Now aborting..."<<std::endl;
-    assert(0);
-  }
+  if (!tempCalibObject->containsScan("TBMADelay") || !tempCalibObject->containsScan("TBMBDelay") || !tempCalibObject->containsScan("TBMPLLDelay"))
+    std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
 
   CycleFIFO2Channels = tempCalibObject->parameterValue("CycleFIFO2Channels") == "yes";
 }
