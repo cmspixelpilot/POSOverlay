@@ -45,9 +45,10 @@
 
 <!--
 ["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate3/easyBoard12/channel002 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmI/ControlPowerChann"]
-["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate4/easyBoard12/channel002 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmO/ControlPowerChann"]
-["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate3/easyBoard08/channel000 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmI/Pixel_Pilot_Blade_BmI_ROG1/channel000"]
 
+["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate4/easyBoard12/channel002 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmO/ControlPowerChann"]
+
+["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate3/easyBoard08/channel000 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmI/Pixel_Pilot_Blade_BmI_ROG1/channel000"]
 ["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate3/easyBoard08/channel001 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmI/Pixel_Pilot_Blade_BmI_ROG1/channel001"]
 ["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate3/easyBoard08/channel002 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmI/Pixel_Pilot_Blade_BmI_ROG1/channel002"]
 ["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate3/easyBoard08/channel003 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmI/Pixel_Pilot_Blade_BmI_ROG1/channel003"]
