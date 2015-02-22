@@ -236,11 +236,11 @@ ltcconfig   0
 tkfecconfig   0
 
 key 14
-detconfig   0
+detconfig   3
 nametranslation   0
 fedconfig   0
 fecconfig   0
-fedcard   0
+fedcard   3
 dac   3
 mask   0
 trim   0
@@ -503,11 +503,11 @@ ltcconfig   0
 tkfecconfig   0
 
 key 32
-detconfig   0
+detconfig   3
 nametranslation   0
 fedconfig   0
 fecconfig   0
-fedcard   0
+fedcard   3
 dac   3
 mask   0
 trim   0
@@ -524,7 +524,7 @@ detconfig   0
 nametranslation   0
 fedconfig   0
 fecconfig   0
-fedcard   0
+fedcard   3
 dac   3
 mask   0
 trim   0
@@ -705,7 +705,7 @@ detconfig   0
 nametranslation   0
 fedconfig   0
 fecconfig   0
-fedcard   0
+fedcard   3
 dac   3
 mask   0
 trim   0
