@@ -5,11 +5,10 @@ PixelAlive     14   ;
 PixelAlive5x5     44   ;
 SCurve     12   ;
 TBMDelay     33   ;
+Iana	     45	  ;
 TTCPeriodicL1A     15   ;
 TTCPeriodicCalSync     16   ;
 TTCPeriodicReset     17   ;
-TBMDelaySwap_bk     43   nametranslation  SwapBmIOAtPxFEC  detconfig  Default  fedconfig  Default  fecconfig  Default  fedcard  Default  dac  Default  tbm  Default  mask  Default  trim  Default  calib  TBMDelay  portcard  Default  portcardmap  Default  ttcciconfig  Default  tkfecconfig  Default  ;
-VcThrCalDelSwapBmIO_bk     42   nametranslation  SwapBmIOAtPxFEC  detconfig  Default  fedconfig  Default  fecconfig  Default  fedcard  Default  dac  Default  tbm  Default  mask  Default  trim  Default  calib  VcThrCalDel  portcard  Default  portcardmap  Default  ttcciconfig  Default  tkfecconfig  Default  ;
 VersionAliases
 nametranslation  0 Default ;
 nametranslation  1 SwapBmIOAtPxFEC ;

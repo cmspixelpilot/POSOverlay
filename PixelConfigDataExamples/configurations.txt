@@ -716,3 +716,20 @@ portcardmap   0
 ttcciconfig   0
 ltcconfig   0
 tkfecconfig   0
+
+key 45
+detconfig   0
+nametranslation   0
+fedconfig   0
+fecconfig   0
+fedcard   3
+dac   3
+mask   0
+trim   0
+calib   36
+tbm   1
+portcard   0
+portcardmap   0
+ttcciconfig   0
+ltcconfig   0
+tkfecconfig   0
