@@ -1,5 +1,6 @@
 key 0
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -17,6 +18,7 @@ tkfecconfig   0
 
 key 1
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -34,6 +36,7 @@ tkfecconfig   0
 
 key 2
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -51,6 +54,7 @@ tkfecconfig   0
 
 key 3
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -68,6 +72,7 @@ tkfecconfig   0
 
 key 4
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -85,6 +90,7 @@ tkfecconfig   0
 
 key 5
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -102,6 +108,7 @@ tkfecconfig   0
 
 key 6
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -119,6 +126,7 @@ tkfecconfig   0
 
 key 7
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -136,6 +144,7 @@ tkfecconfig   0
 
 key 8
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -153,6 +162,7 @@ tkfecconfig   0
 
 key 9
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -169,6 +179,7 @@ tkfecconfig   0
 
 key 10
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -186,6 +197,7 @@ tkfecconfig   0
 
 key 11
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -203,6 +215,7 @@ tkfecconfig   0
 
 key 12
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -220,6 +233,7 @@ tkfecconfig   0
 
 key 13
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -237,6 +251,7 @@ tkfecconfig   0
 
 key 14
 detconfig   3
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -263,6 +278,7 @@ ttcciconfig   3
 
 key 18
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -280,6 +296,7 @@ tkfecconfig   0
 
 key 19
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -297,6 +314,7 @@ tkfecconfig   0
 
 key 20
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -314,6 +332,7 @@ tkfecconfig   0
 
 key 21
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -331,6 +350,7 @@ tkfecconfig   0
 
 key 22
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -348,6 +368,7 @@ tkfecconfig   0
 
 key 23
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -364,6 +385,7 @@ ttcciconfig   0
 
 key 24
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -382,6 +404,7 @@ maxvsf   0
 
 key 25
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -399,6 +422,7 @@ tkfecconfig   0
 
 key 26
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -416,6 +440,7 @@ tkfecconfig   0
 
 key 27
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -434,6 +459,7 @@ maxvsf   0
 
 key 28
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -452,6 +478,7 @@ maxvsf   0
 
 key 29
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -470,6 +497,7 @@ maxvsf   0
 
 key 30
 detconfig   3
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -487,6 +515,7 @@ tkfecconfig   0
 
 key 31
 detconfig   3
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -504,6 +533,7 @@ tkfecconfig   0
 
 key 32
 detconfig   3
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -521,6 +551,7 @@ tkfecconfig   0
 
 key 33
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -538,6 +569,7 @@ tkfecconfig   0
 
 key 34
 detconfig   1
+lowvoltagemap 0
 nametranslation   1
 fedconfig   0
 fecconfig   0
@@ -555,6 +587,7 @@ tkfecconfig   0
 
 key 35
 detconfig   0
+lowvoltagemap 0
 nametranslation   1
 fedconfig   0
 fecconfig   0
@@ -572,6 +605,7 @@ tkfecconfig   0
 
 key 36
 detconfig   1
+lowvoltagemap 0
 nametranslation   1
 fedconfig   0
 fecconfig   0
@@ -589,6 +623,7 @@ tkfecconfig   0
 
 key 37
 detconfig   1
+lowvoltagemap 0
 nametranslation   1
 fedconfig   0
 fecconfig   0
@@ -605,6 +640,7 @@ ltcconfig   0
 tkfecconfig   0
 
 key 38
+lowvoltagemap 0
 nametranslation   1
 detconfig   0
 fedconfig   0
@@ -621,6 +657,7 @@ ttcciconfig   0
 tkfecconfig   0
 
 key 39
+lowvoltagemap 0
 nametranslation   1
 detconfig   0
 fedconfig   0
@@ -637,6 +674,7 @@ ttcciconfig   0
 tkfecconfig   0
 
 key 40
+lowvoltagemap 0
 nametranslation   1
 detconfig   0
 fedconfig   0
@@ -653,6 +691,7 @@ ttcciconfig   0
 tkfecconfig   0
 
 key 41
+lowvoltagemap 0
 nametranslation   1
 detconfig   0
 fedconfig   0
@@ -669,6 +708,7 @@ ttcciconfig   0
 tkfecconfig   0
 
 key 42
+lowvoltagemap 0
 nametranslation   1
 detconfig   0
 fedconfig   0
@@ -685,6 +725,7 @@ ttcciconfig   0
 tkfecconfig   0
 
 key 43
+lowvoltagemap 0
 nametranslation   1
 detconfig   0
 fedconfig   0
@@ -702,6 +743,7 @@ tkfecconfig   0
 
 key 44
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
@@ -719,6 +761,7 @@ tkfecconfig   0
 
 key 45
 detconfig   0
+lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
