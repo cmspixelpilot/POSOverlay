@@ -366,15 +366,82 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     h_nhits->Fill(nhits);
 
     if (DumpFIFOs) {
+      int col2=-1, row2=-1;
+      uint32_t buffer1[9][pos::fifo1TranspDepth];
       uint32_t buffer2[9][pos::fifo2Depth];
       int status2[9] = {0};
-      for (int chip = 1; chip <= 7; chip += 2)
+      for (int chip = 1; chip <= 7; chip += 2) {
+	iFED->drainDigTransFifo(chip, buffer1[chip]);
 	status2[chip] = iFED->drainDataFifo2(chip, buffer2[chip]);
+      }
       std::cout << "FIFO 2 buffer sizes: ";
       for (int chip = 1; chip <= 7; chip += 2)
 	std::cout << std::setw(4) << status2[chip] << " ";
       std::cout << endl;
       for (int chip = 1; chip <= 7; chip += 2) {
+	bool trans_all_ff = false;
+	int trans_found = 0;
+	uint32_t pattern = 0;
+	uint8_t* data = (uint8_t*)buffer1[chip];
+	std::cout << "-------------------------------------------" << std::endl;
+	std::cout << "Contents of transparent FIFO 1 for chip = " << chip << std::endl;
+	std::cout << "-------------------------------------------" << std::endl;
+	uint8_t* datae = data + 4095;
+	if (*data == 0xff && *datae == 0xff) {
+	  int nbeg = 0, nend = 0;
+	  while (*data == 0xff && data != datae)
+	    ++nbeg, ++data;
+	  if (data == datae) {
+	    trans_all_ff = true;
+	    std::cout << "all FF" << std::endl;
+	  }
+	  else {
+	    while (*datae == 0xff)
+	      ++nend, --datae;
+	    trans_found = datae-data+1;
+	    std::cout << nbeg << " FF then " << trans_found << " bytes:" << std::endl;
+	    while (data != datae + 1) {
+	      uint8_t d = *data;
+	      std::cout << std::hex << std::setw(2) << unsigned(d) << std::dec << " = ";
+	      for (int i = 7; i >= 0; --i) {
+		std::cout << ((d & (1 << i)) ? "1" : "0");
+		if (i == 4) std::cout << " ";
+	      }
+	      std::cout << std::endl;
+	      ++data;
+	    }
+	    std::cout << "then " << nend << " FF" << std::endl;
+	  }
+	}
+	else {
+	  pattern = *((uint32_t*)data);
+	  bool same = true;
+	  while (data != datae + 1) {
+	    uint32_t p = *((uint32_t*)data);
+	    if (p != pattern)
+	      same = false;
+	    data += 4;
+	  }
+	  if (same)
+	    std::cout << "1024 repetitions of " << std::hex << pattern << std::dec << std::endl;
+	  else {
+	    data = (uint8_t*)buffer1[chip];
+	    std::cout << "rw | ";
+	    for (int j = 0; j < 64; ++j)
+	      std::cout << std::setw(2) << j << " ";
+	    std::cout << std::endl;
+	    for (int i = 0; i < 64; ++i) {
+	      std::cout << std::setw(2) << i << " | ";
+	      for (int j = 0; j < 64; ++j)
+		std::cout << std::hex << std::setw(2) << unsigned(data[i*64+j]) << std::dec << " ";
+	      std::cout << std::endl;
+	    }
+	  }
+	}
+
+	if (chip != 1 && chip != 7 && !trans_all_ff)
+	  std::cout << "bad trans_all_ff: chip is " << chip << std::endl;
+
 	std::cout << "----------------------------------" << std::endl;
 	if (status2[chip] < 0)
 	  std::cout << "Spy FIFO 2 for chip = " << chip << " status = " << status2[chip] << std::endl;
@@ -388,6 +455,10 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	std::cout << "FIFO2DigDecoder thinks:\n";
 	FIFO2DigDecoder dec2(buffer2[chip], status2[chip]);
 	dec2.printToStream(std::cout);
+	if (dec2.n_hits() > 6) {
+	  col2 = dec2.hits()[0].col;
+	  row2 = dec2.hits()[0].row;
+	}
       }
       if (status2[1] > 0 && status2[3] > 0) {
 	cout<<"decodePTrans return: " << decodePTrans(buffer2[1],buffer2[3],16)<<endl;
@@ -408,7 +479,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 		  << " rocid: " << decode3.rocid(i) << " dcol: " << decode3.dcol(i)
 		  << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
 		  << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
-
+      std::cout << "(fifo2 col: " << col2 << " row: " << row2 << "   fifo3 dcol: " << decode3.dcol(0) << " pxl: " << decode3.pxl(0) << " col: " << decode3.column(0) << " row: " << decode3.row(0) << ")\n";
       std::cout << "Contents of Error FIFO" << std::endl;
       std::cout << "----------------------" << std::endl;
       for (int i = 0; i <= statusErr; ++i)
