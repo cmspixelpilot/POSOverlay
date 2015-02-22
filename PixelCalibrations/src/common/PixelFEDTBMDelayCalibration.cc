@@ -5,6 +5,7 @@
 #include "PixelUtilities/PixelFEDDataTools/include/PixelFEDDataTypes.h"
 #include "PixelUtilities/PixelFEDDataTools/include/ErrorFIFODecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO2Decoder.h"
+#include "PixelUtilities/PixelFEDDataTools/include/FIFO2DigDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO3Decoder.h"
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 #include "TFile.h"
@@ -367,12 +368,13 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     if (DumpFIFOs) {
       uint32_t buffer2[9][pos::fifo2Depth];
       int status2[9] = {0};
-      for (int chip = 1; chip <= 7; chip += 2) {
-	//if (chip > 4) {
-	//  std::cout << "not dumping fifo2 except for chip1,2,3\n";
-	//  continue;
-	//}
+      for (int chip = 1; chip <= 7; chip += 2)
 	status2[chip] = iFED->drainDataFifo2(chip, buffer2[chip]);
+      std::cout << "FIFO 2 buffer sizes: ";
+      for (int chip = 1; chip <= 7; chip += 2)
+	std::cout << std::setw(4) << status2[chip] << " ";
+      std::cout << endl;
+      for (int chip = 1; chip <= 7; chip += 2) {
 	std::cout << "----------------------------------" << std::endl;
 	if (status2[chip] < 0)
 	  std::cout << "Spy FIFO 2 for chip = " << chip << " status = " << status2[chip] << std::endl;
@@ -383,6 +385,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	    std::cout << "Clock " << std::setw(2) << i << " = 0x" << std::hex << buffer2[chip][i] << std::dec << std::endl;
 	  std::cout << "----------------------------------" << std::endl;
 	}
+	std::cout << "FIFO2DigDecoder thinks:\n";
+	FIFO2DigDecoder dec2(buffer2[chip], status2[chip]);
+	dec2.printToStream(std::cout);
       }
       if (status2[1] > 0 && status2[3] > 0) {
 	cout<<"decodePTrans return: " << decodePTrans(buffer2[1],buffer2[3],16)<<endl;

@@ -27,6 +27,8 @@ void PixelTBMDelayCalibration::beginCalibration() {
     std::cout << "ERROR:  TBMADelay or TBMBDelay must be one of the scan variables.  Now aborting..."<<std::endl;
     assert(0);
   }
+
+  CycleFIFO2Channels = tempCalibObject->parameterValue("CycleFIFO2Channels") == "yes";
 }
 
 bool PixelTBMDelayCalibration::execute() {
@@ -39,6 +41,17 @@ bool PixelTBMDelayCalibration::execute() {
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
   if (event_ % tempCalibObject->nTriggersPerPattern() == 0) 
     commandToAllFECCrates("CalibRunning");
+
+  if (CycleFIFO2Channels) {
+    const int em36 = event_ % 36;
+    const int which = em36 / 9;
+    const int channel = em36 % 9;
+    std::cout << "fiddling with SetSpyFifo2Channel event_ = " << event_ << " % 36 = " << em36 << " which = " << which << " channel = " << channel << std::endl;
+    Attribute_Vector parametersToFED(2);
+    parametersToFED[0].name_ = "Which"; parametersToFED[0].value_ = itoa(which);
+    parametersToFED[1].name_ = "Ch";    parametersToFED[1].value_ = itoa(channel);
+    commandToAllFEDCrates("SetSpyFIFO2Channel", parametersToFED);
+  }
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();
