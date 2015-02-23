@@ -117,38 +117,34 @@ bool PixelIanaCalibration::execute()
 	}
       
       }
-
-      if (vana==250){
-	idpName=dpMap_.begin();
-	for(;idpName!=dpMap_.end();++idpName){
-
-	  if (idpName->second.size()<=iROC) continue;
-
-	  PixelROCName aROC=idpName->second[iROC];
-
-	  cout << "Selected ROC:"<<aROC<<endl;
-
-	  //FIXME slow way to make module name
-	  PixelModuleName theModule(aROC.rocname());
-
-	  int oldVana=dacsettings_[theModule]->getDACSettings(aROC)->getVana();
-	  cout << "Will set Vana="<<oldVana<<endl;
-	  setDAC(aROC,pos::k_DACAddress_Vana,oldVana);
-
-	  int oldVsf=dacsettings_[theModule]->getDACSettings(aROC)->getVsf();
-	  setDAC(aROC,pos::k_DACAddress_Vsf,oldVsf);
-
-	}
-
-      }
-
     }
 
+    // reset to prescribed values
+
+    map<string, vector<pos::PixelROCName> >::iterator idpName=dpMap_.begin();
+    for(;idpName!=dpMap_.end();++idpName){
+
+      if (idpName->second.size()<=iROC) continue;
+
+      PixelROCName aROC=idpName->second[iROC];
+
+      cout << "Selected ROC:"<<aROC<<endl;
+
+      //FIXME slow way to make module name
+      PixelModuleName theModule(aROC.rocname());
+
+      int oldVana=dacsettings_[theModule]->getDACSettings(aROC)->getVana();
+      cout << "Will set Vana="<<oldVana<<endl;
+      setDAC(aROC,pos::k_DACAddress_Vana,oldVana);
+
+      int oldVsf=dacsettings_[theModule]->getDACSettings(aROC)->getVsf();
+      setDAC(aROC,pos::k_DACAddress_Vsf,oldVsf);
+
+    }
   }
 
   return false;
-
-} // end of execute() function
+}
 
 
 
