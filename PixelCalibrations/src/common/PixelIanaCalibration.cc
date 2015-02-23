@@ -35,9 +35,10 @@ using namespace std;
 PixelIanaCalibration::PixelIanaCalibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
   : PixelCalibrationBase(tempConfiguration, *mySOAPCmdr),
     lowVoltageMap_(0),
-    npoints_(26),
+    npoints_(25),
     sleeptime_(8),
-    sleeptime0_(8)
+    sleeptime0_(8),
+    ianares_(2.)
 {
   //  cout << "Greetings from the PixelIanaCalibration copy constructor." <<endl;
 }
@@ -54,7 +55,8 @@ bool PixelIanaCalibration::execute()
     double percentageOfJob= 100*double(iROC)/double(maxROC_);
     this->setPercentageOfJob(percentageOfJob);
     
-    for (unsigned int vana=0; vana<255; vana+=10){
+    const unsigned step = 255/npoints_;
+    for (unsigned ivana = 0, vana = 0; vana<255; vana+=step, ++ivana){
 
       unsigned int ivana=vana/10;
 
@@ -162,14 +164,28 @@ void PixelIanaCalibration::beginCalibration(){
   if (sleeptime !="") { //default sleeptime_ given in ctor
     int sleeptimeval= atoi( sleeptime.c_str() );
     sleeptime_ = (sleeptimeval<0) ? sleeptime_ : sleeptimeval;
-    cout<<"Sleep time set to "<<sleeptime_<<" seconds"<<endl;
   }
+  cout<<"Sleep time set to "<<sleeptime_<<" seconds"<<endl;
   string sleeptime0 = tempCalibObject->parameterValue("SleepTimeAtZero") ;
   if (sleeptime0 !="") { //default given in ctor
     int sleeptimeval0= atoi( sleeptime0.c_str() );
     sleeptime0_ = (sleeptimeval0<0) ? sleeptime0_ : sleeptimeval0;
-    cout<<"Sleep time after Vana=0 set to "<<sleeptime0_<<" seconds"<<endl;
   }
+  cout<<"Sleep time after Vana=0 set to "<<sleeptime0_<<" seconds"<<endl;
+  string NPoints = tempCalibObject->parameterValue("NPoints");
+  if (NPoints != "") {
+    int NPointsval = atoi(NPoints.c_str());
+    if (NPointsval > 0)
+      npoints_ = NPointsval;
+  }
+  cout << "NPoints = " << npoints_ << endl;
+  string IanaRes = tempCalibObject->parameterValue("IanaRes");
+  if (IanaRes != "") {
+    int IanaResval = atof(IanaRes.c_str());
+    if (IanaResval > 0)
+      ianares_ = IanaResval;
+  }
+  cout << "IanaRes (mA) = " << ianares_ << endl;
 
   PixelConfigInterface::get(lowVoltageMap_, "pixel/lowvoltagemap/", *theGlobalKey_); 
   if (lowVoltageMap_==0){
@@ -195,7 +211,7 @@ void PixelIanaCalibration::beginCalibration(){
 
     dpMap_[dpName].push_back(rocs[i]);
 
-    vector<Moments> v(npoints_);
+    vector<Moments> v(npoints_+1);
     
     Iana_[dpName].push_back(v);
 
@@ -287,9 +303,8 @@ void PixelIanaCalibration::endCalibration(){
       for (unsigned j=0;j<npoints_;j++){
 
 	y[j]=Iana_[idpName->first][i][j].mean();
-	//FIXME hardcoded...
-	x[j]=10.0*j;
-	ey[j]=0.002;
+	x[j]=255/npoints_*j;
+	ey[j]=ianares_/1000.;
 
 	cout << " " << Iana_[idpName->first][i][j].mean();
 	out << Iana_[idpName->first][i][j].mean()<<" ";
@@ -315,7 +330,7 @@ void PixelIanaCalibration::endCalibration(){
       //adjust data so y intercept is at 0, then refit
       for (unsigned int ivana=0;ivana<npoints_;ivana++){
 	y[ivana]=1000*(y[ivana]-yvalatzero);
-	ey[ivana]=2;
+	ey[ivana]=ianares_;
       }
 
       f2->SetParameters(120,60,y[1],0.5*(y[1]+y[npoints_-2]),y[npoints_-2]);

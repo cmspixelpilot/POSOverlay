@@ -52,9 +52,10 @@ class PixelIanaCalibration: public PixelCalibrationBase {
 
   std::map<pos::PixelModuleName,pos::PixelDACSettings*> dacsettings_;
 
-  const unsigned int npoints_;
+  unsigned int npoints_;
   unsigned int sleeptime_;
   unsigned int sleeptime0_;
+  double ianares_;
 
   typedef struct branch{
     float pass;
