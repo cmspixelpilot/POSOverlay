@@ -294,20 +294,32 @@ void PixelIanaCalibration::endCalibration(){
 
       out << npoints_ << endl;
 
-      for (unsigned j=0;j<npoints_;j++){
-
-	y[j]=Iana_[idpName->first][i][j].mean();
-	x[j]=255/npoints_*j;
-	ey[j]=ianares_/1000.;
-
-	cout << " " << Iana_[idpName->first][i][j].mean();
-	out << Iana_[idpName->first][i][j].mean()<<" ";
-
+      for (unsigned j=0;j<npoints_;j++) {
+	y[j] = Iana_[idpName->first][i][j].mean();
+	x[j] = 255/npoints_*j;
+	ey[j] = ianares_/1000.;
       }
 
-      cout <<endl;
+      for (unsigned j = 0; j < npoints_; j++) {
+	cout << x[j] << " ";
+	out  << x[j] << " ";
+      }
+      cout << endl;
+      out << endl;
 
-      out <<endl;
+      for (unsigned j = 0; j < npoints_; j++) {
+	cout << y[j] << " ";
+	out  << y[j] << " ";
+      }
+      cout << endl;
+      out << endl;
+
+      for (unsigned j = 0; j < npoints_; j++) {
+	cout << ey[j] << " ";
+	out  << ey[j] << " ";
+      }
+      cout << endl;
+      out << endl;
 
       TF1* f2 = new TF1("f2","(x<[0])*([2]+([3]-[2])*exp(([4]-[3])*(x-[0])/(([1])*([3]-[2]))))+(x>=[0]+[1])*[4]+(x>=[0])*(x<[0]+[1])*([3]+(x-[0])*([4]-[3])/([1]))",0.0,250.0);
       f2->SetParameters(120,60,y[1],0.5*(y[1]+y[npoints_-2]),y[npoints_-2]);
