@@ -58,8 +58,6 @@ bool PixelIanaCalibration::execute()
     const unsigned step = 255/npoints_;
     for (unsigned ivana = 0, vana = 0; vana<255; vana+=step, ++ivana){
 
-      unsigned int ivana=vana/10;
-
       map<string, vector<pos::PixelROCName> >::iterator idpName=dpMap_.begin();
 
       for(;idpName!=dpMap_.end();++idpName){
@@ -363,7 +361,7 @@ void PixelIanaCalibration::endCalibration(){
       gr->SetMaximum(theBranch_sum.maxIana + 10);
       gr->GetXaxis()->SetTitle("Vana");
       gr->GetYaxis()->SetTitle("Iana (mA)");
-      gr->Draw("ACP");
+      gr->Draw("AP");
 
       fit->Draw("same"); //draw curve
       fit->SetLineColor(1);
