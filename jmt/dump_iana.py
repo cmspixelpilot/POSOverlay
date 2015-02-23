@@ -34,9 +34,10 @@ for d in dirs:
 
 if 'scp' in sys.argv:
     remote_dir = 'public_html/qwer/dump_iana/%i' % run
-    cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
-    print cmd
-    os.system(cmd)
-    cmd = 'scp -r %s/* jmt46@lnx201.lns.cornell.edu:%s' % (out_dir, remote_dir)
-    print cmd
-    os.system(cmd)
+    cmds = [
+        'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir,
+        'scp -r %s/Iana.root %s/iana.dat %s/* jmt46@lnx201.lns.cornell.edu:%s' % (run_dir, run_dir, out_dir, remote_dir),
+        ]
+    for cmd in cmds:
+        print cmd
+        os.system(cmd)
