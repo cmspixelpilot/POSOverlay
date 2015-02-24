@@ -54,28 +54,53 @@ bool PixelIanaCalibration::execute()
 
     double percentageOfJob= 100*double(iROC)/double(maxROC_);
     this->setPercentageOfJob(percentageOfJob);
-    
+
     const unsigned step = 255/npoints_;
-    for (unsigned ivana = 0, vana = 0; vana<255; vana+=step, ++ivana){
+    std::vector<unsigned> vanas, ivanas;
+    for (unsigned ivana = 0, vana = 0; vana<255; vana += step, ++ivana) {
+      ivanas.push_back(ivana);
+      vanas.push_back(vana);
+    }
+
+    const size_t nvanas = vanas.size();
+    assert(nvanas == npoints_ || nvanas == npoints_ + 1);
+
+    for (size_t iii = 0; iii < nvanas; ++iii) {
+      const bool first = iii == 0;
+      unsigned vana, ivana;
+      if (MixVanas_) {
+	// this junk code mixes up the vanas so we don't have sequential readings
+	// nvanas = 12 (= npoints_ + 1 when 255 % npoints != 0) has
+	// 0 23 46 69 92 115 138 161 184 207 230 253 become 0 138 23 161 46 184 69 207 92 230 115 253
+	if (nvanas % 2 == 1 && iii == nvanas - 1) {
+	  ivana = ivanas[iii];
+	  vana = vanas[iii];
+	}
+	else {
+	  const size_t ii = (iii % 2 != 0) * nvanas / 2 + iii / 2;
+	  ivana = ivanas[ii];
+	  vana = vanas[ii];
+	}
+      }
+      else {
+	ivana = ivanas[iii];
+	vana = vanas[iii];
+      }
 
       map<string, vector<pos::PixelROCName> >::iterator idpName=dpMap_.begin();
 
-      for(;idpName!=dpMap_.end();++idpName){
-
+      for (; idpName != dpMap_.end(); ++idpName) {
 	cout << "idpName->first:"<<idpName->first<<endl;
-
-	if (idpName->second.size()<=iROC) continue;
-
+	if (idpName->second.size() <= iROC)
+	  continue;
 	
 	PixelROCName aROC=idpName->second[iROC];
+	cout << "Selected ROC: " << aROC << endl
+	     << "Will set Vana = " << vana << endl;
 
-	cout << "Selected ROC:"<<aROC<<endl;
-
-	cout << "Will set Vana="<<vana<<endl;
-
-	setDAC(aROC,pos::k_DACAddress_Vana,vana);
-	if (vana==0) setDAC(aROC,pos::k_DACAddress_Vsf,0);
-
+	setDAC(aROC, pos::k_DACAddress_Vana, vana);
+	if (first && TurnOffVsf_)
+	  setDAC(aROC, pos::k_DACAddress_Vsf, 0);
       }
 
       //need to sleep more at p5?
@@ -137,9 +162,10 @@ bool PixelIanaCalibration::execute()
       cout << "Will set Vana="<<oldVana<<endl;
       setDAC(aROC,pos::k_DACAddress_Vana,oldVana);
 
-      int oldVsf=dacsettings_[theModule]->getDACSettings(aROC)->getVsf();
-      setDAC(aROC,pos::k_DACAddress_Vsf,oldVsf);
-
+      if (TurnOffVsf_) {
+	int oldVsf=dacsettings_[theModule]->getDACSettings(aROC)->getVsf();
+	setDAC(aROC,pos::k_DACAddress_Vsf,oldVsf);
+      }
     }
   }
 
@@ -160,12 +186,14 @@ void PixelIanaCalibration::beginCalibration(){
     sleeptime_ = (sleeptimeval<0) ? sleeptime_ : sleeptimeval;
   }
   cout<<"Sleep time set to "<<sleeptime_<<" seconds"<<endl;
+
   string sleeptime0 = tempCalibObject->parameterValue("SleepTimeAtZero") ;
   if (sleeptime0 !="") { //default given in ctor
     int sleeptimeval0= atoi( sleeptime0.c_str() );
     sleeptime0_ = (sleeptimeval0<0) ? sleeptime0_ : sleeptimeval0;
   }
   cout<<"Sleep time after Vana=0 set to "<<sleeptime0_<<" seconds"<<endl;
+
   string NPoints = tempCalibObject->parameterValue("NPoints");
   if (NPoints != "") {
     int NPointsval = atoi(NPoints.c_str());
@@ -173,6 +201,7 @@ void PixelIanaCalibration::beginCalibration(){
       npoints_ = NPointsval;
   }
   cout << "NPoints = " << npoints_ << endl;
+
   string IanaRes = tempCalibObject->parameterValue("IanaRes");
   if (IanaRes != "") {
     int IanaResval = atof(IanaRes.c_str());
@@ -180,6 +209,12 @@ void PixelIanaCalibration::beginCalibration(){
       ianares_ = IanaResval;
   }
   cout << "IanaRes (mA) = " << ianares_ << endl;
+
+  MixVanas_ = tempCalibObject->parameterValue("MixVanas") == "yes";
+  cout << "MixVanas? " << MixVanas_ << endl;
+
+  TurnOffVsf_ = tempCalibObject->parameterValue("TurnOffVsf") != "no";
+  cout << "TurnOffVsf? " << TurnOffVsf_ << endl;
 
   PixelConfigInterface::get(lowVoltageMap_, "pixel/lowvoltagemap/", *theGlobalKey_); 
   if (lowVoltageMap_==0){
@@ -288,11 +323,10 @@ void PixelIanaCalibration::endCalibration(){
       theBranch.pass=0;
       strcpy(theBranch.rocName,theROC.rocname().c_str());
       strcpy(theBranch_sum.rocName,theROC.rocname().c_str());
-      cout << idpName->second[i];
-
-      out << idpName->second[i]<<endl;
-
-      out << npoints_ << endl;
+      cout << idpName->second[i] << endl;
+      out  << idpName->second[i] << endl;
+      cout << npoints_ << endl;
+      out  << npoints_ << endl;
 
       for (unsigned j=0;j<npoints_;j++) {
 	y[j] = Iana_[idpName->first][i][j].mean();

@@ -4,6 +4,8 @@ SleepTime 8
 SleepTimeAtZero 8
 NPoints 15
 IanaRes 5
+MixVanas yes
+TurnOffVsf no
 Rows:
 0
 Cols:

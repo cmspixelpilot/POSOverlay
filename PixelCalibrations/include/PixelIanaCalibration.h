@@ -56,6 +56,8 @@ class PixelIanaCalibration: public PixelCalibrationBase {
   unsigned int sleeptime_;
   unsigned int sleeptime0_;
   double ianares_;
+  bool MixVanas_;
+  bool TurnOffVsf_;
 
   typedef struct branch{
     float pass;
