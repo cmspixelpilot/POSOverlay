@@ -16,6 +16,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelLowVoltageMap.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDACSettings.h"
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
+#include "PixelCalibrations/include/PixelIanaAnalysis.h"
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 
 #include "TGraphErrors.h"
@@ -304,8 +305,6 @@ void PixelIanaCalibration::endCalibration(){
   PixelRootDirectoryMaker rootDirs(allrocs,gDirectory);
   //////
 
-  const float fitmin=10; //exclude Vana=0 from the fit
-
   map<string, vector<pos::PixelROCName> >::iterator idpName=dpMap_.begin();
 
   for(;idpName!=dpMap_.end();++idpName){
@@ -317,18 +316,17 @@ void PixelIanaCalibration::endCalibration(){
       PixelROCName theROC=idpName->second[i];
       PixelModuleName theModule(theROC.rocname());
 
-      double x[256],y[256];
-      double ey[256];
-
-      theBranch.pass=0;
-      strcpy(theBranch.rocName,theROC.rocname().c_str());
-      strcpy(theBranch_sum.rocName,theROC.rocname().c_str());
+      theBranch.pass = 0;
+      strcpy(theBranch.rocName, theROC.rocname().c_str());
+      strcpy(theBranch_sum.rocName, theROC.rocname().c_str());
       cout << idpName->second[i] << endl;
       out  << idpName->second[i] << endl;
       cout << npoints_ << endl;
       out  << npoints_ << endl;
 
-      for (unsigned j=0;j<npoints_;j++) {
+      std::vector<double> x(npoints_+1), y(npoints_+1), ey(npoints_+1);
+
+      for (unsigned j = 0; j < npoints_; ++j) {
 	y[j] = Iana_[idpName->first][i][j].mean();
 	x[j] = 255/npoints_*j;
 	ey[j] = ianares_/1000.;
@@ -355,140 +353,40 @@ void PixelIanaCalibration::endCalibration(){
       cout << endl;
       out << endl;
 
-      TF1* f2 = new TF1("f2","(x<[0])*([2]+([3]-[2])*exp(([4]-[3])*(x-[0])/(([1])*([3]-[2]))))+(x>=[0]+[1])*[4]+(x>=[0])*(x<[0]+[1])*([3]+(x-[0])*([4]-[3])/([1]))",0.0,250.0);
-      f2->SetParameters(120,60,y[1],0.5*(y[1]+y[npoints_-2]),y[npoints_-2]);
-      f2->SetParLimits(0,10,240);
-      f2->SetParLimits(1,0.1,200);
+      const int oldVana = dacsettings_[theModule]->getDACSettings(theROC)->getVana();
 
-      TGraphErrors* gr = new TGraphErrors(npoints_-1,x,y,0,ey);
-      int fitstatus1 = gr->Fit("f2","","",fitmin,250);
-
-      double yvalatzero=f2->Eval(0.0);
-
-      out << yvalatzero <<endl;
-
-      //adjust data so y intercept is at 0, then refit
-      for (unsigned int ivana=0;ivana<npoints_;ivana++){
-	y[ivana]=1000*(y[ivana]-yvalatzero);
-	ey[ivana]=ianares_;
-      }
-
-      f2->SetParameters(120,60,y[1],0.5*(y[1]+y[npoints_-2]),y[npoints_-2]);
-      f2->SetParLimits(0,10,240);
-      f2->SetParLimits(1,0.1,200);
-      delete gr;
-      
       rootDirs.cdDirectory(theROC);
-      TCanvas canvas(theROC.rocname().c_str(),theROC.rocname().c_str(),800,600);
+      PixelIanaAnalysis analysis;
+      analysis.go(theROC.rocname(),
+		  oldVana,
+		  npoints_,
+		  x, y, ey,
+		  out);
 
-      gr = new TGraphErrors(npoints_-1,x,y,0,ey);
-      int fitstatus2 = gr->Fit("f2","","",fitmin,250);
-
-      out << f2->GetParameter(0)<<" ";
-      out << f2->GetParameter(1)<<" ";
-      out << f2->GetParameter(2)<<" ";
-      out << f2->GetParameter(3)<<" ";
-      out << f2->GetParameter(4)<<endl;
-
-      TF1* fit = gr->GetFunction("f2");
-      theBranch_sum.maxIana=fit->Eval(250);
-
-      //format graph
-      gr->SetLineColor(2);
-      gr->SetLineWidth(4);
-      gr->SetMarkerColor(4);
-      gr->SetMarkerStyle(21);
-      gr->SetTitle(theROC.rocname().c_str());
-      gr->SetMinimum(-10.0);
-      gr->SetMaximum(theBranch_sum.maxIana + 10);
-      gr->GetXaxis()->SetTitle("Vana");
-      gr->GetYaxis()->SetTitle("Iana (mA)");
-      gr->Draw("AP");
-
-      fit->Draw("same"); //draw curve
-      fit->SetLineColor(1);
-
-      theBranch_sum.fitChisquare = fit->GetChisquare();
-      
-      //find vana value where iana crosses 25
-      theBranch_sum.newVana=0;
-      for(; theBranch_sum.newVana<250; theBranch_sum.newVana++){
-	theBranch_sum.newIana=fit->Eval(theBranch_sum.newVana);
-	if (theBranch_sum.newIana>25.0){
-	  break;
-	}
-      }
-
-      int oldVana=dacsettings_[theModule]->getDACSettings(theROC)->getVana();
-
-      dacsettings_[theModule]->getDACSettings(theROC)->setVana(int(theBranch_sum.newVana));
-
-      cout << "Old Vana="<<oldVana<<endl;
-      cout << "New Vana="<<theBranch_sum.newVana<<endl;
+      theBranch_sum.maxIana = analysis.maxIana;
+      theBranch_sum.fitChisquare = analysis.fitChisquare;
+      theBranch_sum.newVana = analysis.newVana;
+      theBranch_sum.newIana = analysis.newIana;
       theBranch_sum.deltaVana = theBranch_sum.newVana - oldVana;
-
-      out <<oldVana<<endl;
-      out <<theBranch_sum.newVana<<endl;
-
-      double ianacurrent=fit->Eval(oldVana);          
-      TLine* l1=new TLine(oldVana,-10.0,oldVana,ianacurrent);
-      l1->SetLineColor(1);
-      l1->Draw();
-      TLine* l2=new TLine(0.0,ianacurrent,oldVana,ianacurrent);
-      l2->SetLineColor(1);
-      l2->Draw();
-
-      TLine* l3=new TLine(theBranch_sum.newVana,-10.0,theBranch_sum.newVana,theBranch_sum.newIana);
-      l3->SetLineColor(2);
-      l3->Draw();
-      TLine* l4=new TLine(0.0,theBranch_sum.newIana,theBranch_sum.newVana,theBranch_sum.newIana);
-      l4->SetLineColor(2);
-      l4->Draw();
-
-      if (theBranch_sum.newVana>=249 || theBranch_sum.maxIana<25 || theBranch_sum.newVana <=4
-	  || fitstatus1 != 0 || fitstatus2 != 0 ) {
-	cout<<"Warning: ROC "<<theROC.rocname()
-	    <<" has Vana="<<theBranch_sum.newVana<<",Iana="<<theBranch_sum.newIana<<endl;
-      }
-      else theBranch.pass=1;
+      theBranch.pass = analysis.pass;
 
       tree->Fill();
       tree_sum->Fill();
-
-      canvas.Write();
-      delete l1;
-      delete l2;
-      delete l3;
-      delete l4;
-      delete f2;
-      delete gr;
-
     }
-
   }
 
   outputFile.cd();
-
   outputFile.Write();
   outputFile.Close();
 
-  map<PixelModuleName,PixelDACSettings*>::const_iterator idacs=dacsettings_.begin();
-
-  for(;idacs!=dacsettings_.end();++idacs){
+  for (map<PixelModuleName,PixelDACSettings*>::const_iterator idacs = dacsettings_.begin(); idacs != dacsettings_.end(); ++idacs)
     idacs->second->writeASCII(outputDir());
-  }
-
-
 }
 
-std::vector<std::string> PixelIanaCalibration::calibrated(){
-
+std::vector<std::string> PixelIanaCalibration::calibrated() {
   vector<string> tmp;
-
   tmp.push_back("dac");
-
   return tmp;
-
 }
 
 void PixelIanaCalibration::testTiming()
