@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <map>
+#include <stdint.h>
 
 class TFile;
 class TH1F;
@@ -55,6 +56,8 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   enum { fifoErr, wrongRoc, wrongPix, rightPix, nDecode };
   std::vector<TH1F*> scans1d[nDecode];
   std::vector<TH2F*> scans2d[nDecode];
+
+  std::vector<uint64_t> zzz[2];
 };
 
 #endif

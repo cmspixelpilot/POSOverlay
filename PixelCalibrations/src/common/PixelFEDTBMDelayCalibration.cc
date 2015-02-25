@@ -281,6 +281,19 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::MessageReference msg) {
+  for (int j = 0; j < 2; ++j) {
+    std::cout << " j =  " << j << " size  " << zzz[j].size() << std::endl;
+    for (size_t i = 0; i < zzz[j].size(); ++i) {
+      uint64_t d = zzz[j][i];
+      if (d != 0x100000000ULL) {
+	if (d > 0xFF)
+	  std::cout << "\nweird word!\n";
+	std::cout << std::setw(2) << std::hex << d << std::dec << " ";
+      }
+      else
+	std::cout << std::endl;
+    }
+  }
   cout << "close RETR output file" << endl;
   retrf.close();
   
@@ -448,9 +461,21 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	else {
 	  std::cout << "Contents of Spy FIFO 2 for chip = " << chip << "(status2 = " << status2[chip] << ")" <<std::endl;
 	  std::cout << "----------------------------------" << std::endl;
-	  for (int i = 0; i <= status2[chip]; ++i)
-	    std::cout << "Clock " << std::setw(2) << i << " = 0x" << std::hex << buffer2[chip][i] << std::dec << std::endl;
-	  std::cout << "----------------------------------" << std::endl;
+	  const int c0 = 1; const int c1 = 3;
+	  for (int i = 0; i <= status2[chip]; ++i) {
+	    uint32_t d = buffer2[chip][i];
+	    uint32_t dh = d & 0xf0;
+	    if (chip == c0 || chip == c1)
+	      zzz[chip == c1].push_back(uint64_t(d));
+	    if (dh == 0x70 || dh == 0x10 || dh == 0xc0)
+	      std::cout << "\n";
+	    if (d > 0xFF)
+	      std::cout << "\nweird word: " << std::hex << d << "\n";
+	    else 
+	      std::cout << std::setw(2) << std::hex << d << std::dec << " ";
+	  }
+	  if (chip == c0 || chip == c1) zzz[chip == c1].push_back(0x100000000ULL);
+	  std::cout << "\n----------------------------------" << std::endl;
 	}
 	std::cout << "FIFO2DigDecoder thinks:\n";
 	FIFO2DigDecoder dec2(buffer2[chip], status2[chip]);
