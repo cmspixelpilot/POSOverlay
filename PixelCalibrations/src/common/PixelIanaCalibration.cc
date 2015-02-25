@@ -356,7 +356,7 @@ void PixelIanaCalibration::endCalibration(){
       const int oldVana = dacsettings_[theModule]->getDACSettings(theROC)->getVana();
 
       rootDirs.cdDirectory(theROC);
-      PixelIanaAnalysis analysis;
+      PixelIanaAnalysis analysis(false);
       analysis.go(theROC.rocname(),
 		  oldVana,
 		  npoints_,

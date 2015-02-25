@@ -1,5 +1,8 @@
 #include "PixelCalibrations/include/PixelIanaAnalysis.h"
 
+#include <cassert>
+#include <fstream>
+
 #include "TAxis.h"
 #include "TCanvas.h"
 #include "TF1.h"
@@ -7,7 +10,7 @@
 #include "TLine.h"
 
 void PixelIanaAnalysis::go(const std::string& roc,
-			   const double oldVana,
+			   const double oldVana_,
 			   const int npoints,
 			   const std::vector<double>& x,
 			   std::vector<double> y,
@@ -15,19 +18,27 @@ void PixelIanaAnalysis::go(const std::string& roc,
 			   std::ostream& out,
 			   const char* filename)
 {
-  f2 = new TF1("f2",
-	       "(x < [0]) * ([2] + ([3] - [2])*exp(([4] - [3])*(x - [0])/([1]*([3] - [2])))) + "
-	       "(x >= [0] + [1]) * [4] + "
-	       "(x >= [0]) * (x < [0] + [1]) * ([3] + (x - [0])*([4] - [3])/[1])",
-	       0, 250);
-  f2->SetParameters(120,
-		    60,
-		    y[1],
-		    0.5*(y[1] + y[npoints - 2]),
-		    y[npoints - 2]
-		    );
-  f2->SetParLimits(0, 10, 240);
-  f2->SetParLimits(1, 0.1, 200);
+  oldVana = oldVana_;
+
+  if (linear_fit) {
+    f2 = new TF1("f2", "[0] + [1]*x");
+    f2->SetParameters(0.006, 0.0002);
+  }
+  else {
+    f2 = new TF1("f2",
+		 "(x < [0]) * ([2] + ([3] - [2])*exp(([4] - [3])*(x - [0])/([1]*([3] - [2])))) + "
+		 "(x >= [0] + [1]) * [4] + "
+		 "(x >= [0]) * (x < [0] + [1]) * ([3] + (x - [0])*([4] - [3])/[1])",
+		 0, 250);
+    f2->SetParameters(120,
+		      60,
+		      y[1],
+		      0.5*(y[1] + y[npoints - 2]),
+		      y[npoints - 2]
+		      );
+    f2->SetParLimits(0, 10, 240);
+    f2->SetParLimits(1, 0.1, 200);
+  }
 
   gr = new TGraphErrors(npoints - 1, &x[0], &y[0], 0, &ey[0]);
   fitstatus1 = gr->Fit("f2", "", "", fitmin, 250);
@@ -43,23 +54,31 @@ void PixelIanaAnalysis::go(const std::string& roc,
 
   delete gr;
 
-  f2->SetParameters(120,
-		    60,
-		    y[1],
-		    0.5*(y[1] + y[npoints - 2]),
-		    y[npoints-2]);
-  f2->SetParLimits(0,10,240);
-  f2->SetParLimits(1,0.1,200);
+  if (linear_fit)
+    f2->SetParameters(6, 0.2);
+  else {
+    f2->SetParameters(120,
+		      60,
+		      y[1],
+		      0.5*(y[1] + y[npoints - 2]),
+		      y[npoints-2]);
+    f2->SetParLimits(0,10,240);
+    f2->SetParLimits(1,0.1,200);
+  }
       
   canvas = new TCanvas(roc.c_str(), roc.c_str(), 800, 600);
   gr = new TGraphErrors(npoints - 1, &x[0], &y[0], 0, &ey[0]);
   fitstatus2 = gr->Fit("f2", "", "", fitmin, 250);
 
-  out << f2->GetParameter(0) << " "
-      << f2->GetParameter(1) << " "
-      << f2->GetParameter(2) << " "
-      << f2->GetParameter(3) << " "
-      << f2->GetParameter(4) << "\n";
+  if (linear_fit)
+    out << f2->GetParameter(0) << " "
+	<< f2->GetParameter(1) << "\n";
+  else
+    out << f2->GetParameter(0) << " "
+	<< f2->GetParameter(1) << " "
+	<< f2->GetParameter(2) << " "
+	<< f2->GetParameter(3) << " "
+	<< f2->GetParameter(4) << "\n";
 
   maxIana = f2->Eval(250);
 
@@ -117,4 +136,47 @@ PixelIanaAnalysis::~PixelIanaAnalysis() {
   delete f2;
   delete gr;
   delete canvas;
+}
+
+void PixelIanaAnalysis::redoFromDat(const char* fn, const std::string& roc, std::ostream& out, const char* filename) {
+  std::ifstream in(fn);
+
+  std::string this_roc;
+
+  if (roc != "") {
+    while (this_roc != roc && getline(in, this_roc))
+      ;
+    assert(!in.eof());
+  }
+  else
+    in >> this_roc;
+
+  int npoints;
+  in >> npoints;
+
+  std::vector<double> x(npoints), y(npoints), ey(npoints);
+  std::vector<double>* d[3] = {&x,&y,&ey};
+
+  for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < npoints; ++i) {
+      assert(!in.eof());
+      in >> (*d[j])[i];
+    }
+  }
+
+  double yvalatzero;
+  in >> yvalatzero;
+
+  double dummy;
+  for (int j = 0; j < 5; ++j)
+    in >> dummy;
+
+  int oldVana;
+  int newVana;
+  in >> oldVana;
+  in >> newVana;
+
+  in.close();
+
+  go(this_roc, newVana, npoints, x, y, ey, out, filename);
 }

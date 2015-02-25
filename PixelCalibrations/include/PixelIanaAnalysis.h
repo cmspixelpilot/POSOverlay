@@ -15,7 +15,7 @@ class TCanvas;
 // ey is error on each point
 // if filename is null, assumes caller has already cd'ed into the root file/directory where canvas is wanted
 struct PixelIanaAnalysis {
-  PixelIanaAnalysis() : fitmin(10.) {}
+  PixelIanaAnalysis(bool lin) : linear_fit(lin), fitmin(10.) {}
   ~PixelIanaAnalysis();
 
   void go(const std::string& roc,
@@ -27,6 +27,9 @@ struct PixelIanaAnalysis {
 	  std::ostream& out,
 	  const char* filename=0);
 
+  void redoFromDat(const char* fn, const std::string& roc, std::ostream& out, const char* filename=0);
+
+  const bool linear_fit;
   const double fitmin;
   TGraphErrors* gr;
   TF1* f2;
@@ -36,6 +39,7 @@ struct PixelIanaAnalysis {
   double fitChisquare;
   double maxIana;
   double oldIana;
+  double oldVana;
   double newIana;
   double newVana;
   bool pass;
