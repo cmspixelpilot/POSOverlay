@@ -66,6 +66,7 @@ class FIFO2DigDecoder {
   unsigned tbm_header_data_;
   std::vector<unsigned> roc_headers_;
   std::vector<hit_t> hits_; 
+  unsigned dangling_hit_info_;
   bool tbm_trailer_found_;
   std::vector<unsigned> tbm_trailer_payload_;
 };

@@ -66,7 +66,7 @@ FIFO2DigDecoder::FIFO2DigDecoder(const uint32_t* buffer, unsigned int size) {
 
   //printf("i at end is %u   buf %x\n", i, buf[i]);
 
-  assert(hit.size() == 0);
+  dangling_hit_info_ = hit.size();
 
   if (size - i != 4 || (buf[i] & 0xF0) != tbm_trailer_magic[0])
     return;
@@ -101,6 +101,7 @@ void FIFO2DigDecoder::printToStream(std::ostream& out) {
       out << " roc " << h.roc << " col " << std::setw(2) << h.col << " row " << std::setw(2) << h.row << " ph " << std::setw(3) << h.ph;
     out << std::endl;
   }
+  out << "Dangling hit info? " << dangling_hit_info_ << std::endl;
   out << "TBM trailer found? " << tbm_trailer_found_ << " payload (sz: " << tbm_trailer_payload_.size() << "): ";
   for (size_t i = 0; i < tbm_trailer_payload_.size(); ++i)
     out << std::hex << tbm_trailer_payload_[i] << std::dec << " ";
