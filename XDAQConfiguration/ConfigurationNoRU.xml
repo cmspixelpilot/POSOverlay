@@ -74,7 +74,6 @@
                 <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
 
                 <!-- <xc:Context id="4" url="http://pixp1daq.cern.ch:1980/"> -->
-
 		<!--
                 <xc:Application class="PixelDCSTestApplication" id="101" instance="0" network="local" group="dcs">
                         <properties xmlns="urn:xdaq-application:PixelDCSTestApplication" xsi:type="soapenc:Struct">
@@ -109,9 +108,7 @@
                         </properties>
                 </xc:Application>
                 <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
-		-->
 
-                <!--
                 <xc:Application class="PixelDCStoFEDDpInterface" id="122" instance="0" network="local" group="dcs">
 	                <properties xmlns="urn:xdaq-application:PixelDCStoFEDDpInterface" xsi:type="soapenc:Struct">
                                 <dpValueUpdate_maxLength xsi:type="xsd:integer">500</dpValueUpdate_maxLength>
@@ -125,9 +122,7 @@
                         </properties>
                 </xc:Application>
                 <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
-                -->
 
-		<!--
                 <xc:Application class="tstore::TStore" id="200" instance="0" network="local" group="dcs">
                         <properties xmlns="urn:xdaq-application:TStore" xsi:type="soapenc:Struct">
                 		<configurationRootDirectory xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelDCSInterface/xml/</configurationRootDirectory>
@@ -166,12 +161,10 @@
         <!-- 9923 is just pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
         <!-- <xc:Context id="6" url="http://srv-c2c03-16.cms:9922"> -->
         <!-- <xc:Context id="6" url="http://cmspsx.cms:9922"> works with PSX running! Otherwise works with 9920 -->
-	<!--
         <xc:Context id="6" url="http://cmspsx.cms:9923">
           <xc:Application class="psx" id="30" instance="0" network="local"
           group="dcs" service="psx"/>
         </xc:Context>
-	-->
 
         <!--xc:Context id="1" url="http://vuslink2.cern.ch:1973">
                 <xc:Application class="PixelSlinkMonitor" id="50" instance="0" network="local" group="daq" />
