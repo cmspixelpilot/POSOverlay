@@ -211,10 +211,6 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
-  std::string retr_fn(outputDir() + "/RETR.txt");
-  cout << "writing RETR lines to file " << retr_fn << endl;
-  retrf.open(retr_fn);
-
   std::string root_fn(outputDir() + "/TBMDelay.root");
   cout << "writing histograms to file " << root_fn << endl;
   rootf = new TFile(root_fn.c_str(), "create");
@@ -294,9 +290,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::Message
 	std::cout << std::endl;
     }
   }
-  cout << "close RETR output file" << endl;
-  retrf.close();
-  
+
   cout << "In PixelFEDTBMDelayCalibration::endCalibration()" << endl;
   xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
   return reply;
@@ -304,15 +298,15 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::Message
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReference msg) {
   Attribute_Vector parameters(2);
-  parameters[0].name_="WhatToDo";
-  parameters[1].name_="StateNum";
+  parameters[0].name_ = "WhatToDo";
+  parameters[1].name_ = "StateNum";
   Receive(msg, parameters);
 
   const unsigned state = atoi(parameters[1].value_.c_str());
 
-  if (parameters[0].value_=="RetrieveData")
+  if (parameters[0].value_ == "RetrieveData")
     RetrieveData(state);
-  else if (parameters[0].value_=="Analyze")
+  else if (parameters[0].value_ == "Analyze")
     Analyze();
   else {
     cout << "ERROR: PixelFEDTBMDelayCalibration::execute() does not understand the WhatToDo command, "<< parameters[0].value_ <<", sent to it.\n";
@@ -324,8 +318,6 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReferen
 }
 
 void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
-  assert(retrf.is_open());
-
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
@@ -335,14 +327,12 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 
   const std::vector<std::pair<unsigned, std::vector<unsigned> > >& fedsAndChannels = tempCalibObject->fedCardsAndChannels(crate_, theNameTranslation_, theFEDConfiguration_, theDetectorConfiguration_);
 
-  retrf << "RETR event " << event_ << " state " << state << " ";
-  if (DumpFIFOs) std::cout << "RETR event " << event_ << " state " << state << " ";
+  if (DumpFIFOs) std::cout << "NEW FEDTBMDelay TRIGGER " << event_ << " state " << state << " ";
   std::map<std::string, unsigned int> currentDACValues;
   for (unsigned dacnum = 0; dacnum < tempCalibObject->numberOfScanVariables(); ++dacnum) {
     const std::string& dacname = tempCalibObject->scanName(dacnum);
     const unsigned dacvalue = tempCalibObject->scanValue(tempCalibObject->scanName(dacnum), state);
     currentDACValues[dacname] = dacvalue;
-    retrf << dacname << " " << dacvalue << " ";
     if (DumpFIFOs) std::cout << dacname << " " << dacvalue << " ";
   }
   if (DumpFIFOs) std::cout << std::endl;
@@ -352,41 +342,44 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
     PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
 
+    const int MaxChips = 8;
+    uint32_t buffer1[MaxChips][pos::fifo1TranspDepth];
+    uint32_t buffer2[MaxChips][pos::fifo2Depth];
     uint64_t buffer3[pos::slinkDepth];
     uint32_t bufferErr[36*1024];
+    int status2[MaxChips] = {0};
+    for (int chip = 1; chip <= 7; chip += 2) {
+      if (chip == 1 || chip == 7)
+	iFED->drainDigTransFifo(chip, buffer1[chip]);
+      status2[chip] = iFED->drainDataFifo2(chip, buffer2[chip]);
+    }
     const int status3 = iFED->spySlink64(buffer3);
     const int statusErr = iFED->drainErrorFifo(bufferErr);
 
     if (status3 <= 0) {
-      retrf << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
       std::cout << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
       h_nfiforeaderrors->Fill(0);
       FillEm(state, fifoErr);
       usleep(1000);
       std::cout << "readDigFEDStatus(): ";
       iFED->readDigFEDStatus(false);
+      usleep(1000);
       continue;
     }
 
+    FIFO2DigDecoder* decode2[MaxChips] = {0};
+    for (int chip = 1; chip <= 7; chip += 2)
+      decode2[chip] = new FIFO2DigDecoder(buffer2[chip], status2[chip]);
     FIFO3Decoder decode3(buffer3);
     ErrorFIFODecoder decodeErr(bufferErr, statusErr);
 
-    retrf << "nerr " << statusErr << " ";
     h_nerrors->Fill(statusErr);
 
     const unsigned nhits = decode3.nhits();
-    retrf << "nhits " << nhits << " {hits ";
     h_nhits->Fill(nhits);
 
     if (DumpFIFOs) {
       int col2=-1, row2=-1;
-      uint32_t buffer1[9][pos::fifo1TranspDepth];
-      uint32_t buffer2[9][pos::fifo2Depth];
-      int status2[9] = {0};
-      for (int chip = 1; chip <= 7; chip += 2) {
-	iFED->drainDigTransFifo(chip, buffer1[chip]);
-	status2[chip] = iFED->drainDataFifo2(chip, buffer2[chip]);
-      }
       std::cout << "FIFO 2 buffer sizes: ";
       for (int chip = 1; chip <= 7; chip += 2)
 	std::cout << std::setw(4) << status2[chip] << " ";
@@ -461,7 +454,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	else {
 	  std::cout << "Contents of Spy FIFO 2 for chip = " << chip << "(status2 = " << status2[chip] << ")" <<std::endl;
 	  std::cout << "----------------------------------" << std::endl;
-	  const int c0 = 1; const int c1 = 3;
+	  const int c0 = 5; const int c1 = 7;
 	  for (int i = 0; i <= status2[chip]; ++i) {
 	    uint32_t d = buffer2[chip][i];
 	    uint32_t dh = d & 0xf0;
@@ -478,11 +471,10 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	  std::cout << "\n----------------------------------" << std::endl;
 	}
 	std::cout << "FIFO2DigDecoder thinks:\n";
-	FIFO2DigDecoder dec2(buffer2[chip], status2[chip]);
-	dec2.printToStream(std::cout);
-	if (dec2.n_hits() > 6) {
-	  col2 = dec2.hits()[0].col;
-	  row2 = dec2.hits()[0].row;
+	decode2[chip]->printToStream(std::cout);
+	if (decode2[chip]->n_hits() > 6) {
+	  col2 = decode2[chip]->hits()[0].col;
+	  row2 = decode2[chip]->hits()[0].row;
 	}
       }
       if (status2[1] > 0 && status2[3] > 0) {
@@ -533,8 +525,6 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	const unsigned col = decode3.column(ihit);
 	const unsigned row = decode3.row(ihit);
       
-	retrf << "hit #" << ihit << " roc " << roc << " (" << rocid << ") ch " << channel << " col " << col << " row " << row << " ";
-
 	if (colrows.find(std::make_pair(col, row)) == colrows.end())
 	  FillEm(state, wrongPix);
 	else
@@ -543,7 +533,6 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     }
 
     h_nskip->Fill(nskip);
-    retrf << "hits} nskip " << nskip << endl; 
 
     if (DumpFIFOs) {
       usleep(1000);

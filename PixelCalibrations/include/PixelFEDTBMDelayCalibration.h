@@ -42,7 +42,6 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   void Analyze();
   void FillEm(unsigned state, int which);
 
-  std::ofstream retrf;
   TFile* rootf;
 
   bool DumpFIFOs;
