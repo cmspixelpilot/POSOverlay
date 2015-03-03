@@ -23,21 +23,23 @@ void PixelTBMDelayCalibration::beginCalibration() {
     assert(0);
   }
 
-  if (!tempCalibObject->containsScan("TBMADelay") || !tempCalibObject->containsScan("TBMBDelay") || !tempCalibObject->containsScan("TBMPLLDelay"))
+  if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMBDelay") && !tempCalibObject->containsScan("TBMPLL"))
     std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
 
   CycleFIFO2Channels = tempCalibObject->parameterValue("CycleFIFO2Channels") == "yes";
+  DelayBeforeFirstTrigger = tempCalibObject->parameterValue("DelayBeforeFirstTrigger") == "yes";
 }
 
 bool PixelTBMDelayCalibration::execute() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
-  unsigned int state = event_/(tempCalibObject->nTriggersPerPattern());
+  const bool firstOfPattern = event_ % tempCalibObject->nTriggersPerPattern() == 0;
+  const unsigned state = event_/(tempCalibObject->nTriggersPerPattern());
   reportProgress(0.05);
 
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
-  if (event_ % tempCalibObject->nTriggersPerPattern() == 0) 
+  if (firstOfPattern)
     commandToAllFECCrates("CalibRunning");
 
   if (CycleFIFO2Channels) {
@@ -50,6 +52,9 @@ bool PixelTBMDelayCalibration::execute() {
     parametersToFED[1].name_ = "Ch";    parametersToFED[1].value_ = itoa(channel);
     commandToAllFEDCrates("SetSpyFIFO2Channel", parametersToFED);
   }
+
+  if (DelayBeforeFirstTrigger && firstOfPattern)
+    usleep(1000);
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();

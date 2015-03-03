@@ -13,6 +13,7 @@ class PixelTBMDelayCalibration : public PixelCalibrationBase {
   virtual std::vector<std::string> calibrated();
 
   bool CycleFIFO2Channels;
+  bool DelayBeforeFirstTrigger;
 };
 
 #endif
