@@ -85,6 +85,11 @@ unsigned int PixelFEDCalibrationBase::TransparentDataStart (uint32_t *buffer, in
 }
 
 
+void PixelFEDCalibrationBase::printIfSlinkHeaderMessedup_off() {
+  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED)
+    iFED->second->set_printIfSlinkHeaderMessedup(false);
+}
+
 void PixelFEDCalibrationBase::setFEDModeAndControlRegister(unsigned int mode, 
 							    unsigned int control){
 

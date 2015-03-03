@@ -30,6 +30,7 @@ PixelFEDInterface::PixelFEDInterface(const HAL::VMEDevice * const vmeDeviceP ) :
 
   cout<<" PixelFEDInterface constructor "<<endl;
   Printlevel=1;
+  printIfSlinkHeaderMessedup = true;
   // Initilize the FPGA register names for HAL, there is probably a better way of doing it
   FPGAName[0] = "LAD_N"; //
   FPGAName[1] = "LAD_NC"; //
@@ -93,7 +94,6 @@ void PixelFEDInterface::test(void) {
 
 
 PixelFEDInterface::PixelFEDInterface(const uint32_t fedBase, long aBHandle) {
-
   // For the CAEN interface
   BHandle = aBHandle;  // store the VME pointer 
   dw = cvD32; // data width (see CAENVMEtypes.h )
@@ -4910,10 +4910,12 @@ int PixelFEDInterface::enableHisMemory(int enable) {
    vmeDevicePtr->readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
    
    if(((mbuffer[0]&0xf0000000)>>28)!=0x5) {
-     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Slink Header Messed up!"<<endl;
-     if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Will dump the first 50 words in the buffer:"<<endl;
-     for(uint32_t i=0;i<50;i++) {
-       if(Printlevel&1)cout<<"mbuffer["<<i<<"]="<<hex<<mbuffer[i]<<dec<<endl;
+     if (printIfSlinkHeaderMessedup) {
+       cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Slink Header Messed up!"<<endl;
+       if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Will dump the first 50 words in the buffer:"<<endl;
+       for(uint32_t i=0;i<50;i++) {
+	 if(Printlevel&1)cout<<"mbuffer["<<i<<"]="<<hex<<mbuffer[i]<<dec<<endl;
+       }
      }
      return mwdcnt;
    }
