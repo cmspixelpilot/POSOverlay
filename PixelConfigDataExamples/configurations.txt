@@ -256,7 +256,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   3
+dac   4
 mask   0
 trim   0
 calib   14
@@ -532,13 +532,13 @@ ltcconfig   0
 tkfecconfig   0
 
 key 32
-detconfig   3
+detconfig   0
 lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   3
+dac   4
 mask   0
 trim   0
 calib   32
@@ -556,7 +556,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   3
+dac   4
 mask   0
 trim   0
 calib   33
