@@ -1563,7 +1563,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 		// seems to propogate reset down to all mFECs and all CCUs
 		// overkill, but probably safe
 		if(fecAccess_) {
-		  crateReset( fecAccess_, false , 42, 42 );  //FIXME this is overkill! (but works)
+		  //crateReset( fecAccess_, false , 42, 42 );  //FIXME this is overkill! (but works)
 		}
 		
 		if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After carteReset");
@@ -1601,7 +1601,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	//send reset, check if ring has been reset alerady 
 	if( !ringInit[(ring-1)]) {  // rings go from 1-8
 	  cout<<" Reset slot/mfec "<<slot<<"/"<<ring<<endl;
-	  resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
+	  //resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
 	  ringInit[(ring-1)]=true;
 	}
 	else
@@ -1966,7 +1966,7 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
      ring = tempPortCard->getringAddress();
      if( !ringInit[(ring-1)]) {  // rings go from 1-8
        cout<<" Reset slot/mfec "<<TKFECAddress<<"/"<<ring<<endl;
-       resetPlxFec ( fecAccess_, TKFECAddress, ring, loop, tms ) ;
+       //resetPlxFec ( fecAccess_, TKFECAddress, ring, loop, tms ) ;
        ringInit[(ring-1)]=true;
      }
 
