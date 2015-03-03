@@ -1,0 +1,121 @@
+import sys, os
+from math import log10
+from pprint import pprint
+from JMTTools import *
+from JMTROOTTools import *
+set_style()
+
+run = run_from_argv()
+run_dir = run_dir(run)
+in_fn = os.path.join(run_dir, 'TBMDelay.root')
+if not os.path.isfile(in_fn):
+    raise RuntimeError('no file at %s' % in_fn)
+out_dir = os.path.join(run_dir, 'dump_tbmdelay')
+os.system('mkdir -p %s' % out_dir)
+
+f = ROOT.TFile(in_fn)
+
+c = ROOT.TCanvas('c', '', 500, 500)
+
+keys = f.GetListOfKeys()
+
+fmt = '%0' + str(int(log10(len(keys))+1)) + 'i_%s.'
+def sv(i, x, ty='png'):
+    if hasattr(x, 'GetName'):
+        x = x.GetName()
+    c.SaveAs(os.path.join(out_dir, fmt % (i, x) + ty))
+
+def unflatten_pll(h):
+    assert type(h) == ROOT.TH1F
+    n = h.GetName().split('_')[-1]
+    h2 = ROOT.TH2F(h.GetName() + '_unflattened', '%s;400 MHz phase;160 MHz phase' % n, 8, 0, 8, 8, 0, 8)
+    h2.SetStats(0)
+    h2.SetMarkerSize(1.)
+    xax = h.GetXaxis()
+    for ix in xrange(1, xax.GetNbins()+1):
+        v = xax.GetBinLowEdge(ix)
+        assert abs(v - int(v)) < 1e-3
+        v = int(v)
+        p400 = (v >> 2) & 0x7
+        p160 = (v >> 5) & 0x7
+        h2.SetBinContent(h2.FindBin(p400, p160), h.GetBinContent(ix))
+    return h2
+
+#def unflatten_abdel(h):
+#    assert type(h) == ROOT.TH2F
+#    hs = [
+#        ROOT.TH2F(h.GetName() + '_unflattened_TI0HT0', 'TI = 0, HT = 0;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+#        ROOT.TH2F(h.GetName() + '_unflattened_TI0HT1', 'TI = 0, HT = 1;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+#        ROOT.TH2F(h.GetName() + '_unflattened_TI1HT0', 'TI = 1, HT = 0;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+#        ROOT.TH2F(h.GetName() + '_unflattened_TI1HT1', 'TI = 1, HT = 1;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+#        ]
+#    for h2 in hs:
+#        h2.SetStats(0)
+#
+#    xax = h.GetXaxis()
+#    yax = h.GetYaxis()
+#    for ix in xrange(1, xax.GetNbins()+1):
+#        vx = xax.GetBinLowEdge(ix)
+#        for iy in xrange(1, yax.GetNbins()+1):
+#            vy = yax.GetBinLowEdge(iy)
+#    
+#    return hs
+
+def analyze_abdel(f, chip, tbmh_req=20, tbmt_req=20, roch_req=160):
+    htbmh = f.Get('TBMBDelay_v_TBMADelay_F1%inTBMHeaders' % chip)
+    htbmt = f.Get('TBMBDelay_v_TBMADelay_F1%inTBMTrailers' % chip)
+    hroch = f.Get('TBMBDelay_v_TBMADelay_F1%inROCHeaders' % chip)
+    if any(not h for h in (htbmh, htbmt, hroch)):
+        return None
+
+    xax, yax = htbmh.GetXaxis(), htbmh.GetYaxis()
+    nbx, nby = xax.GetNbins(), yax.GetNbins()
+    h = ROOT.TH2F('FIFO1%iok_%i_%i_%i' % (chip, tbmh_req, tbmt_req, roch_req), '', nbx, xax.GetBinLowEdge(1), xax.GetBinLowEdge(nbx+1), nby, yax.GetBinLowEdge(1), yax.GetBinLowEdge(nby+1))
+    h.SetStats(0)
+
+    for ix in xrange(1, nbx+1):
+        vx = xax.GetBinLowEdge(ix)
+        for iy in xrange(1, nby+1):
+            vy = yax.GetBinLowEdge(iy)
+
+            tbmh_ok = tbmh_req == -1 or htbmh.GetBinContent(ix, iy) == tbmh_req
+            tbmt_ok = tbmt_req == -1 or htbmt.GetBinContent(ix, iy) == tbmt_req
+            roch_ok = roch_req == -1 or hroch.GetBinContent(ix, iy) == roch_req
+            if tbmh_ok and tbmt_ok and roch_ok:
+                h.Fill(vx, vy)
+
+    return h
+
+for ikey, key in enumerate(keys):
+    obj = key.ReadObj()
+    if issubclass(type(obj), ROOT.TH1):
+        h = obj
+        name = h.GetName()
+        h.SetStats(0)
+        if '_v_' in name:
+            h.Draw('colz')
+        else:
+            h.Draw()
+        sv(ikey, h)
+
+        if name.startswith('TBMPLL_') and '_v_' not in name:
+            h2 = unflatten_pll(h)
+            h2.Draw('colz text')
+            sv(ikey, h2)
+
+for chip in (1,7):
+    for tbmt_req in (20, -1):
+        h = analyze_abdel(f, chip, tbmt_req=tbmt_req)
+        if h is not None:
+            h.Draw('colz')
+            sv(99, h)
+            sv(99, h, 'root')
+
+if 'scp' in sys.argv:
+    remote_dir = 'public_html/qwer/dump_tbmdelay/%i' % run
+    cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
+    print cmd
+    os.system(cmd)
+    cmd = 'scp -r %s/* jmt46@lnx201.lns.cornell.edu:%s' % (out_dir, remote_dir)
+    print cmd
+    os.system(cmd)
