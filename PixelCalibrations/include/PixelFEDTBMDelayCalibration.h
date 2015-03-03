@@ -1,62 +1,47 @@
 #ifndef _PixelFEDTBMDelayCalibration_h_
 #define _PixelFEDTBMDelayCalibration_h_
 
-#include "toolbox/exception/Handler.h"
-#include "toolbox/Event.h"
-
+#include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "PixelCalibrations/include/PixelFEDCalibrationBase.h"
-
 #include "PixelUtilities/PixelFEDDataTools/include/Moments.h"
 #include "PixelUtilities/PixelFEDDataTools/include/PixelScanRecord.h"
-#include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 
+#include <cstdint>
 #include <fstream>
-#include <map>
-#include <stdint.h>
 
 class TFile;
 class TH1F;
 class TH2F;
+class TH3F;
 
 class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
  public:
-
-  PixelFEDTBMDelayCalibration( const PixelFEDSupervisorConfiguration &, SOAPCommander* );
-  virtual ~PixelFEDTBMDelayCalibration(){};
-
-  virtual xoap::MessageReference execute(xoap::MessageReference msg);
-
-  virtual xoap::MessageReference beginCalibration(xoap::MessageReference msg);
-
-  virtual xoap::MessageReference endCalibration(xoap::MessageReference msg);
+  PixelFEDTBMDelayCalibration(const PixelFEDSupervisorConfiguration&, SOAPCommander*);
 
   virtual void initializeFED();
+  virtual xoap::MessageReference beginCalibration(xoap::MessageReference msg);
+  virtual xoap::MessageReference execute(xoap::MessageReference msg);
+  virtual xoap::MessageReference endCalibration(xoap::MessageReference msg);
 
  private:
-
-  // PixelFEDTBMDelayCalibration Constructor should never be called
-  //PixelFEDTBMDelayCalibration();
-
-  // Calibration steps
   void RetrieveData(unsigned int state);
   void Analyze();
-  void FillEm(unsigned state, int which);
-
-  TFile* rootf;
+  void FillEm(unsigned state, int which, float c);
 
   bool DumpFIFOs;
+  std::vector<std::string> dacsToScan;
+  TFile* rootf;
 
-  std::vector<std::string> dacstoscan;
+  enum { 
+    F11nTBMHeader, F11nTBMHeaders, F11nTBMTrailer, F11nTBMTrailers, F11nROCHeaders,
+    F17nTBMHeader, F17nTBMHeaders, F17nTBMTrailer, F17nTBMTrailers, F17nROCHeaders,
+    F3fifoErr, F3wrongRoc, F3wrongPix, F3rightPix,
+    nDecode
+  };
 
-  TH1F* h_nfiforeaderrors;
-  TH1F* h_nerrors;
-  TH1F* h_nhits;
-  TH1F* h_nskip;
-  enum { fifoErr, wrongRoc, wrongPix, rightPix, nDecode };
   std::vector<TH1F*> scans1d[nDecode];
   std::vector<TH2F*> scans2d[nDecode];
-
-  std::vector<uint64_t> zzz[2];
+  std::vector<TH3F*> scans3d[nDecode];
 };
 
 #endif

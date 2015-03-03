@@ -4,6 +4,7 @@
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "PixelUtilities/PixelFEDDataTools/include/PixelFEDDataTypes.h"
 #include "PixelUtilities/PixelFEDDataTools/include/ErrorFIFODecoder.h"
+#include "PixelUtilities/PixelFEDDataTools/include/FIFO1DigDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO2Decoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO2DigDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO3Decoder.h"
@@ -11,203 +12,25 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include <iomanip>
 
 using namespace pos;
-using namespace std;
-
-///////////////////////////////////////////////////////////////////////////
-// Decode the FIFO-2 data in  transparent mode from piggy
-// ADD SIZE
-int decodePTrans(unsigned * data1, unsigned * data2, const int length) {
-unsigned long mydat[16]=
-{0x80,0x90,0xa0,0xb0,0x70,0x70,0x70,0x70,0x70,0x70,0x70,0x70,0xc0,0xd0,0xe0,0xf0};
-
-if(length<16) return -2;
-  // Print & analyze the data buffers
-int tempcode1=0;
-int tempcode2=0;
-int tempcode3=0;
-
-  for(int icx=0;icx<16;icx++) {
-if( ((data1[icx]&0xf0)==0x80) && ((data2[icx]&0xf0)==0x80) ) {if((data1[icx]!=data2[icx])) tempcode3=4;}
-if( ((data1[icx]&0xf0)==0x90) && ((data2[icx]&0xf0)==0x90) ) {if((data1[icx]!=data2[icx])) tempcode3=4;}
-
-
-
-if((data1[icx]&0xf0)!=(data2[icx]&0xf0))tempcode1=1;
-if( ((data1[icx]&0xf0)!=mydat[icx])|((data2[icx]&0xf0)!=mydat[icx]))tempcode2=2;
-
-  }
-
-
-
-
-
-  //if((tempcode1)!=0)cout<<"Buffers 0-15 dont match each other!"<<endl;
-  //if((tempcode2)!=0)cout<<"Buffers 0-15 dont match expected pattern!"<<endl;
-  //if((tempcode3)!=0)cout<<"Buffers 0-15 dont match event numbers!"<<endl;
-
-return (tempcode1+tempcode2+tempcode3);
-
-
-} // end
-
-///////////////////////////////////////////////////////////////////////////
-//// Decode the FIFO-2 data in  transparent mode from piggy
-//// ADD SIZE
-int decodePTrans2(unsigned  * data1, unsigned * data2, const int length) {
-  //unsigned long mydat[16]=
-  //{0x80,0x90,0xa0,0xb0,0x70,0x70,0x70,0x70,0x70,0x70,0x70,0x70,0xc0,0xd0,0xe0,0xf0};
-
-if(length<16) return -2;
-  // Print & analyze the data buffers
-  int tempcode1=0;//trailer
-  int tempcode2=0;//rocs
-  int tempcode3=0;//event
- int tempcode4=0;//header
- int tempcode5=0;
- //int tempcode6=0;
-//header event number check
-//
-int mytr1=0;
-int mytr2=0;
-
-    for(int icx=0;icx<8;icx++) {
-    if( ((data1[icx]&0xf0)==0x80) && ((data2[icx]&0xf0)==0x80) ) {if((data1[icx]!=data2[icx])) tempcode3=4;}
-    if( ((data1[icx]&0xf0)==0x90) && ((data2[icx]&0xf0)==0x90) ) {if((data1[icx]!=data2[icx])) tempcode3=4;}
-
-    //if( ((data1[icx]&0xf0)==0xa0) && ((data2[icx]&0xf0)==0xa0) ) {if((data1[icx]!=data2[icx])) tempcode3=4;}
-   // if( ((data1[icx]&0xf0)==0xb0) && ((data2[icx]&0xf0)==0xb0) ) {if((data1[icx]!=data2[icx])) tempcode3=4;}
-
-    if((data1[icx]&0xf0)==0x80)mytr1++;
-    if((data1[icx]&0xf0)==0x90)mytr1++;
-    if((data1[icx]&0xf0)==0xa0)mytr1++;
-    if((data1[icx]&0xf0)==0xb0)mytr1++;
-    if((data2[icx]&0xf0)==0x80)mytr2++;
-    if((data2[icx]&0xf0)==0x90)mytr2++;
-    if((data2[icx]&0xf0)==0xa0)mytr2++;
-    if((data2[icx]&0xf0)==0xb0)mytr2++;
-
-
-      }
-if((mytr1!=4)|(mytr2!=4))tempcode4=8;
-//Trailer check
-mytr1=0;
-mytr2=0;
-    for(int icx=0;icx<128;icx++) {
-    if((data1[icx]&0xf0)==0xc0)mytr1++;
-    if((data1[icx]&0xf0)==0xd0)mytr1++;
-    if((data1[icx]&0xf0)==0xe0)mytr1++;
-    if((data1[icx]&0xf0)==0xf0)mytr1++;
-    if((data2[icx]&0xf0)==0xc0)mytr2++;
-    if((data2[icx]&0xf0)==0xd0)mytr2++;
-    if((data2[icx]&0xf0)==0xe0)mytr2++;
-    if((data2[icx]&0xf0)==0xf0)mytr2++; 
-
-      }
-if((mytr1!=4)|(mytr2!=4))tempcode1=1;
-
-//Rocs check
-mytr1=0;
-mytr2=0;
-    for(int icx=0;icx<128;icx++) {
-    if((data1[icx]&0xf0)==0x70)mytr1++;
-    if((data2[icx]&0xf0)==0x70)mytr2++;
-
-      }
-if((mytr1!=8)||(mytr2!=8))tempcode2=2;
-//hits check
-mytr1=0;
-mytr2=0;
-
-    for(int icx=0;icx<128;icx++) {
-    if((data1[icx]&0xff)==0x10)mytr1++;
-    if((data2[icx]&0xff)==0x10)mytr2++;
-    if((data1[icx]&0xff)==0x2a)mytr1++;
-    if((data2[icx]&0xff)==0x2a)mytr2++;
-    if((data1[icx]&0xff)==0x31)mytr1++;
-    if((data2[icx]&0xff)==0x31)mytr2++;
-    if((data1[icx]&0xfe)==0x44)mytr1++;
-    if((data2[icx]&0xfe)==0x44)mytr2++;
-
-      }
-
-if((mytr1<7*4)||(mytr2<6*4))tempcode5=16;
-
-
-
-      if((tempcode1)!=0)cout<<"missed trailer"<<endl;
-      if((tempcode2)!=0)cout<<"missed roc"<<endl;
-      if((tempcode3)!=0)cout<<"event number mismatch"<<endl;
-      if((tempcode4)!=0)cout<<"missed header"<<endl;
-      if((tempcode5)!=0)cout<<"missed hits"<<endl;
-
-
-      return (tempcode1+tempcode2+tempcode3+tempcode4+tempcode5);
-
-
-      } // end
-//
-
-
-///////////////////////////////////////////////////////////////////////////
-// Decode the FIFO-2 data in  transparent mode from piggy
-// ADD SIZE
-// Checks for 1 hit per ROC from both chs
-void decode(unsigned * data1, unsigned * data2, const int length) {
-  unsigned long mydat[16]=
-    {0x80,0x90,0xa0,0xb0,0x70,0x70,0x70,0x70,0x70,0x70,0x70,0x70,0xc0,0xd0,0xe0,0xf0};
-  
-int a[4]={0,0,0,0};
-  if(length<64) return;
-  // Print & analyze the data buffers
-  int tbmheader=0; int rocheader=0; int correctdata=0; int tbmtrailer=0;
-  bool tbmh=false; bool tbmt=false; bool roch=false; bool data=false;
-  if ( (data1[0]&0xf0)==0x80 && (data1[1]&0xf0)==0x90 && (data1[2]&0xf0)==0xa0 && (data1[3]&0xf0)==0xb0 && (data2[0]&0xf0)==0x80 && (data2[1]&0xf0)==0x90 && (data2[2]&0xf0)==0xa0 && (data2[3]&0xf0)==0xb0 ) {
-    tbmheader++;
-    a[0]++;
-  }
-  
-  if ( (data1[4]&0xf0)==0x70 && (data1[11]&0xf0)==0x70 && (data1[18]&0xf0)==0x70 && (data1[25]&0xf0)==0x70 && (data1[32]&0xf0)==0x70 && (data1[39]&0xf0)==0x70 && (data1[46]&0xf0)==0x70 && (data1[53]&0xf0)==0x70 && (data2[4]&0xf0)==0x70 && (data2[11]&0xf0)==0x70 && (data2[18]&0xf0)==0x70 && (data2[25]&0xf0)==0x70 && (data2[32]&0xf0)==0x70 && (data2[39]&0xf0)==0x70 && (data2[46]&0xf0)==0x70 && (data2[53]&0xf0)==0x70 ){
-    rocheader++;
-    a[1]++;
-  }
-
-  for ( int icx=0;icx<8;icx++  ) {
-    if ( (data1[5+(7*icx)]&0xf0)==0x10 &&  (data1[6+(7*icx)]&0xf0)==0x20 && (data1[7+(7*icx)]&0xf0)==0x30 &&  (data1[8+(7*icx)]&0xf0)==0x40 && (data1[9+(7*icx)]&0xf0)==0x50 &&  (data1[10+(7*icx)]&0xf0)==0x60 && (data2[5+(7*icx)]&0xf0)==0x10 &&  (data2[6+(7*icx)]&0xf0)==0x20 && (data2[7+(7*icx)]&0xf0)==0x30 &&  (data2[8+(7*icx)]&0xf0)==0x40 && (data2[9+(7*icx)]&0xf0)==0x50 &&  (data2[10+(7*icx)]&0xf0)==0x60  ){
-	  correctdata++;
-	  a[2]++;
-    }
-  }
-  
-  if ( (data1[60]&0xf0)==0xc0 && (data1[61]&0xf0)==0xd0 && (data1[62]&0xf0)==0xe0 && (data1[63]&0xf0)==0xf0 && (data2[60]&0xf0)==0xc0 && (data2[61]&0xf0)==0xd0 && (data2[62]&0xf0)==0xe0 && (data2[63]&0xf0)==0xf0 ) {
-    tbmtrailer++;
-    a[3]++;
-  }
-  
-  
-  cout << "tbmheader = " << tbmheader << endl;
-  cout << "rocheader = " << rocheader << endl;
-  cout << "correctdata = " << correctdata << endl;
-  cout << "tbmtrailer = " << tbmtrailer << endl;
-  cout << "a[] = " << a[0] << " "  << a[1] << " "  << a[2] << " "  << a[3] << endl;
-  return;
-      
-      
-} // end
 
 PixelFEDTBMDelayCalibration::PixelFEDTBMDelayCalibration(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
   : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr)
 {
-  cout << "Greetings from the PixelFEDTBMDelayCalibration copy constructor." << endl;
+  std::cout << "In PixelFEDTBMDelayCalibration copy ctor()" << std::endl;
 }
 
 void PixelFEDTBMDelayCalibration::initializeFED() {
-  setFEDModeAndControlRegister(0x8,0x30010);
+  setFEDModeAndControlRegister(0x8, 0x30010);
+  printIfSlinkHeaderMessedup_off();
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::MessageReference msg) {
+  std::cout << "In PixelFEDTBMDelayCalibration::beginCalibration()" << std::endl;
+
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
@@ -227,24 +50,23 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
     const std::string& dacname = tempCalibObject->scanName(dacnum);
     std::vector<unsigned int> dacvals = tempCalibObject->scanValues(dacname);
     if (dacvals.size() > 1)
-      dacstoscan.push_back(dacname);
+      dacsToScan.push_back(dacname);
   }
 
-  if (dacstoscan.empty() && tempCalibObject->parameterValue("NoScanOK") != "yes") {
+  if (dacsToScan.empty() && tempCalibObject->parameterValue("NoScanOK") != "yes") {
     cout << "no dacs in scan?" << endl;
     assert(0);
   }
 
-  h_nfiforeaderrors = new TH1F("nfiforeaderrors", "", 1, 0, 1);
-  h_nerrors = new TH1F("nerrors", "", 50, 0, 50);
-  h_nhits = new TH1F("nhits", "", 50, 0, 50);
-  h_nskip = new TH1F("nskip", "", 50, 0, 50);
-
-  const TString sdecode[nDecode] = { "fifoErr", "wrongRoc", "wrongPix", "rightPix" };
+  const TString sdecode[nDecode] = {
+    "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders",
+    "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders",
+    "F3fifoErr", "F3wrongRoc", "F3wrongPix", "F3rightPix"
+  };
 
   for (int idecode = 0; idecode < nDecode; ++idecode) {
-    for (size_t i = 0; i < dacstoscan.size(); ++i) {
-      const std::string& iname = dacstoscan[i];
+    for (size_t i = 0; i < dacsToScan.size(); ++i) {
+      const std::string& iname = dacsToScan[i];
       const TString itname(iname.c_str());
       const std::vector<unsigned>& ivals = tempCalibObject->scanValues(iname);
       const size_t ni = ivals.size();
@@ -254,10 +76,11 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
       ibins[ni] = ibins[ni-1] + (ibins[ni-1] - ibins[ni-2]);
 
       TH1F* h = new TH1F(itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";ntrig", ni, &ibins[0]);
+      h->SetStats(0);
       scans1d[idecode].push_back(h);
 
-      for (size_t j = i+1; j < dacstoscan.size(); ++j) {
-	const std::string jname = dacstoscan[j];
+      for (size_t j = i+1; j < dacsToScan.size(); ++j) {
+	const std::string jname = dacsToScan[j];
 	const TString jtname(jname.c_str());
 	const std::vector<unsigned>& jvals = tempCalibObject->scanValues(jname);
 	const size_t nj = jvals.size();
@@ -267,32 +90,28 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
 	jbins[nj] = jbins[nj-1] + (jbins[nj-1] - jbins[nj-2]);
       
 	TH2F* h2 = new TH2F(jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname, ni, &ibins[0], nj, &jbins[0]);
+	h2->SetStats(0);
 	scans2d[idecode].push_back(h2);
+
+	for (size_t l = j+1; l < dacsToScan.size(); ++l) {
+	  const std::string lname = dacsToScan[l];
+	  const TString ltname(lname.c_str());
+	  const std::vector<unsigned>& lvals = tempCalibObject->scanValues(lname);
+	  const size_t nl = lvals.size();
+	  std::vector<double> lbins(nl+1);
+	  for (size_t k = 0; k < nl; ++k)
+	    lbins[k] = double(lvals[k]);
+	  lbins[nl] = lbins[nl-1] + (lbins[nl-1] - lbins[nl-2]);
+      
+	  TH3F* h3 = new TH3F(ltname + "_v_" + jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname + ";" + ltname, ni, &ibins[0], nj, &jbins[0], nl, &lbins[0]);
+	  h3->SetStats(0);
+	  scans3d[idecode].push_back(h3);
+	}
       }
     }
   }
       
   xoap::MessageReference reply = MakeSOAPMessageReference("BeginCalibrationDone");
-  return reply;
-}
-
-xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::MessageReference msg) {
-  for (int j = 0; j < 2; ++j) {
-    std::cout << " j =  " << j << " size  " << zzz[j].size() << std::endl;
-    for (size_t i = 0; i < zzz[j].size(); ++i) {
-      uint64_t d = zzz[j][i];
-      if (d != 0x100000000ULL) {
-	if (d > 0xFF)
-	  std::cout << "\nweird word!\n";
-	std::cout << std::setw(2) << std::hex << d << std::dec << " ";
-      }
-      else
-	std::cout << std::endl;
-    }
-  }
-
-  cout << "In PixelFEDTBMDelayCalibration::endCalibration()" << endl;
-  xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
   return reply;
 }
 
@@ -314,6 +133,12 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReferen
   }
 
   xoap::MessageReference reply = MakeSOAPMessageReference("FEDCalibrationsDone");
+  return reply;
+}
+
+xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::MessageReference msg) {
+  std::cout << "In PixelFEDTBMDelayCalibration::endCalibration()" << std::endl;
+  xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
   return reply;
 }
 
@@ -356,27 +181,38 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     const int status3 = iFED->spySlink64(buffer3);
     const int statusErr = iFED->drainErrorFifo(bufferErr);
 
-    if (status3 <= 0) {
-      std::cout << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
-      h_nfiforeaderrors->Fill(0);
-      FillEm(state, fifoErr);
-      usleep(1000);
-      std::cout << "readDigFEDStatus(): ";
-      iFED->readDigFEDStatus(false);
-      usleep(1000);
-      continue;
-    }
-
+    FIFO1DigDecoder* decode1[MaxChips] = {0};
     FIFO2DigDecoder* decode2[MaxChips] = {0};
-    for (int chip = 1; chip <= 7; chip += 2)
+    for (int chip = 1; chip <= 7; chip += 2) {
+      if (chip == 1 || chip == 7)
+	decode1[chip] = new FIFO1DigDecoder(buffer1[chip]);
       decode2[chip] = new FIFO2DigDecoder(buffer2[chip], status2[chip]);
-    FIFO3Decoder decode3(buffer3);
+    }
+    FIFO3Decoder* decode3 = 0;
+    if (status3 > 0)
+      decode3 = new FIFO3Decoder(buffer3);
     ErrorFIFODecoder decodeErr(bufferErr, statusErr);
 
-    h_nerrors->Fill(statusErr);
-
-    const unsigned nhits = decode3.nhits();
-    h_nhits->Fill(nhits);
+    assert(F17nTBMHeader - F11nTBMHeader == 5);
+    for (int FIFO1Chip = 0; FIFO1Chip < 2; ++FIFO1Chip) {
+      const int chip = FIFO1Chip ? 7 : 1;
+      const int arroff = FIFO1Chip ? 5 : 0;
+      FillEm(state, F11nTBMHeader + arroff,
+	     int(decode1[chip]->tbm_header_l[0].size() != 0) + 
+	     int(decode1[chip]->tbm_header_l[1].size() != 0));
+      FillEm(state, F11nTBMHeaders + arroff, 
+	     decode1[chip]->tbm_header_l[0].size() + 
+	     decode1[chip]->tbm_header_l[1].size());
+      FillEm(state, F11nTBMTrailer + arroff,
+	     int(decode1[chip]->tbm_trailer_l[0].size() != 0) + 
+	     int(decode1[chip]->tbm_trailer_l[1].size() != 0));
+      FillEm(state, F11nTBMTrailers + arroff,
+	     decode1[chip]->tbm_trailer_l[0].size() + 
+	     decode1[chip]->tbm_trailer_l[1].size());
+      FillEm(state, F11nROCHeaders + arroff,
+	     decode1[chip]->roc_header_l[0].size() + 
+	     decode1[chip]->roc_header_l[1].size());
+    }
 
     if (DumpFIFOs) {
       int col2=-1, row2=-1;
@@ -385,68 +221,79 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	std::cout << std::setw(4) << status2[chip] << " ";
       std::cout << endl;
       for (int chip = 1; chip <= 7; chip += 2) {
-	bool trans_all_ff = false;
-	int trans_found = 0;
-	uint32_t pattern = 0;
-	uint8_t* data = (uint8_t*)buffer1[chip];
-	std::cout << "-------------------------------------------" << std::endl;
-	std::cout << "Contents of transparent FIFO 1 for chip = " << chip << std::endl;
-	std::cout << "-------------------------------------------" << std::endl;
-	uint8_t* datae = data + 4095;
-	if (*data == 0xff && *datae == 0xff) {
-	  int nbeg = 0, nend = 0;
-	  while (*data == 0xff && data != datae)
-	    ++nbeg, ++data;
-	  if (data == datae) {
-	    trans_all_ff = true;
-	    std::cout << "all FF" << std::endl;
-	  }
-	  else {
-	    while (*datae == 0xff)
-	      ++nend, --datae;
-	    trans_found = datae-data+1;
-	    std::cout << nbeg << " FF then " << trans_found << " bytes:" << std::endl;
-	    while (data != datae + 1) {
-	      uint8_t d = *data;
-	      std::cout << std::hex << std::setw(2) << unsigned(d) << std::dec << " = ";
-	      for (int i = 7; i >= 0; --i) {
-		std::cout << ((d & (1 << i)) ? "1" : "0");
-		if (i == 4) std::cout << " ";
+	if (chip == 1 || chip == 7) {
+	  bool trans_all_ff = false;
+	  int trans_found = 0;
+	  uint32_t pattern = 0;
+	  uint32_t* data  = buffer1[chip];
+	  uint32_t* datae = data + 1023;
+	  std::cout << "-------------------------------------------" << std::endl;
+	  std::cout << "Contents of transparent FIFO 1 for chip = " << chip << std::endl;
+	  std::cout << "-------------------------------------------" << std::endl;
+	  if (*data == 0xffffffff && *datae == 0xffffffff) {
+	    int nbeg = 0, nend = 0;
+	    while (*data == 0xffffffff && data != datae)
+	      ++nbeg, ++data;
+	    if (data == datae) {
+	      trans_all_ff = true;
+	      std::cout << "all 0xFFFFFFFF" << std::endl;
+	    }
+	    else {
+	      while (*datae == 0xffffffff)
+		++nend, --datae;
+	      trans_found = datae-data+1;
+	      std::cout << nbeg << " 0xFFFFFFFF then " << trans_found << " words:" << std::endl;
+	      while (data != datae + 1) {
+		uint32_t d = *data;
+		uint16_t h(d >> 16);
+		uint16_t l(d & 0xFFFF);
+		uint16_t ab[2] = {h, l};
+		std::cout << std::hex << std::setw(4) << h << std::dec << " ";
+		std::cout << std::hex << std::setw(4) << l << std::dec << "  ";
+		for (int j = 0; j < 2; ++j) {
+		  for (int i = 15; i >= 0; --i) {
+		    std::cout << ((ab[j] & (1 << i)) ? "1" : "0");
+		    if (i % 4 == 0) std::cout << " ";
+		  }
+		  std::cout << "  ";
+		}
+		std::cout << std::endl;
+		++data;
 	      }
-	      std::cout << std::endl;
-	      ++data;
+	      std::cout << "then " << nend << " 0xFFFFFFFF" << std::endl;
 	    }
-	    std::cout << "then " << nend << " FF" << std::endl;
 	  }
-	}
-	else {
-	  pattern = *((uint32_t*)data);
-	  bool same = true;
-	  while (data != datae + 1) {
-	    uint32_t p = *((uint32_t*)data);
-	    if (p != pattern)
-	      same = false;
-	    data += 4;
-	  }
-	  if (same)
-	    std::cout << "1024 repetitions of " << std::hex << pattern << std::dec << std::endl;
 	  else {
-	    data = (uint8_t*)buffer1[chip];
-	    std::cout << "rw | ";
-	    for (int j = 0; j < 64; ++j)
-	      std::cout << std::setw(2) << j << " ";
-	    std::cout << std::endl;
-	    for (int i = 0; i < 64; ++i) {
-	      std::cout << std::setw(2) << i << " | ";
+	    pattern = *((uint32_t*)data);
+	    bool same = true;
+	    while (data != datae + 1) {
+	      uint32_t p = *((uint32_t*)data);
+	      if (p != pattern)
+		same = false;
+	      data += 4;
+	    }
+	    if (same)
+	      std::cout << "1024 repetitions of " << std::hex << pattern << std::dec << std::endl;
+	    else {
+	      uint8_t* data8 = (uint8_t*)buffer1[chip];
+	      std::cout << "rw | ";
 	      for (int j = 0; j < 64; ++j)
-		std::cout << std::hex << std::setw(2) << unsigned(data[i*64+j]) << std::dec << " ";
+		std::cout << std::setw(2) << j << " ";
 	      std::cout << std::endl;
+	      for (int i = 0; i < 64; ++i) {
+		std::cout << std::setw(2) << i << " | ";
+		for (int j = 0; j < 64; ++j)
+		  std::cout << std::hex << std::setw(2) << unsigned(data8[i*64+j]) << std::dec << " ";
+		std::cout << std::endl;
+	      }
 	    }
 	  }
-	}
 
-	if (chip != 1 && chip != 7 && !trans_all_ff)
-	  std::cout << "bad trans_all_ff: chip is " << chip << std::endl;
+	  std::cout << "FIFO1DigDecoder thinks:\n";
+	  decode1[chip]->printToStream(std::cout);
+	}
+	//if (chip != 1 && chip != 7 && !trans_all_ff)
+	//  std::cout << "bad trans_all_ff: chip is " << chip << std::endl;
 
 	std::cout << "----------------------------------" << std::endl;
 	if (status2[chip] < 0)
@@ -454,12 +301,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	else {
 	  std::cout << "Contents of Spy FIFO 2 for chip = " << chip << "(status2 = " << status2[chip] << ")" <<std::endl;
 	  std::cout << "----------------------------------" << std::endl;
-	  const int c0 = 5; const int c1 = 7;
 	  for (int i = 0; i <= status2[chip]; ++i) {
 	    uint32_t d = buffer2[chip][i];
 	    uint32_t dh = d & 0xf0;
-	    if (chip == c0 || chip == c1)
-	      zzz[chip == c1].push_back(uint64_t(d));
 	    if (dh == 0x70 || dh == 0x10 || dh == 0xc0)
 	      std::cout << "\n";
 	    if (d > 0xFF)
@@ -467,7 +311,6 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	    else 
 	      std::cout << std::setw(2) << std::hex << d << std::dec << " ";
 	  }
-	  if (chip == c0 || chip == c1) zzz[chip == c1].push_back(0x100000000ULL);
 	  std::cout << "\n----------------------------------" << std::endl;
 	}
 	std::cout << "FIFO2DigDecoder thinks:\n";
@@ -480,8 +323,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       if (status2[1] > 0 && status2[3] > 0) {
 	cout<<"decodePTrans return: " << decodePTrans(buffer2[1],buffer2[3],16)<<endl;
 	cout<<"decodePTrans2 return: " << decodePTrans2(buffer2[1],buffer2[3],16)<<endl;
-	cout << "decode: " << endl;
-	decode(buffer2[1],buffer2[3],64);
+	cout << "decodePTrans3: " << endl;
+	decodePTrans3(buffer2[1], buffer2[3], 64);
       }
 
       std::cout << "----------------------" << std::endl;
@@ -489,14 +332,16 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       std::cout << "----------------------" << std::endl;
       for (int i = 0; i <= status3; ++i)
 	std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer3[i]>>32) << " " << std::setw(8) << (buffer3[i] & 0xFFFFFFFF) << std::dec << std::endl;
-      std::cout << "FIFO3Decoder thinks:\n"
-		<< "nhits: " << decode3.nhits() << "\n";
-      for (unsigned i = 0; i < decode3.nhits(); ++i)
-	std::cout << "#" << i << ": ch: " << decode3.channel(i)
-		  << " rocid: " << decode3.rocid(i) << " dcol: " << decode3.dcol(i)
-		  << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
-		  << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
-      std::cout << "(fifo2 col: " << col2 << " row: " << row2 << "   fifo3 dcol: " << decode3.dcol(0) << " pxl: " << decode3.pxl(0) << " col: " << decode3.column(0) << " row: " << decode3.row(0) << ")\n";
+      if (status3 > 0) {
+	std::cout << "FIFO3Decoder thinks:\n"
+		  << "nhits: " << decode3->nhits() << "\n";
+	for (unsigned i = 0; i < decode3->nhits(); ++i)
+	  std::cout << "#" << i << ": ch: " << decode3->channel(i)
+		    << " rocid: " << decode3->rocid(i) << " dcol: " << decode3->dcol(i)
+		    << " pxl: " << decode3->pxl(i) << " pulseheight: " << decode3->pulseheight(i)
+		    << " col: " << decode3->column(i) << " row: " << decode3->row(i) << std::endl;
+	std::cout << "(fifo2 col: " << col2 << " row: " << row2 << "   fifo3 dcol: " << decode3->dcol(0) << " pxl: " << decode3->pxl(0) << " col: " << decode3->column(0) << " row: " << decode3->row(0) << ")\n";
+      }
       std::cout << "Contents of Error FIFO" << std::endl;
       std::cout << "----------------------" << std::endl;
       for (int i = 0; i <= statusErr; ++i)
@@ -505,65 +350,67 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       decodeErr.printToStream(std::cout);
     }
 
-    unsigned nskip = 0;
-
-    for (unsigned ihit = 0; ihit < nhits; ++ihit) {
-      const unsigned channel = decode3.channel(ihit);
-      const unsigned rocid = decode3.rocid(ihit);
-      assert(rocid > 0);
-
-      const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
-
-      // Skip if this ROC is not on the list of ROCs to calibrate.
-      // Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
-      vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
-      if (foundROC == rocs.end()) { // || !tempCalibObject->scanningROCForState(roc, state)) {
-	FillEm(state, wrongRoc);
-	++nskip;
-      }
-      else {
-	const unsigned col = decode3.column(ihit);
-	const unsigned row = decode3.row(ihit);
-      
-	if (colrows.find(std::make_pair(col, row)) == colrows.end())
-	  FillEm(state, wrongPix);
-	else
-	  FillEm(state, rightPix);
-      }
+    if (status3 <= 0) {
+      //std::cout << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
+      FillEm(state, F3fifoErr, 1);
+      //std::cout << "readDigFEDStatus(): ";
+      //iFED->readDigFEDStatus(false);
     }
+    else {
+      unsigned nskip = 0;
+      for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
+	const unsigned channel = decode3->channel(ihit);
+	const unsigned rocid = decode3->rocid(ihit);
+	assert(rocid > 0);
 
-    h_nskip->Fill(nskip);
+	const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
 
-    if (DumpFIFOs) {
-      usleep(1000);
-      std::cout << "readDigFEDStatus(): ";
-      iFED->readDigFEDStatus(false);
+	// Skip if this ROC is not on the list of ROCs to calibrate.
+	// Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
+	vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
+	if (foundROC == rocs.end()) { // || !tempCalibObject->scanningROCForState(roc, state)) {
+	  FillEm(state, F3wrongRoc, 1);
+	  ++nskip;
+	}
+	else {
+	  const unsigned col = decode3->column(ihit);
+	  const unsigned row = decode3->row(ihit);
+      
+	  if (colrows.find(std::make_pair(col, row)) == colrows.end())
+	    FillEm(state, F3wrongPix, 1);
+	  else
+	    FillEm(state, F3rightPix, 1);
+	}
+      }
     }
   }
 }
 
 void PixelFEDTBMDelayCalibration::Analyze() {
-  PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
-  assert(tempCalibObject != 0);
-
   rootf->Write();
   rootf->Close();
 }
 
-void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which) {
+void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which, float c) {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
-  int k = 0;
-  for (size_t i = 0; i < dacstoscan.size(); ++i) {
-    const std::string& iname = dacstoscan[i];
+  int k2 = 0, k3 = 0;
+  for (size_t i = 0; i < dacsToScan.size(); ++i) {
+    const std::string& iname = dacsToScan[i];
     const double ival(tempCalibObject->scanValue(iname, state));
-    scans1d[which][i]->Fill(ival);
+    scans1d[which][i]->Fill(ival, c);
     
-    for (size_t j = i+1; j < dacstoscan.size(); ++j, ++k) {
-      const std::string jname = dacstoscan[j];
+    for (size_t j = i+1; j < dacsToScan.size(); ++j, ++k2) {
+      const std::string jname = dacsToScan[j];
       const double jval(tempCalibObject->scanValue(jname, state));
-      scans2d[which][k]->Fill(ival, jval);
+      scans2d[which][k2]->Fill(ival, jval, c);
+
+      for (size_t l = j+1; l < dacsToScan.size(); ++l, ++k3) {
+	const std::string lname = dacsToScan[l];
+	const double lval(tempCalibObject->scanValue(lname, state));
+	scans3d[which][k3]->Fill(ival, jval, lval, c);
+      }
     }
   }
 }
