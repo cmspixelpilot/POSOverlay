@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include <vector>
 
+int decodePTrans(unsigned* data1, unsigned* data2, const int length);
+int decodePTrans2(unsigned * data1, unsigned* data2, const int length);
+void decodePTrans3(unsigned* data1, unsigned* data2, const int length);
+
 class FIFO2DigDecoder {
  public:
   FIFO2DigDecoder(const uint32_t* buffer, unsigned int size);
