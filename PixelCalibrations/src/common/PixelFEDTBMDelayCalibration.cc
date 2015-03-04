@@ -18,7 +18,7 @@
 using namespace pos;
 
 PixelFEDTBMDelayCalibration::PixelFEDTBMDelayCalibration(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
-  : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr)
+  : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr), rootf(0)
 {
   std::cout << "In PixelFEDTBMDelayCalibration copy ctor()" << std::endl;
 }
@@ -33,11 +33,6 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
 
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
-
-  std::string root_fn(outputDir() + "/TBMDelay.root");
-  cout << "writing histograms to file " << root_fn << endl;
-  rootf = new TFile(root_fn.c_str(), "create");
-  assert(rootf->IsOpen());
 
   tempCalibObject->writeASCII(outputDir());
 
@@ -58,59 +53,9 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
     assert(0);
   }
 
-  const TString sdecode[nDecode] = {
-    "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders",
-    "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders",
-    "F3fifoErr", "F3wrongRoc", "F3wrongPix", "F3rightPix"
-  };
+  if (dacsToScan.size() < 3)
+    BookEm("");
 
-  for (int idecode = 0; idecode < nDecode; ++idecode) {
-    for (size_t i = 0; i < dacsToScan.size(); ++i) {
-      const std::string& iname = dacsToScan[i];
-      const TString itname(iname.c_str());
-      const std::vector<unsigned>& ivals = tempCalibObject->scanValues(iname);
-      const size_t ni = ivals.size();
-      std::vector<double> ibins(ni+1);
-      for (size_t k = 0; k < ni; ++k)
-	ibins[k] = double(ivals[k]);
-      ibins[ni] = ibins[ni-1] + (ibins[ni-1] - ibins[ni-2]);
-
-      TH1F* h = new TH1F(itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";ntrig", ni, &ibins[0]);
-      h->SetStats(0);
-      scans1d[idecode].push_back(h);
-
-      for (size_t j = i+1; j < dacsToScan.size(); ++j) {
-	const std::string jname = dacsToScan[j];
-	const TString jtname(jname.c_str());
-	const std::vector<unsigned>& jvals = tempCalibObject->scanValues(jname);
-	const size_t nj = jvals.size();
-	std::vector<double> jbins(nj+1);
-	for (size_t k = 0; k < nj; ++k)
-	  jbins[k] = double(jvals[k]);
-	jbins[nj] = jbins[nj-1] + (jbins[nj-1] - jbins[nj-2]);
-      
-	TH2F* h2 = new TH2F(jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname, ni, &ibins[0], nj, &jbins[0]);
-	h2->SetStats(0);
-	scans2d[idecode].push_back(h2);
-
-	for (size_t l = j+1; l < dacsToScan.size(); ++l) {
-	  const std::string lname = dacsToScan[l];
-	  const TString ltname(lname.c_str());
-	  const std::vector<unsigned>& lvals = tempCalibObject->scanValues(lname);
-	  const size_t nl = lvals.size();
-	  std::vector<double> lbins(nl+1);
-	  for (size_t k = 0; k < nl; ++k)
-	    lbins[k] = double(lvals[k]);
-	  lbins[nl] = lbins[nl-1] + (lbins[nl-1] - lbins[nl-2]);
-      
-	  TH3F* h3 = new TH3F(ltname + "_v_" + jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname + ";" + ltname, ni, &ibins[0], nj, &jbins[0], nl, &lbins[0]);
-	  h3->SetStats(0);
-	  scans3d[idecode].push_back(h3);
-	}
-      }
-    }
-  }
-      
   xoap::MessageReference reply = MakeSOAPMessageReference("BeginCalibrationDone");
   return reply;
 }
@@ -161,6 +106,11 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     if (DumpFIFOs) std::cout << dacname << " " << dacvalue << " ";
   }
   if (DumpFIFOs) std::cout << std::endl;
+
+  if (dacsToScan.size() >= 3 && currentDACValues["TBMPLL"] != lastTBMPLL) {
+    lastTBMPLL = currentDACValues["TBMPLL"];
+    BookEm(TString::Format("TBMPLL%03i", lastTBMPLL));
+  }
 
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
@@ -387,8 +337,87 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 }
 
 void PixelFEDTBMDelayCalibration::Analyze() {
-  rootf->Write();
-  rootf->Close();
+  CloseRootf();
+}
+
+void  PixelFEDTBMDelayCalibration::CloseRootf() {
+  if (rootf) {
+    rootf->Write();
+    rootf->Close();
+    delete rootf;
+  }
+}
+
+void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
+  TString root_fn;
+  if (path == "")
+    root_fn.Form("%s/TBMDelay.root", outputDir().c_str());
+  else
+    root_fn.Form("%s/TBMDelay_%s.root", outputDir().c_str(), path.Data());
+  cout << "writing histograms to file " << root_fn << endl;
+  CloseRootf();
+  rootf = new TFile(root_fn, "create");
+  assert(rootf->IsOpen());
+
+  PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
+  assert(tempCalibObject != 0);
+
+  static const TString sdecode[nDecode] = {
+    "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders",
+    "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders",
+    "F3fifoErr", "F3wrongRoc", "F3wrongPix", "F3rightPix"
+  };
+
+  for (int idecode = 0; idecode < nDecode; ++idecode) {
+    scans1d[idecode].clear();
+    scans2d[idecode].clear();
+    scans3d[idecode].clear();
+
+    for (size_t i = 0; i < dacsToScan.size(); ++i) {
+      const std::string& iname = dacsToScan[i];
+      const TString itname(iname.c_str());
+      const std::vector<unsigned>& ivals = tempCalibObject->scanValues(iname);
+      const size_t ni = ivals.size();
+      std::vector<double> ibins(ni+1);
+      for (size_t k = 0; k < ni; ++k)
+	ibins[k] = double(ivals[k]);
+      ibins[ni] = ibins[ni-1] + (ibins[ni-1] - ibins[ni-2]);
+
+      TH1F* h = new TH1F(itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";ntrig", ni, &ibins[0]);
+      h->SetStats(0);
+      scans1d[idecode].push_back(h);
+
+      for (size_t j = i+1; j < dacsToScan.size(); ++j) {
+	const std::string jname = dacsToScan[j];
+	const TString jtname(jname.c_str());
+	const std::vector<unsigned>& jvals = tempCalibObject->scanValues(jname);
+	const size_t nj = jvals.size();
+	std::vector<double> jbins(nj+1);
+	for (size_t k = 0; k < nj; ++k)
+	  jbins[k] = double(jvals[k]);
+	jbins[nj] = jbins[nj-1] + (jbins[nj-1] - jbins[nj-2]);
+
+	TH2F* h2 = new TH2F(jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname, ni, &ibins[0], nj, &jbins[0]);
+	h2->SetStats(0);
+	scans2d[idecode].push_back(h2);
+
+	for (size_t l = j+1; l < dacsToScan.size(); ++l) {
+	  const std::string lname = dacsToScan[l];
+	  const TString ltname(lname.c_str());
+	  const std::vector<unsigned>& lvals = tempCalibObject->scanValues(lname);
+	  const size_t nl = lvals.size();
+	  std::vector<double> lbins(nl+1);
+	  for (size_t k = 0; k < nl; ++k)
+	    lbins[k] = double(lvals[k]);
+	  lbins[nl] = lbins[nl-1] + (lbins[nl-1] - lbins[nl-2]);
+
+	  TH3F* h3 = new TH3F(ltname + "_v_" + jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname + ";" + ltname, ni, &ibins[0], nj, &jbins[0], nl, &lbins[0]);
+	  h3->SetStats(0);
+	  scans3d[idecode].push_back(h3);
+	}
+      }
+    }
+  }
 }
 
 void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which, float c) {

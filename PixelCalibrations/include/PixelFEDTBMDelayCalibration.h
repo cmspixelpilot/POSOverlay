@@ -26,10 +26,13 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
  private:
   void RetrieveData(unsigned int state);
   void Analyze();
+  void CloseRootf();
+  void BookEm(const TString& path);
   void FillEm(unsigned state, int which, float c);
 
   bool DumpFIFOs;
   std::vector<std::string> dacsToScan;
+  unsigned lastTBMPLL;
   TFile* rootf;
 
   enum { 
