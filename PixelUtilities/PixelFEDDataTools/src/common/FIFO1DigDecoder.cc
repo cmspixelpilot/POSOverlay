@@ -16,7 +16,7 @@ namespace {
 FIFO1DigDecoder::FIFO1DigDecoder(const uint32_t* buffer) {
   const int size = 1024;
   const unsigned tbm_header = 2044;  // 0 1111 1111 100
-  const unsigned tbm_trailer = 2039; // 0 1111 1110 111
+  const unsigned tbm_trailer = 2046; // 0 1111 1111 110
   const unsigned roc_header = 510;   // 0 1111 1111 0xx <- read back data
 
   for (int i = 0; i < size-1; ++i) {
