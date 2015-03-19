@@ -5,12 +5,20 @@ from JMTTools import *
 from JMTROOTTools import *
 set_style()
 
-run = run_from_argv()
-run_dir = run_dir(run)
-in_fn = os.path.join(run_dir, 'TBMDelay.root')
-if not os.path.isfile(in_fn):
-    raise RuntimeError('no file at %s' % in_fn)
-out_dir = os.path.join(run_dir, 'dump_tbmdelay')
+in_fn = None
+out_dir = None
+for arg in sys.argv:
+    if arg.endswith('.root') and os.path.isfile(arg):
+        in_fn = arg
+        out_dir = in_fn.replace('.root', '')
+        break
+if in_fn is None:
+    run = run_from_argv()
+    run_dir = run_dir(run)
+    in_fn = os.path.join(run_dir, 'TBMDelay.root')
+    if not os.path.isfile(in_fn):
+        raise RuntimeError('no file at %s' % in_fn)
+    out_dir = os.path.join(run_dir, 'dump_tbmdelay')
 os.system('mkdir -p %s' % out_dir)
 
 f = ROOT.TFile(in_fn)
@@ -104,8 +112,8 @@ for ikey, key in enumerate(keys):
             sv(ikey, h2)
 
 for chip in (1,7):
-    for tbmt_req in (20, -1):
-        h = analyze_abdel(f, chip, tbmt_req=tbmt_req)
+    for tbmt_req in (8, -1):
+        h = analyze_abdel(f, chip, tbmh_req=8, tbmt_req=tbmt_req, roch_req=64)
         if h is not None:
             h.Draw('colz')
             sv(99, h)
