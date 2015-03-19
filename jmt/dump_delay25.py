@@ -97,7 +97,10 @@ out_dir = os.path.join(run_dir, 'dump_delay25')
 foo2(in_fn, out_dir)
 
 if 'scp' in sys.argv:
-    cmd = 'scp -r %s tucker@lxplus:public/www/zxcv/dump_delay25/%i' % (out_dir, run)
+    remote_dir = 'public_html/qwer/dump_delay25/%i' % run
+    cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
     print cmd
     os.system(cmd)
-
+    cmd = 'scp -r %s/* jmt46@lnx201.lns.cornell.edu:%s' % (out_dir, remote_dir)
+    print cmd
+    os.system(cmd)
