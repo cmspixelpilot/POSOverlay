@@ -44,7 +44,6 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
 
   std::vector<TH1F*> scans1d[nDecode];
   std::vector<TH2F*> scans2d[nDecode];
-  std::vector<TH3F*> scans3d[nDecode];
 };
 
 #endif

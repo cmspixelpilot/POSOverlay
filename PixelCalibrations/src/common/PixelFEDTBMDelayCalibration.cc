@@ -164,6 +164,33 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	     decode1[chip]->roc_header_l[1].size());
     }
 
+    if (status3 <= 0)
+      FillEm(state, F3fifoErr, 1);
+    else {
+      for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
+	const unsigned channel = decode3->channel(ihit);
+	const unsigned rocid = decode3->rocid(ihit);
+	assert(rocid > 0);
+
+	const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
+
+	// Skip if this ROC is not on the list of ROCs to calibrate.
+	// Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
+	vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
+	if (foundROC == rocs.end()) // || !tempCalibObject->scanningROCForState(roc, state))
+	  FillEm(state, F3wrongRoc, 1);
+	else {
+	  const unsigned col = decode3->column(ihit);
+	  const unsigned row = decode3->row(ihit);
+
+	  if (colrows.find(std::make_pair(col, row)) == colrows.end())
+	    FillEm(state, F3wrongPix, 1);
+	  else
+	    FillEm(state, F3rightPix, 1);
+	}
+      }
+    }
+
     if (DumpFIFOs) {
       int col2=-1, row2=-1;
       std::cout << "FIFO 2 buffer sizes: ";
@@ -300,39 +327,12 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       decodeErr.printToStream(std::cout);
     }
 
-    if (status3 <= 0) {
-      //std::cout << "ERROR reading a fifo on FED # " << fednumber << " in crate # " << crate_ << ": status3 = " << status3 << endl;
-      FillEm(state, F3fifoErr, 1);
-      //std::cout << "readDigFEDStatus(): ";
-      //iFED->readDigFEDStatus(false);
+    for (int chip = 1; chip <= 7; chip += 2) {
+      if (chip == 1 || chip == 7)
+	delete decode1[chip];
+      delete decode2[chip];
     }
-    else {
-      unsigned nskip = 0;
-      for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
-	const unsigned channel = decode3->channel(ihit);
-	const unsigned rocid = decode3->rocid(ihit);
-	assert(rocid > 0);
-
-	const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
-
-	// Skip if this ROC is not on the list of ROCs to calibrate.
-	// Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
-	vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
-	if (foundROC == rocs.end()) { // || !tempCalibObject->scanningROCForState(roc, state)) {
-	  FillEm(state, F3wrongRoc, 1);
-	  ++nskip;
-	}
-	else {
-	  const unsigned col = decode3->column(ihit);
-	  const unsigned row = decode3->row(ihit);
-      
-	  if (colrows.find(std::make_pair(col, row)) == colrows.end())
-	    FillEm(state, F3wrongPix, 1);
-	  else
-	    FillEm(state, F3rightPix, 1);
-	}
-      }
-    }
+    delete decode3;
   }
 }
 
