@@ -5706,11 +5706,11 @@ else
                   
 uint32_t data = (pixelFEDCard.N_testreg&0xfff);
  vmeDevicePtr->write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
-data = (pixelFEDCard.NC_testreg&0xfff);
+data = (pixelFEDCard.NC_testreg&0xfff) | (1<<31); // piggy
  vmeDevicePtr->write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
 data = (pixelFEDCard.SC_testreg&0xfff);
  vmeDevicePtr->write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
-data = (pixelFEDCard.S_testreg&0xfff);
+data = (pixelFEDCard.S_testreg&0xfff) | (1<<31); // piggy
  vmeDevicePtr->write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
 }
 
