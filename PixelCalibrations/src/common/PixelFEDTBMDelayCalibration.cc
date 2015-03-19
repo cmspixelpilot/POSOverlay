@@ -400,21 +400,6 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
 	TH2F* h2 = new TH2F(jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname, ni, &ibins[0], nj, &jbins[0]);
 	h2->SetStats(0);
 	scans2d[idecode].push_back(h2);
-
-	for (size_t l = j+1; l < dacsToScan.size(); ++l) {
-	  const std::string lname = dacsToScan[l];
-	  const TString ltname(lname.c_str());
-	  const std::vector<unsigned>& lvals = tempCalibObject->scanValues(lname);
-	  const size_t nl = lvals.size();
-	  std::vector<double> lbins(nl+1);
-	  for (size_t k = 0; k < nl; ++k)
-	    lbins[k] = double(lvals[k]);
-	  lbins[nl] = lbins[nl-1] + (lbins[nl-1] - lbins[nl-2]);
-
-	  TH3F* h3 = new TH3F(ltname + "_v_" + jtname + "_v_" + itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";" + jtname + ";" + ltname, ni, &ibins[0], nj, &jbins[0], nl, &lbins[0]);
-	  h3->SetStats(0);
-	  scans3d[idecode].push_back(h3);
-	}
       }
     }
   }
@@ -424,7 +409,7 @@ void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which, float c) {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
-  int k2 = 0, k3 = 0;
+  int k2 = 0;
   for (size_t i = 0; i < dacsToScan.size(); ++i) {
     const std::string& iname = dacsToScan[i];
     const double ival(tempCalibObject->scanValue(iname, state));
@@ -434,12 +419,6 @@ void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which, float c) {
       const std::string jname = dacsToScan[j];
       const double jval(tempCalibObject->scanValue(jname, state));
       scans2d[which][k2]->Fill(ival, jval, c);
-
-      for (size_t l = j+1; l < dacsToScan.size(); ++l, ++k3) {
-	const std::string lname = dacsToScan[l];
-	const double lval(tempCalibObject->scanValue(lname, state));
-	scans3d[which][k3]->Fill(ival, jval, lval, c);
-      }
     }
   }
 }
