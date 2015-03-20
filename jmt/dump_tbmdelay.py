@@ -112,7 +112,7 @@ for ikey, key in enumerate(keys):
             sv(ikey, h2)
 
 for chip in (1,7):
-    for tbmt_req in (8, -1):
+    for tbmt_req in (8,):
         h = analyze_abdel(f, chip, tbmh_req=8, tbmt_req=tbmt_req, roch_req=64)
         if h is not None:
             h.Draw('colz')
