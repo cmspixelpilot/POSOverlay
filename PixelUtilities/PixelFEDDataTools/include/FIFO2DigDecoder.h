@@ -56,7 +56,6 @@ class FIFO2DigDecoder {
 
   const std::vector<hit_t>& hits() const { return hits_; }
 
- private:
   void store_hit(std::vector<uint8_t>& s) {
     if (!s.size()) return;
     hits_.push_back(hit_t(roc_headers_.size(), s));
