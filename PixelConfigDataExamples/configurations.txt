@@ -131,7 +131,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   4
+dac   5
 mask   0
 trim   0
 calib   7
@@ -256,7 +256,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   4
+dac   5
 mask   0
 trim   0
 calib   14
@@ -538,7 +538,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   4
+dac   5
 mask   0
 trim   0
 calib   32
@@ -556,7 +556,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   4
+dac   5
 mask   0
 trim   0
 calib   33

@@ -20,7 +20,7 @@ fecconfig  0 Default ;
 fedcard  3 Default ;
 fedcard  0 BmIOnly ;
 fedcard  0 BmOOnly ;
-dac  4 Default ;
+dac  5 Default ;
 mask  0 Default ;
 trim  0 Default ;
 tbm  1 Default ;
