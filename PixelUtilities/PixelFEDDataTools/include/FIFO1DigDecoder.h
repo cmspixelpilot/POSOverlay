@@ -59,13 +59,18 @@ class FIFO1DigDecoder {
   }
 
   std::vector<int> tbm_header_l[2];
+  std::vector<int> event_number[2];
+  std::vector<int> header_data_id[2];
+  std::vector<int> header_data[2];
+
   std::vector<int> roc_header_l[2];
+  std::vector<int> roc_readback[2];
+  std::vector<int> roc_hit_col[2];
+  std::vector<int> roc_hit_row[2];
+  std::vector<int> roc_hit_ph[2];
+
   std::vector<int> tbm_trailer_l[2];
-  unsigned event_number;
-  unsigned tbm_header_data_id;
-  unsigned tbm_header_data;
-  std::vector<unsigned> roc_header_payloads;
-  std::vector<hit_t> hits;
+  std::vector<int> trailer_data[2];
 };
 
 #endif

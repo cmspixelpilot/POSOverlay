@@ -11,6 +11,13 @@ namespace {
       if (i % 4 == 0) std::cout << " ";
     }
   }
+
+  void printem(std::ostream& out, const char* header, const std::vector<int>& v, const char* sep = " ", const char* end="\n") {
+    out << header << " (" << v.size() << "): ";
+    for (size_t i = 0; i < v.size(); ++i)
+      out << v[i] << sep;
+    out << end;
+  }
 }
 
 FIFO1DigDecoder::FIFO1DigDecoder(const uint32_t* buffer) {
@@ -69,6 +76,113 @@ FIFO1DigDecoder::FIFO1DigDecoder(const uint32_t* buffer) {
       }
     }
   }
+
+  // what was i on when i wrote the above
+  // just waste some space and time
+  std::vector<int> bits[2];
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      uint32_t word;
+      if (j == 0)
+	word = buffer[i] & 0xFFFF;
+      else
+	word = buffer[i] >> 16;
+      for (int k = 15; k >= 0; --k)
+	bits[j].push_back(int((word & (1 << k)) != 0));
+    }
+  }
+
+  for (int j = 0; j < 2; ++j) {
+    for (size_t i = 0; i < tbm_header_l[j].size(); ++i) {
+      const int at = tbm_header_l[j][i];
+      unsigned n = 0;
+
+      if (at+12+8 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12; k < at+12+8; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      event_number[j].push_back(n);
+
+      if (at+12+10 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12+8; k < at+12+10; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      header_data_id[j].push_back(n);
+      
+      if (at+12+16 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12+10; k < at+12+16; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      header_data[j].push_back(n);
+    }
+
+    for (size_t i = 0; i < roc_header_l[j].size(); ++i) {
+      const int at = roc_header_l[j][i];
+      unsigned n = 0;
+
+      if (at+10+2 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+10; k < at+10+2; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      roc_readback[j].push_back(n);
+
+      if (at+12+6 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12; k < at+12+6; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      roc_hit_col[j].push_back(n);
+      
+      if (at+12+15 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12+6; k < at+12+15; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      roc_hit_row[j].push_back(n);
+
+      if (at+12+24 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12+15; k < at+12+24; ++k) {
+	  if (k == at+12+19)
+	    continue;
+	  n = (n << 1) | bits[j][k];
+	}
+      }
+      roc_hit_ph[j].push_back(n);
+    }
+
+    for (size_t i = 0; i < tbm_trailer_l[j].size(); ++i) {
+      const int at = tbm_trailer_l[j][i];
+      unsigned n = 0;
+
+      if (at+12+16 > 16*size)
+	n = -1;
+      else {
+	n = 0;
+	for (int k = at+12; k < at+12+16; ++k)
+	  n = (n << 1) | bits[j][k];
+      }
+      trailer_data[j].push_back(n);
+    }
+  }
 }
 
 void FIFO1DigDecoder::printToStream(std::ostream& out) {
@@ -94,6 +208,18 @@ void FIFO1DigDecoder::printToStream(std::ostream& out) {
       }
       out << "\n";
     }
+
+    printem(out, "event numbers", event_number[j]);
+    printem(out, "header data ids", header_data_id[j]);
+    printem(out, "header data", header_data[j]);
+    printem(out, "roc readbacks", roc_readback[j]);
+    printem(out, "roc hit cols", roc_hit_col[j]);
+    printem(out, "roc hit rows", roc_hit_row[j]);
+    printem(out, "roc hit ph", roc_hit_ph[j]);
+    printem(out, "trailer data", trailer_data[j]);
+
+    if (j == 0)
+      out << "---\n";
   }
   out << std::endl;
 }
