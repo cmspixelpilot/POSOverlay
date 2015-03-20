@@ -112,6 +112,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     BookEm(TString::Format("TBMPLL%03i", lastTBMPLL));
   }
 
+  //////
+
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
@@ -164,6 +166,23 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	     decode1[chip]->roc_header_l[1].size());
     }
 
+    for (int chip = 1; chip <= 7; chip += 2) {
+      FIFO2DigDecoder* d = decode2[chip];
+      int arroff = (chip-1)/2*6;
+      FillEm(state, F21nTBMHeader  + arroff, int(d->tbm_header_found_));
+      FillEm(state, F21nTBMTrailer + arroff, int(d->tbm_trailer_found_));
+      FillEm(state, F21nROCHeaders + arroff, int(d->roc_headers_.size()));
+      int nwrong = 0, nright = 0;
+      for (size_t h = 0; h< d->hits_.size(); ++h)
+	if (d->hits_[h].col == 5 && d->hits_[h].row == 234)
+	  ++nright;
+	else
+	  ++nwrong;
+      FillEm(state, F21wrongPix + arroff, nwrong);
+      FillEm(state, F21rightPix + arroff, nright);
+      FillEm(state, F21dangling + arroff, int(d->dangling_hit_info_));
+    }
+
     if (status3 <= 0)
       FillEm(state, F3fifoErr, 1);
     else {
@@ -190,6 +209,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	}
       }
     }
+
+    //////
 
     if (DumpFIFOs) {
       int col2=-1, row2=-1;
@@ -327,6 +348,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       decodeErr.printToStream(std::cout);
     }
 
+    //////
+
     for (int chip = 1; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7)
 	delete decode1[chip];
@@ -365,13 +388,16 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
   static const TString sdecode[nDecode] = {
     "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders",
     "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders",
+    "F21nTBMHeader", "F21nTBMTrailer", "F21nROCHeaders", "F21wrongPix", "F21rightPix", "F21dangling",
+    "F23nTBMHeader", "F23nTBMTrailer", "F23nROCHeaders", "F23wrongPix", "F23rightPix", "F23dangling",
+    "F25nTBMHeader", "F25nTBMTrailer", "F25nROCHeaders", "F25wrongPix", "F25rightPix", "F25dangling",
+    "F27nTBMHeader", "F27nTBMTrailer", "F27nROCHeaders", "F27wrongPix", "F27rightPix", "F27dangling",
     "F3fifoErr", "F3wrongRoc", "F3wrongPix", "F3rightPix"
   };
 
   for (int idecode = 0; idecode < nDecode; ++idecode) {
     scans1d[idecode].clear();
     scans2d[idecode].clear();
-    scans3d[idecode].clear();
 
     for (size_t i = 0; i < dacsToScan.size(); ++i) {
       const std::string& iname = dacsToScan[i];
