@@ -2073,10 +2073,10 @@ N fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 NC fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 SC fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 S fifo-1 hit limit (max 1023 (hard) 900 (soft):192
-Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:0
-Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:0
-Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:0
-Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:0
+N  testreg:0x0
+NC testreg:0x80000000
+SC testreg:0x0
+S  testreg:0x80000000
 Set BUSYWHENBEHIND by this many triggers with timeouts:8
 D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):0x1
 Limit for fifo-2 almost full (point for the TTS flag):0x1c00
