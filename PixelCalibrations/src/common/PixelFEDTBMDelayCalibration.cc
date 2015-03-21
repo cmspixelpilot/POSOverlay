@@ -118,6 +118,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
     PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
+    iFED->readDigFEDStatus(false, false);
 
     const int MaxChips = 8;
     uint32_t buffer1[MaxChips][pos::fifo1TranspDepth];
@@ -174,7 +175,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       FillEm(state, F21nROCHeaders + arroff, int(d->roc_headers_.size()));
       int nwrong = 0, nright = 0;
       for (size_t h = 0; h< d->hits_.size(); ++h)
-	if (d->hits_[h].col == 5 && d->hits_[h].row == 234)
+	if (d->hits_[h].col == 5 && d->hits_[h].row == 234) // col 10 row 10
+	//if (d->hits_[h].col == 26 && d->hits_[h].row == 68) // col 40 row 60
 	  ++nright;
 	else
 	  ++nwrong;
@@ -332,13 +334,18 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer3[i]>>32) << " " << std::setw(8) << (buffer3[i] & 0xFFFFFFFF) << std::dec << std::endl;
       if (status3 > 0) {
 	std::cout << "FIFO3Decoder thinks:\n"
-		  << "nhits: " << decode3->nhits() << "\n";
-	for (unsigned i = 0; i < decode3->nhits(); ++i)
+		  << "nhits: " << decode3->nhits() << std::endl;
+	for (unsigned i = 0; i < decode3->nhits(); ++i) {
+	  const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3->channel(i), decode3->rocid(i)-1);
 	  std::cout << "#" << i << ": ch: " << decode3->channel(i)
-		    << " rocid: " << decode3->rocid(i) << " dcol: " << decode3->dcol(i)
+		    << " rocid: " << decode3->rocid(i)
+		    << " (" << rocname << ")"
+		    << " dcol: " << decode3->dcol(i)
 		    << " pxl: " << decode3->pxl(i) << " pulseheight: " << decode3->pulseheight(i)
 		    << " col: " << decode3->column(i) << " row: " << decode3->row(i) << std::endl;
-	std::cout << "(fifo2 col: " << col2 << " row: " << row2 << "   fifo3 dcol: " << decode3->dcol(0) << " pxl: " << decode3->pxl(0) << " col: " << decode3->column(0) << " row: " << decode3->row(0) << ")\n";
+	}
+	if (decode3->nhits() > 0)
+	  std::cout << "(fifo2 col: " << col2 << " row: " << row2 << "   fifo3 dcol: " << decode3->dcol(0) << " pxl: " << decode3->pxl(0) << " col: " << decode3->column(0) << " row: " << decode3->row(0) << ")\n";
       }
       std::cout << "Contents of Error FIFO" << std::endl;
       std::cout << "----------------------" << std::endl;
