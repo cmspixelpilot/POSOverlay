@@ -69,7 +69,7 @@ class PixelFEDInterface {
   int resetDigFEDpll(void); // reset Piggy Board pll
   int resetDigFEDreg(void); // reset Piggy Board register
   void loadFPGADigFED(); // load fpga to piggy board
-  void readDigFEDStatus(bool); // read status of the piggy board
+  void readDigFEDStatus(bool verbose, bool override_timeout); // read status of the piggy board
   void readDigFEDTempFifo(); 
   
   
@@ -306,6 +306,8 @@ void storeEnbableBits();
   //printing
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
   bool printIfSlinkHeaderMessedup;
+
+  int DauCards_lastStatusPoll;
   
 #ifdef USE_HAL  // Access VME with HAL
   const HAL::VMEDevice *const vmeDevicePtr;
@@ -388,7 +390,7 @@ void storeEnbableBits();
   unsigned long  TopDauCard_DownTempFifo;
   unsigned long  BottomDauCard_UpTempFifo;
   unsigned long  BottomDauCard_DownTempFifo;
-  
+
   // For the CAEN VME 
   long BHandle; // pointer to the device
   CVDataWidth dw; // data width (see CAENVMEtypes.h )
