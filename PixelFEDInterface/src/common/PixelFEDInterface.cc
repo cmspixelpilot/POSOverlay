@@ -525,18 +525,18 @@ int PixelFEDInterface::configFile(string fileName) {
     printf("S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.S_hitlimit);
       //These bits allow a ROC to be skipped (1/fpga)
       
-  fscanf(infile,"Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.N_testreg);
+  fscanf(infile,"N  testreg:%x\n",&pixelFEDCard.N_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.N_testreg);
-  fscanf(infile,"Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.NC_testreg);
+    printf("N  testreg:%x\n",pixelFEDCard.N_testreg);
+  fscanf(infile,"NC testreg:%x\n",&pixelFEDCard.NC_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.NC_testreg);
-  fscanf(infile,"Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.SC_testreg);
+    printf("NC testreg:%x\n",pixelFEDCard.NC_testreg);
+  fscanf(infile,"SC testreg:%x\n",&pixelFEDCard.SC_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.SC_testreg);
-  fscanf(infile,"Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.S_testreg);
+    printf("SC testreg:%x\n",pixelFEDCard.SC_testreg);
+  fscanf(infile,"S  testreg:%x\n",&pixelFEDCard.S_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.S_testreg);
+    printf("S  testreg:%x\n",pixelFEDCard.S_testreg);
 
   fscanf(infile,"Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",&pixelFEDCard.BusyWhenBehind);
   if(DEBUG)
@@ -618,18 +618,18 @@ int PixelFEDInterface::configFile(string fileName) {
     printf("S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.S_hitlimit);
       //These bits allow a ROC to be skipped (1/fpga)
       
-  fscanf(infile,"Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.N_testreg);
+  fscanf(infile,"N  testreg:%x\n",&pixelFEDCard.N_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.N_testreg);
-  fscanf(infile,"Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.NC_testreg);
+    printf("N  testreg:%x\n",pixelFEDCard.N_testreg);
+  fscanf(infile,"NC testreg:%x\n",&pixelFEDCard.NC_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.NC_testreg);
-  fscanf(infile,"Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.SC_testreg);
+    printf("NC testreg:%x\n",pixelFEDCard.NC_testreg);
+  fscanf(infile,"SC testreg:%x\n",&pixelFEDCard.SC_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.SC_testreg);
-  fscanf(infile,"Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.S_testreg);
+    printf("SC testreg:%x\n",pixelFEDCard.SC_testreg);
+  fscanf(infile,"S  testreg:%x\n",&pixelFEDCard.S_testreg);
   if(DEBUG)
-    printf("Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.S_testreg);
+    printf("S  testreg:%x\n",pixelFEDCard.S_testreg);
 
   pixelFEDCard.BusyWhenBehind=8;
   pixelFEDCard.FeatureRegister=0x1;    
@@ -1708,12 +1708,12 @@ int PixelFEDInterface::setup(void) {
 
 
   
-  //Roc Skips
+  // testregs
   if(Printlevel&2) 
-  {cout<<"FEDID:"<<pixelFEDCard.N_testreg<<" N Roc Skip"<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.NC_testreg<<" NC Roc Skip"<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.SC_testreg<<" SC Roc Skip"<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.S_testreg<<" S Roc Skip"<<endl;}
+  {cout<<"FEDID:"<<pixelFEDCard.N_testreg<<" N  testreg"<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.NC_testreg<<" NC testreg"<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.SC_testreg<<" SC testreg"<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.S_testreg<<" S  testreg"<<endl;}
   set_ROCskip();
 
 
@@ -5677,6 +5677,7 @@ data = (pixelFEDCard.S_hitlimit&0x3ff)+(12<<16);
 //
 void PixelFEDInterface::set_ROCskip(void)
 {
+#if 0
 //Check data words
  if((pixelFEDCard.N_testreg&0x7e0)>0){
 if((pixelFEDCard.N_testreg&0x7e0)>(0x120))
@@ -5712,21 +5713,18 @@ else
 {int chanl=(pixelFEDCard.SC_testreg&0x7e0)>>5;if((pixelFEDCard.SC_testreg&0x1f)>=pixelFEDCard.NRocs[chanl-1])
 {pixelFEDCard.SC_testreg=0;cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" SC BBB skip exceeds #ROCS-1 or = 0, set to 0"<<endl;}}
   } else {pixelFEDCard.SC_testreg=0;}
+#endif
 
-      uint32_t offset = 0x1a8000;
-                  
-uint32_t data = (pixelFEDCard.N_testreg&0xfff);
- vmeDevicePtr->write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
-data = (pixelFEDCard.NC_testreg&0xfff) | (1<<31); // piggy
- vmeDevicePtr->write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
-data = (pixelFEDCard.SC_testreg&0xfff);
- vmeDevicePtr->write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
-data = (pixelFEDCard.S_testreg&0xfff) | (1<<31); // piggy
- vmeDevicePtr->write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
+uint32_t offset = 0x1a8000;
+vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
+vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
+vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
+vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
 }
 
 ////////////////////////////////////////////////////////////////////////
 int PixelFEDInterface::set_ROCskip(int chnl, int roc){
+  assert(0);
 ////////////////////////////////////////////////////////////////////////
 //These bits allow a ROC to be skipped (1/fpga) if the ROC puts out
 //BBB instead of UlB B LD, this method checks the input and updates
@@ -5790,7 +5788,9 @@ return pixelFEDCard.FeatureRegister;
 }
 ///////////////////////////////////////////////////////////////////////				
 int PixelFEDInterface::FixBBB(int chan,uint32_t *data)
-{ //bbb
+{
+  assert(0);
+ //bbb
 //if((pixelFEDCard.fedNumber==38)&&chan==4){
 //cout<<"BBB entered channel "<<dec<<((pixelFEDCard.N_testreg&0x7e0)>>5)<<" trans channel "<<chan<<hex<<" testreg 0x"<<pixelFEDCard.N_testreg<<dec<<endl;}
 

@@ -144,8 +144,8 @@ namespace pos{
     //data Regs adjustable hit limits in fifo1s by fpga
     int N_hitlimit,NC_hitlimit,SC_hitlimit,S_hitlimit;
     
-    //data Regs to skip bad ROCs by fpga
-    int N_testreg,NC_testreg,SC_testreg,S_testreg;
+    //testregs
+    unsigned int N_testreg,NC_testreg,SC_testreg,S_testreg;
     
     //The values as read from file so that they can be restored after
     //calibration
