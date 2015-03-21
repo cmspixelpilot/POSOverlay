@@ -27,7 +27,8 @@ c = ROOT.TCanvas('c', '', 500, 500)
 
 keys = f.GetListOfKeys()
 
-fmt = '%0' + str(int(log10(len(keys))+1)) + 'i_%s.'
+#fmt = '%0' + str(int(log10(len(keys))+1)) + 'i_%s.'
+fmt = '%03i_%s.'
 def sv(i, x, ty='png'):
     if hasattr(x, 'GetName'):
         x = x.GetName()
@@ -69,16 +70,28 @@ def unflatten_pll(h):
 #    
 #    return hs
 
-def analyze_abdel(f, chip, tbmh_req=20, tbmt_req=20, roch_req=160):
-    htbmh = f.Get('TBMBDelay_v_TBMADelay_F1%inTBMHeaders' % chip)
-    htbmt = f.Get('TBMBDelay_v_TBMADelay_F1%inTBMTrailers' % chip)
-    hroch = f.Get('TBMBDelay_v_TBMADelay_F1%inROCHeaders' % chip)
-    if any(not h for h in (htbmh, htbmt, hroch)):
+def analyze_abdel(f, fifo, chip, tbmh_req, tbmt_req, roch_req, wpix_req, rpix_req, dang_req):
+    s = ''
+    if fifo == 1:
+        s = 's'
+        tbmh_req *= 2
+        tbmt_req *= 2
+        roch_req *= 2
+        rpix_req *= 2
+        
+    htbmh = f.Get('TBMBDelay_v_TBMADelay_F%i%inTBMHeader%s'  % (fifo, chip, s))
+    htbmt = f.Get('TBMBDelay_v_TBMADelay_F%i%inTBMTrailer%s' % (fifo, chip, s))
+    hroch = f.Get('TBMBDelay_v_TBMADelay_F%i%inROCHeaders'   % (fifo, chip))
+    hwpix = f.Get('TBMBDelay_v_TBMADelay_F2%iwrongPix' % chip) if fifo == 2 else None
+    hrpix = f.Get('TBMBDelay_v_TBMADelay_F2%irightPix' % chip) if fifo == 2 else None
+    hdang = f.Get('TBMBDelay_v_TBMADelay_F2%idangling' % chip) if fifo == 2 else None
+    if any(not h for h in (htbmh, htbmt, hroch)) or (fifo == 2 and any(not h for h in (hwpix, hrpix, hdang))):
+        print (htbmh, htbmt, hroch, hwpix, hrpix, hdang)
         return None
 
     xax, yax = htbmh.GetXaxis(), htbmh.GetYaxis()
     nbx, nby = xax.GetNbins(), yax.GetNbins()
-    h = ROOT.TH2F('FIFO1%iok_%i_%i_%i' % (chip, tbmh_req, tbmt_req, roch_req), '', nbx, xax.GetBinLowEdge(1), xax.GetBinLowEdge(nbx+1), nby, yax.GetBinLowEdge(1), yax.GetBinLowEdge(nby+1))
+    h = ROOT.TH2F('FIFO%i%iok_%i_%i_%i' % (fifo, chip, tbmh_req, tbmt_req, roch_req), '', nbx, xax.GetBinLowEdge(1), xax.GetBinLowEdge(nbx+1), nby, yax.GetBinLowEdge(1), yax.GetBinLowEdge(nby+1))
     h.SetStats(0)
 
     for ix in xrange(1, nbx+1):
@@ -89,7 +102,10 @@ def analyze_abdel(f, chip, tbmh_req=20, tbmt_req=20, roch_req=160):
             tbmh_ok = tbmh_req == -1 or htbmh.GetBinContent(ix, iy) == tbmh_req
             tbmt_ok = tbmt_req == -1 or htbmt.GetBinContent(ix, iy) == tbmt_req
             roch_ok = roch_req == -1 or hroch.GetBinContent(ix, iy) == roch_req
-            if tbmh_ok and tbmt_ok and roch_ok:
+            wpix_ok = fifo != 2 or wpix_req == -1 or hwpix.GetBinContent(ix, iy) == wpix_req
+            rpix_ok = fifo != 2 or rpix_req == -1 or hrpix.GetBinContent(ix, iy) == rpix_req
+            dang_ok = fifo != 2 or dang_req == -1 or hdang.GetBinContent(ix, iy) == dang_req
+            if tbmh_ok and tbmt_ok and roch_ok and wpix_ok and rpix_ok and dang_ok:
                 h.Fill(vx, vy)
 
     return h
@@ -111,13 +127,13 @@ for ikey, key in enumerate(keys):
             h2.Draw('colz text')
             sv(ikey, h2)
 
-for chip in (1,7):
-    for tbmt_req in (8,):
-        h = analyze_abdel(f, chip, tbmh_req=8, tbmt_req=tbmt_req, roch_req=64)
+for fifo in (2,):
+    for chip in (7,):
+        h = analyze_abdel(f, fifo, chip, tbmh_req=3, tbmt_req=3, roch_req=3*8, wpix_req=0, rpix_req=3*8, dang_req=0)
         if h is not None:
             h.Draw('colz')
-            sv(99, h)
-            sv(99, h, 'root')
+            sv(999, h)
+            sv(999, h, 'root')
 
 if 'scp' in sys.argv:
     remote_dir = 'public_html/qwer/dump_tbmdelay/%i' % run
