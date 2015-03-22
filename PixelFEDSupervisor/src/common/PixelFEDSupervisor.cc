@@ -144,6 +144,8 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::SetPrivateWord, "SetPrivateWord", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channel, "SetSpyFIFO2Channel", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channels, "SetSpyFIFO2Channels", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::ArmDigFEDOSDFifo, "ArmDigFEDOSDFifo", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::ReadDigFEDOSDFifo, "ReadDigFEDOSDFifo", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadTTSFIFO, "ReadTTSFIFO", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadLastDACFIFO, "ReadLastDACFIFO", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetPhasesDelays, "SetPhasesDelays", XDAQ_NS_URI);
@@ -4118,6 +4120,40 @@ xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channels(xoap::MessageRefe
     iFED->second->set_SpyFifo2Channels(Nch, NCch, SCch, Sch);
 
   xoap::MessageReference reply=MakeSOAPMessageReference("SetSpyFIFO2ChannelsDone");
+  return reply;
+}
+
+xoap::MessageReference PixelFEDSupervisor::ArmDigFEDOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  Attribute_Vector parametersReceived(4);
+  parametersReceived[0].name_ = "VMEBaseAddress";
+  parametersReceived[1].name_ = "Channel";
+  parametersReceived[2].name_ = "RocHi";
+  parametersReceived[3].name_ = "RocLo";
+  Receive(msg, parametersReceived);
+
+  unsigned int VMEBaseAddress = atoi(parametersReceived[0].value_.c_str());
+  unsigned int channel = atoi(parametersReceived[1].value_.c_str());
+  unsigned int rochi = atoi(parametersReceived[2].value_.c_str());
+  unsigned int roclo = atoi(parametersReceived[3].value_.c_str());
+
+  FEDInterface_[VMEBaseAddress]->armDigFEDOSDFifo(channel, rochi, roclo);
+
+  xoap::MessageReference reply=MakeSOAPMessageReference("ArmDigFEDOSDFifoDone");
+  return reply;
+}
+
+xoap::MessageReference PixelFEDSupervisor::ReadDigFEDOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  Attribute_Vector parametersReceived(2);
+  parametersReceived[0].name_ = "VMEBaseAddress";
+  parametersReceived[1].name_ = "Channel";
+  Receive(msg, parametersReceived);
+
+  unsigned int VMEBaseAddress = atoi(parametersReceived[0].value_.c_str());
+  unsigned int channel = atoi(parametersReceived[1].value_.c_str());
+  uint32_t data = FEDInterface_[VMEBaseAddress]->readDigFEDOSDFifo(channel);
+  std::cout << "ReadDigFEDOSDFifo: RocHi: " << ((data & 0xFFFF0000) >> 16) << " RocLo: " << (data & 0xFFFF) << std::endl;
+
+  xoap::MessageReference reply=MakeSOAPMessageReference("ReadDigFEDOSDFifoDone");
   return reply;
 }
 
