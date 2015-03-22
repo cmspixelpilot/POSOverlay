@@ -91,7 +91,7 @@ bool PixelIanaCalibration::execute()
       map<string, vector<pos::PixelROCName> >::iterator idpName=dpMap_.begin();
 
       for (; idpName != dpMap_.end(); ++idpName) {
-	cout << "idpName->first:"<<idpName->first<<endl;
+	//cout << "idpName->first:"<<idpName->first<<endl;
 	if (idpName->second.size() <= iROC)
 	  continue;
 	
@@ -112,6 +112,7 @@ bool PixelIanaCalibration::execute()
       unsigned int Nread=2;
 
       for (unsigned int i=0;i<Nread;i++){
+	cout << "iread: " << i << endl;
 
 	idpName=dpMap_.begin();
 
@@ -120,7 +121,10 @@ bool PixelIanaCalibration::execute()
 	  if (idpName->second.size()<=iROC) continue;
 	
 	  PixelROCName aROC=idpName->second[iROC];
-
+	  const unsigned fedchannel = theNameTranslation_->getHdwAddress(aROC)->fedchannel();
+	  const unsigned fednumber = theNameTranslation_->getHdwAddress(aROC)->fednumber();
+	  const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(fednumber);
+	  const unsigned fedvmebaseaddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
 	  double iana=0;  unsigned int ntries=0; bool caughtexception=false;
 	  cout<<"Selected ROC:" << aROC<<" "<<flush;
 
@@ -135,13 +139,33 @@ bool PixelIanaCalibration::execute()
 	      ntries++;
 	    }
 	  }  while (caughtexception && ntries<3);
-	  
+
 	  cout<<iana<<endl;
-	  
 	  Iana_[idpName->first][iROC][ivana].push_back(iana);
 
+	  const int Readback_values[5] = { 8, 9, 10, 11, 12 };
+	  const char* Readback_names[5] = { "vd", "va", "vana", "vbg", "iana" };
+
+	  for (int Readback = 0; Readback < 5; ++Readback) {
+	    cout << "Readback: " << Readback_names[Readback] << ": " << flush;
+	    setDAC(aROC, pos::k_DACAddress_Readback, Readback_values[Readback]);
+	    usleep(1000);
+	    Attribute_Vector parametersToFED_arm(4);
+	    parametersToFED_arm[0].name_ = "VMEBaseAddress"; parametersToFED_arm[0].value_ = itoa(fedvmebaseaddress);
+	    parametersToFED_arm[1].name_ = "Channel";        parametersToFED_arm[1].value_ = itoa(fedchannel);
+	    parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(aROC.roc()+1);
+	    parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(aROC.roc()+1);
+	    Send(PixelFEDSupervisors_[fedcrate], "ArmDigFEDOSDFifo", parametersToFED_arm);
+
+	    for (int itrig = 0; itrig < 32; ++itrig)
+	      sendTTCCalSync();
+
+	    Attribute_Vector parametersToFED_read(2);
+	    parametersToFED_read[0].name_ = "VMEBaseAddress"; parametersToFED_read[0].value_ = itoa(fedvmebaseaddress);
+	    parametersToFED_read[1].name_ = "Channel";        parametersToFED_read[1].value_ = itoa(fedchannel);
+	    Send(PixelFEDSupervisors_[fedcrate], "ReadDigFEDOSDFifo", parametersToFED_read);
+	  }
 	}
-      
       }
     }
 
