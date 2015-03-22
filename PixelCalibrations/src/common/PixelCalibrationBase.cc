@@ -374,9 +374,7 @@ void PixelCalibrationBase::setDAC(PixelROCName aROC,
   parsToFEC[4].name_="ROCId";           parsToFEC[4].value_=itoa(hdw->rocid());
   parsToFEC[5].name_="DACAddress";      parsToFEC[5].value_=itoa(dacAddress);
   parsToFEC[6].name_="DACValue";        parsToFEC[6].value_=itoa(dac);
-  cout << "fecnumber:"<<hdw->fecnumber()<<endl;
   unsigned int vmebaseaddress=theFECConfiguration_->VMEBaseAddressFromFECNumber(hdw->fecnumber());
-  cout << "FEC VME base address:"<<hex<<"0x"<<vmebaseaddress<<dec<<endl;
   parsToFEC[7].name_="VMEBaseAddress";  parsToFEC[7].value_=itoa(vmebaseaddress);
 
   unsigned int crate=theFECConfiguration_->crateFromFECNumber(hdw->fecnumber());
@@ -413,7 +411,7 @@ double PixelCalibrationBase::readCAEN(std::string dpeName){
   xoap::SOAPName nameElement = envelope.createName("name");
   childElement.addAttribute(nameElement, dpeName + dpeSuffix_get);
 
-  static int count=0;
+  static int count=1000;
 
   count++;
 
