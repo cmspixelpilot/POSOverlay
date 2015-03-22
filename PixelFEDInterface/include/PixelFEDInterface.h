@@ -71,6 +71,8 @@ class PixelFEDInterface {
   void loadFPGADigFED(); // load fpga to piggy board
   void readDigFEDStatus(bool verbose, bool override_timeout); // read status of the piggy board
   void readDigFEDTempFifo(); 
+  void armDigFEDOSDFifo(int channel, int rochi, int roclo); // arm OSD readback from roc; wait 31 triggers and call read
+  uint32_t readDigFEDOSDFifo(int channel);
   
   
   int TTCRX_I2C_REG_READ( int Register_Nr); 
