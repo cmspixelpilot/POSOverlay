@@ -970,6 +970,7 @@ void PixelFEDInterface::armDigFEDOSDFifo(int channel, int rochi, int roclo) {
   const int chip = (channel - 1)/9;
   const unsigned offset = (channel % 9) * 0x20000 + 0x8000;
   const uint32_t data = ((rochi & 0x1F) << 5) | (roclo & 0x1F);
+  //std::cout << "armDigFEDOSDFifo chip = " << chip << " offset = 0x" << std::hex << offset << std::dec << " data = 0x" << std::hex << data << std::dec << std::endl;
 #ifdef USE_HAL
   vmeDevicePtr->write(FPGAName[chip], data, HAL::HAL_NO_VERIFY, offset);
 #else
@@ -981,11 +982,13 @@ uint32_t PixelFEDInterface::readDigFEDOSDFifo(int channel) {
   const int chip = (channel - 1)/9;
   const unsigned offset = (channel % 9) * 0x20000 + 0x8000;
   uint32_t data;
+  //std::cout << "readDigFEDOSDFifo chip = " << chip << " offset = 0x" << std::hex << offset << std::dec;
 #ifdef USE_HAL
   vmeDevicePtr->read(FPGAName[chip], &data, offset);
 #else
 #error readDigFEDOSDFifo not implemented for direct CAEN VME access
 #endif
+  //std::cout << " data = 0x" << std::hex << data << std::dec << std::endl;
   return data;
 }
 
