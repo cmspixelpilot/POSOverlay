@@ -220,6 +220,29 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       for (int chip = 1; chip <= 7; chip += 2)
 	std::cout << std::setw(4) << status2[chip] << " ";
       std::cout << endl;
+
+      std::cout << "event numbers: ";
+      const int evnum = decode1[1]->event_number[0][0];
+      bool evnumok = true;
+      bool badfifo1decode = false;
+      for (int chip = 1; chip <= 7; chip += 2) {
+	std::cout << "chip " << chip << ": ";
+	if (chip == 1 || chip == 7) {
+	  if (decode1[chip]->tbm_header_l[0].size() != 1 || 
+	      decode1[chip]->tbm_header_l[1].size() != 1 || 
+	      decode1[chip]->tbm_trailer_l[0].size() != 1 || 
+	      decode1[chip]->tbm_trailer_l[1].size() != 1)
+	    badfifo1decode = true;
+	  std::cout << "f1: " << decode1[chip]->event_number[0][0] << " " << decode1[chip]->event_number[1][0] << " ";
+	  if (decode1[chip]->event_number[0][0] != evnum || decode1[chip]->event_number[1][0] != evnum)
+	    evnumok = false;
+	}
+	std::cout << "f2: " << decode2[chip]->event_number_ << " ";
+	if (int(decode2[chip]->event_number_) != evnum)
+	  evnumok = false;
+      }
+      std::cout << std::endl << "fifo1 decodes ok? " << (badfifo1decode ? "no" : "yes") << " evnums ok? " << (evnumok ? "yes" : "no") << std::endl;
+
       for (int chip = 1; chip <= 7; chip += 2) {
 	if (chip == 1 || chip == 7) {
 	  bool trans_all_ff = false;
