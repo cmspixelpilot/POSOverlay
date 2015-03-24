@@ -121,10 +121,14 @@ bool PixelIanaCalibration::execute()
 	  if (idpName->second.size()<=iROC) continue;
 	
 	  PixelROCName aROC=idpName->second[iROC];
-	  const unsigned fedchannel = theNameTranslation_->getHdwAddress(aROC)->fedchannel();
-	  const unsigned fednumber = theNameTranslation_->getHdwAddress(aROC)->fednumber();
+	  const PixelHdwAddress* hdwAddress = theNameTranslation_->getHdwAddress(aROC);
+	  const unsigned fedchannel = hdwAddress->fedchannel();
+	  const unsigned fednumber = hdwAddress->fednumber();
 	  const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(fednumber);
 	  const unsigned fedvmebaseaddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+	  const unsigned fecnumber = hdwAddress->fecnumber();
+	  const unsigned feccrate = theFECConfiguration_->crateFromFECNumber(fecnumber);
+	  const unsigned fecvmebaseaddress = theFECConfiguration_->VMEBaseAddressFromFECNumber(fecnumber);
 	  double iana=0;  unsigned int ntries=0; bool caughtexception=false;
 	  cout<<"Selected ROC:" << aROC<<" "<<endl;
 
@@ -150,6 +154,21 @@ bool PixelIanaCalibration::execute()
 	    cout << "Readback: " << Readback_names[Readback] << ": " << flush;
 	    setDAC(aROC, pos::k_DACAddress_Readback, Readback_values[Readback]);
 	    usleep(10000);
+
+#if 0
+	    for (int tbmchannel = 14; tbmchannel <= 15; ++tbmchannel) {
+	      Attribute_Vector parametersToFEC(6);
+	      parametersToFEC[0].name_ = "VMEBaseAddress"; parametersToFEC[0].value_ = itoa(fecvmebaseaddress);
+	      parametersToFEC[1].name_ = "mFEC";           parametersToFEC[1].value_ = itoa(hdwAddress->mfec());
+	      parametersToFEC[2].name_ = "mFECChannel";    parametersToFEC[2].value_ = itoa(hdwAddress->mfecchannel());
+	      parametersToFEC[3].name_ = "TBMCHannel";     parametersToFEC[3].value_ = itoa(tbmchannel);
+	      parametersToFEC[4].name_ = "HubAddress";     parametersToFEC[4].value_ = itoa(hdwAddress->hubaddress());
+	      Send(PixelFECSupervisors_[feccrate], "ResetROCs", parametersToFEC);
+	    }
+
+	    sendTTCROCReset();
+#endif
+
 	    Attribute_Vector parametersToFED_arm(4);
 	    parametersToFED_arm[0].name_ = "VMEBaseAddress"; parametersToFED_arm[0].value_ = itoa(fedvmebaseaddress);
 	    parametersToFED_arm[1].name_ = "Channel";        parametersToFED_arm[1].value_ = itoa(fedchannel);
