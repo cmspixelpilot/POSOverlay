@@ -1,55 +1,13 @@
-import sys
+import sys, os
+from array import array
+from collections import defaultdict
+from JMTTools import *
+from JMTROOTTools import *
+set_style()
 
-lines = '''
-Selected ROC: Pilt_BmO_D3_BLD10_PNL1_PLQ1_ROC0
-Will set Vana = 136
-iread: 0
-Selected ROC:Pilt_BmO_D3_BLD10_PNL1_PLQ1_ROC0
-Iana: 0.44
-Readback: vd: ReadDigFEDOSDFifo: RocHi: 2211 RocLo: 2211
-Readback: va: ReadDigFEDOSDFifo: RocHi: 2426 RocLo: 2426
-Readback: vana: ReadDigFEDOSDFifo: RocHi: 2719 RocLo: 2719
-Readback: vbg: ReadDigFEDOSDFifo: RocHi: 2975 RocLo: 2975
-Readback: iana: ReadDigFEDOSDFifo: RocHi: 3239 RocLo: 3239
-iread: 1
-Selected ROC:Pilt_BmO_D3_BLD10_PNL1_PLQ1_ROC0
-Iana: 0.44
-Readback: vd: ReadDigFEDOSDFifo: RocHi: 2210 RocLo: 2210
-Readback: va: ReadDigFEDOSDFifo: RocHi: 2338 RocLo: 2338
-Readback: vana: ReadDigFEDOSDFifo: RocHi: 2716 RocLo: 2716
-Readback: vbg: ReadDigFEDOSDFifo: RocHi: 2972 RocLo: 2972
-Readback: iana: ReadDigFEDOSDFifo: RocHi: 3228 RocLo: 3228
-Selected ROC: Pilt_BmO_D3_BLD10_PNL1_PLQ1_ROC0
-Will set Vana = 34
-iread: 0
-Selected ROC:Pilt_BmO_D3_BLD10_PNL1_PLQ1_ROC0
-Iana: 0.44
-Readback: vd: ReadDigFEDOSDFifo: RocHi: 2213 RocLo: 2213
-Readback: va: ReadDigFEDOSDFifo: RocHi: 2428 RocLo: 2428
-Readback: vana: ReadDigFEDOSDFifo: RocHi: 2940 RocLo: 2940
-Readback: vbg: ReadDigFEDOSDFifo: RocHi: 2968 RocLo: 2968
-Readback: iana: ReadDigFEDOSDFifo: RocHi: 3124 RocLo: 3124
-iread: 1
-Selected ROC:Pilt_BmO_D3_BLD10_PNL1_PLQ1_ROC0
-Iana: 0.44
-Readback: vd: ReadDigFEDOSDFifo: RocHi: 2100 RocLo: 2100
-Readback: va: ReadDigFEDOSDFifo: RocHi: 2419 RocLo: 2419
-Readback: vana: ReadDigFEDOSDFifo: RocHi: 2703 RocLo: 2703
-Readback: vbg: ReadDigFEDOSDFifo: RocHi: 2959 RocLo: 2959
-Readback: iana: ReadDigFEDOSDFifo: RocHi: 3124 RocLo: 3124
-'''.split('\n')
+def arr(l):
+    return array('d', list(l))
 
-Vana = None
-roc = None
-iread = None
-Iana = []
-RB_vd = []
-RB_va = []
-RB_vana = []
-RB_vbg = []
-RB_iana = []
-
-last = ''
 def chomp(line, s):
     global last
     if line.startswith(s):
@@ -58,33 +16,94 @@ def chomp(line, s):
     else:
         return False
 
-print 'roc,Vana,Iana0,Iana1,RB_vd0,RB_vd1,RB_va0,RB_va1,RB_vana0,RB_vana1,RB_vbg0,RB_vbg1,RB_iana0,RB_iana1'
+class datum:
+    def __init__(self, dac_vana, caen_iana, vd, va, vana, vbg, iana):
+        self.dac_vana = int(dac_vana)
+        self.caen_iana = float(caen_iana)
+        self.vd = int(vd)
+        self.va = int(va)
+        self.vana = int(vana)
+        self.vbg = int(vbg)
+        self.iana = int(iana)
+    def __repr__(self):
+        return 'datum(%r)' % ((self.dac_vana, self.caen_iana, self.vd, self.va, self.vana, self.vbg, self.iana))
+
+by_roc = defaultdict(list)
+
+vana = None
+roc = None
+iread = None
+last = ''
+block = []
+
 for line in open(sys.argv[1]):
     line = line.strip()
+    #print line
     if chomp(line, 'Will set Vana = '):
-        if Iana:
-            print '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s' % (roc, Vana, Iana[0], Iana[1], RB_vd[0], RB_vd[1], RB_va[0], RB_va[1], RB_vana[0], RB_vana[1], RB_vbg[0], RB_vbg[1], RB_iana[0], RB_iana[1])
-        Iana = []
-        RB_vd = []
-        RB_va = []
-        RB_vana = []
-        RB_vbg = []
-        RB_iana = []
-        Vana = last
-    elif not line.startswith('Selected ROC: ') and chomp(line, 'Selected ROC:'):
-        roc = last
+        vana = int(last)
     elif chomp(line, 'iread: '):
         iread = int(last)
+    elif not line.startswith('Selected ROC: ') and chomp(line, 'Selected ROC:'):
+        roc = last
+        block = []
     elif chomp(line, 'Iana: '):
-        Iana.append(last)
+        assert len(block) == 0
+        block.append(float(last))
     else:
-        for RB in 'vd va vana vbg iana'.split():
+        for iRB, RB in enumerate('vd va vana vbg iana'.split()):
             if chomp(line, 'Readback: %s: ReadDigFEDOSDFifo: RocHi: ' % RB):
+                assert len(block) == iRB + 1
                 hi, lo = last.split(' RocLo: ')
-                assert hi == lo
-                eval('RB_%s' % RB).append(lo)
+                if hi != lo:
+                    assert lo == '0'
+                block.append(int(hi))
+                if RB == 'iana':
+                    by_roc[roc].append(datum(vana, *block))
                 break
 
-        
+by_roc = [kv for kv in dict(by_roc).iteritems()]
+def _key(x):
+    a, b = x[0].split('_ROC')
+    return a, int(b)
+by_roc.sort(key=_key)
 
+run = 874
+out_dir = '/nfshome0/pixelpilot/build/TriDAS/pixel/PixelRun/Runs/Run_0/Run_%i/iana_readback' % run
+os.system('mkdir -p %s' % out_dir)
+
+c = ROOT.TCanvas('c', '', 2000, 2000)
+c.Divide(4,4)
+cache = []
+for iroc, (roc, data) in enumerate(by_roc):
+    c.cd(iroc % 16 + 1)
+    data.sort(key=lambda d: d.dac_vana)
+    iana_0 = data[0].iana
+    x = arr(d.dac_vana for d in data)
+    y = arr(d.iana - iana_0 for d in data)
+    e = arr(1 for d in data)
+    g = ROOT.TGraphErrors(len(data), x, y, e, e)
+    g.SetTitle('%s;Vana (DAC units);Iana (ADC units)' % roc)
+    f = ROOT.TF1('f', 'pol1', 25, 200)
+    g.Fit(f, 'QR')
+    g.Draw('AP')
+    c.Update()
+    stats = g.GetListOfFunctions().At(1)
+    assert stats.GetName() == 'stats'
+    stats.SetX1NDC(0.141)
+    stats.SetY1NDC(0.646)
+    stats.SetX2NDC(0.540)
+    stats.SetY2NDC(0.862)
+    cache.append((g,f))
+    if iroc % 16 == 15:
+        c.cd(0)
+        c.SaveAs(os.path.join(out_dir, roc.split('_ROC')[0] + '.png'))
     
+
+if 'scp' in sys.argv:
+    remote_dir = 'public_html/qwer/iana_readback/%i' % run
+    cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
+    print cmd
+    os.system(cmd)
+    cmd = 'scp -r %s/* jmt46@lnx201.lns.cornell.edu:%s' % (out_dir, remote_dir)
+    print cmd
+    os.system(cmd)
