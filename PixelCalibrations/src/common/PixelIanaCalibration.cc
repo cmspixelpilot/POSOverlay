@@ -153,7 +153,7 @@ bool PixelIanaCalibration::execute()
 	  for (int Readback = 0; Readback < 5; ++Readback) {
 	    cout << "Readback: " << Readback_names[Readback] << ": " << flush;
 	    setDAC(aROC, pos::k_DACAddress_Readback, Readback_values[Readback]);
-	    usleep(10000);
+	    usleep(1000);
 
 #if 0
 	    for (int tbmchannel = 14; tbmchannel <= 15; ++tbmchannel) {
@@ -172,13 +172,13 @@ bool PixelIanaCalibration::execute()
 	    Attribute_Vector parametersToFED_arm(4);
 	    parametersToFED_arm[0].name_ = "VMEBaseAddress"; parametersToFED_arm[0].value_ = itoa(fedvmebaseaddress);
 	    parametersToFED_arm[1].name_ = "Channel";        parametersToFED_arm[1].value_ = itoa(fedchannel);
-	    parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(aROC.roc()+1);
-	    parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(aROC.roc()+1);
+	    parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(aROC.roc() % 8 + 1); // JMTBAD could rework these loops so we take advantage of reading two rocs at a time...
+	    parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(aROC.roc() % 8 + 1);
 	    Send(PixelFEDSupervisors_[fedcrate], "ArmDigFEDOSDFifo", parametersToFED_arm);
 
 	    for (int itrig = 0; itrig < 32; ++itrig) {
 	      sendTTCCalSync();
-	      usleep(10000);
+	      usleep(1000);
 	    }
 
 	    Attribute_Vector parametersToFED_read(2);
