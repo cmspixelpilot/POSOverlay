@@ -175,6 +175,7 @@ bool PixelIanaCalibration::execute()
 	    parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(aROC.roc() % 8 + 1); // JMTBAD could rework these loops so we take advantage of reading two rocs at a time...
 	    parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(aROC.roc() % 8 + 1);
 	    Send(PixelFEDSupervisors_[fedcrate], "ArmDigFEDOSDFifo", parametersToFED_arm);
+	    usleep(1000);
 
 	    for (int itrig = 0; itrig < 32; ++itrig) {
 	      sendTTCCalSync();
