@@ -32,6 +32,8 @@ PixelDACScanRange::PixelDACScanRange(std::string name, unsigned int first,
   if (first_==last_) assert( mixValuesAcrossROCs==false );
   while((step > 0 && first<=last) || (step < 0 && first >= last)){
     values_.push_back(first);
+    if (step < 0 && first == 0)
+      break;
     first+=step;
     //FIXME should have a better reporting
     assert(values_.size()<1000);
