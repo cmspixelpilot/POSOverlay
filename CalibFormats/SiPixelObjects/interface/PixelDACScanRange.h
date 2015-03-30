@@ -29,7 +29,7 @@ namespace pos{
 
     PixelDACScanRange(){;}
     PixelDACScanRange(std::string dacname, unsigned int first, 
-		      unsigned int last, unsigned int step,
+		      unsigned int last, int step,
 		      unsigned int index, bool mixValuesAcrossROCs);
     PixelDACScanRange(std::string name, 
 		      std::vector<unsigned int> values,
@@ -37,7 +37,7 @@ namespace pos{
 
     std::string name() const { return name_;}
     unsigned int dacchannel() const { return dacchannel_; }
-    unsigned int step() const { assert(uniformSteps_); return step_; }
+    int step() const { assert(uniformSteps_); return step_; }
     unsigned int first() const { assert(uniformSteps_); return first_; }
     unsigned int last() const { assert(uniformSteps_); return last_; }
     unsigned int index() const { return index_; }
@@ -67,7 +67,7 @@ namespace pos{
     bool uniformSteps_;
     unsigned int first_;
     unsigned int last_;
-    unsigned int step_;
+    int step_;
     std::vector<unsigned int> values_;
     unsigned int index_;
 

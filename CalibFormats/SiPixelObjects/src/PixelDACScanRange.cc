@@ -14,7 +14,7 @@
 using namespace pos;
 
 PixelDACScanRange::PixelDACScanRange(std::string name, unsigned int first, 
-                                     unsigned int last, unsigned int step,
+                                     unsigned int last, int step,
                                      unsigned int index, bool mixValuesAcrossROCs){
 
   uniformSteps_=true;
@@ -24,12 +24,13 @@ PixelDACScanRange::PixelDACScanRange(std::string name, unsigned int first,
   first_=first;
   last_=last;
   step_=step;
-  
+  assert(step != 0);
+
   name_=name;
   index_=index;
   mixValuesAcrossROCs_=mixValuesAcrossROCs;
   if (first_==last_) assert( mixValuesAcrossROCs==false );
-  while(first<=last){
+  while((step > 0 && first<=last) || (step < 0 && first >= last)){
     values_.push_back(first);
     first+=step;
     //FIXME should have a better reporting
