@@ -221,6 +221,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	std::cout << std::setw(4) << status2[chip] << " ";
       std::cout << endl;
 
+      /*
       std::cout << "event numbers: ";
       const int evnum = decode1[1]->event_number[0][0];
       bool evnumok = true;
@@ -242,6 +243,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	  evnumok = false;
       }
       std::cout << std::endl << "fifo1 decodes ok? " << (badfifo1decode ? "no" : "yes") << " evnums ok? " << (evnumok ? "yes" : "no") << std::endl;
+      */
 
       for (int chip = 1; chip <= 7; chip += 2) {
 	if (chip == 1 || chip == 7) {
@@ -432,7 +434,8 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
     for (size_t i = 0; i < dacsToScan.size(); ++i) {
       const std::string& iname = dacsToScan[i];
       const TString itname(iname.c_str());
-      const std::vector<unsigned>& ivals = tempCalibObject->scanValues(iname);
+      std::vector<unsigned> ivals = tempCalibObject->scanValues(iname);
+      std::sort(ivals.begin(), ivals.end());
       const size_t ni = ivals.size();
       std::vector<double> ibins(ni+1);
       for (size_t k = 0; k < ni; ++k)
@@ -446,7 +449,8 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
       for (size_t j = i+1; j < dacsToScan.size(); ++j) {
 	const std::string jname = dacsToScan[j];
 	const TString jtname(jname.c_str());
-	const std::vector<unsigned>& jvals = tempCalibObject->scanValues(jname);
+	std::vector<unsigned> jvals = tempCalibObject->scanValues(jname);
+	std::sort(jvals.begin(), jvals.end());
 	const size_t nj = jvals.size();
 	std::vector<double> jbins(nj+1);
 	for (size_t k = 0; k < nj; ++k)
