@@ -5742,6 +5742,7 @@ else
 #endif
 
 uint32_t offset = 0x1a8000;
+std::cout << "set_ROCskip " << std::hex << pixelFEDCard.N_testreg << " " << pixelFEDCard.NC_testreg << " " << pixelFEDCard.SC_testreg << " " << pixelFEDCard.S_testreg << std::dec << std::endl;
 vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
