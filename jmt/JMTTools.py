@@ -15,7 +15,7 @@ def run_from_argv():
     return run
 
 def run_dir(run):
-    run_thousand = run / 1000
+    run_thousand = run / 1000 * 1000
     return os.path.join(POS_OUTPUT_DIRS, 'Run_%i' % run_thousand, 'Run_%i' % run)
 
 def run_dir_from_argv():
