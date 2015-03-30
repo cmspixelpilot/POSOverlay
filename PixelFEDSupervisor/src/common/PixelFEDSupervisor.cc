@@ -144,6 +144,7 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::SetPrivateWord, "SetPrivateWord", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channel, "SetSpyFIFO2Channel", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channels, "SetSpyFIFO2Channels", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::JMTJunk, "JMTJunk", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ArmDigFEDOSDFifo, "ArmDigFEDOSDFifo", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadDigFEDOSDFifo, "ReadDigFEDOSDFifo", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadTTSFIFO, "ReadTTSFIFO", XDAQ_NS_URI);
@@ -4120,6 +4121,20 @@ xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channels(xoap::MessageRefe
     iFED->second->set_SpyFifo2Channels(Nch, NCch, SCch, Sch);
 
   xoap::MessageReference reply=MakeSOAPMessageReference("SetSpyFIFO2ChannelsDone");
+  return reply;
+}
+
+xoap::MessageReference PixelFEDSupervisor::JMTJunk(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  Attribute_Vector parametersReceived(1);
+  parametersReceived[0].name_ = "VMEBaseAddress";
+  Receive(msg, parametersReceived);
+
+  static bool done = false;
+  unsigned int VMEBaseAddress = atoi(parametersReceived[0].value_.c_str());
+  if (!done) FEDInterface_[VMEBaseAddress]->set_ROCskip();
+  done = true;
+
+  xoap::MessageReference reply=MakeSOAPMessageReference("JMTJunk");
   return reply;
 }
 
