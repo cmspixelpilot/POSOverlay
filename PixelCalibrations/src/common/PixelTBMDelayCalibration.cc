@@ -26,6 +26,7 @@ void PixelTBMDelayCalibration::beginCalibration() {
   if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMBDelay") && !tempCalibObject->containsScan("TBMPLL"))
     std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
 
+  ToggleChannels = tempCalibObject->parameterValue("ToggleChannels") == "yes";
   CycleFIFO2Channels = tempCalibObject->parameterValue("CycleFIFO2Channels") == "yes";
   DelayBeforeFirstTrigger = tempCalibObject->parameterValue("DelayBeforeFirstTrigger") == "yes";
 }
@@ -39,8 +40,10 @@ bool PixelTBMDelayCalibration::execute() {
   reportProgress(0.05);
 
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
-  if (firstOfPattern)
+  if (firstOfPattern) {
+    if (ToggleChannels) commandToAllFEDCrates("ToggleChannels");
     commandToAllFECCrates("CalibRunning");
+  }
 
   if (CycleFIFO2Channels) {
     const int em36 = event_ % 36;
@@ -52,6 +55,9 @@ bool PixelTBMDelayCalibration::execute() {
     parametersToFED[1].name_ = "Ch";    parametersToFED[1].value_ = itoa(channel);
     commandToAllFEDCrates("SetSpyFIFO2Channel", parametersToFED);
   }
+
+  // should take this out
+  commandToAllFEDCrates("JMTJunk");
 
   if (DelayBeforeFirstTrigger && firstOfPattern)
     usleep(1000);
