@@ -142,6 +142,7 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::SetFEDOffsetsEnMass, "SetFEDOffsetsEnMass", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ResetFEDsEnMass, "ResetFEDsEnMass", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetPrivateWord, "SetPrivateWord", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::ToggleChannels, "ToggleChannels", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channel, "SetSpyFIFO2Channel", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channels, "SetSpyFIFO2Channels", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::JMTJunk, "JMTJunk", XDAQ_NS_URI);
@@ -4077,6 +4078,14 @@ xoap::MessageReference PixelFEDSupervisor::SetPrivateWord (xoap::MessageReferenc
 
 }
 
+xoap::MessageReference PixelFEDSupervisor::ToggleChannels(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
+    iFED->second->toggle_chnls_offon();
+
+  xoap::MessageReference reply=MakeSOAPMessageReference("ToggleChannelsDone");
+  return reply;
+}
+
 xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channel(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   Attribute_Vector parametersReceived(2);
   parametersReceived[0].name_ = "Which";
@@ -4125,16 +4134,14 @@ xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channels(xoap::MessageRefe
 }
 
 xoap::MessageReference PixelFEDSupervisor::JMTJunk(xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  Attribute_Vector parametersReceived(1);
-  parametersReceived[0].name_ = "VMEBaseAddress";
-  Receive(msg, parametersReceived);
-
   static bool done = false;
-  unsigned int VMEBaseAddress = atoi(parametersReceived[0].value_.c_str());
-  if (!done) FEDInterface_[VMEBaseAddress]->set_ROCskip();
-  done = true;
+  if (!done) {
+    for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
+      iFED->second->set_ROCskip();
+    done = true;
+  }
 
-  xoap::MessageReference reply=MakeSOAPMessageReference("JMTJunk");
+  xoap::MessageReference reply=MakeSOAPMessageReference("JMTJunkDone");
   return reply;
 }
 
@@ -4341,6 +4348,14 @@ void PixelFEDSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
 
     receiveMsg = Receive(this->ResetFEDsEnMass(soapMsg));
 
+  }
+  else if(action=="JMTJunk"){
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("JMTJunk", attrib);
+    std::string reciveMsg = Receive(this->JMTJunk(soapMsg));
+  }
+  else if(action=="ToggleChannels"){
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("ToggleChannels", attrib);
+    std::string reciveMsg = Receive(this->ToggleChannels(soapMsg));
   }
   else if(action=="SetSpyFIFO2Channel"){
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetSpyFIFO2Channel", attrib);

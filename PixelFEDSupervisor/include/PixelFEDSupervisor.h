@@ -199,6 +199,7 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     xoap::MessageReference SetADC1V2VOneChannel (xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetFEDOffsetsEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetPrivateWord (xoap::MessageReference msg) throw (xoap::exception::Exception);
+    xoap::MessageReference ToggleChannels(xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetSpyFIFO2Channel(xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetSpyFIFO2Channels(xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference JMTJunk(xoap::MessageReference msg) throw (xoap::exception::Exception);
