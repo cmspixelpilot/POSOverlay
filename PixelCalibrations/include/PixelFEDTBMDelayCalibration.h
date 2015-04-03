@@ -36,8 +36,8 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   TFile* rootf;
 
   enum { 
-    F11nTBMHeader, F11nTBMHeaders, F11nTBMTrailer, F11nTBMTrailers, F11nROCHeaders,
-    F17nTBMHeader, F17nTBMHeaders, F17nTBMTrailer, F17nTBMTrailers, F17nROCHeaders,
+    F11nTBMHeader, F11nTBMHeaders, F11nTBMTrailer, F11nTBMTrailers, F11nROCHeaders, F11wrongPix, F11rightPix,
+    F17nTBMHeader, F17nTBMHeaders, F17nTBMTrailer, F17nTBMTrailers, F17nROCHeaders, F17wrongPix, F17rightPix,
     F21nTBMHeader, F21nTBMTrailer, F21nROCHeaders, F21wrongPix, F21rightPix, F21dangling,
     F23nTBMHeader, F23nTBMTrailer, F23nROCHeaders, F23wrongPix, F23rightPix, F23dangling,
     F25nTBMHeader, F25nTBMTrailer, F25nROCHeaders, F25wrongPix, F25rightPix, F25dangling,

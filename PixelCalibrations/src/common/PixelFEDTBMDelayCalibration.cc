@@ -146,25 +146,41 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       decode3 = new FIFO3Decoder(buffer3);
     ErrorFIFODecoder decodeErr(bufferErr, statusErr);
 
-    assert(F17nTBMHeader - F11nTBMHeader == 5);
+    assert(F17nTBMHeader - F11nTBMHeader == 7);
     for (int FIFO1Chip = 0; FIFO1Chip < 2; ++FIFO1Chip) {
       const int chip = FIFO1Chip ? 7 : 1;
-      const int arroff = FIFO1Chip ? 5 : 0;
+      const int arroff = FIFO1Chip ? 7 : 0;
+      FIFO1DigDecoder* d = decode1[chip];
       FillEm(state, F11nTBMHeader + arroff,
-	     int(decode1[chip]->tbm_header_l[0].size() != 0) + 
-	     int(decode1[chip]->tbm_header_l[1].size() != 0));
+	     int(d->tbm_header_l[0].size() != 0) + 
+	     int(d->tbm_header_l[1].size() != 0));
       FillEm(state, F11nTBMHeaders + arroff, 
-	     decode1[chip]->tbm_header_l[0].size() + 
-	     decode1[chip]->tbm_header_l[1].size());
+	     d->tbm_header_l[0].size() + 
+	     d->tbm_header_l[1].size());
       FillEm(state, F11nTBMTrailer + arroff,
-	     int(decode1[chip]->tbm_trailer_l[0].size() != 0) + 
-	     int(decode1[chip]->tbm_trailer_l[1].size() != 0));
+	     int(d->tbm_trailer_l[0].size() != 0) + 
+	     int(d->tbm_trailer_l[1].size() != 0));
       FillEm(state, F11nTBMTrailers + arroff,
-	     decode1[chip]->tbm_trailer_l[0].size() + 
-	     decode1[chip]->tbm_trailer_l[1].size());
+	     d->tbm_trailer_l[0].size() + 
+	     d->tbm_trailer_l[1].size());
       FillEm(state, F11nROCHeaders + arroff,
-	     decode1[chip]->roc_header_l[0].size() + 
-	     decode1[chip]->roc_header_l[1].size());
+	     d->roc_header_l[0].size() + 
+	     d->roc_header_l[1].size());
+
+      int nwrong = 0, nright = 0;
+      for (int tbm = 0; tbm < 2; ++tbm) {
+	assert(d->roc_hit_col[tbm].size() == d->roc_hit_row[tbm].size());
+	for (size_t h = 0; h < d->roc_hit_col[tbm].size(); ++h) {
+	  const int col = d->roc_hit_col[tbm][h];
+	  const int row = d->roc_hit_row[tbm][h];
+	  if (col == 5 && row == 234)
+	    ++nright;
+	  else
+	    ++nwrong;
+	}
+      }
+      FillEm(state, F11wrongPix + arroff, nwrong);
+      FillEm(state, F11rightPix + arroff, nright);
     }
 
     for (int chip = 1; chip <= 7; chip += 2) {
@@ -418,8 +434,8 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
   assert(tempCalibObject != 0);
 
   static const TString sdecode[nDecode] = {
-    "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders",
-    "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders",
+    "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders", "F11wrongPix", "F11rightPix",
+    "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders", "F17wrongPix", "F17rightPix",
     "F21nTBMHeader", "F21nTBMTrailer", "F21nROCHeaders", "F21wrongPix", "F21rightPix", "F21dangling",
     "F23nTBMHeader", "F23nTBMTrailer", "F23nROCHeaders", "F23wrongPix", "F23rightPix", "F23dangling",
     "F25nTBMHeader", "F25nTBMTrailer", "F25nROCHeaders", "F25wrongPix", "F25rightPix", "F25dangling",
