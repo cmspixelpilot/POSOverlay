@@ -260,6 +260,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     //////
 
     if (DumpFIFOs) {
+      std::cout << "FIFO statuses:\n";
+      iFED->dump_FifoStatus(fifoStatus);
+
       int col2=-1, row2=-1;
       std::cout << "FIFO 2 buffer sizes: ";
       for (int chip = 1; chip <= 7; chip += 2)
