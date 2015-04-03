@@ -3824,6 +3824,28 @@ void PixelFEDInterface::set_data_levels() {
   //cin>>dummy;
   
 } // end
+
+void PixelFEDInterface::toggle_chnls_offon() {
+  const uint32_t save_Ncntrl  = pixelFEDCard.Ncntrl;
+  const uint32_t save_NCcntrl = pixelFEDCard.NCcntrl;
+  const uint32_t save_SCcntrl = pixelFEDCard.SCcntrl;
+  const uint32_t save_Scntrl  = pixelFEDCard.Scntrl;
+
+  pixelFEDCard.Ncntrl  = pixelFEDCard.Ncntrl  | 0x1ff;
+  pixelFEDCard.NCcntrl = pixelFEDCard.NCcntrl | 0x1ff;
+  pixelFEDCard.SCcntrl = pixelFEDCard.SCcntrl | 0x1ff;
+  pixelFEDCard.Scntrl  = pixelFEDCard.Scntrl  | 0x1ff;
+  set_chnls_onoff();
+  usleep(5000);
+
+  pixelFEDCard.Ncntrl  = save_Ncntrl;
+  pixelFEDCard.NCcntrl = save_NCcntrl;
+  pixelFEDCard.SCcntrl = save_SCcntrl;
+  pixelFEDCard.Scntrl  = save_Scntrl;
+  set_chnls_onoff();
+  usleep(5000);
+}
+
 /////////////////////////////////////////////////////////////////////////
 // This bits control if the data is trasfered from FIFO1 to FIFO2
 // 0 - means data is transfered, 1 - data is not transfered.

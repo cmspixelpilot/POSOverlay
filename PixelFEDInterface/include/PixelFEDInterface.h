@@ -92,6 +92,7 @@ class PixelFEDInterface {
   void set_blk_ublk_thold(); // Load UB and B limits
   void set_blk_ublk_trans_thold(); // Load UB and B limits for safe transparent mode
   void set_data_levels();  // Load address levels
+  void toggle_chnls_offon();
   void set_chnls_onoff(); // Set Enable channles
   void set_chnls_onoff(int mode); // Enable/Disable channles
   void set_TBMmask(uint32_t mask); //Set common 8bit mask for TBM trlr
