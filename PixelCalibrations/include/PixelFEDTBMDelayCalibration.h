@@ -37,6 +37,9 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   TFile* rootf;
 
   enum { 
+    F11almostFull, F13almostFull, F15almostFull, F17almostFull,
+    F21almostFull, F23almostFull, F25almostFull, F27almostFull,
+    F31almostFull, F37almostFull,
     F11nTBMHeader, F11nTBMHeaders, F11nTBMTrailer, F11nTBMTrailers, F11nROCHeaders, F11wrongPix, F11rightPix,
     F17nTBMHeader, F17nTBMHeaders, F17nTBMTrailer, F17nTBMTrailers, F17nROCHeaders, F17wrongPix, F17rightPix,
     F21nTBMHeader, F21nTBMTrailer, F21nROCHeaders, F21wrongPix, F21rightPix, F21dangling,

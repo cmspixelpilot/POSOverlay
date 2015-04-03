@@ -140,6 +140,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     }
     const int status3 = iFED->spySlink64(buffer3);
     const int statusErr = iFED->drainErrorFifo(bufferErr);
+    const uint32_t fifoStatus = iFED->getFifoStatus();
 
     FIFO1DigDecoder* decode1[MaxChips] = {0};
     FIFO2DigDecoder* decode2[MaxChips] = {0};
@@ -153,6 +154,17 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       decode3 = new FIFO3Decoder(buffer3);
     ErrorFIFODecoder decodeErr(bufferErr, statusErr);
 
+    if (fifoStatus & 0x01) FillEm(state, F11almostFull, 1);
+    if (fifoStatus & 0x04) FillEm(state, F13almostFull, 1);
+    if (fifoStatus & 0x10) FillEm(state, F15almostFull, 1);
+    if (fifoStatus & 0x40) FillEm(state, F17almostFull, 1);
+    if (fifoStatus & 0x02) FillEm(state, F21almostFull, 1);
+    if (fifoStatus & 0x08) FillEm(state, F23almostFull, 1);
+    if (fifoStatus & 0x20) FillEm(state, F25almostFull, 1);
+    if (fifoStatus & 0x80) FillEm(state, F27almostFull, 1);
+    if (fifoStatus & 0x100) FillEm(state, F31almostFull, 1);
+    if (fifoStatus & 0x200) FillEm(state, F37almostFull, 1);
+    
     assert(F17nTBMHeader - F11nTBMHeader == 7);
     for (int FIFO1Chip = 0; FIFO1Chip < 2; ++FIFO1Chip) {
       const int chip = FIFO1Chip ? 7 : 1;
@@ -451,6 +463,9 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
   assert(tempCalibObject != 0);
 
   static const TString sdecode[nDecode] = {
+    "F11almostFull", "F13almostFull", "F15almostFull", "F17almostFull",
+    "F21almostFull", "F23almostFull", "F25almostFull", "F27almostFull",
+    "F31almostFull", "F37almostFull",
     "F11nTBMHeader", "F11nTBMHeaders", "F11nTBMTrailer", "F11nTBMTrailers", "F11nROCHeaders", "F11wrongPix", "F11rightPix",
     "F17nTBMHeader", "F17nTBMHeaders", "F17nTBMTrailer", "F17nTBMTrailers", "F17nROCHeaders", "F17wrongPix", "F17rightPix",
     "F21nTBMHeader", "F21nTBMTrailer", "F21nROCHeaders", "F21wrongPix", "F21rightPix", "F21dangling",
@@ -475,9 +490,11 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
 	ibins[k] = double(ivals[k]);
       ibins[ni] = ibins[ni-1] + (ibins[ni-1] - ibins[ni-2]);
 
-      TH1F* h = new TH1F(itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";ntrig", ni, &ibins[0]);
-      h->SetStats(0);
-      scans1d[idecode].push_back(h);
+      if (dacsToScan.size() == 1) {
+	TH1F* h = new TH1F(itname + "_" + sdecode[idecode], sdecode[idecode] + ";" + itname + ";ntrig", ni, &ibins[0]);
+	h->SetStats(0);
+	scans1d[idecode].push_back(h);
+      }
 
       for (size_t j = i+1; j < dacsToScan.size(); ++j) {
 	const std::string jname = dacsToScan[j];
@@ -506,7 +523,9 @@ void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which, float c) {
   for (size_t i = 0; i < dacsToScan.size(); ++i) {
     const std::string& iname = dacsToScan[i];
     const double ival(tempCalibObject->scanValue(iname, state));
-    scans1d[which][i]->Fill(ival, c);
+
+    if (dacsToScan.size() == 1)
+      scans1d[which][i]->Fill(ival, c);
     
     for (size_t j = i+1; j < dacsToScan.size(); ++j, ++k2) {
       const std::string jname = dacsToScan[j];
