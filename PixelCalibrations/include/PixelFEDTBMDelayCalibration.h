@@ -31,6 +31,7 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
   void FillEm(unsigned state, int which, float c);
 
   bool DumpFIFOs;
+  bool PrintHits;
   std::vector<std::string> dacsToScan;
   unsigned lastTBMPLL;
   TFile* rootf;

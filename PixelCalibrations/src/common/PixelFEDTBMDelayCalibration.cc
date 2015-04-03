@@ -37,6 +37,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
   tempCalibObject->writeASCII(outputDir());
 
   DumpFIFOs = tempCalibObject->parameterValue("DumpFIFOs") == "yes";
+  PrintHits = tempCalibObject->parameterValue("PrintHits") == "yes";
 
   //  const std::vector<PixelROCName>& rocs = tempCalibObject->rocList();
   //PixelRootDirectoryMaker rootDirs(rocs, rootf);
@@ -94,6 +95,12 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
   const std::vector<PixelROCName>& rocs = tempCalibObject->rocList();
   typedef std::set< std::pair<unsigned int, unsigned int> > colrow_t;
   const colrow_t colrows = tempCalibObject->pixelsWithHits(state);
+  if (PrintHits) {
+    std::cout << "ZZ ";
+    for (colrow_t::const_iterator cr = colrows.begin(); cr != colrows.end(); ++cr)
+      std::cout << "c " << cr->first << " r " << cr->second << " ";
+    std::cout << std::endl;
+  }
 
   const std::vector<std::pair<unsigned, std::vector<unsigned> > >& fedsAndChannels = tempCalibObject->fedCardsAndChannels(crate_, theNameTranslation_, theFEDConfiguration_, theDetectorConfiguration_);
 
@@ -150,6 +157,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     for (int FIFO1Chip = 0; FIFO1Chip < 2; ++FIFO1Chip) {
       const int chip = FIFO1Chip ? 7 : 1;
       const int arroff = FIFO1Chip ? 7 : 0;
+      if (PrintHits) std::cout << "F1" << chip << " ";
+
       FIFO1DigDecoder* d = decode1[chip];
       FillEm(state, F11nTBMHeader + arroff,
 	     int(d->tbm_header_l[0].size() != 0) + 
@@ -173,6 +182,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	for (size_t h = 0; h < d->roc_hit_col[tbm].size(); ++h) {
 	  const int col = d->roc_hit_col[tbm][h];
 	  const int row = d->roc_hit_row[tbm][h];
+	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
 	  if (col == 5 && row == 234)
 	    ++nright;
 	  else
@@ -181,26 +191,32 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       }
       FillEm(state, F11wrongPix + arroff, nwrong);
       FillEm(state, F11rightPix + arroff, nright);
+      if (PrintHits) std::cout << std::endl;
     }
 
     for (int chip = 1; chip <= 7; chip += 2) {
+      if (PrintHits) std::cout << "F2" << chip << " ";
       FIFO2DigDecoder* d = decode2[chip];
       int arroff = (chip-1)/2*6;
       FillEm(state, F21nTBMHeader  + arroff, int(d->tbm_header_found_));
       FillEm(state, F21nTBMTrailer + arroff, int(d->tbm_trailer_found_));
       FillEm(state, F21nROCHeaders + arroff, int(d->roc_headers_.size()));
       int nwrong = 0, nright = 0;
-      for (size_t h = 0; h< d->hits_.size(); ++h)
+      for (size_t h = 0; h< d->hits_.size(); ++h) {
+	if (PrintHits) std::cout << "c " << d->hits_[h].col << " r " << d->hits_[h].row << " ";
 	if (d->hits_[h].col == 5 && d->hits_[h].row == 234) // col 10 row 10
 	//if (d->hits_[h].col == 26 && d->hits_[h].row == 68) // col 40 row 60
 	  ++nright;
 	else
 	  ++nwrong;
+      }
       FillEm(state, F21wrongPix + arroff, nwrong);
       FillEm(state, F21rightPix + arroff, nright);
       FillEm(state, F21dangling + arroff, int(d->dangling_hit_info_));
+      if (PrintHits) std::cout << std::endl;
     }
 
+    if (PrintHits) std::cout << "F3X ";
     if (status3 <= 0)
       FillEm(state, F3fifoErr, 1);
     else {
@@ -219,7 +235,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	else {
 	  const unsigned col = decode3->column(ihit);
 	  const unsigned row = decode3->row(ihit);
-
+	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
 	  if (colrows.find(std::make_pair(col, row)) == colrows.end())
 	    FillEm(state, F3wrongPix, 1);
 	  else
@@ -227,6 +243,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	}
       }
     }
+    if (PrintHits) std::cout << std::endl;
 
     //////
 
