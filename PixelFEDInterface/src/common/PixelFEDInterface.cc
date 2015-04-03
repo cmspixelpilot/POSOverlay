@@ -884,6 +884,7 @@ int PixelFEDInterface::reset(void) {
   if ( pilotFED ){
     cout << " pilotFED resets  "  << endl;
     resetDigFEDpll();
+    usleep(200000);
     resetDigFEDreg();
   }
   
