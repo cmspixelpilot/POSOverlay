@@ -121,6 +121,7 @@ for ikey, key in enumerate(keys):
         else:
             h.Draw()
         sv(ikey, h)
+        sv(ikey, h, 'root')
 
         if name.startswith('TBMPLL_') and '_v_' not in name:
             h2 = unflatten_pll(h)
@@ -128,8 +129,8 @@ for ikey, key in enumerate(keys):
             sv(ikey, h2)
 
 for fifo in (2,):
-    for chip in (7,):
-        h = analyze_abdel(f, fifo, chip, tbmh_req=3, tbmt_req=3, roch_req=3*8, wpix_req=0, rpix_req=3*8, dang_req=0)
+    for chip in (5,):
+        h = analyze_abdel(f, fifo, chip, tbmh_req=3, tbmt_req=3, roch_req=3*8, wpix_req=0, rpix_req=3*7, dang_req=0)
         if h is not None:
             h.Draw('colz')
             sv(999, h)
