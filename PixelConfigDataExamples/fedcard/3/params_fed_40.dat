@@ -2054,10 +2054,10 @@ Private 8 bit word chnls 1-9  :0xb1
 Private 8 bit word chnls 10-18:0xb2
 Private 8 bit word chnls 19-27:0xb3
 Private 8 bit word chnls 28-36:0xb4
-N  Spy Fifo-2 channel(0-8):8
+N  Spy Fifo-2 channel(0-8):0
 NC Spy Fifo-2 channel(0-8):0
-SC Spy Fifo-2 channel(0-8):8
-S  Spy Fifo-2 channel(0-8):0
+SC Spy Fifo-2 channel(0-8):6
+S  Spy Fifo-2 channel(0-8):4
 Special Random testDAC mode (on = 0x1, off=0x0):0x0
 Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:64
 Number of Consecutive (max 1023) Empty events till TTs ERR set:64
@@ -2073,10 +2073,10 @@ N fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 NC fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 SC fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 S fifo-1 hit limit (max 1023 (hard) 900 (soft):192
-N  testreg:0x0
+N  testreg:0x2300
 NC testreg:0x80000000
 SC testreg:0x0
-S  testreg:0x80000000
+S  testreg:0x80002303
 Set BUSYWHENBEHIND by this many triggers with timeouts:8
 D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):0x1
 Limit for fifo-2 almost full (point for the TTS flag):0x1c00
