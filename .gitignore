@@ -10,3 +10,4 @@ LogReaderWithFileServer
 PixelConfigDBGUI/
 PixelSupervisorGUI/
 *.pyc
+PixelFunctionManager
