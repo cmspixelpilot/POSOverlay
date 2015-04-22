@@ -50,14 +50,14 @@ Packages=\
 	PixelFECSupervisor \
 	PixelTKFECSupervisor \
 	PixelSupervisor \
-	PixelDCSSupervisor \
 	PixelDCSInterface \
 	PixelHistoViewer \
 	PixelAnalysisTools \
-	PixelConfigDBInterface/test
+	PixelConfigDBInterface/test \
+	PixelConfigDBGUI \
+	PixelTCDSSupervisor
 endif
 
-#	PixelConfigDBGUI 
 
 #	RUBuilderExample/RUBController \
 #	RUBuilderExample/EventGenerator \
@@ -90,10 +90,11 @@ install:
 	ln -s -f ../PixelUtilities/PixelSharedDataTools/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelSharedDataTools.so lib/.
 	ln -s -f ../PixelUtilities/PixelXmlUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelXmlUtilities.so lib/.
 	ln -s -f ../PixelUtilities/PixelJobControlUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelJobControlUtilities.so lib/.
-	ln -s -f ../PixelDCSSupervisor/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelDCSSupervisor.so lib/.
 	ln -s -f ../PixelDCSInterface/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelDCSInterface.so lib/.
 	ln -s -f ../PixelAnalysisTools/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelAnalysisTools.so lib/.
 	ln -s -f ../PixelHistoViewer/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelHistoViewer.so lib/.
+	ln -s -f ../PixelConfigDBGUI/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelConfigDBGUI.so lib/.
+	ln -s -f ../PixelTCDSSupervisor/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelTCDSSupervisor.so lib/.
 #	ln -s -f ../PixelMonitor/curlpp-0.6.1/curlpp/.libs/libcurlpp.so.0 lib/.
 
 

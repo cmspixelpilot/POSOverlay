@@ -1,0 +1,27 @@
+# list of all packages
+cmspxldaq/doc
+cmspxldaq/JobControl/trunk
+cmspxldaq/PixelAnalysisTools/trunk
+cmspxldaq/PixelCalibrations/trunk
+cmspxldaq/PixelConfigDataExamples/trunk
+cmspxldaq/PixelConfigDataFormats/trunk
+cmspxldaq/PixelConfigDBGUI/trunk
+cmspxldaq/PixelConfigDBInterface/trunk
+cmspxldaq/PixelDCSInterface/trunk
+cmspxldaq/PixelFECInterface/trunk
+cmspxldaq/PixelFECSupervisor/trunk
+cmspxldaq/PixelFEDInterface/trunk
+cmspxldaq/PixelFEDMonitor/trunk
+cmspxldaq/PixelFEDSupervisor/trunk
+rcms/functionmanagers/pixel/trunk
+cmspxldaq/PixelHistoViewer/trunk
+cmspxldaq/PixelMonitor/trunk
+cmspxldaq/PixelRun/trunk
+cmspxldaq/PixelSupervisor/trunk
+cmspxldaq/PixelSupervisorConfiguration/trunk
+cmspxldaq/PixelSupervisorGUI/trunk
+cmspxldaq/PixelTKFECSupervisor/trunk
+cmspxldaq/PixelTTCSupervisor/trunk
+cmspxldaq/PixelUtilities/trunk
+cmspxldaq/XDAQConfiguration/trunk
+cmspxldaq/PixelTCDSSupervisor/trunk

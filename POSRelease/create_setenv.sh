@@ -93,7 +93,9 @@ export LD_LIBRARY_PATH=${BUILD_HOME}/FecSoftwareV3_0/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${ENV_CMS_TK_DIAG_ROOT}/tools/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${BUILD_HOME}/pixel/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
-export PIXELCONFIGURATIONBASE=$BUILD_HOME/pixel/PixelConfigDataExamples/
+#export PIXELCONFIGURATIONBASE=$BUILD_HOME/pixel/PixelConfigDataExamples/
+export PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix
+export PATH=${HOME}/bin:/sbin:${ROOTSYS}/bin:${PATH}:${BUILD_HOME}/pixel/bin
 
 cd $ROOTSYS
 source bin/thisroot.sh
