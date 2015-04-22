@@ -21,7 +21,7 @@
 
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSPSXCommander.h"
 
-class xdaq::Application;
+//class xdaq::Application;
 
 class PixelDCSSMICommander : public PixelDCSPSXCommander
 {

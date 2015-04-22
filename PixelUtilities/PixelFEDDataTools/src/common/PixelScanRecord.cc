@@ -199,9 +199,9 @@ bool PixelScanRecord::crossingPointFound(double newCrossingYTarget, CrossingType
 void PixelScanRecord::findCrossingPoint()
 {
 	const double yTarget = crossingYTarget_;
-	int prev_xValue;
-	double intersection_xValue;
-	double prev_yValue;
+	int prev_xValue=0;
+	double intersection_xValue=0;
+	double prev_yValue=0;
 	bool firstPoint = true;
 	bool foundCrossing = false;
 	bool failed = true; // change this only upon success

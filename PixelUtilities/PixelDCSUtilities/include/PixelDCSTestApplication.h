@@ -29,7 +29,7 @@
 
 #include "PixelUtilities/PixelTKFECDataTools/include/PortCardDCU.h"
 
-class xdaq::ApplicationStub;
+//class xdaq::ApplicationStub;
 
 class PixelDCSTestApplication : public xdaq::Application, public SOAPCommander
 {

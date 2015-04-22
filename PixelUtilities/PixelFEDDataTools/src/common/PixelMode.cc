@@ -20,7 +20,7 @@ void PixelMode::addEntry(int newEntry)
 void PixelMode::findMode()
 {
 	assert( counts_.size() > 0 );
-	double mode_double;
+	double mode_double = 0;
 	unsigned int modeNumEntries = 0;
 	unsigned int numValuesInMode = 0; // keep track of ties for mode_double
 	for ( std::map< int, unsigned int >::const_iterator counts_itr = counts_.begin(); counts_itr != counts_.end(); ++counts_itr )

@@ -138,6 +138,8 @@ void PixelHistoServer::handleSocket(){
 		return;
 	}
   string mthn = "[PixelHistoServer::handleSocket()]\t";
+	
+  static int requestLengthTK = 2000;
 
   char request[requestLengthTK];
   	

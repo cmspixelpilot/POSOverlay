@@ -28,7 +28,7 @@
 
 #include "PixelDCSCreateDataPointsDpNameTable.h"
 
-class xdaq::ApplicationStub;
+//class xdaq::ApplicationStub;
 class SOAPCommander;
 class PixelDCSPVSSCommander;
 

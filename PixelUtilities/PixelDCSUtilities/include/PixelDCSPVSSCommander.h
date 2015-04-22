@@ -22,7 +22,7 @@
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSPSXCommander.h"
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSPVSSDpe.h"
 
-class xdaq::Application;
+//class xdaq::Application;
 
 class PixelDCSPVSSCommander : public PixelDCSPSXCommander
 {

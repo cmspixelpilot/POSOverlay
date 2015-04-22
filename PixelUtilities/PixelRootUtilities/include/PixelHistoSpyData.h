@@ -40,7 +40,7 @@ class PixelHistoSpyData: public PixelHistoThreadFrameWithArgs{
 	std::map<unsigned int,std::map<unsigned int,std::map<unsigned int,unsigned int> > > dataEntryMap_;
 	//map<fed,map<channel,map<roc,rochisto> > >
 	std::map<unsigned int,std::map<unsigned int,std::map<unsigned int,TH2F*> > > histoMap_;
-	typedef struct BranchStruct{
+	  struct BranchStruct{
 		float hasHits;
 		float occupancy;
 		char  rocName[38];

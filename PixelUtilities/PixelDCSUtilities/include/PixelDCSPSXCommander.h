@@ -23,7 +23,7 @@
 
 #include "PixelUtilities/PixelSOAPUtilities/include/SOAPCommander.h"
 
-class xdaq::Application;
+//class xdaq::Application;
 
 class PixelDCSPSXCommander : public SOAPCommander
 {

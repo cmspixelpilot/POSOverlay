@@ -26,7 +26,7 @@ void PixelErrorCollection::setErrors(char data[], unsigned int count) {
 		errors[i] = pos::PixelError(static_cast<unsigned long>(data[i]));
 	}
 }
-int PixelErrorCollection::getErrorCount() {
+unsigned int PixelErrorCollection::getErrorCount() {
 	return _errorCount;
 }
 

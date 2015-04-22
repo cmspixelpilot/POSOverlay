@@ -60,7 +60,8 @@ xoap::MessageReference PixelDCSPSXCommander::postSOAP(xdaq::ApplicationDescripto
   xoap::SOAPEnvelope envelope = psxResponse->getSOAPPart().getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   if ( !body.hasFault() ) {
-    if ( expectedResponse != "" ) {
+    //if ( expectedResponse != "" ) {
+    if ( strcmp(expectedResponse,"") != 0 ) {
       xoap::SOAPName responseElement = envelope.createName(expectedResponse);
       std::vector<xoap::SOAPElement> bodyElements = body.getChildElements(responseElement);
       if ( bodyElements.size() != 1 ) {

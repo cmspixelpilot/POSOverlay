@@ -187,6 +187,7 @@ TObject* PixelHistoDispatcher::uGetHistogram(TString histoName){
 ////////////////////////////////////////////////////////////////////////
 void PixelHistoDispatcher::HandleSocket(TSocket *s){
   string mthn = "[PixelHistoDispatcher::HandleSocket()]\t";
+	static int requestLengthTK =2000;
 //	cout << mthn << endl;
 	
   char request[requestLengthTK];

@@ -127,7 +127,7 @@ void AddressLevels::dump(std::string fname){
 
 void AddressLevels::drawHistogram(std::string fileName){
 
-  char *option="gif";
+  const char *option="gif";
   TCanvas c("c", "Address Levels", 400, 400);
   
   TH1F h("ROC", "Read Out Chip", 1024, -0.5, 1023.5);

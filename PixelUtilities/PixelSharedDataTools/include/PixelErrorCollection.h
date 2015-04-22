@@ -17,7 +17,7 @@ public:
 	
 	void setErrors(uint32_t data[],unsigned int count);
 	void setErrors(char data[],unsigned int count);
-	int getErrorCount();
+	unsigned int getErrorCount();
 	void setErrorCount(int count);
 	
 	pos::PixelError errors[8*pos::errorDepth];

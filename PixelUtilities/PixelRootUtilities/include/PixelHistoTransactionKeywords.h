@@ -3,7 +3,7 @@
 #include <TString.h>
 
 namespace pixelHistoTransactionKeywords{
-  static int           requestLengthTK           = 2000;
+  //static int           requestLengthTK           = 2000;
   static const TString getTK                     = "get=";
   static const TString producerUpdateFileTK      = "producerUpdateFile";
   static const TString producerUpdateContentTK   = "producerUpdateContent=";
