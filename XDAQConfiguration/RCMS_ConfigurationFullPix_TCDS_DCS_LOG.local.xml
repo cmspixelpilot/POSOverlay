@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" user="pixelpro" path="PPro_DCS_LOG_local">
+  <FunctionManager name="PixelFunctionManager" hostname="cmsrc-pixel.cms" port="17000" qualifiedResourceType="rcms.fm.resource.qualifiedresource.FunctionManager" role="PIXEL" sourceURL="http://cmsrc-pixel.cms:17000/functionmanagers/PixelFunctionManager.jar" className="rcms.fm.app.pixelfm.PixelFunctionManager">
+
+<!-- JOB-CONTROL -->
+  <Service name="JobControl" hostname="vmepc-s2b18-07-01.cms" port="9999" urn="/urn:xdaq-application:lid=10" qualifiedResourceType="rcms.fm.resource.qualifiedresource.JobControl" />
+  <Service name="JobControl" hostname="vmepc-s2b18-06-01.cms" port="9999" urn="/urn:xdaq-application:lid=10" qualifiedResourceType="rcms.fm.resource.qualifiedresource.JobControl" />
+
+<!-- PixelSupervisor -->
+  <XdaqApplication className="PixelSupervisor" hostname="vmepc-s2b18-06-01.cms" port="1970" urn="/urn:xdaq-application:lid=51" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelSupervisor.so" xdaqPath="/opt/xdaq" instance="0" />
+
+  <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1970" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="0" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+  </XdaqExecutive>
+
+   <!-- LogReader -->
+       <XdaqApplication className="GlobalErrorDispatcher" hostname="vmepc-s2b18-06-01.cms" port="1975" urn="/urn:xdaq-application:lid=40" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/DiagSystem/tools/lib/libGlobalErrorDispatcher.so" xdaqPath="/opt/xdaq" instance="0" />
+
+       <XdaqApplication className="AjaxLogReader" hostname="vmepc-s2b18-06-01.cms" port="1975" urn="/urn:xdaq-application:lid=41" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/DiagSystem/tools/lib/libAjaxLogReader.so" xdaqPath="/opt/xdaq" instance="0" />
+
+       <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1975" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="0" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+       <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+      </XdaqExecutive>
+
+
+   <!-- DCS -->
+       <XdaqApplication className="PixelDCSFSMInterface" hostname="vmepc-s2b18-06-01.cms" port="1976" urn="/urn:xdaq-application:lid=120" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelDCSFSMInterface.so" xdaqPath="/opt/xdaq" instance="0" />
+
+   <!-- NO DCS-DCU readout
+       <XdaqApplication className="PixelDCStoTrkFECDpInterface" hostname="vmepc-s2b18-06-01.cms" port="1976" urn="/urn:xdaq-application:lid=121" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelDCStoTrkFECDpInterface.so" xdaqPath="/opt/xdaq" instance="0" />
+
+       <XdaqApplication className="tstore::TStore" hostname="vmepc-s2b18-06-01.cms" port="1976" urn="/urn:xdaq-application:lid=200" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" xdaqPath="/opt/xdaq" instance="0" />
+   -->
+
+       <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1976" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="0" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+      </XdaqExecutive>
+
+<!-- PixelFEDSupervisor 1 -->
+    <XdaqApplication className="PixelFEDSupervisor" hostname="vmepc-s2b18-07-01.cms" port="1971" urn="/urn:xdaq-application:lid=70" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelFEDSupervisor.so" xdaqPath="/opt/xdaq" instance="1" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-07-01.cms" port="1971" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="1" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixelFEDSupervisor 2 -->
+    <XdaqApplication className="PixelFEDSupervisor" hostname="vmepc-s2b18-07-01.cms" port="1972" urn="/urn:xdaq-application:lid=71" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelFEDSupervisor.so" xdaqPath="/opt/xdaq" instance="2" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-07-01.cms" port="1972" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="2" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixelFEDSupervisor 3 -->
+    <XdaqApplication className="PixelFEDSupervisor" hostname="vmepc-s2b18-06-01.cms" port="1972" urn="/urn:xdaq-application:lid=72" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelFEDSupervisor.so" xdaqPath="/opt/xdaq" instance="3" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1972" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="3" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixelFECSupervisor 1 -->
+    <XdaqApplication className="PixelFECSupervisor" hostname="vmepc-s2b18-07-01.cms" port="1974" urn="/urn:xdaq-application:lid=60" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelFECSupervisor.so" xdaqPath="/opt/xdaq" instance="1" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-07-01.cms" port="1974" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="1" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixelTKFECSupervisor 1 -->
+    <XdaqApplication className="PixelTKFECSupervisor" hostname="vmepc-s2b18-07-01.cms" port="1973" urn="/urn:xdaq-application:lid=100" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelTKFECSupervisor.so" xdaqPath="/opt/xdaq" instance="1" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-07-01.cms" port="1973" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="1" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixelFECSupervisor 2 -->
+    <XdaqApplication className="PixelFECSupervisor" hostname="vmepc-s2b18-06-01.cms" port="1974" urn="/urn:xdaq-application:lid=61" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelFECSupervisor.so" xdaqPath="/opt/xdaq" instance="2" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1974" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="2" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixelTKFECSupervisor 2 -->
+    <XdaqApplication className="PixelTKFECSupervisor" hostname="vmepc-s2b18-06-01.cms" port="1973" urn="/urn:xdaq-application:lid=101" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixelTKFECSupervisor.so" xdaqPath="/opt/xdaq" instance="2" />
+    <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1973" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="2" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+
+<!-- PixeliCISupervisor 1 -->
+    <XdaqApplication className="pixel::ici::PixeliCISupervisor" hostname="vmepc-s2b18-07-01.cms" port="1985" urn="/urn:xdaq-application:lid=85" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixeliCISupervisor.so" xdaqPath="/opt/xdaq" instance="1" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-07-01.cms" port="1985" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="1" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixeliCISupervisor 2 -->
+    <XdaqApplication className="pixel::ici::PixeliCISupervisor" hostname="vmepc-s2b18-07-01.cms" port="1986" urn="/urn:xdaq-application:lid=86" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixeliCISupervisor.so" xdaqPath="/opt/xdaq" instance="2" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-07-01.cms" port="1986" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="2" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixeliCISupervisor 3 -->
+    <XdaqApplication className="pixel::ici::PixeliCISupervisor" hostname="vmepc-s2b18-06-01.cms" port="1987" urn="/urn:xdaq-application:lid=87" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixeliCISupervisor.so" xdaqPath="/opt/xdaq" instance="3" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1987" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="3" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+<!-- PixeliCISupervisor 4 -->
+    <XdaqApplication className="pixel::ici::PixeliCISupervisor" hostname="vmepc-s2b18-06-01.cms" port="1988" urn="/urn:xdaq-application:lid=88" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqApplication" modulePath="${BUILD_HOME}/pixel/lib/libPixeliCISupervisor.so" xdaqPath="/opt/xdaq" instance="4" />
+
+    <XdaqExecutive hostname="vmepc-s2b18-06-01.cms" port="1988" urn="/urn:xdaq-application:lid=0" qualifiedResourceType="rcms.fm.resource.qualifiedresource.XdaqExecutive" instance="4" logURL="xml://cmsrc-pixel.cms:17010" logLevel="INFO" pathToExecutive="/opt/xdaq/bin/xdaq.exe -z pixel " unixUser="pixelpro" environmentString="HOME=/nfshome0/pixelpro XDAQ_ROOT=/opt/xdaq XDAQ_DOCUMENT_ROOT=/opt/xdaq/htdocs XDAQ_SETUP_ROOT=/opt/xdaq/share XDAQ_BASE=/opt/xdaq XDAQ_OS=linux XDAQ_PLATFORM=x86_64_slc6 BUILD_HOME=/nfshome0/pixelpro/TriDAS PIXELCONFIGURATIONBASE=/pixelscratch/pixelscratch/config/Pix PIXELCONFIGURATIONSPOOLAREA=/nfshome0/pixelpro/PixelSpoolArea/ TNS_ADMIN=/nfshome0/pixelpro/private POS_OUTPUT_DIRS=/pixelscratch/pixelscratch/data0 ROOTSYS=/nfshome0/pixelpro/root ENV_CMS_TK_DIAG_ROOT=/nfshome0/pixelpro/TriDAS/DiagSystem ENV_CMS_TK_ONLINE_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 ENV_CMS_TK_FEC_ROOT=/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0 LD_LIBRARY_PATH=/nfshome0/pixelpro/root/lib:/nfshome0/pixelpro/TriDAS/FecSoftwareV3_0/lib:/nfshome0/pixelpro/TriDAS/DiagSystem/tools/lib:/nfshome0/pixelpro/TriDAS/pixel/lib:/opt/xdaq/lib JAVA_HOME=/usr RECONFIGURATIONFLAG=ALLOW">
+
+    <configFile location="file">/nfshome0/pixelpro/XDAQConfigurations/XDAQ_ConfigurationFullPix_TCDS_DCS_LOG.local.xml</configFile>
+   </XdaqExecutive>
+
+  </FunctionManager>
+</Configuration>

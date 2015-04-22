@@ -104,7 +104,7 @@
                                 <oracleUserName xsi:type="xsd:string">CMS_PXL_PIXEL_R</oracleUserName>
                                 <oraclePassword xsi:type="xsd:string"></oraclePassword>
                                 <version_dcu_calib_filter xsi:type="xsd:string">V1</version_dcu_calib_filter>
-                                <psx_system_name xsi:type="xsd:string">cms_trk_dcs_07:</psx_system_name>
+                                <psx_system_name xsi:type="xsd:string">cms_trk_dcs_1:</psx_system_name>
                         </properties>
                 </xc:Application>
                 <xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
