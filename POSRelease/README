@@ -1,0 +1,467 @@
+
+This README file contains a short summary of the new features in
+each tag. After this is a brief description of the different
+packages.
+
+POS_4_1_0  First release for (stable) 2012 datataking. Most of the implemented changes 
+           by Josh.
+
+POS_4_0_3  Bugfix for the previous tag
+
+POS_4_0_2  First stable, tested release for SLC5 at P5
+
+POS_4_0_1  Intermediate, sort of faulty release
+
+POS_4_0_0  Move from SLC4/32bit to SLC5/64bit. Mostly technical changes, some
+           modifications due to new TTC and FEC software
+
+POS_3_12_4 Latest update of CVS from P5.  Update to be consistent with latest TTC software.  
+           Update to cancel fm deploy in FunctionManager.  Other more minor changes.
+ 
+POS_3_12_3 Latest update of CVS from P5. Programs ROCs/TBMs at start/resume, and other things
+
+POS_3_12_2 Fix same config problem that affected Debbie, this time in the HistoViewer config.
+           Also fix bug in TKFECSupervisor that caused a crash when using a limited detconfig.
+           Code for Debbie to read new fedcard fields.
+
+POS_3_12_1 Take java location from JAVA_HOME. Also fix problem in config file that was
+           preventing Debbie from running after new xdaq was installed at P5
+
+POS_3_12_0 Update to fedcard and FEDInterface to add new parameters to configuration data
+
+POS_3_11_4 fix bug in getmapNamePortCard implementation
+
+POS_3_11_3 add ANALOG_ON_RED state to DCSInterface xml
+
+POS_3_11_2 Pass global key to L1FM
+
+POS_3_11_1 Final updates for pp running in 2010.
+           All FEDs to 8 timeouts before BUSY.
+
+POS_3_11_0 New Delay25/LastDAC calibration (not yet functional).
+           Cleanup of FEDSupervisor and FEDInterface: Always clear
+           simulated hits at Configure; set all FEDs to 4 timeouts
+           before BUSY; move some register programming from Supervisor
+           to Interface.
+
+POS_3_10_5 Misc code to better handle Delay25 in Debbie, plus some DCU-related updates.
+
+POS_3_10_4 Reset FEDs at the end of each physics run;
+           more monitoring added to FED physics workloop.
+           PixelFEDInterface has busyWhenBehind variable added.
+
+POS_3_10_3 Important change to TTS behavior in PixelFEDInterface.
+           Also a DB query change and a fix for the
+           Delay25 calib for the BPix.
+
+POS_3_10_2 Another try at making Delay25 calib work with multiple crates;
+           Also, fixes for Debbie to work with Delay25 calib files.
+
+POS_3_10_1_1 Make Delay25 calib work with multiple crates;
+           Remove many exception specifications
+
+POS_3_10_0 Configure PixelDCStoTrkFECDpInterface in parallel with FECs/FEDs
+           Bug fix to rpm name of zipper.pl
+
+POS_3_9_1  change DCU PSX port back to 'psx' (not 'psxtk');
+           restore Delay25 calibration to working order
+
+POS_3_9_0  resetCheck workloop disabled for calibrations; 
+	   dynamically load portcard data only when needed in PixelSupervisor;
+           updates to magritte and Debbie;
+           allow for badAlias list (aliases not shown in PixelSupervisor)
+
+POS_3_8_3  Fix bug in DB commit that was introduced in 3_8_1
+
+POS_3_8_2  Add profile.xml and spec template to PixelSupervisor
+
+POS_3_8_1  Increase DB timeout. More output when sending DCU data to PSX.
+           New method in PixelFEDInterface. More fixes for rpm compatibility.
+
+POS_3_8_0  Updates to FED physics workloop. Program CCU CRE during configuration. Fix bug
+           when updating DB from a calibration.
+
+POS_3_7_0  Update to L1FM and PixelSupervisor.
+           Errors in any state transition are now propagated to the L1FM.
+
+POS_3_6_3  Fix bug in DB update check. Better initialization of variables in PixelFEDCard
+
+POS_3_6_2  Fix a bug that caused crash on configuration
+
+POS_3_6_1  Change logic of DAC programming so that we can enable ROCs when configuring for a calibration.
+
+POS_3_6_0  Add feature to FECSupervisor to cache and reuse configuration data, to speed configuration.
+           Tested with xdaq 10 and diagSystem PROD_P5_04.
+
+POS_3_5_2  Misc updates. For building test rpms. Also used for tests of xdaq 9 and 10.
+
+POS_3_5_1  Version used for first MWGR of 2010.
+
+POS_3_5_0  Version to be tested at P5, including bug fixes for CCU DDR configuration
+           and preconfiguration in the FECSupervisor
+
+POS_3_4_6  fixes to TKFECSupervisor:
+           fix bug in new workloop that caused crash on Stop;
+           also better locking of global variables
+
+POS_3_4_5  add workloop to TKFECSupervisor to check Delay25 and PLL registers
+
+POS_3_4_4  add programming of CCU DDR to TKFECSupervisor
+           (discovered to be not actually working!)
+
+POS_3_4_3_2 Patch to add "HV on" and "HV off" buttons to PixelDCSFSMInterface.
+
+POS_3_4_3_1 Disable any ROC with noAnalogSignal flag set. Also bug fixes in PixelDCSFSMInterface. For first running with beams.
+
+POS_3_4_3  Updates to L1FM to comply with central RCMS request to export various
+           parameters. Also add a Manual Override button to PixelDCSFSMInterface.
+
+POS_3_4_2  More quickly break from Physics workloops in FED and TKFEC.
+           Also fixes to the TKFEC programming from the database (having
+           to do with programming order and DOH settings).
+
+POS_3_4_1  (bad tag, do not use)
+
+POS_3_4_0  Allow for delay scan reconfiguration with a special button in
+           PixelSupervisor. Remove RUN_TYPE from L1FM. Misc changes to
+           facilitate rpm installation.
+
+POS_3_3_0  Changes to allow runing from rpms installed in /opt/xdaq
+           More configuration changes for rpm building and fixes
+           to usage of BUILD_HOME. BUILD_HOME should not be set when
+           running from rpm installation in /opt/xdaq.
+
+POS_3_2_1  Critical bug fixes to the previous tag. Used for MWGR41.
+
+POS_3_2_0  Major update that deprecates the PixelTTCSupervisor in favor of
+           the out-of-the-box TTC software. Requires TTCSoftware 6.06.03
+
+POS_3_1_2  Add ability to Recover from Error state. Also fixes a bug in
+           ROC programming that caused pixels in dcol 48 to be incorrectly
+           programmed.
+
+POS_3_1_1  Minor updates, especially to JobControl Monitor
+
+POS_3_1_0  PixelMonitor uses flashlists. moveLogFiles script gives
+           pretty file names. Handling of configuration errors
+           modified so that FSM enters 'Error' state instead of
+           crashing.
+
+POS_3_0_6  State of the code at the end of CRAFT09.
+
+POS_3_0_5  Includes changes made during the first 'sandbox' period of CRAFT09.
+           This includes automatic disconnection of 
+           old connections to the PSX server.
+
+POS_3_0_4  Misc bug fixes, and code accumulated at P5. State of the code
+           just after the beginning of CRAFT09.
+
+POS_3_0_3  Important fixes from Marco for DB-based portcard configuration.
+           Also includes the PixelMonitor and related code.
+
+POS_3_0_2  add Configure from detconfig to PixelDCSFSMInterface
+
+POS_3_0_1  Many misc changes that have been implemented at P5.
+
+POS_3_0_0  State of the code at P5 after successful deployment of DB.
+           Also contains some changes related to deployment of integrated DCS.
+
+POS_2_10_1 Misc changes accumulated at P5 since the last tag.
+
+POS_2_10_0 Bug fixes on top of POS_2_9_5. Tested at P5, built against
+           the newest DiagSystem tag (EASTER2009-1).
+
+POS_2_9_5  Add preliminary code for HV-dependent ROC configuration.
+           Compiles, but is otherwise untested.
+
+POS_2_9_4  Many updates to database code, some bug fixes, some diagSystem
+	   migration. Previous tag (2_9_3) was tested at P5. This
+           tag has not been tested at P5.
+
+POS_2_9_3_2 A few additional patches added on top of POS_2_9_3_2. Used
+           for our first mid-week global run of 2009. 
+
+POS_2_9_3_1 POS_2_9_3 with small but critical bug fixes. Used for FPix
+           checkout in April 2009.
+
+POS_2_9_3  Many minor updates. Choice of files versus DB now made by
+           env var setting. Additions to PixelSupervisor GUI to show
+           progress of calibrations and status messages. Cleanup of 
+           the code in a number of calibration classes. Many updates
+           to DB-related classes.
+
+POS_2_9_2  Several bugfixes. First version of b2in tested at P5.
+
+POS_2_9_1  First tag after committing b2in changes.
+
+POS_2_9_0  Tagged HAED of CVS before committing b2in changes.
+
+POS_2_8_7  Smaller fixes with respect to POS_2_8_6. Iana calibration
+           fixes for multiple TKFEC crates. Several calibration have
+           multiple crate fixes. Disabled FED spying since it was
+           leaking shared memory. FED mode and control registers
+           are now read from the fed_params.dat file.
+
+POS_2_8_6  Several fixes: AOHBias speedup and selection of 
+           safer point against temperature variations. The
+           control and mode register for the fed is now taken
+           from the fed_params.dat file in physics mode.
+           The run directory structure is now on the form
+           Run_57000/Run_57341. Changes to DCU readout and
+           histoviewer and pixelanalysis tools.
+
+POS_2_8_5  Fixes to the PixelCaliBconfiguration to deal with
+           multiple FEC crates. Fixes in AddressLevel calibration
+           to be more robust against dual TBM where the UB
+           levels are different.
+
+POS_2_8_4  Trim the directory structure at the level of the 
+           module or plaquette. Summary root tree for address
+           levels and rocub. Fixes to initialize wait for reading DCU.
+           Fixes for synchronizing the states when configuring
+           with run control. Fixes to setting of fec debug.
+
+POS_2_8_3  More fixes for Delay25 calibration. Wrong version
+           of PixelTKFECDelay25Calibration.h in POS_2_8_2 tag.
+
+POS_2_8_2  Fix to the Delay25 calibration code.
+
+POS_2_8_1  Improvments to the delay 25 algorithm. Now gives up
+           on a point if it is inefficient. Scans all TBMs and
+           finds common point. Plots for all different types of
+           commands. Updates to DCS code for power-on sequence.
+           Fixes in PixelFEDInterface and PixelFEDSupervisor to
+           avoid having the application hang a long time at the
+           end of a job. Also fixes to avoid a crash on the second
+           run in physics mode. Updates to PixelHistoViewer.
+           Bug fixes in reading PixelNameTranslation.
+
+POS_2_8_0  Many updates. New FED firmware for the delay setting.
+           Updated analysis tools, histoviewer, debbie, histograms
+           calibration algorithms.
+
+POS_2_7_13 Updates to PixelFEDClockPhase calibration so that we
+           pick a later sampling point for the slow ROCs. Updates
+           to many histograms in the root output. Updates to 
+           integrate the DiagSystem. Fix for buffered commands
+           in the FEC so that we can use buffered commands during 
+           configuration.
+
+POS_2_7_12 Updates from CRUZET to write out file with configuration
+           used in a given run. Include code to do a VcThr calibration.
+           The PixelCalibConfiguration can now set DACs relative to the
+           default. This will be used for trim bit determination, but 
+           might have other uses. In the PixelConfigFile::get method
+           we now cache the content of the configurations.txt file.
+           Many improvements in the PixelCalibConfiguration:nextFECState
+           to speed up execution. Also in 
+           PixelDACSettings::generateConfiguration we now use the 
+           buffered commands --- but is disabled as it seems not to work.
+
+POS_2_7_11 Updated to root output for PixelFEDAOHGainCalibration.cc
+           PixelFEDLinearityVsVsfCalibration.cc and
+           PixelFEDVsfAndVHldDelCalibration.cc. Fixes so that 
+           calibration triggers (CalSync+L1A) can be generated
+           from the LTC. 
+
+POS_2_7_10 In the TBM UB calibration now pick the lower crossing
+           in the case of multiple crossing. Updates to histograming
+           to prevent crashes when writing root file. Fix to path
+           of html file from AddressLevels and Baseline. The delay25 is
+           now using buffered commands. Other minor updates to plots.
+
+POS_2_7_9 Smaller bugfixes to makefiles and some fixes the
+          root file output and state machine.
+
+POS_2_7_8 Updates to PixelFEDSupervisor/Makefile that were
+          missing in the 2_7_7 tag.
+
+POS_2_7_7 Include new Delay25 calibration from Jennifer.
+
+POS_2_7_6 Many smaller fixes, including cleanup of FECInterface,
+          updates to putting output in Run directory, fixes to 
+          FEDInterface for reporting error when reading FIFO 1,
+          and addition of configuration information for chainsaw
+          logger. 
+           
+
+POS_2_7_5 Updates to the statemachine to introduce an configuring
+          state. This allow us to configure FED and FEC in parallel
+          and to use the 'power on' sequence. PixelCalibConfiguration
+          now sets the right trimbits when disabling the pixels+ many 
+          other small fixes.   
+
+POS_2_7_4 Fix to linking of PixelTKFECSupervisor for standalone
+          running. Can now do scans with non-uniform steps. And
+          added histogram for addresslevel rms summary per channel. 
+
+POS_2_7_3 First steps towards rootfile output for addresslevels
+          and the threshold vs caldelay calibration. Addresslevel
+          calibration has been cleaned up. Now can update the 
+          configurations from the supervisor gui after calibration has
+          completed. New AOH gain calibration from Steve.
+
+POS_2_7_2 Fixes problems in the statemachine implementation that
+          caused crashes when halting. Bring in some development
+          from Steve on calibrations.
+
+POS_2_7_1 Same as 2_6_7 + FEDInterface changes to support 
+          FEB 12 firmeware version. (Tag not well tested.)
+
+POS_2_7_0 *** THIS TAG WAS DONE WRONG PLEASE NEVER USE ***
+          Same as 2_6_7 + FEDInterface changes to support 
+          FEB 12 firmeware version. (Tag not well tested.)
+
+POS_2_6_7 New code for the Vsf calibration for linearity. Calibation
+          to check FED-AOH mapping. Calibration now run on a workloop.
+          Supervisor now can auto update. (Tag not well tested.)
+
+POS_2_6_6 Fix to mode register in the ROC UB calibration. 
+          This tag was done incorrectly. To make it work:
+          Get CVS revision 1.20 of
+          PixelFEDROCUBEqualizationCalibration.cc
+          and then change the mode register from
+          0x8 to 0x0 by hand. 
+
+POS_2_6_5 Implement new algorithm for finding the FED phase.
+
+POS_2_6_4 Minor bug fixes.
+
+POS_2_6_3 Bug fix to HAL address map for PixelFECInterface. Substantial
+          rewrite of AOH_BIAS, ROCUB, and TBMUB calibrations.
+          First version of Vsf and VhldDel calibrations.
+
+POS_2_6_2 More modifications to calibration code; now execute()
+          method returns a bool and execution of algorithm continues
+          as long as true is returned. Moved more functionality
+          into PixelCalibrationBase. Updated to a more complete
+          Iana vs Vana calibration. Added PixelLowVoltageMap class
+          to map the data point names to the modules. 
+
+POS_2_6_1 Fix from will to stale event problem in FIFO1 transp.
+          data mode. Now make sure that baseline calibration does
+          not change baseline and channel 'enbable' bits when
+          it writes out the new params_fed.dat files. Includes 
+          code in PixelCalibConfiguration to implement 3 different
+          modes for the mask bits during calibration. See UsersGuide.
+
+POS_2_6_0 This tag is very similar to 2_5_1 except that it uses
+          the Dec 4(5) 2007 FED firmware that uses a 961 words
+          FIFO1 transparent buffer. There is still an issue with
+          a few calibrations for how to handle 'double' trigger
+          readout of the transparent data.
+
+POS_2_5_1 Allows running code with a subset of the detector in the
+          detector configuration. Also supports new format of the
+          PixelDetectorConfig where rocs are listed and including a
+          status. Includes prototype for a Iana vs. Vana calibration
+          and a PixelAlive/SCurve/GainCalibration algorithm that
+          uses the SLink and not VME readout. Buffered FEC mode
+          on by default in calibrations; need V16 pFEC firmware.
+
+POS_2_5_0 Starting with this tag the fed_id in the params_fed_N.dat
+          file has to match the file name i.e. id=N.
+
+
+
+Description of what the different packages in the pixel area are intended for.
+(current status is also indicated)
+
+To check out the code in CalibFormats/SiPixelObjects do (replace aryd with your
+username)
+cvs -d:ext:aryd@cmscvs.cern.ch:/cvs_server/repositories/CMSSW co -r POS_2_5_0 CalibFormats/SiPixelObjects
+
+CalibFormats/SiPixelObjects  Holds objects used for configuring the detector
+                             shared between online and offline.
+
+FEDSupervisor          Obsolete 
+
+FastFECSupervisor      Obsolete 
+
+PixelCalibrations	calibration algorithms for PixelSupervisor
+			(development)
+
+PixelConfigDataExamples example flat file formats for configuration data
+                        (released; test stands)
+
+PixelConfigDataFormats now obsolete; code moved to CalibFormats/SiPixelObjects
+
+PixelConfigDBInterface interface classes to the configuration database
+                       (development)
+
+PixelDCSInterface      library for DCS-xdaq communication (last DAC, DCU)
+                       (development)
+
+PixelDCSSupervisor     DCS-xdaq communication on Run Control states
+                       (development)
+
+PixelFECInterface      Hardware interface to the FEC
+                       (released)
+
+PixelFECSupervisor     The pixel FEC supervisor (xdaq app)
+                       (released)
+
+PixelFEDInterface      Hardware interface to the FED
+                       (released)
+
+PixelFEDSupervisor     The pixel FED supervisor (xdaq app)
+                       (released)
+
+PixelFunctionManager   The pixel L1 function manager (Java)
+                       (development)
+
+PixelLTCSupervisor     The pixel LTC supervisor (xdaq app)
+                       (skeleton for development)
+
+PixelRun	       Scripts for running xdaq & analyzing raw data files
+                       (test stands)
+
+PixelSupervisor        The top level pixel supervisor (xdaq app)
+                       (released)
+
+PixelSupervisorConfiguration
+			class library to hold xdaq applications and config data
+			(development)
+
+PixelSupervisorGUI     GUI for run control from xdaq
+                       (released)
+	
+PixelTKFECSupervisor   The pixel 'tracker' FEC supervisor (xdaq app)
+                       (skeleton for development)
+
+PixelTTCSupervisor     The pixel TTC supervisor (xdaq app)
+                       (released; relies on TTCSoftware tar ball from CERN)
+
+PixelUtilities         Pixel online software utilites - code in sub packages
+
+	PixelSOAPUtilities	Utilities for sending SOAP messages
+                                (released)
+	
+	PixelFEDDataTools	for (de)coding pixel FED data
+                                (released)
+
+        PixelGUIUtilities       for use in xdaq guis (xgi/html)
+	                        (released)
+
+	PixelI2OUtilities	Utilities for sending I20 frames
+                                (released)
+
+	PixelTestStandUtilities for use on test stands (sharing VME access)
+                                (released)
+
+RUBuilderExample       toy model for event building on local daq	
+                       (released)
+
+SkeletonPixelDaq       Obsolete 
+
+SlowFECSupervisor      Obsolete 
+
+TTCSupervisor          Obsolete 
+
+TriggerSoftware        Obsolete - Should not be used
+
+VMEDebug               VME test utilities
+
+XDAQConfiguration      xml profiles for running xdaq.sh -e profile.xml
+                       (released)
+
