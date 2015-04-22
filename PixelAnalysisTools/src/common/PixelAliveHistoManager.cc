@@ -14,7 +14,7 @@
 
 using namespace std;
 
-typedef struct PixelAliveBadPixelsBranch{
+struct PixelAliveBadPixelsBranch{
 	float rocsWithNumberOfDeadPixelsGTN;
 	float percentageOfDeadPixels;
 	float numberOfDeadPixels;

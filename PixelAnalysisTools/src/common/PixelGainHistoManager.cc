@@ -16,7 +16,7 @@
 
 using namespace std;
 
-typedef struct PixelLinearGainBranch{
+struct PixelLinearGainBranch{
 	float rocsWithSlopeGTN;
 	float rocsWithInterceptGTN;
 	float rocsWithChisquareGTN;
@@ -31,7 +31,7 @@ typedef struct PixelLinearGainBranch{
   char  rocName[38];
 };
 
-typedef struct PixelTanhGainBranch{
+struct PixelTanhGainBranch{
 	float rocWithLinearityLTN;
 	float par0;
 	float par1;

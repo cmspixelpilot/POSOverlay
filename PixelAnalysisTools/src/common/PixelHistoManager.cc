@@ -203,7 +203,7 @@ void PixelHistoManager::initializeSummaries(void){
 	}
  	summaryTree_ = new TTree("SummaryTree","SummaryTree");
 
-	typedef struct BadDecodingBranch{
+	struct BadDecodingBranch{
 		float numberOfBadPixelsGT0;
 		float percentOfBadPixels;
 		float numberOfBadPixels;

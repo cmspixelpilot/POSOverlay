@@ -66,7 +66,7 @@ void Word32::setBits(int low_bit_position, int nbits, int value)
 {
   word32 mask = 0;
   while (nbits--)
-    mask = mask<<1 + 1;
+    mask = mask<<(1 + 1);
   mask <<= low_bit_position;
   mask = ~mask;
   mask += (value << low_bit_position);

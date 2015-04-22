@@ -16,7 +16,7 @@
 
 using namespace std;
 
-typedef struct PixelSCurveBranch{
+struct PixelSCurveBranch{
 	float rocsWithThresholdGTN;       
 	float rocsWithNoiseGTN; 	        
 	float rocsWithChisquareGTN;

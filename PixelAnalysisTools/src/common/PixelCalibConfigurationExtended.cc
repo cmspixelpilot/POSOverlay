@@ -37,17 +37,17 @@ void PixelCalibConfigurationExtended::fillFedChannelHWandTypeInfo(){
       unsigned int plaq = iter->plaquet();
       if( hub==12 || hub==13 || hub==14 ){
         //it is a 4 type
-        if(plaq == 1 && port == 1 ||
-           plaq == 2 && port == 0 ||
-           plaq == 3 && port == 2 ||
-           plaq == 4 && port == 3){
+        if((plaq == 1 && port == 1) ||
+           (plaq == 2 && port == 0) ||
+           (plaq == 3 && port == 2) ||
+           (plaq == 4 && port == 3)){
            //it is a 4L type
 	         panelType = "4L";
          }
-         else if(plaq == 1 && port == 2 ||
-                 plaq == 2 && port == 3 ||
-                 plaq == 3 && port == 1 ||
-                 plaq == 4 && port == 0){
+         else if((plaq == 1 && port == 2) ||
+                 (plaq == 2 && port == 3) ||
+                 (plaq == 3 && port == 1) ||
+                 (plaq == 4 && port == 0)){
            //it is a 4R type
 	         panelType = "4R";
          }
@@ -58,15 +58,15 @@ void PixelCalibConfigurationExtended::fillFedChannelHWandTypeInfo(){
       }
       else if( hub==4 || hub==5 || hub==6 ){
          //it is a 3 type
-        if(plaq == 1 && port == 1 ||
-           plaq == 2 && port == 2||
-           plaq == 3 && port == 3){
+        if((plaq == 1 && port == 1) ||
+           (plaq == 2 && port == 2)||
+           (plaq == 3 && port == 3)){
            //it is a 3L type
 	         panelType = "3L";
          }
-         else if(plaq == 1 && port == 2 ||
-                 plaq == 2 && port == 1 ||
-                 plaq == 3 && port == 0){
+         else if((plaq == 1 && port == 2) ||
+                 (plaq == 2 && port == 1) ||
+                 (plaq == 3 && port == 0)){
            //it is a 3R type
 	         panelType = "3R";
          }
