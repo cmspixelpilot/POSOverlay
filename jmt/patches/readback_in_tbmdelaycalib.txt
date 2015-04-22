@@ -1,0 +1,46 @@
+diff --git a/PixelCalibrations/src/common/PixelTBMDelayCalibration.cc b/PixelCalibrations/src/common/PixelTBMDelayCalibration.cc
+index cca90b3..01111d6 100755
+--- a/PixelCalibrations/src/common/PixelTBMDelayCalibration.cc
++++ b/PixelCalibrations/src/common/PixelTBMDelayCalibration.cc
+@@ -56,9 +56,41 @@ bool PixelTBMDelayCalibration::execute() {
+   if (DelayBeforeFirstTrigger && firstOfPattern)
+     usleep(1000);
+ 
++  const vector<PixelROCName>& rocs=tempCalibObject->rocList();
++  const PixelROCName& aROC=rocs[0];
++  const PixelHdwAddress* hdwAddress = theNameTranslation_->getHdwAddress(aROC);
++  const unsigned fedchannel = hdwAddress->fedchannel();
++  const unsigned fednumber = hdwAddress->fednumber();
++  const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(fednumber);
++  const unsigned fedvmebaseaddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
++
++  if (event_ == 0) {
++    printf("READDDDDDDDDDDDDDDDDDDDDBACK\n");
++    std::cout << aROC << " " << aROC.roc() % 8 + 1 << std::endl;
++  setDAC(aROC, pos::k_DACAddress_Readback, 12);
++  usleep(1000);
++
++  Attribute_Vector parametersToFED_arm(4);
++  parametersToFED_arm[0].name_ = "VMEBaseAddress"; parametersToFED_arm[0].value_ = itoa(fedvmebaseaddress);
++  parametersToFED_arm[1].name_ = "Channel";        parametersToFED_arm[1].value_ = itoa(fedchannel);
++  parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(4);
++  parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(8);
++  Send(PixelFEDSupervisors_[fedcrate], "ArmDigFEDOSDFifo", parametersToFED_arm);
++  usleep(1000);
++  }
++
+   // Send trigger to all TBMs and ROCs.
+   sendTTCCalSync();
+ 
++  if (event_ % 32 == 0 && event_ > 0) {
++    printf("READDDDDDDDDDDDDDDDDDDDDBACK read\n");
++
++	    Attribute_Vector parametersToFED_read(2);
++	    parametersToFED_read[0].name_ = "VMEBaseAddress"; parametersToFED_read[0].value_ = itoa(fedvmebaseaddress);
++	    parametersToFED_read[1].name_ = "Channel";        parametersToFED_read[1].value_ = itoa(fedchannel);
++	    Send(PixelFEDSupervisors_[fedcrate], "ReadDigFEDOSDFifo", parametersToFED_read);
++  }
++
+   // Read out data from each FED.
+   Attribute_Vector parametersToFED(2);
+   parametersToFED[0].name_ = "WhatToDo"; parametersToFED[0].value_ = "RetrieveData";

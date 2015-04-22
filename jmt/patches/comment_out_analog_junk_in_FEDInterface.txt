@@ -1,0 +1,89 @@
+diff --git a/PixelFEDInterface/src/common/PixelFEDInterface.cc b/PixelFEDInterface/src/common/PixelFEDInterface.cc
+index 0c75a0e..a2df80e 100755
+--- a/PixelFEDInterface/src/common/PixelFEDInterface.cc
++++ b/PixelFEDInterface/src/common/PixelFEDInterface.cc
+@@ -819,7 +819,7 @@ int PixelFEDInterface::reset(void) {
+ 
+   cout<<" In reset() "<<endl;
+   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
+-  BaselineCorr_off();
++  //  BaselineCorr_off();
+ 
+   // Reset TTCrx (to reset the event and bx counters)
+   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Check / Reset TTCrx"<<endl;
+@@ -956,13 +956,13 @@ int PixelFEDInterface::reset(void) {
+ 
+   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Drain FIFOs"<<endl;
+   //drain all the fifo's for good measure
+-  uint32_t buffer[(36*1024)];
+-  int wdcnt=drainErrorFifo(buffer);
+-  wdcnt=drainTemperatureFifo(buffer);
+-  wdcnt=drainTTSFifo(buffer);
+-  wdcnt=drainFifo1(buffer);
+-  for(int i=1;i<9;i++)wdcnt=drainDataFifo2(i,buffer);
+-  wdcnt=drainDataFifo3(buffer);
++  //  uint32_t buffer[(36*1024)];
++//  int wdcnt=drainErrorFifo(buffer);
++//  wdcnt=drainTemperatureFifo(buffer);
++//  wdcnt=drainTTSFifo(buffer);
++//  wdcnt=drainFifo1(buffer);
++//  for(int i=1;i<9;i++)wdcnt=drainDataFifo2(i,buffer);
++//  wdcnt=drainDataFifo3(buffer);
+   return 0;
+ }
+ 
+@@ -1674,19 +1674,19 @@ int PixelFEDInterface::setup(void) {
+   loadFedIDRegister();
+ 
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Optical reciever parameters"<<endl;
+-  set_opto_params();
++  //set_opto_params();
+ 
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Clock Phases"<<endl;
+-  setPhases();  // Set all phases from DB
++  //  setPhases();  // Set all phases from DB
+ 
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Number of Rocs for each Channel"<<endl;
+   set_chnl_nrocs();  // Set #Rocs from DB
+  
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting black, ultra-black Thresholds"<<endl;
+-  set_blk_ublk_thold();
++  //  set_blk_ublk_thold();
+      
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ROC, Header, Trailer level thresholds"<<endl;
+-  set_data_levels();
++  //set_data_levels();
+                                                                                 
+   // This is controls if a channel is on or off
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Turning on all all channels for Normal Running"<<endl;
+@@ -1694,18 +1694,18 @@ int PixelFEDInterface::setup(void) {
+  
+   //Offset DAC V2:
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting the Offset DACs"<<endl;
+-  set_offset_dacs();
++  //set_offset_dacs();
+   
+   //ADC Gain Registers
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ADC GAIN values"<<endl;
+-  set_adc_1v2v();
++  //set_adc_1v2v();
+ 
+   //make sure testDAC is not sending extra data
+   stop_testDAC();//This also loads Control and Mode registers in the central chip!
+ 
+   //Baseline Restoration Registers
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
+-  set_BaselineCorr();
++  //  set_BaselineCorr();
+   
+   //TTs levels for warning and busy
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Values for TTs Warn and Busy Levels"<<endl;
+@@ -1717,7 +1717,7 @@ int PixelFEDInterface::setup(void) {
+   
+   //Baseline Restoration Registers
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
+-  set_BaselineCorr();
++  //set_BaselineCorr();
+   
+   //FED Master Delay
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.FedTTCDelay<<" Setting FED Master Delay"<<endl;

@@ -1,0 +1,13 @@
+diff --git a/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc b/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
+index b31babb..94d41f2 100644
+--- a/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
++++ b/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
+@@ -1512,7 +1512,7 @@ void PixelCalibConfiguration::enablePixels(PixelFECConfigInterface* pixelFEC,
+ 					   pos::PixelROCMaskBits* masks,
+ 					   pos::PixelROCTrimBits* trims, 
+ 					   PixelHdwAddress theROC) const{
+-
++  return;
+   for (unsigned int irow=0;irow<rows_[irows].size();irow++){
+     for (unsigned int icol=0;icol<cols_[icols].size();icol++){
+       /*	    std::cout << "Will turn on pixel col="
