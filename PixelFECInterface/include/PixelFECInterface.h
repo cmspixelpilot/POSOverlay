@@ -79,8 +79,8 @@ class PixelFECInterface: public pos::PixelFECConfigInterface {
   int outputbuffer(const int mfec, const int fecchannel, unsigned long data);
   int outputblock(const int mfec, const int fecchannel,
 		  unsigned int *data, int ndata);
-  void outputwordhalblock(char *halname, unsigned int data);
-  void outputwordhal(char *halname, unsigned int data);
+  void outputwordhalblock(const char *halname, unsigned int data);
+  void outputwordhal(const char *halname, unsigned int data);
 
   int getfecctrlstatus(const int mfec, unsigned long *data);
   int resetdoh(const int mfec, const int fecchannel); // reset the digital opto hybrid

@@ -507,14 +507,14 @@ int PixelFECInterface::outputbuffer(const int mfec, const int fecchannel,
 }
 //-----------------------------------------------------------------------------------
 //// output 1 word in HAL block mode
-void PixelFECInterface::outputwordhalblock(char *halname, unsigned int data) {
+void PixelFECInterface::outputwordhalblock(const char *halname, unsigned int data) {
   vmeDevicePtr->writeBlock(halname, 4, (char *) &data,
 			       HAL::HAL_NO_VERIFY,
 			       HAL::HAL_NO_INCREMENT);
 }
 //----------------------------------------------------------------------------------
 //// output one word in HAL single mode
-void PixelFECInterface::outputwordhal(char *halname, unsigned int data) {
+void PixelFECInterface::outputwordhal(const char *halname, unsigned int data) {
   vmeDevicePtr->write(halname, data);
 }
 //-----------------------------------------------------------------------------------
