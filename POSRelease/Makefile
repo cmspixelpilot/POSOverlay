@@ -54,9 +54,10 @@ Packages=\
 	PixelHistoViewer \
 	PixelAnalysisTools \
 	PixelConfigDBInterface/test \
-	PixelConfigDBGUI \
 	PixelTCDSSupervisor
 endif
+
+#	PixelConfigDBGUI \
 
 
 #	RUBuilderExample/RUBController \
