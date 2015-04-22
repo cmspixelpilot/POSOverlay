@@ -65,9 +65,9 @@
 #include "toolbox/task/TimerListener.h"
 #include "toolbox/TimeInterval.h"
 #include "xcept/Exception.h"
+#include "xmas/sensor/exception/Exception.h"
 
-
-class pos::PixelConfigKey;
+//class pos::PixelConfigKey;
 class PixelConfigDataUpdates;
 class PixelJobControlMonitor;
 
@@ -249,14 +249,14 @@ class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfigura
   xoap::MessageReference MakeSOAPConfigMessage(const std::string &app_class_name, const std::string &parameter_name, const std::string &parameter_value);
 
   void SendConfigurationToTTC();
-
+  void SendConfigurationToLTC();
 
  protected:
 	
   toolbox::fsm::FiniteStateMachine fsm_;
   xdata::String state_; // used to reflect the current state to the outside world
   bool autoDone_;
-  std::string runType_, runNumber_, outputDir_;
+  std::string runType_, runNumber_, outputDir_; // clange: shouldn't runNumber_ be xdata::UnsignedInteger and the others xdata::String
   std::string posOutputDirs_;
   std::stringstream* console_;
 
@@ -306,8 +306,12 @@ class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfigura
 
   std::string lastMessage_;
   timeval lastMessageTime_;
-
-
+  
+  // TTC and TCDS switches
+  xdata::String TTCSupervisorApplicationName_;
+  xdata::String LTCSupervisorApplicationName_;
+  //xdata::Boolean useTTC_;
+  //xdata::Boolean useTCDS_;
 
   void ClearErrors(std::string which);
 
@@ -319,6 +323,7 @@ class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfigura
 
   bool extratimers_;
   PixelTimer configurationTimer_;
+  bool runNumberFromLastFile_; 
 
 };
 

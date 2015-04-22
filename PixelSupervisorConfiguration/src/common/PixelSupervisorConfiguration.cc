@@ -28,7 +28,11 @@ PixelSupervisorConfiguration::PixelSupervisorConfiguration(std::string* runNumbe
   theFEDConfiguration_=0;
   theCalibObject_=0;
   diagService_=0;
-
+  
+  //TTCSupervisorApplicationName_="pixel::ici::PixeliCISupervisor";
+  useTTC_=false;
+  useTCDS_=true;
+  TCDSSessionID_="dummy-session";
 }
 
 
@@ -53,7 +57,8 @@ PixelSupervisorConfiguration::PixelSupervisorConfiguration(const PixelSupervisor
   PixelFEDSupervisors_ = tempConfiguration.PixelFEDSupervisors_;
   PixelTKFECSupervisors_ = tempConfiguration.PixelTKFECSupervisors_;
   PixelLTCSupervisors_ = tempConfiguration.PixelLTCSupervisors_;
-  TTCciControls_ = tempConfiguration.TTCciControls_;
+  PixelTTCSupervisors_ = tempConfiguration.PixelTTCSupervisors_;
+  PixelTTCControllers_ = tempConfiguration.PixelTTCControllers_;
   PixelFECSupervisors_ = tempConfiguration.PixelFECSupervisors_;
   PixelDCSFSMInterface_ = tempConfiguration.PixelDCSFSMInterface_;
   psxServers_ = tempConfiguration.psxServers_;
@@ -64,6 +69,12 @@ PixelSupervisorConfiguration::PixelSupervisorConfiguration(const PixelSupervisor
   statePixelFEDSupervisors_ = tempConfiguration.statePixelFEDSupervisors_;
   statePixelTKFECSupervisors_ = tempConfiguration.statePixelTKFECSupervisors_;
   statePixelDCSFSMInterface_ = tempConfiguration.statePixelDCSFSMInterface_;
+  statePixelTTCSupervisors_ = tempConfiguration.statePixelTTCSupervisors_;
+
+  //TTC related information
+  useTTC_= tempConfiguration.useTTC_;
+  useTCDS_=tempConfiguration.useTCDS_;
+  TCDSSessionID_=tempConfiguration.TCDSSessionID_;
   
 }
 
@@ -102,15 +113,28 @@ void PixelSupervisorConfiguration::clearMapNamePortCard() {
 
 std::vector<xdaq::ApplicationDescriptor*> PixelSupervisorConfiguration::getPixelTTCDescriptors() const {
   
-  Supervisors::const_iterator i_TTCSupervisor;
-  std::vector<xdaq::ApplicationDescriptor*> vector_TTCciControls;
-  for (i_TTCSupervisor=TTCciControls_.begin();
-       i_TTCSupervisor!=TTCciControls_.end();
-       ++i_TTCSupervisor) {
-    vector_TTCciControls.push_back(i_TTCSupervisor->second);
+  Supervisors::const_iterator i_PixelTTCSupervisor;
+  std::vector<xdaq::ApplicationDescriptor*> vector_PixelTTCSupervisors;
+  for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();
+       i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();
+       ++i_PixelTTCSupervisor) {
+    vector_PixelTTCSupervisors.push_back(i_PixelTTCSupervisor->second);
   }
 
-  return vector_TTCciControls;
+  return vector_PixelTTCSupervisors;
+}
+
+std::vector<xdaq::ApplicationDescriptor*> PixelSupervisorConfiguration::getPixelTTCControllerDescriptors() const {
+  
+  Supervisors::const_iterator i_PixelTTCController;
+  std::vector<xdaq::ApplicationDescriptor*> vector_PixelTTCControllers;
+  for (i_PixelTTCController=PixelTTCControllers_.begin();
+       i_PixelTTCController!=PixelTTCControllers_.end();
+       ++i_PixelTTCController) {
+    vector_PixelTTCControllers.push_back(i_PixelTTCController->second);
+  }
+
+  return vector_PixelTTCControllers;
 }
     
 void PixelSupervisorConfiguration::writeAllFEDCards(std::vector<std::string> filenames){

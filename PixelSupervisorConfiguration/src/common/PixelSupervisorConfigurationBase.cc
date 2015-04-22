@@ -46,7 +46,7 @@ void PixelSupervisorConfigurationBase::setupOutputDir(){
     cout << "ERROR: Environment variable POS_OUTPUT_DIRS is not defined.  It must be defined to run.  Now exiting..." << endl;
     exit(1);
   }
-  string basedir=basedirPointer;
+  std::string basedir=basedirPointer;
 
   struct stat stbuf;
   if (stat(basedir.c_str(),&stbuf)!=0){
@@ -64,13 +64,12 @@ void PixelSupervisorConfigurationBase::setupOutputDir(){
 
       runnumber_string=itostring(i);
       *outputSubDir_=basedir+"/Run_"+runnumber_string;
-
+      
       if (stat(outputSubDir_->c_str(),&stbuf)!=0){
 	cout << "[PixelSupervisorConfiguration::setupOutputDir] outputSubDir="
 	     << outputSubDir_->c_str() << " does not exist. Will create"<<endl;
 	mkdir(outputSubDir_->c_str(),0777);
-    }
-  
+      }
     }
   }
 

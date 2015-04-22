@@ -56,16 +56,18 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
   const std::map<xdata::UnsignedIntegerT, xdaq::ApplicationDescriptor*>& getPixelFEDDescriptors() const { return PixelFEDSupervisors_; }
   const std::map<xdata::UnsignedIntegerT, xdaq::ApplicationDescriptor*>& getPixelTKFECDescriptors() const { return PixelTKFECSupervisors_; }
   const std::map<xdata::UnsignedIntegerT, xdaq::ApplicationDescriptor*>& getPixelLTCDescriptors() const { return PixelLTCSupervisors_; }
-  const std::map<xdata::UnsignedIntegerT, xdaq::ApplicationDescriptor*>& getPixelTTCDescriptors() const { return TTCciControls_; }
+  const std::map<xdata::UnsignedIntegerT, xdaq::ApplicationDescriptor*>& getPixelTTCDescriptors() const { return PixeliCISupervisors_; }
   const std::map<xdata::UnsignedIntegerT, xdaq::ApplicationDescriptor*>& getPixelDCSDescriptors() const { return PixelDCSSupervisors_; } */
 
   std::vector<xdaq::ApplicationDescriptor*> getPixelTTCDescriptors() const;
+  std::vector<xdaq::ApplicationDescriptor*> getPixelTTCControllerDescriptors() const;
 
   const xdaq::ApplicationDescriptor* getPixelFECDescriptor(xdata::UnsignedIntegerT instance) { return  PixelFECSupervisors_[instance]; }
   const xdaq::ApplicationDescriptor* getPixelFEDDescriptor(xdata::UnsignedIntegerT instance) { return  PixelFEDSupervisors_[instance]; }
   const xdaq::ApplicationDescriptor* getPixelTKFECDescriptor(xdata::UnsignedIntegerT instance) { return  PixelTKFECSupervisors_[instance]; }
   const xdaq::ApplicationDescriptor* getPixelLTCDescriptor(xdata::UnsignedIntegerT instance) { return  PixelLTCSupervisors_[instance]; }
-  const xdaq::ApplicationDescriptor* getPixelTTCDescriptor(xdata::UnsignedIntegerT instance) { return  TTCciControls_[instance]; }
+  const xdaq::ApplicationDescriptor* getPixelTTCDescriptor(xdata::UnsignedIntegerT instance) { return  PixelTTCSupervisors_[instance]; }
+  const xdaq::ApplicationDescriptor* getPixelTTCControllDescriptor(xdata::UnsignedIntegerT instance) { return  PixelTTCControllers_[instance]; }
   const xdaq::ApplicationDescriptor* getPixelDCSDescriptor(xdata::UnsignedIntegerT instance) { return  PixelDCSSupervisors_[instance]; }
   const xdaq::ApplicationDescriptor* getPixelDCStoTrkFECDpInterface(xdata::UnsignedIntegerT instance) { return PixelDCStoTrkFECDpInterface_[instance]; }
   const xdaq::ApplicationDescriptor* getPixelSlinkMonitor(xdata::UnsignedIntegerT instance) { return PixelSlinkMonitors_[instance]; }
@@ -90,7 +92,8 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
               PixelFEDSupervisors_, 
               PixelTKFECSupervisors_,
               PixelLTCSupervisors_,
-              TTCciControls_,
+              PixelTTCSupervisors_,
+              PixelTTCControllers_,
               PixelDCSSupervisors_,
               PixelDCStoTrkFECDpInterface_,
               PixelDCSFSMInterface_,
@@ -100,8 +103,11 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
   SupervisorStates statePixelFECSupervisors_,
                    statePixelFEDSupervisors_,
                    statePixelTKFECSupervisors_,
+                   statePixelLTCSupervisors_,
+                   statePixelTTCSupervisors_,
                    statePixelDCSFSMInterface_,
                    statePixelDCStoTrkFECDpInterface_;
+
 
   pos::PixelConfigKey *theGlobalKey_;
   pos::PixelCalibBase *theCalibObject_;
@@ -124,6 +130,11 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
   bool isAliasOK(std::string alias);
   void fillBadAliasList();
 
+  // TTC and TCDS switches
+  xdata::Boolean useTTC_;
+  xdata::Boolean useTCDS_;
+  std::string TCDSSessionID_;
+  
  private:
 
   std::set<std::string> badAliases_; //list of aliases we never want to see
