@@ -22,8 +22,6 @@ using namespace pos;
 
 //#define USE_SEU_DETECT
 
-#define BPIX
-
 XDAQ_INSTANTIATOR_IMPL(PixelFECSupervisor)
 
 enum  { kProg_DACs_set, kProg_DACs_increase, kProg_DACs_decrease };
@@ -188,7 +186,7 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
 #endif // USE_HAL
   
   theGlobalKey_=0;
-  theLastGlobalKey_=0;
+  theLastGlobalKey_=-1;  // change from 0, -1 is a valid key 
   theNameTranslation_=0;
   theDetectorConfiguration_=0;
   theFECConfiguration_=0;
@@ -1322,7 +1320,8 @@ bool PixelFECSupervisor::qpllCheck(toolbox::task::WorkLoop * w1) {
 	if (wantoutput) { //only print when something is new/changed
 	  ostringstream msg;
 	  msg<<"FEC at address 0x"<<hex<<i->first<<dec<<" has unlocked QPLL (status=0x"<<hex<<i->second<<dec<<")";
-	  diagService_->reportError(msg.str(),DIAGWARN);
+	  diagService_->reportError(msg.str(),DIAGERROR);
+	  ::abort(); // added to make it clear, d.k. 8/1/15
 	}
       }
     }
@@ -2529,13 +2528,18 @@ xoap::MessageReference PixelFECSupervisor::Reconfigure (xoap::MessageReference m
 void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Reference e)// throw (toolbox::fsm::exception::Exception)
 {
   //exception of type toolbox::fsm::exception::Exception will automatically trigger a transition to the Error state
-
+  
+  cout << " transitionHaltedToConfiguring  " << endl;
+  
   try { //hardware access
   // Get the VME Bus Adapter
   #ifdef USE_HAL
     // Change for HAL
-    busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,0,0,HAL::CAENLinuxBusAdapter::A3818) ;
     //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
+    cout << " busAdapter before   " << endl;
+    busAdapter_  = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,
+						0,0, HAL::CAENLinuxBusAdapter::A3818);
+    cout << " busAdapter after   " << endl;
     //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
     diagService_->reportError("Got a CAEN Linux Bus Adapter for the FEC",DIAGTRACE);
     // ASCII address table
@@ -2582,22 +2586,27 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
       //there are globals used here, but they aren't used in preconfigure, so it is ok to leave them unlocked
 
       if(FECInterface.find(fecVMEBaseAddress)==FECInterface.end()) {           
-        #ifdef USE_HAL
-          VMEPtr_[fecVMEBaseAddress] =new HAL::VMEDevice(*addressTablePtr_, *busAdapter_, fecVMEBaseAddress);
+#ifdef USE_HAL
+	VMEPtr_[fecVMEBaseAddress] =new HAL::VMEDevice(*addressTablePtr_, *busAdapter_, fecVMEBaseAddress);
         int dummy=0;
-          PixelFECInterface* tempFECInterface=new PixelFECInterface(VMEPtr_[fecVMEBaseAddress],dummy,feccrate,fecSlot);
-        #else
-          PixelFECInterface* tempFECInterface=new PixelFECInterface(fecVMEBaseAddress, aBHandle,feccrate,fecSlot);
-        #endif // USE_HAL
+	PixelFECInterface* tempFECInterface=new PixelFECInterface(VMEPtr_[fecVMEBaseAddress],dummy,feccrate,fecSlot);
+#else
+	PixelFECInterface* tempFECInterface=new PixelFECInterface(fecVMEBaseAddress, aBHandle,feccrate,fecSlot);
+#endif // USE_HAL
 
 	if (tempFECInterface==0) XCEPT_RAISE(toolbox::fsm::exception::Exception,"Could not create FECInterface");
         tempFECInterface->setssid(4);
-
+	
         //save in the FECInterface map for later use
         FECInterface[fecVMEBaseAddress]=tempFECInterface;
 	FECInterfaceByFECNumber_[fecnumber]=tempFECInterface;
+
+	cout<<"FEC Crate="+itoa(crate_)+" VMEAdd=0x"+htoa(fecVMEBaseAddress)<<endl; // dk     
+
         unsigned long version = 0;
         tempFECInterface->getversion(&version);
+	cout<<"after read "<<version<<endl; //dk
+
 	diagService_->reportError("[PixelFECSupervisor::transitionHaltedToConfiguring] FEC Crate="+itoa(crate_)+" VMEAdd=0x"+htoa(fecVMEBaseAddress)+" read mFEC firmware version="+itoa(version),DIAGINFO);      
       }        
 
@@ -2613,11 +2622,10 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
         FECInterface[fecVMEBaseAddress]->fecDebug(1);
       }
 
-#ifdef BPIX
       // Waiting not needed since we do not do any block transfers before
       // Reset the ROCs and TBMs before doing anything
       FECInterface[fecVMEBaseAddress]->injectrsttbm(module_firstHdwAddress.mfec(),1);  // ResetTBM (includes ResetROC)
-#endif
+      //cout<<"vme access 14"<<endl;
       
     }
     

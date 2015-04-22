@@ -92,8 +92,8 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 
-class pos::PixelCalibConfiguration;
-class pos::PixelFECConfig;
+//class pos::PixelCalibConfiguration;
+//class pos::PixelFECConfig;
 
 class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener, public Pixelb2inCommander
 {
