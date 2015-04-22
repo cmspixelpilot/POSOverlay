@@ -762,8 +762,8 @@ class PixelConfigInterface {
 	
 	for(unsigned int key=0; key<(unsigned int)total; key++)
 	  {
-            if( from == -2147483647 && (key >= (unsigned int)start && key < (unsigned int)(start+howMany)) ||
-	        from != -2147483647 && (key >= (unsigned int)from  && key <= (unsigned int)to) ) 
+            if( (from == -2147483647 && (key >= (unsigned int)start && key < (unsigned int)(start+howMany))) ||
+	        (from != -2147483647 && (key >= (unsigned int)from  && key <= (unsigned int)to)) ) 
 	      {
 	        pos::PixelConfigKey globalKey(key) ;
 	        vector<pair<string, unsigned int> > vList = pos::PixelConfigFile::getVersions(globalKey) ;

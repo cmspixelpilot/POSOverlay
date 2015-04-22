@@ -35,7 +35,7 @@ FileTreeWindow.createWindow = function(){
 									   width:        450,
 									   split:        true,
 	  							   collapsible:  true,
-									   title:        "Files",
+									   title:        "Files in /nfshome0/pixelpro/TriDAS/pixel/PixelRuns/Runs",
 										 loader:       new Ext.tree.TreeLoader(
 												              { 																					
 			    													    url: "XGI_RefreshFileDirectory",
@@ -65,6 +65,7 @@ FileTreeWindow.createWindow = function(){
 		               });
 	
 		fileTree.setRootNode(fileRoot);
+
 		
 		var contentTree = new Ext.tree.TreePanel({
 												region: 			'center', 																													
@@ -113,8 +114,9 @@ FileTreeWindow.createWindow = function(){
 		FileTreeWindow.fileRoot    = fileRoot;		
 		FileTreeWindow.contentRoot = contentRoot;
 		
-//		FileTreeWindow.refreshFiles();
+		FileTreeWindow.refreshFiles();
 	}
+
 };
 
 ////////////////////////////////////
@@ -136,7 +138,7 @@ FileTreeWindow.showWindow = function(){
 	}
 	else{
 		alert("FileTreeWindow.showWindow: No Window!");
-	}	
+	}
 };
 
 ////////////////////////////////////
@@ -202,7 +204,6 @@ FileTreeWindow.refreshFiles = function(){
 }
 ////////////////////////////////////
 FileTreeWindow.ajaxFileResponse = function(ajaxObj){
-
 	while(FileTreeWindow.fileRoot.firstChild){ //clear list
 		FileTreeWindow.fileRoot.firstChild.remove();	
 	}
@@ -337,7 +338,6 @@ FileTreeWindow.addFolderContent = function(i,depth,parentFolderNode,contentArray
 
 ////////////////////////////////////
 FileTreeWindow.activateWindow = function(){
-	
 	FileTreeWindow.fileTree.setVisible(true);
 	FileTreeWindow.contentTree.setVisible(true);
 	this.collapse(false);

@@ -216,8 +216,8 @@ int main(int argc, char* argv[]){
       if (filename.find(std::string("calib.dat"))!=std::string::npos) {
 	object=new pos::PixelCalibConfiguration(filename);
       } else if (filename.find(std::string("delay25.dat"))!=std::string::npos) {
-	pos::PixelDelay25Calib * tmp=new pos::PixelDelay25Calib(filename);
-	unsigned int version=Iconfig_.put(tmp,path);    
+	//pos::PixelDelay25Calib * tmp=new pos::PixelDelay25Calib(filename);
+	//unsigned int version=Iconfig_.put(tmp,path);    
 	Iconfig_.commit(0) ;
 	return 0;
       } else {

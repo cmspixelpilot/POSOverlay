@@ -29,7 +29,7 @@
 #include "PixelUtilities/PixelSOAPUtilities/include/SOAPCommander.h"
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSPVSSDpe.h"
 
-class xdaq::ApplicationStub;
+//class xdaq::ApplicationStub;
 
 struct PixelDCSDpInterfaceStatus
 {

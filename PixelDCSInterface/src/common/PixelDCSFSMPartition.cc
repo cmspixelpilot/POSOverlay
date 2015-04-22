@@ -32,7 +32,8 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const std::string& fsmPartitionName,
     
     const std::string initialPvssState = fsmNode->second.getState();
     const std::string initialXdaqState = fsmNode->second.getDeviceDefinition()->getXdaqState(initialPvssState);
-    ++(numNodesMapA4602_[initialXdaqState]);
+    std::cout<<"PixelDCSFSMPartition::PixelDCSFSMPartition PixelDCSFSMNodeA4602 initialXdaqState:"<<initialXdaqState<<std::endl;
+   ++(numNodesMapA4602_[initialXdaqState]);
   }
 
   summarizedStateA4602_ = "UNDEFINED";
@@ -44,6 +45,7 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const std::string& fsmPartitionName,
     
     const std::string initialPvssState = fsmNode->second.getState();
     const std::string initialXdaqState = fsmNode->second.getDeviceDefinition()->getXdaqState(initialPvssState);
+    std::cout<<"PixelDCSFSMPartition::PixelDCSFSMPartition PixelDCSFSMNodeA4603 initialXdaqState:"<<initialXdaqState<<std::endl;
     ++(numNodesMapA4603_[initialXdaqState]);
   }
 
@@ -54,7 +56,7 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const std::string& fsmPartitionName,
 	soapConnection != soapConnections.end(); ++soapConnection ) {
     soapConnections_.push_back(*soapConnection);
 
-std::cout << "adding --> soapConnection::getNAme = " << soapConnection->getName() << std::endl;
+std::cout << "adding --> soapConnection::getName = " << soapConnection->getName() << std::endl;
   }
 }
 
@@ -77,6 +79,8 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const PixelDCSFSMPartition& fsmPartit
 
   numNodesMapA4602_ = fsmPartition.numNodesMapA4602_;
   summarizedStateA4602_ = fsmPartition.summarizedStateA4602_;
+  //summarizedStateA4602_ = "LV_ON";//over here
+  //std::cout<<"PixelDCSFSMPartition::PixelDCSFSMPartition summarizedStateA4602_:"<<summarizedStateA4602_<<std::endl; //over here
   numNodesIgnoredA4602_ = fsmPartition.numNodesIgnoredA4602_;
 
   for ( std::map<std::string, PixelDCSFSMNodeA4603*>::const_iterator fsmNode = fsmPartition.fsmNodeMapA4603_.begin();
@@ -86,6 +90,8 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const PixelDCSFSMPartition& fsmPartit
 
   numNodesMapA4603_ = fsmPartition.numNodesMapA4603_;
   summarizedStateA4603_ = fsmPartition.summarizedStateA4603_;
+  //summarizedStateA4603_ = "LV_ON";//over here
+  //std::cout<<"PixelDCSFSMPartition::PixelDCSFSMPartition summarizedStateA4603_:"<<summarizedStateA4603_<<std::endl; //over here
   numNodesIgnoredA4603_ = fsmPartition.numNodesIgnoredA4603_;
 
   for ( std::list<PixelDCSSOAPConnection>::const_iterator soapConnection = fsmPartition.soapConnections_.begin();
@@ -170,11 +176,15 @@ template <class T> void PixelDCSFSMPartition::setNodeState(std::map<std::string,
     const std::string lastPvssState = fsmNode->getState();
     const bool used = fsmNode->isUsed();
     fsmNode->setState(pvssStateName);
+    //std::cout<<"PixelDCSFSMPartition::setNodeState pvssStateName:"<<pvssStateName<<std::endl;//over here
 
     if ( fsmNode->getDeviceDefinition() != NULL ) {
       const std::string lastXdaqState = fsmNode->getDeviceDefinition()->getXdaqState(lastPvssState);
       const std::string currentXdaqState = fsmNode->getDeviceDefinition()->getXdaqState(pvssStateName);
-     
+      //std::string currentXdaqState = "LV_ON";//over here
+      //std::cout<<"PixelDCSFSMPartition::setNodeState lastXdaqState:"<<lastXdaqState<<std::endl;//over here
+      //currentXdaqState = pvssStateName;//over here
+      //std::cout<<"PixelDCSFSMPartition::setNodeState currentXdaqState:"<<currentXdaqState<<std::endl;//over here
       if ( (currentXdaqState != lastXdaqState) && used) {      //if it is not used then we don't care
 	--(numNodesMap[lastXdaqState]);
 	++(numNodesMap[currentXdaqState]);
@@ -197,12 +207,15 @@ template <class T> void PixelDCSFSMPartition::setNodeUsed(std::map<std::string, 
 
   if ( fsmNode != NULL ) {
     const std::string pvssState = fsmNode->getState();
+    //std::string pvssState = "LV_ON_REDUCED";//over here
+    //std::cout<<"PixelDCSFSMPartition::setNodeUsed pvssState:"<<pvssState<<std::endl;//over here
     const bool lastUsed = fsmNode->isUsed();
     fsmNode->setUsed(used);
 
     if ( fsmNode->getDeviceDefinition() != NULL ) {
       const std::string xdaqState = fsmNode->getDeviceDefinition()->getXdaqState(pvssState);
-      
+      //std::string xdaqState = "LV_ON_REDUCED";//over here
+      //std::cout<<"PixelDCSFSMPartition::setNodeUsed xdaqState:"<<xdaqState<<std::endl;//over here
       if (!lastUsed && used) 	 {
 	++(numNodesMap[xdaqState]);
 	--numNodesIgnored;
@@ -248,7 +261,6 @@ template <class T> std::list<const T*> PixelDCSFSMPartition::getNodeList(const s
 void PixelDCSFSMPartition::writeTo(std::ostream& stream) const
 {
   stream << " partition = " << name_ << std::endl;
-
   stream << " CAEN A4602 nodes:" << std::endl;
   stream << "  summarized state = " << summarizedStateA4602_ << std::endl;
   stream << "  number of nodes in XDAQ state" << std::endl;

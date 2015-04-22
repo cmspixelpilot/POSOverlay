@@ -40,8 +40,8 @@ PixelDCSDpInterface::PixelDCSDpInterface(xdaq::ApplicationStub* s) throw (xcept:
   : xdaq::Application(s)
   , SOAPCommander(this)
   , fsm_("urn:toolbox-task-workloop:PixelDCSDpInterface") //unclear to me if the value of this string is important
-  , debug_(false)
-  // , debug_(true)
+  //, debug_(false)
+  , debug_(true)
 {
   //--- define the states 
   //    of the Finite State Machine
@@ -498,8 +498,8 @@ void addStatus(const PixelDCSDpInterfaceStatus& status, const std::string& dpNam
   std::string dpeName_busy = dpName_status + ".readings.isBusy:original..value";
   std::string dpeName_error = dpName_status + ".readings.error:original..value";
 
-  //const std::string true_string = "TRUE";
-  const std::string true_string = "1";
+  const std::string true_string = "TRUE";
+  //const std::string true_string = "1"; // over here
   //const std::string false_string = "FALSE";
   const std::string false_string = "0";
   

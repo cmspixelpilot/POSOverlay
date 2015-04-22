@@ -5,6 +5,7 @@
 #include "PixelHistoViewer.h"
 #include "JsonList.h"
 #include <iostream>
+#include <stdlib.h>
 #include <TList.h>
 #include <TH1.h>
 #include <TProfile.h>
@@ -167,8 +168,8 @@ void PixelHistoViewer::Default(xgi::Input * in, xgi::Output * out ) throw (xgi::
 
 ////////////////////////////////////////////////////////////////////////
 void PixelHistoViewer::XGI_HistoViewer(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception){
-//	string mthn = "[PixelHistoViewer::XGI_HistoViewer()]\t";
-//  cout << mthn << endl;
+	string mthn = "[PixelHistoViewer::XGI_HistoViewer()]\t"; //KMTOS This was commented out
+  cout << mthn << endl; //KMTOS This was commented out
 	
 	keyValueMap pairs;
 	cgicc::CgiEnvironment environment(in);
@@ -268,16 +269,27 @@ void PixelHistoViewer::generateBPixDiscs(string filenameAppend){
 ////////////////////////////////////////////////////////////////////////
 //specialized JSON response for File and Content lists
 void PixelHistoViewer::insertListAsJson (xgi::Output * out, TList *list, unsigned long listType, string theAppend, int bunch){
-
-//	string mthn = "[PixelHistoViewer::insertListAsJson()]\t";
+	string mthn = "[PixelHistoViewer::insertListAsJson()]\t";
 	
 	if(listType==COMPLEX_FILE_LIST_ROOT){   //used for file list
-    JsonRoot jList(list,"click:FileTreeWindow.onFileClick","");
+    	  JsonRoot jList(list,"click:FileTreeWindow.onFileClick","");
 	  jList.setList();
 	  stringstream s;
 	  s << jList;
-//		cout << mthn << s.str() << endl;
-	  *out << s.str();
+//I added everything from here to the *out statement
+          string desired = s.str();
+	  string desiredEnd = "}]}]", nothing = "", bracket = "[";
+//begin manipulation
+	  char* charPATH = getenv("POS_OUTPUT_DIRS");
+	  string path(charPATH); 
+cout << "\n\nPATH= " << path << endl;
+  	  size_t  pathStart= desired.find(path);
+	  string beginning  = desired.substr(0,pathStart);
+	  size_t lastBracket=beginning.find_last_of(bracket);
+          desired.replace(0,lastBracket,nothing);
+          size_t  desiredEndStart = desired.find(desiredEnd), sEnd = desired.size(), nChar= sEnd - (desiredEndStart + 4);
+	  desired.replace(desiredEndStart + 4,nChar,nothing);
+	  *out << desired; //I changed s.str to desired
 	  return;
 	}
 
@@ -327,9 +339,9 @@ void PixelHistoViewer::insertListAsJson (xgi::Output * out, TList *list, unsigne
 			}
 			if(needsBunches && i%bunchSize == 0){ //make a folder for the bunch
 			  *out << "{";
-				*out  << "id:'" << bunchParent << "/$b" << bi << "',";
-				*out << "text:'Content " << bunchSize*(bi-1) << ":" << bunchSize*bi-1 << "'";
-				*out << ",children: [";
+			  *out  << "id:'" << bunchParent << "/$b" << bi << "',";
+			  *out << "text:'Content " << bunchSize*(bi-1) << ":" << bunchSize*bi-1 << "'";
+			  *out << ",children: [";
 			}
 			if(i>=bunchSize*(bi-1) && i<bunchSize*bi){
 				*out << "{";
@@ -338,6 +350,7 @@ void PixelHistoViewer::insertListAsJson (xgi::Output * out, TList *list, unsigne
   					*out << "id:'" << name << "',";
 					}
 					else{
+
   					*out << "id:'" << theAppend << "/" << name << "',";
 	        }
 					nodeText = name(0,name.Length()-1);
@@ -376,8 +389,6 @@ void PixelHistoViewer::insertListAsJson (xgi::Output * out, TList *list, unsigne
 	
 ////////////////////////////////////////////////////////////////////////
 void PixelHistoViewer::XGI_RefreshFileList(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception){
-	string mthn = "[PixelHistoViewer::XGI_RefreshFileList()]\t";
-  cout << mthn << endl;
 	TList *allNames = dispatcher_.uGetCompleteFileList(true);
 	
 	insertListAsJson(out,allNames,PLAIN_FILE_LIST);
@@ -387,15 +398,12 @@ void PixelHistoViewer::XGI_RefreshFileList(xgi::Input * in, xgi::Output * out ) 
 
 ////////////////////////////////////////////////////////////////////////
 void PixelHistoViewer::XGI_RefreshFileDirectory(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception){
-	string mthn = "[PixelHistoViewer::XGI_RefreshFileDirectory()]\t";
-//  cout << mthn << endl;
-	cgicc::CgiEnvironment environment(in);
+  cgicc::CgiEnvironment environment(in);
   string postString = environment.getPostData();
-	string getString  = environment.getQueryString();
+  string getString  = environment.getQueryString();
   keyValueMap pairs;
   decodeQueryString(postString,getString,pairs) ;
   string dirName = pairs["node"];	
-
 /*
 	PixelHistoScanDirectory sD;
 	vector<string> v;
@@ -415,9 +423,8 @@ void PixelHistoViewer::XGI_RefreshFileDirectory(xgi::Input * in, xgi::Output * o
 	}
 */
 	TList * dirList = dispatcher_.uGetCompleteFileList(true,dirName);
-	
 	if(dirName == "fileRoot"){
-	  insertListAsJson(out,dirList,COMPLEX_FILE_LIST_ROOT,dispatcher_.getClassName());
+	  insertListAsJson(out,dirList,COMPLEX_FILE_LIST_ROOT,dispatcher_.getClassName());//I changed COMPLEX_FILE_LIST_ROOT to COMPLEX_FILE_LIST to see what would happen
   }
 	else{
 	  insertListAsJson(out,dirList,COMPLEX_FILE_LIST,dispatcher_.getClassName());	
@@ -427,16 +434,13 @@ void PixelHistoViewer::XGI_RefreshFileDirectory(xgi::Input * in, xgi::Output * o
 
 ////////////////////////////////////////////////////////////////////////
 void PixelHistoViewer::XGI_RefreshContentList(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception){
-	string mthn = "[PixelHistoViewer::XGI_RefreshContentList()]\t";
-	
-	cgicc::CgiEnvironment environment(in);
+  cgicc::CgiEnvironment environment(in);
   std::string postString  = environment.getPostData();
-	std::string getString  = environment.getQueryString();
+  std::string getString  = environment.getQueryString();
   keyValueMap pairs;
   decodeQueryString(postString,getString,pairs) ;
   TString fileName = pairs["node"];	
 	
-//	cout << mthn << "File name: " << fileName << endl;
 	if(fileName == "contentRoot"){
 		*out << "[]";
 		return;
@@ -457,9 +461,7 @@ void PixelHistoViewer::XGI_RefreshContentList(xgi::Input * in, xgi::Output * out
 
 ////////////////////////////////////////////////////////////////////////
 void PixelHistoViewer::colorRocsWithField(string filenameAppend, xgi::Output * out, TTree *summary, string field, const char *filter){
-	string mthn = "[PixelHistoViewer::colorRocsWithField()]\t";
-//	cout << mthn << "Field: " << field << endl;
-	
+  string mthn = "In PixelHistoViewer::colorRocsWithField";	
   char  rocName[38];
   float *values = 0,
 		maxValue=-std::numeric_limits<float>::max(),
@@ -571,8 +573,8 @@ void PixelHistoViewer::colorRocsWithField(string filenameAppend, xgi::Output * o
 	bool boolFilter = false;
 	bool validFilter = false; //validFilter only indicates valid 'B' or 'C'
 	bool throwFilterError = false;
-	bool ul;
-	bool ug;
+	bool ul=false;
+	bool ug=false;
 	bool ulag;
 	bool oall;
 	
@@ -835,18 +837,18 @@ bool PixelHistoViewer::handleObjectRequest(xgi::Input * in, xgi::Output * out, s
 	float  ymax = 0;
 	float  zmax = 0;
 		//Margin
-	float  marginLt;
-	float  marginUp;
-	float  marginRt;
-	float  marginDn;
+	float  marginLt=0;
+	float  marginUp=0;
+	float  marginRt=0;
+	float  marginDn=0;
 		//Flags
-	int 	 xlog;
-	int 	 ylog;
-	int 	 zlog;
-	int 	 xtick;
-	int 	 ytick;
-	int 	 xgrid;
-	int 	 ygrid;
+	int 	 xlog=0;
+	int 	 ylog=0;
+	int 	 zlog=0;
+	int 	 xtick=0;
+	int 	 ytick=0;
+	int 	 xgrid=0;
+	int 	 ygrid=0;
 
 	if(in){		
 		histoName = pairs["histoname"];
@@ -1120,15 +1122,16 @@ bool PixelHistoViewer::handleObjectRequest(xgi::Input * in, xgi::Output * out, s
 		case TOBJECT_TYPECODE_TH1:	
 		case TOBJECT_TYPECODE_TGRAPH:
 	  
-			if(numberOfHistos == 1)
+			if(numberOfHistos == 1){
 				multiCanvas = new TCanvas();	//else canvas is already made
-			
-			if(!isCanvasControlsRequest)
-				if(typeCode == TOBJECT_TYPECODE_TH1)
+			}
+			if(!isCanvasControlsRequest){
+				if(typeCode == TOBJECT_TYPECODE_TH1){
 					drawOptions = "";
-				else
+				}else{
 					drawOptions = "ACP";
-				
+				}
+			}
 			if(xmin < xmax)
 				((TH1 *)tmpObject[i])->GetXaxis()->SetRangeUser(xmin,xmax);
 

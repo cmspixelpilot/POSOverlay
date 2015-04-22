@@ -2264,8 +2264,7 @@ unsigned int PixelConfigDBInterface::makeKey(std::vector<std::pair<std::string, 
       aliasfile                                                                                                             << endl ;
       aliasfile << "      <CONFIGURATION>"                                                                                  << endl ;
       aliasfile << "       <PART>"                                                                                          << endl ;
-      aliasfile << "         <NAME_LABEL>CMS-PIXEL-ROOT</NAME_LABEL>"                                                       << endl ;
-      aliasfile << "         <KIND_OF_PART>Detector ROOT</KIND_OF_PART>"                                                    << endl ;
+      aliasfile << "         <PART_ID>1000</PART_ID>"                                                                       << endl ;
       aliasfile << "       </PART>"                                                                                         << endl ;
       aliasfile << "       <KIND_OF_CONDITION>"                                                                             << endl ;
       aliasfile << "           <EXTENSION_TABLE_NAME>" << conversionETNKOC[versions[i].first]  << "</EXTENSION_TABLE_NAME>" << endl ;
@@ -2282,8 +2281,7 @@ unsigned int PixelConfigDBInterface::makeKey(std::vector<std::pair<std::string, 
           aliasfile                                                                                                         << endl ;
 	  aliasfile << "     <CONFIGURATION>"                                                                               << endl ;
           aliasfile << "       <PART>"                                                                                      << endl ;
-          aliasfile << "         <SERIAL_NUMBER>CMS-PIXEL-ROOT</SERIAL_NUMBER>"                                             << endl ;
-          aliasfile << "         <KIND_OF_PART>Detector ROOT</KIND_OF_PART>"                                                << endl ;
+	  aliasfile << "         <PART_ID>1000</PART_ID>"                                                                   << endl ;
           aliasfile << "       </PART>"                                                                                     << endl ;
           aliasfile << "       <KIND_OF_CONDITION>"                                                                         << endl ;
           aliasfile << "           <EXTENSION_TABLE_NAME>" << conversionETNKOC["fedcard1"]  << "</EXTENSION_TABLE_NAME>"    << endl ;
@@ -2296,8 +2294,7 @@ unsigned int PixelConfigDBInterface::makeKey(std::vector<std::pair<std::string, 
           aliasfile                                                                                                         << endl ;
 	  aliasfile << "     <CONFIGURATION>"                                                                               << endl ;
           aliasfile << "       <PART>"                                                                                      << endl ;
-          aliasfile << "         <SERIAL_NUMBER>CMS-PIXEL-ROOT</SERIAL_NUMBER>"                                             << endl ;
-          aliasfile << "         <KIND_OF_PART>Detector ROOT</KIND_OF_PART>"                                                << endl ;
+	  aliasfile << "         <PART_ID>1000</PART_ID>"                                                                   << endl ;
           aliasfile << "       </PART>"                                                                                     << endl ;
           aliasfile << "       <KIND_OF_CONDITION>"                                                                         << endl ;
           aliasfile << "           <EXTENSION_TABLE_NAME>" << conversionETNKOC["fedcard2"]  << "</EXTENSION_TABLE_NAME>"    << endl ;
@@ -2342,8 +2339,7 @@ void PixelConfigDBInterface::addVersionAlias(std::string path, unsigned int vers
   aliasfile << "	<CONFIGURATION>"								      		<< endl ;
   aliasfile												      		<< endl ;
   aliasfile << "	  <PART>"									      		<< endl ;
-  aliasfile << "	    <NAME_LABEL>CMS-PIXEL-ROOT</NAME_LABEL>"     				      		<< endl ;
-  aliasfile << "	    <KIND_OF_PART>Detector ROOT</KIND_OF_PART>"					      		<< endl ;
+  aliasfile << "              <PART_ID>1000</PART_ID>"                                                                  << endl ;
   aliasfile << "	  </PART>"									      		<< endl ;
   aliasfile << "	  <KIND_OF_CONDITION>"								      		<< endl ;
   aliasfile << "	      <EXTENSION_TABLE_NAME>" << conversionETNKOC[path]	 << "</EXTENSION_TABLE_NAME>" 		<< endl ;
@@ -2377,8 +2373,7 @@ void PixelConfigDBInterface::addVersionAlias(std::string path, unsigned int vers
       aliasfile << "      <NAME>" << alias << "</NAME>"							      		<< endl ;
       aliasfile << "        <CONFIGURATION>"                                                                            << endl ;
       aliasfile << "          <PART>"                                                                                   << endl ;
-      aliasfile << "            <NAME_LABEL>CMS-PIXEL-ROOT</NAME_LABEL>"                                                << endl ;
-      aliasfile << "            <KIND_OF_PART>Detector ROOT</KIND_OF_PART>"                                             << endl ;
+      aliasfile << "              <PART_ID>1000</PART_ID>"                                                              << endl ;
       aliasfile << "          </PART>"                                                                                  << endl ;
       aliasfile << "          <KIND_OF_CONDITION>"                                                                      << endl ;
       aliasfile << "              <EXTENSION_TABLE_NAME>" << conversionETNKOC["fedcard1"]  << "</EXTENSION_TABLE_NAME>" << endl ;
@@ -2406,8 +2401,7 @@ void PixelConfigDBInterface::addVersionAlias(std::string path, unsigned int vers
       aliasfile << "      <NAME>" << alias << "</NAME>"							      		<< endl ;
       aliasfile << "        <CONFIGURATION>"                                                                            << endl ;
       aliasfile << "          <PART>"                                                                                   << endl ;
-      aliasfile << "            <NAME_LABEL>CMS-PIXEL-ROOT</NAME_LABEL>"                                                << endl ;
-      aliasfile << "            <KIND_OF_PART>Detector ROOT</KIND_OF_PART>"                                             << endl ;
+      aliasfile << "              <PART_ID>1000</PART_ID>"                                                              << endl ;
       aliasfile << "          </PART>"                                                                                  << endl ;
       aliasfile << "          <KIND_OF_CONDITION>"                                                                      << endl ;
       aliasfile << "              <EXTENSION_TABLE_NAME>" << conversionETNKOC["fedcard2"]  << "</EXTENSION_TABLE_NAME>" << endl ;

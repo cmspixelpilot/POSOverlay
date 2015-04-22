@@ -57,7 +57,7 @@ class PixelHistoPicGen {
 	void  			createAuxImages 						(void); 									// generates pre-made images for web-client 				
 	
 	void  			clearTurtleBuffer 					(int r,int g,int b, int a);
-  void				writeTurtleToBmp 						(char * fn);
+  void				writeTurtleToBmp 						(const char * fn);
 	void  			generateTurtle 							(void); 
 	void  			resetFPixGood 							(int disk); 
 	int   			getFPixGood  							  (int disk); 

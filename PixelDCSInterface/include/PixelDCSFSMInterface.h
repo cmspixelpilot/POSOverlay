@@ -41,7 +41,7 @@
 
 #include "PixelDCSInterface/include/PixelDCSFSMPartition.h"
 
-class xdaq::ApplicationStub;
+//class xdaq::ApplicationStub;
 class PixelDCSFSMNode;
 class SOAPCommander;
 class PixelDCSPVSSCommander;

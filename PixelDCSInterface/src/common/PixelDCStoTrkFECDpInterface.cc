@@ -35,17 +35,19 @@ using std::endl;
 
 PixelDCStoTrkFECDpInterface::PixelDCStoTrkFECDpInterface(xdaq::ApplicationStub * s) throw (xcept::Exception) 
   : PixelDCSDpInterface(s)
-  , psx_system_name_("cms_trk_dcs_07:")
+  , psx_system_name_("cms_trk_dcs_1:")//old cms_trk_dcs_07
   , weight_(0.5)
-  , debug_(false)
-  // , debug_(true)
+  //, debug_(false)
+  , debug_(true) //over here
   , nsent_(0)
-  // , nreport_(10)
+  //, nreport_(10) //over here
   , nreport_(1)
   , send_to_PSX_(true)
   // , send_to_PSX_(false)
   , dcu_printout_on_(false)
 {
+  cout<<"debug PixelDCSFSMInterface::connectToFSM_workloop pass00 weight of the current value:"<<weight_<<" nsent_:"<<nsent_
+      <<" nreport_:"<<nreport_<<" send_to_PSX_:"<<send_to_PSX_<<endl;
   cout<< "PixelDCStoTrkFECDpInterface::PixelDCStoTrkFECDpInterface: weight of the current value = " << weight_ <<endl;
   cout<< "PixelDCStoTrkFECDpInterface::PixelDCStoTrkFECDpInterface: debug_ = " << debug_ <<endl;
   cout<< "PixelDCStoTrkFECDpInterface::PixelDCStoTrkFECDpInterface: nsent_ = " << nsent_ <<endl;
@@ -114,7 +116,7 @@ void PixelDCStoTrkFECDpInterface::Default (xgi::Input *in, xgi::Output *out) thr
       if (debug_) cout<< ": clickable" <<endl;
     }
     else {
-      *out << "<input type=\"submit\" disabled=\"true\" name=\"Command\" value=\"" << (*input) << "\"/>";
+      *out << "<input type=\"submit\" disabled=\"TRUE\" name=\"Command\" value=\"" << (*input) << "\"/>";
       if (debug_) cout<< ": not clickable" <<endl;
     }
     *out << "</td>" << std::endl;
@@ -142,12 +144,12 @@ void PixelDCStoTrkFECDpInterface::Default (xgi::Input *in, xgi::Output *out) thr
   *out << cgicc::br() << "DCU console printout: ";
 
   if (dcu_printout_on_) {
-    *out << "<input type=\"submit\" disabled=\"true\" name=\"Command\" value=\"" << "turn On" << "\"/>";
+    *out << "<input type=\"submit\" disabled=\"TRUE\" name=\"Command\" value=\"" << "turn On" << "\"/>";
     *out << "<input type=\"submit\" name=\"Command\" value=\"" << "turn Off" << "\"/>";
   }
   else {
     *out << "<input type=\"submit\" name=\"Command\" value=\"" << "turn On" << "\"/>";
-    *out << "<input type=\"submit\" disabled=\"true\" name=\"Command\" value=\"" << "turn Off" << "\"/>";
+    *out << "<input type=\"submit\" disabled=\"TRUE\" name=\"Command\" value=\"" << "turn Off" << "\"/>";
   }
 
   // Oracle connection response: fault string in case of problem
@@ -198,7 +200,7 @@ void PixelDCStoTrkFECDpInterface::Default (xgi::Input *in, xgi::Output *out) thr
   
   for (std::map<PortCard::Address, PortCard::DCU>::const_iterator it=dcu_map_.begin(); it!=dcu_map_.end(); ++it)
   {
-    unsigned dcuIdId = it->first.dcuId_;
+//    unsigned dcuIdId = it->first.dcuId_;
     unsigned fecBoardId = it->first.fecBoardId_;
     unsigned mfecId = it->first.mfecId_;
     unsigned ccuId = it->first.ccuId_;
@@ -307,7 +309,8 @@ void PixelDCStoTrkFECDpInterface::stateConfiguring (toolbox::fsm::FiniteStateMac
 {
   cout<< "PixelDCStoTrkFECDpInterface::stateConfiguring" <<endl;
   
-  bool is_configured = true;
+  //bool is_configured = true;
+  bool is_configured = 1;
 
   fault_message_db_connection_.str("");
   fault_string_db_get_table_.str("");
@@ -784,7 +787,8 @@ xoap::MessageReference PixelDCStoTrkFECDpInterface::updateDpValueTrkFEC(xoap::Me
         if (deadband > 0) {
           if (fabs(calib - mean0) > deadband) {
             // rise update flag
-            update = true;
+            //update = true;
+            update = 1;
             // new average
             float mean = weight_*calib + (1.-weight_)*mean0;
             average_[fecBoard][mfec][ccu][ccuChannel][ichan] = mean;
@@ -795,6 +799,7 @@ xoap::MessageReference PixelDCStoTrkFECDpInterface::updateDpValueTrkFEC(xoap::Me
         // use current value as an average
         average_[fecBoard][mfec][ccu][ccuChannel][ichan] = calib;
         // update db
+        //update = true;
         update = true;
       }
 

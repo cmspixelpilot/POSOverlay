@@ -78,9 +78,9 @@ PixelDCStoFEDDpInterface::PixelDCStoFEDDpInterface(xdaq::ApplicationStub* s) thr
   dcsSOAPCommander_ = NULL;
   dcsPVSSCommander_ = NULL;
 
-  updateCalibratedTemperature_ = true;
-  updateRawADC_ = true;
-  updateTempRangeDAC_ = true;
+  updateCalibratedTemperature_ = TRUE;
+  updateRawADC_ = TRUE;
+  updateTempRangeDAC_ = TRUE;
 }
 
 PixelDCStoFEDDpInterface::~PixelDCStoFEDDpInterface()

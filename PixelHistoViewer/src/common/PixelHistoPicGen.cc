@@ -1295,7 +1295,7 @@ void PixelHistoPicGen::clearTurtleBuffer(int r,int g,int b, int a){
 
 
 ////////////////////////////////////////////////////////////////////////
-void PixelHistoPicGen::writeTurtleToBmp(char *fn){
+void PixelHistoPicGen::writeTurtleToBmp(const char *fn){
   string mthn = "[PicGen::writeTurtleToBmp()]\t";
   
 // BMP Header				Stores general information about the BMP file.
