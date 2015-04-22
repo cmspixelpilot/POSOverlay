@@ -47,8 +47,6 @@ using namespace std;
 using namespace pos;
 using namespace pos::PortCardSettingNames;
 
-#define BPIX
-
 //#define USELESS 
 //#define READ_DCU  // to enable DCU readout
 #define SKIP_LV_CHECK  // to skip the LV check, for testing without power
@@ -493,7 +491,6 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   *out<<"</tr>";
   *out<<"</table>";
 
-#ifdef BPIX
 //=========================================== PIA Reset (only VME Mode Considered)
 	*out <<"<hr/>"<<std::endl;
 	*out <<"<h2>Pia Reset</h2>"<<std::endl;
@@ -518,7 +515,6 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
 	  *out<<"PIA Reset functions are not available without a global key</br>"<<endl;
 	}
 //=============================================
-#endif
 
   *out<<"</form>"<<endl;
   
@@ -644,7 +640,6 @@ void PixelTKFECSupervisor::XgiHandler (xgi::Input *in, xgi::Output *out) throw (
     xoap::MessageReference reply = AOH(msg);
     if (Receive(reply)!="AOHDone") cout<<"AOH command could not be executed!"<<endl;
 
-#ifdef BPIX
 //=============================================================
   } else if (Command == "Pia Reset") {
     Attribute_Vector parametersXgi(1);
@@ -653,7 +648,6 @@ void PixelTKFECSupervisor::XgiHandler (xgi::Input *in, xgi::Output *out) throw (
     xoap::MessageReference msg = MakeSOAPMessageReference("PIAReset", parametersXgi);
     xoap::MessageReference reply = PIAReset(msg);
     if (Receive(reply)!="PIAResetDone") cout<<"PIAReset command could not be executed!"<<endl;
-#endif
   }
 
   this->Default(in, out);
@@ -1482,13 +1476,14 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     
     if (proceed) {
       
-      const long loop = 1 ;
-      const unsigned long tms  = 0 ;  // wait tms microseconds
+      //const long loop = 1 ;
+      //const unsigned long tms  = 0 ;  // wait tms microseconds
       string fecAccessType = "unset";
       bool fack=true;
       
       const std::set<std::string>& portcards=thePortcardMap_->portcards(detconfig);
-      unsigned int slot=9999, ring =9999;
+      unsigned int slot=9999; 
+      unsigned int ring =9999;
       static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
       int np=0;
       
@@ -1536,8 +1531,27 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	    int cnt ;
 	    try {
 	      if(type=="PCI"){
-		char * argv[]={"portcard.exe","-pci"};
-		createFecAccess ( argc, argv, &cnt, slot ) ;
+        
+          //char * argv[]={"portcard.txt","-psi"};
+        
+          char* argv[2];
+  
+          std::string argv_0 = "portcard.exe";
+          std::string argv_1 = "-pci";
+
+          char* argv_0c = new char[argv_0.size()+1];
+          char* argv_1c = new char[argv_1.size()+1];
+  
+          std::copy(argv_0.begin(), argv_0.end(), argv_0c);
+          std::copy(argv_1.begin(), argv_1.end(), argv_1c);
+  
+          argv_0c[argv_0.size()] = '\0';
+          argv_1c[argv_1.size()] = '\0';
+
+          argv[0]=argv_0c;
+          argv[1]=argv_1c;
+
+          createFecAccess ( argc, argv, &cnt, slot );
 	      }
 	      else if (type=="VME"){
 		argc=5;
@@ -1554,7 +1568,32 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 		if (extratimers_) GlobalTimer_.printTime("stateConfiguring -- After addressTable");
 		
 		char *addressTablePath=(char *)addressTablePath_string.c_str();
-		char * argv2[]={"portcard.exe","-vmecaenpci", "-fec", const_cast<char*>(itoa(slot).c_str()), addressTablePath};
+		//char * argv2[]={"portcard.exe","-vmecaenpci", "-fec", const_cast<char*>(itoa(slot).c_str()), addressTablePath};
+    char *argv2[5];
+
+    std::string argv2_0 = "portcard.exe";
+    std::string argv2_1 = "-vmecaenpci";
+    std::string argv2_2 = "-fec";
+    
+    char* argv2_0c = new char[argv2_0.size()+1];
+    char* argv2_1c = new char[argv2_1.size()+1];
+    char* argv2_2c = new char[argv2_2.size()+1];
+
+    std::copy(argv2_0.begin(), argv2_0.end(), argv2_0c);
+    std::copy(argv2_1.begin(), argv2_1.end(), argv2_1c);
+    std::copy(argv2_2.begin(), argv2_2.end(), argv2_2c);
+
+    argv2_0c[argv2_0.size()] = '\0';
+    argv2_1c[argv2_1.size()] = '\0';
+    argv2_2c[argv2_2.size()] = '\0';
+
+    argv2[0]=argv2_0c;
+    argv2[1]=argv2_1c;
+    argv2[2]=argv2_2c;
+    argv2[3]=const_cast<char*>(itoa(slot).c_str());
+    argv2[4]=addressTablePath; 
+    
+    // char * argv2[]={"portcard.exe","-vmecaenpci", "-fec", const_cast<char*>(itoa(slot).c_str()), addressTablePath};
 		createFecAccess ( argc, argv2, &cnt, false ) ;
 		
 		if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After createFecAccess");
@@ -1931,9 +1970,10 @@ end of redundancy ring comment */
 // Split the pure portcard programming from other things in stateConfiguring
 bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
      
-  const long loop = 1 ; // number of resets 
-  const unsigned long tms  = 0 ;  // wait tms microseconds after reset
-  unsigned int slot=9999, ring =9999;
+  //const long loop = 1 ; // number of resets 
+  //const unsigned long tms  = 0 ;  // wait tms microseconds after reset
+  //unsigned int slot=9999; 
+  unsigned int ring =9999;
   static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
   enumDeviceType modeType = PHILIPS ;
   bool problem = false;
@@ -2296,7 +2336,6 @@ void PixelTKFECSupervisor::enteringError(toolbox::Event::Reference e) //throw (t
 /////////////////////////////////////////////////////////////////////////////
 
 //-----------------------------------------------------------------------------------------
-#ifdef BPIX
 xoap::MessageReference PixelTKFECSupervisor::PIAReset (xoap::MessageReference msg) //throw (xoap::exception::Exception)
 	{
  	Attribute_Vector parameters(1);
@@ -2388,7 +2427,7 @@ xoap::MessageReference PixelTKFECSupervisor::PIAReset (xoap::MessageReference ms
 	xoap::MessageReference reply=MakeSOAPMessageReference("PIAResetDone");
 	return reply;
 	}
-#endif
+
 //==========================================================================================
 
 xoap::MessageReference PixelTKFECSupervisor::FSMStateRequest (xoap::MessageReference msg) //throw (xoap::exception::Exception)

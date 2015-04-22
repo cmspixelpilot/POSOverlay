@@ -82,8 +82,6 @@
 //for debugging
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
-#define BPIX
-
 class PixelTKFECSupervisor: public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener, public PixelTKFECSupervisorConfiguration
 
 {
@@ -145,9 +143,7 @@ public:
   xoap::MessageReference FixSoftError (xoap::MessageReference msg) ;
   xoap::MessageReference ResumeFromSoftError (xoap::MessageReference msg) ;
   
-#ifdef BPIX
   xoap::MessageReference PIAReset (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
-#endif
   
   xoap::MessageReference FSMStateRequest (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
   xoap::MessageReference SetDelay (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
