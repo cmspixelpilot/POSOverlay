@@ -4,3 +4,6 @@ lastlog
 feccmd.dmp
 pixelalive*.log.gz
 Logs
+LastRunNumber.txt
+run_LTC.sh
+run_PSI.sh
