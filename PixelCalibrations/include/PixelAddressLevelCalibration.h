@@ -18,7 +18,7 @@
 #include "toolbox/exception/Handler.h"
 #include "toolbox/Event.h"
 
-class pos::PixelCalibConfiguration;
+//class pos::PixelCalibConfiguration;
 
 class PixelAddressLevelCalibration: public PixelCalibrationBase {
  public:

@@ -37,6 +37,7 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
   eventNumberOfLastReportedProgress_=0;
 
   percentageOfJob_=0;
+
   
   if(dynamic_cast <PixelCalibConfiguration*> (theCalibObject_)==0) 
     { 
@@ -47,6 +48,8 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
   sendingMode_=(dynamic_cast <PixelCalibConfiguration*> (theCalibObject_))->parameterValue("useSOAP");
   
   }
+
+  ttcCalSyncThrottlingTimer_.start();
 }
 
 
@@ -145,51 +148,141 @@ void PixelCalibrationBase::reportProgress( double howOften, std::ostream& out, i
 }
 
 void PixelCalibrationBase::sendTTCCalSync(){
- 
-  Attribute_Vector parametersToTTC(2);
-  parametersToTTC[0].name_="xdaq:CommandPar";
-  parametersToTTC[0].value_="Execute Sequence";
-  parametersToTTC[1].name_="xdaq:sequence_name";
-  parametersToTTC[1].value_="CalSync";
+
+  if (useTTC_){
+    Attribute_Vector parametersToTTC(2);
+    parametersToTTC[0].name_="xdaq:CommandPar";
+    parametersToTTC[0].value_="Execute Sequence";
+    parametersToTTC[1].name_="xdaq:sequence_name";
+    parametersToTTC[1].value_="CalSync";
+    
+    Supervisors::iterator i_PixelTTCSupervisor;
+    for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
+      {
+        if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse")
+          {
+            cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
+          }
+      }
+  }
   
-  Supervisors::iterator i_TTCciControl;
-  for (i_TTCciControl=TTCciControls_.begin();i_TTCciControl!=TTCciControls_.end();++i_TTCciControl) {
-    if (Send(i_TTCciControl->second, "userCommand", parametersToTTC)!="userTTCciControlResponse") {
-      cout<<"TTCciControl supervising crate #"<<(i_TTCciControl->first)<<" could not be used!"<<endl;
+  
+  if (useTCDS_) {
+    //do some throttling
+    ttcCalSyncThrottlingTimer_.stop();
+    double tcalsync = ttcCalSyncThrottlingTimer_.tottime()*1000000;
+    ttcCalSyncThrottlingTimer_.reset();
+    ttcCalSyncThrottlingTimer_.start();
+
+    //limit of open TCP sockets: 20000 (crashes have been observed for >28000 sockets)
+    //time until a socket gets closed again: 240s (TCP connetion timeout 4 minutes)
+    //max calsync frequency: 20000/240 Hz = 83.3Hz --> delta t = 12000us
+    double tcalsync_target = 8000;
+
+    if (tcalsync < tcalsync_target) {
+      usleep(tcalsync_target-tcalsync);
+      //std::cout << "TTCCalSync trigger throttling: dt(CalSyncs)=" << tcalsync << "us, dt(min)="<< tcalsync_target <<"us, sleep= " << tcalsync_target-tcalsync << "us" << std::endl;
     }
+
+
+    Attribute_Vector paramToTTC(1);
+    paramToTTC[0].name_="actionRequestorId";
+    paramToTTC[0].value_=TCDSSessionID_;
+    Variable_Vector varToTTC(1);
+    varToTTC[0].name_="bgoNumber";
+    varToTTC[0].type_="unsignedInt";
+    varToTTC[0].payload_="12";
+    
+    Supervisors::iterator i_PixelTTCController;
+    for (i_PixelTTCController=PixelTTCControllers_.begin();i_PixelTTCController!=PixelTTCControllers_.end();++i_PixelTTCController)
+      {
+        if (Send(i_PixelTTCController->second, "SendBgo", paramToTTC, varToTTC)!="SendBgoResponse")
+          {
+            std::cout<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not be used! Maybe it is not yet configured?"<<std::endl;
+            diagService_->reportError("PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not send CalSync.",DIAGERROR);
+          }
+      }
   }
 }
 
 void PixelCalibrationBase::sendTTCROCReset(){
 
-  Attribute_Vector parametersToTTC(2);
-  parametersToTTC[0].name_="xdaq:CommandPar";
-  parametersToTTC[0].value_="Execute Sequence";
-  parametersToTTC[1].name_="xdaq:sequence_name";
-  parametersToTTC[1].value_="ResetROC";
-  
-  Supervisors::iterator i_TTCciControl;
-  for (i_TTCciControl=TTCciControls_.begin();i_TTCciControl!=TTCciControls_.end();++i_TTCciControl) {
-    if (Send(i_TTCciControl->second, "userCommand", parametersToTTC)!="userTTCciControlResponse") {
-      cout<<"TTCciControl supervising crate #"<<(i_TTCciControl->first)<<" could not be used!"<<endl;
+  if (useTTC_)
+    {
+      Attribute_Vector parametersToTTC(2);
+      parametersToTTC[0].name_="xdaq:CommandPar";
+      parametersToTTC[0].value_="Execute Sequence";
+      parametersToTTC[1].name_="xdaq:sequence_name";
+      parametersToTTC[1].value_="ResetROC";
+      
+      Supervisors::iterator i_PixelTTCSupervisor;
+      for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
+        if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse") {
+          cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
+        }
+      }
     }
-  }
+
+  if (useTCDS_)
+    {
+      Attribute_Vector paramToTTC(1);
+      paramToTTC[0].name_="actionRequestorId";
+      paramToTTC[0].value_=TCDSSessionID_;
+      Variable_Vector varToTTC(1);
+      varToTTC[0].name_="bgoNumber";
+      varToTTC[0].type_="unsignedInt";
+      varToTTC[0].payload_="15";
+      
+      Supervisors::iterator i_PixelTTCController;
+      for (i_PixelTTCController=PixelTTCControllers_.begin();i_PixelTTCController!=PixelTTCControllers_.end();++i_PixelTTCController)
+        {
+          if (Send(i_PixelTTCController->second, "SendBgo", paramToTTC, varToTTC)!="SendBgoResponse")
+            {
+              std::cout<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not be used! Maybe it is not yet configured?"<<std::endl;
+              diagService_->reportError("PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not Reset ROC.",DIAGERROR);
+            }
+        }
+    }
 }
 
 void PixelCalibrationBase::sendTTCTBMReset(){
-  
-  Attribute_Vector parametersToTTC(2);
-  parametersToTTC[0].name_="xdaq:CommandPar";
-  parametersToTTC[0].value_="Execute Sequence";
-  parametersToTTC[1].name_="xdaq:sequence_name";
-  parametersToTTC[1].value_="ResetTBM";
-  
-  Supervisors::iterator i_TTCciControl;
-  for (i_TTCciControl=TTCciControls_.begin();i_TTCciControl!=TTCciControls_.end();++i_TTCciControl) {
-    if (Send(i_TTCciControl->second, "userCommand", parametersToTTC)!="userTTCciControlResponse") {
-      cout<<"TTCciControl supervising crate #"<<(i_TTCciControl->first)<<" could not be used!"<<endl;
+
+  if (useTTC_){
+    Attribute_Vector parametersToTTC(2);
+    parametersToTTC[0].name_="xdaq:CommandPar";
+    parametersToTTC[0].value_="Execute Sequence";
+    parametersToTTC[1].name_="xdaq:sequence_name";
+    parametersToTTC[1].value_="ResetTBM";
+    
+    Supervisors::iterator i_PixelTTCSupervisor;
+    for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
+      if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse") {
+        cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
+      }
     }
   }
+
+
+  if (useTCDS_)
+    {
+      Attribute_Vector paramToTTC(1);
+      paramToTTC[0].name_="actionRequestorId";
+      paramToTTC[0].value_=TCDSSessionID_;
+      Variable_Vector varToTTC(1);
+      varToTTC[0].name_="bgoNumber";
+      varToTTC[0].type_="unsignedInt";
+      varToTTC[0].payload_="14";
+      
+      Supervisors::iterator i_PixelTTCController;
+      for (i_PixelTTCController=PixelTTCControllers_.begin();i_PixelTTCController!=PixelTTCControllers_.end();++i_PixelTTCController)
+        {
+          if (Send(i_PixelTTCController->second, "SendBgo", paramToTTC, varToTTC)!="SendBgoResponse")
+            {
+              std::cout<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not be used! Maybe it is not yet configured?"<<std::endl;
+              diagService_->reportError("PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not Reset TBM.",DIAGERROR);
+            }
+        }
+    }  
 }
 
 int PixelCalibrationBase::sendLTCCalSync(unsigned int nTriggers){

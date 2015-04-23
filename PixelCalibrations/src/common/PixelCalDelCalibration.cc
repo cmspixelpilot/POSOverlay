@@ -94,6 +94,7 @@ bool PixelCalDelCalibration::execute(){
   }
   
   ttcTimer_.start();
+  //usleep(1000); // tests by Clemens
   sendTTCCalSync();
   ttcTimer_.stop();
   

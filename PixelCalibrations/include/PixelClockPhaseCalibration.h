@@ -16,7 +16,7 @@
 
 #include "PixelCalibrations/include/PixelCalibrationBase.h"
 
-class pos::PixelCalibConfiguration;
+//class pos::PixelCalibConfiguration;
 
 class PixelClockPhaseCalibration: public PixelCalibrationBase {
  public:

@@ -312,7 +312,7 @@ error_file << "[PixelFEDROCDelay25Calibration]:  port card " << aPC_iter->first 
 error_file << "[PixelFEDROCDelay25Calibration]:  port card " << aPC_iter->first << " should use delay: " << delayToUseByPortCard_[aPC_iter->first] << endl;
     if(delayToUseByPortCard_[aPC_iter->first] != -1){
       tempUnInt = int(delayToUseByPortCard_[aPC_iter->first] * NUM_DELAY_DIVISIONS_PER_NS);
-      tempPortCard->setdeviceValues(PortCardSettingNames::k_Delay25_SDA, tempUnInt & 0x3F | 0x40);  //the & 0x3F | 0x40 sets the enable bit
+      tempPortCard->setdeviceValues(PortCardSettingNames::k_Delay25_SDA, (tempUnInt & 0x3F) | 0x40);  //the & 0x3F | 0x40 sets the enable bit
       tempPortCard->writeASCII(outputDir());
       delete tempPortCard;
     } else {

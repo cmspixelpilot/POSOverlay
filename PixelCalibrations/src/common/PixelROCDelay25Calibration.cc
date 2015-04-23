@@ -116,7 +116,7 @@ cout << "PixelROCDelay25Calibration: sendingMode_ = " << sendingMode_ << endl;
       vector <pair <int, unsigned int> >::const_iterator messageIDs_iter;
       PixelTimer tempTimer;
       tempTimer.start();
-        parametersToTKFEC[0].name_ = "Delay25Setting";  parametersToTKFEC[0].value_ = itoa(i_delay & 0x3F | 0x40);  //the & 0x3F | 0x40 sets the enable bit
+        parametersToTKFEC[0].name_ = "Delay25Setting";  parametersToTKFEC[0].value_ = itoa((i_delay & 0x3F) | 0x40);  //the & 0x3F | 0x40 sets the enable bit
       commandToAllTKFECCrates("SetDelayEnMass", parametersToTKFEC);                                                 //set the delay setting
       runNumber = 0;
       for(unsigned int i_DACSetting = 0; i_DACSetting < DACInfo.getNPoints(); ++i_DACSetting){                      //loop to change the DAC settings

@@ -31,15 +31,11 @@
 #include <fstream>
 #include <sstream>
 
-#define BPIX
-
 using namespace pos;
 using namespace std;
 
-#ifdef BPIX
 // A flag to enable raw data writting, used for special tests only
-static const bool WRITE_FILE_FIFO1 = false; //false by default
-#endif
+//static const bool WRITE_FILE_FIFO1 = false; //false by default
 
 PixelFEDAddressLevelCalibrationBase::PixelFEDAddressLevelCalibrationBase(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
   : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr){
@@ -142,11 +138,41 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
       //int recommendedUB=(int)(UB[vmeBaseAddress][channel].mean()+3*UB[vmeBaseAddress][channel].stddev())+50;
 
       //Use the middle between B and UB as separation -- (M.M.)
-      int lowBCut = int(  ( B[vmeBaseAddress][channel].mean() + UB[vmeBaseAddress][channel].mean() )/2. );
+      float ub = UB[vmeBaseAddress][channel].mean();
+      int lowBCut = int(  ( B[vmeBaseAddress][channel].mean() + ub )/2. );
       int recommendedBH = 1000;
       int recommendedBL = lowBCut;
       int recommendedUB = lowBCut-1;
       
+
+      // modified for bpix
+      // If the cuts overlap use a common cut in the middle d.k. 06/08 
+      auto tbmUB = (UB_TBM[vmeBaseAddress][channel].mean()); 
+      auto rocUB = (UB_ROC[vmeBaseAddress][channel].mean()); 
+      // OLD eay
+      //auto tmp = rocUB; 
+      //if(tbmUB>rocUB) tmp=tbmUB;       
+      //int meanCut =  (int) (tmp*0.7 + B[vmeBaseAddress][channel].mean()*0.3);
+
+      // take care of the case when TBM-UB is very low for dual TBM channels
+      if( (rocUB-tbmUB)>100 ) { // use TBM-UB instead
+	cout<<"PixelFEDAddresslevelCalibrationBase: "
+	    <<"Warning, TBM-UB much lower than ROC-UB: "<<tbmUB<<" "<<rocUB 
+	    <<"  FED="<<fedNumber<<" channel="<<channel<<endl;
+	float meanCut =  (tbmUB + B[vmeBaseAddress][channel].mean())/2.;	
+	// check that the cut is still above the rocUB
+	if(meanCut < rocUB ) {  // wrong, move it
+	  cout<<"PixelFEDAddresslevelCalibrationBase: "
+	      <<"Warning, UB-B cut is below ROC-UB."<<endl
+	      <<"Use ROC-UB+50 as the new cut. FED="<<fedNumber<<" channel="
+	      <<channel<<endl;
+	  diagService_->reportError("PixelFEDAddresslevelCalibrationBase: Warning, UB-B cut is below ROC-UB. Use ROC-UB+50 as the new cut.",DIAGWARN);
+	  meanCut = rocUB + 50.; 
+	}
+	recommendedUB= int(meanCut); 
+	recommendedBL= int(meanCut)+1; 
+      }
+
       //std::cout<<" Channel="<<channel<<std::endl;
       std::map<int, unsigned int>       summary_channel_short;
       std::map<int, std::stringstream*> summary_channel_long;
@@ -211,11 +237,15 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
       
       if (peak.size()==4){
 	// Check that the 1st TBM levbel is well above the UB cut
-	if( peak[0].mean() < (recommendedUB+15.) )
-	  std::cout<<" PixelFEDAddresslevelCalibrationBase: Error, the 1st TBM level is close to the UB cut!"
+	if( peak[0].mean() < (recommendedUB+15.) )  {
+	  std::cout<<" PixelFEDAddresslevelCalibrationBase: Warning, the 1st TBM level is close to the UB cut! "
 		   <<peak[0].mean()<<" "<<recommendedUB
 		   <<" fed/channel = "<<fedNumber<<"/"<<channel<<std::endl;
-
+	  int tmp = int ((peak[0].mean() + ub)/2.);
+	  std::cout<<" UB is "<<ub<<" Shift cut to the middle = "<<tmp<<std::endl;
+	  recommendedUB = tmp;
+	  thePixelFEDCard.Ublack[channel-1]=recommendedUB; // redefine 
+	}
 	int recommended_L0=(int)((peak[0].mean()+peak[1].mean())/2);
 	TBMlevelcut[0]=recommended_L0;
 	//cout<<"Recommended TBM L 0 = "<<recommended_L0<<endl;
@@ -705,8 +735,7 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	}
       }
 
-#ifdef BPIX
-      if(WRITE_FILE_FIFO1) { // dump fifo1 to a file, for testing only, d.k. 01/08
+      if(0) { // dump fifo1 to a file, for testing only, d.k. 01/08
 	ofstream outfile("data.dat",ios::app);
 	//outfile.write((char*)errBuffer, (errorLength+1)*sizeof(unsigned long));
 	
@@ -720,7 +749,6 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	}
 	outfile.close();
       }
-#endif //BPIX      
 
       std::vector<PixelROCName> ROCs=theNameTranslation_->getROCsFromFEDChannel(fedNumber, channel);
 

@@ -144,7 +144,7 @@ PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string&
       pvssCommanderPtr);
   }
 
-  if (calibName=="GainCalibration" || calibName=="PixelAlive" || calibName=="SCurve") {
+  if (calibName=="GainCalibration" || calibName=="PixelAlive" || calibName=="SCurve" || calibName == "SCurveSmartRange") {
     return new PixelGainAliveSCurveCalibration(*pixSupConfPtr, soapCmdrPtr);
   }  
 
@@ -295,7 +295,8 @@ PixelFEDCalibrationBase* PixelCalibrationFactory::getFEDCalibration(const std::s
 
   if (calibName=="GainCalibration" || 
       calibName=="PixelAlive" || 
-      calibName=="SCurve") {
+      calibName=="SCurve" ||
+      calibName=="SCurveSmartRange" ) {
     return new PixelFEDGainAliveSCurveCalibration(*pixFEDSupConfPtr, 
 						  soapCmdrPtr);
   }  

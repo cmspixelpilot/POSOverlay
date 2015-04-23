@@ -52,12 +52,12 @@ class PixelFEDPHRangeCalibration: public PixelFEDCalibrationBase {
   std::map <pos::PixelROCName, std::map <std::map<std::string, unsigned int>, PixelScanRecord> > PH_vs_Vcal_;
   //                                         DAC name          DAC value
 
-  typedef struct branch{ 
+   struct branch{ 
     float pass; 
     char rocName[38];
   }; 
 
-  typedef struct branch_sum{
+   struct branch_sum{
     float new_VIbias_PH;
     float delta_VIbias_PH;
     float new_VOffsetOp;

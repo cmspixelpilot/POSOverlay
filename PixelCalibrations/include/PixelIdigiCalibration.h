@@ -19,8 +19,8 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelModuleName.h"
 #include "PixelUtilities/PixelFEDDataTools/include/Moments.h"
 
-class pos::PixelLowVoltageMap;
-class pos::PixelDACSettings;
+//class pos::PixelLowVoltageMap;
+//class pos::PixelDACSettings;
 
 class PixelIdigiCalibration: public PixelCalibrationBase {
  public:

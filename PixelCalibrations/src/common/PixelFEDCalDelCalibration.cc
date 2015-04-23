@@ -21,6 +21,8 @@
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 #include "PixelUtilities/PixelFEDDataTools/include/PixelFEDDataTypes.h"
 
+#include "PixelUtilities/PixelFEDDataTools/include/PixelHit.h"
+
 #include <toolbox/convertstring.h>
 
 #include "iomanip"
@@ -95,7 +97,16 @@ xoap::MessageReference PixelFEDCalDelCalibration::execute(xoap::MessageReference
 	    std::cout<<"----------------------"<<std::endl;
 	    //PixelFEDFifoData::decodeSlink64(buffer64, status, (dataFIFO_[vmeBaseAddress]));
 	    for (int i=0; i<=status;++i) {
-	      std::cout<<"Clock "<<i<<" = 0x"<<std::hex<<buffer64[i]<<std::dec<<std::endl;
+	      unsigned int w1 = buffer64[i]&0xffffffff;
+	      unsigned int w2 = (buffer64[i]>>32)&0xffffffff;
+	      PixelHit h1(w1);
+	      PixelHit h2(w2);
+
+	      std::cout<<"Clock "<<i<<" = 0x"<<std::hex<<buffer64[i]
+		       <<" "<<w1<<" "<<w2<<" "<<std::dec
+  		       <<h1.getLink_id()<<" "<<h1.getROC_id()<<" "<<h1.getDCol_id()<<" "<<h1.getPix_id()<<" "
+  		       <<h2.getLink_id()<<" "<<h2.getROC_id()<<" "<<h2.getDCol_id()<<" "<<h2.getPix_id()<<" "
+		       <<std::endl;
 	    }
 	    
 	    assert(rocid>0);

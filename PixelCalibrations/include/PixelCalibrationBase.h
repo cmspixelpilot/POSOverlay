@@ -107,7 +107,9 @@ class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCom
   std::string sendingMode_;
 
   PixelTimer ttcTimer_;
-  
+  PixelTimer ttcCalSyncThrottlingTimer_;
+
+
  private:
 
   //loop over the FED supervisors and send beginJob soap request

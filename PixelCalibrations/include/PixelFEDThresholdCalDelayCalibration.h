@@ -42,12 +42,12 @@ class PixelFEDThresholdCalDelayCalibration: public PixelFEDCalibrationBase {
   string name1_;
   string name2_;
 
-  typedef struct branch{
+   struct branch{
     float pass;
     char rocName[38];
   };
 
-  typedef struct branch_sum{
+   struct branch_sum{
     float new_CalDel;
     float delta_CalDel;
     float new_VcThr;

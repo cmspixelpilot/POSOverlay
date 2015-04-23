@@ -20,8 +20,8 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelModuleName.h"
 #include "PixelUtilities/PixelFEDDataTools/include/Moments.h"
 
-class pos::PixelLowVoltageMap;
-class pos::PixelDACSettings;
+//class pos::PixelLowVoltageMap;
+//class pos::PixelDACSettings;
 
 class PixelIanaCalibration: public PixelCalibrationBase {
  public:
@@ -59,12 +59,12 @@ class PixelIanaCalibration: public PixelCalibrationBase {
   bool MixVanas_;
   bool TurnOffVsf_;
 
-  typedef struct branch{
+   struct branch{
     float pass;
     char rocName[38];
   };
 
-  typedef struct branch_sum{
+  struct branch_sum{
     float deltaVana;
     float newVana;
     float newIana;

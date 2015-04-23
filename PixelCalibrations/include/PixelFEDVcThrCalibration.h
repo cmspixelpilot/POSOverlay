@@ -40,12 +40,12 @@ class PixelFEDVcThrCalibration: public PixelFEDCalibrationBase {
   bool d2_;
   TFile* outputFile_;
 
-  typedef struct branch{
+   struct branch{
     float pass;
     char rocName[38];
   };
 
-  typedef struct branch_sum{
+   struct branch_sum{
     float new_VcThr;
     float delta_VcThr;
     char rocName[38];

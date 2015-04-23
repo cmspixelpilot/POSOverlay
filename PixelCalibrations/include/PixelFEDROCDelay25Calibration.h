@@ -49,7 +49,7 @@ class PixelFEDROCDelay25Calibration: public PixelFEDCalibrationBase {
     std::map <pos::PixelROCName, std::map <float, vector <int> > >::iterator aROC_iter; 
     void readAssignLastDAC(unsigned int, float);                                                                  //pass the run number and the delay time
 
-    typedef struct ROCDelay25Branch{
+     struct ROCDelay25Branch{
       float pass;
       float delaySetting;
       float offsetFromIdealDelay;

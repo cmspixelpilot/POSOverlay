@@ -21,7 +21,7 @@
 #include "TFile.h"
 #include "TLine.h"
 #include "TCanvas.h"
-class pos::PixelCalibConfiguration;
+//class pos::PixelCalibConfiguration;
 class PixelRootDirectoryMaker;
 class TH1F;
 class TH2F;
@@ -81,7 +81,7 @@ class PixelFEDAddressLevelCalibrationBase: public PixelFEDCalibrationBase {
 
   TFile* outputFile_;
 
-  typedef struct addressLevelBranch{ 
+   struct addressLevelBranch{ 
     float pass; 
     float nPeaks;
     float maxrms;

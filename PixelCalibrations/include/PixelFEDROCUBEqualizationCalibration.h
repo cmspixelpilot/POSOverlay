@@ -53,12 +53,12 @@ class PixelFEDROCUBEqualizationCalibration: public PixelFEDCalibrationBase {
   std::map <pos::PixelROCName, PixelScanRecord > ROC_UB_;
   std::map <pos::PixelROCName, PixelScanRecord > ROC_B_;
 
-  typedef struct branch{ 
+   struct branch{ 
     float pass; 
     char rocName[38];
   }; 
 
-  typedef struct branch_sum{
+   struct branch_sum{
     float new_VIbias_DAC;
     float delta_VIbias_DAC;
     char rocName[38];

@@ -1,14 +1,5 @@
 // $Id: PixelFEDBaselineCalibration.cc,v 1.48 2012/10/01 22:07:36 mdunser Exp $: PixelBaselineCalibration.cc,v 1.1 
-
-/*************************************************************************
- * XDAQ Components for Distributed Data Acquisition                      *
- * Copyright (C) 2000-2004, CERN.			                 *
- * All rights reserved.                                                  *
- * Authors: J. Gutleber and L. Orsini					 *
- *                                                                       *
- * For the licensing terms see LICENSE.		                         *
- * For the list of contributors see CREDITS.   			         *
- *************************************************************************/
+// Modify to accomadte bpix channes with very low TBM UB. d.k. 23/02/15
 
 #include "PixelCalibrations/include/PixelFEDBaselineCalibration.h"
 #include "PixelUtilities/PixelFEDDataTools/include/Moments.h"
@@ -28,8 +19,6 @@
 #include "TLine.h"
 #include "TStyle.h"
 #include "TColor.h"
-
-#define BPIX 
 
 using namespace pos;
 
@@ -72,17 +61,26 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 
   for (unsigned int ifed=0; ifed<fedsAndChannels_.size(); ++ifed) {
  
-
    unsigned int fednumber=fedsAndChannels_[ifed].first;
    unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+
    targetBlack[fednumber]= (FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nbaseln & 0xfff); // taking baseline of channel 1 for the whole FED now
+
+   //if(debug) cout<<" 1 "<<ifed<<endl;
+
    assert((FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nbaseln & 0xfff)==
 	  (FEDInterface_[vmeBaseAddress]->getPixelFEDCard().NCbaseln & 0xfff));
    assert((FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nbaseln & 0xfff)==
 	  (FEDInterface_[vmeBaseAddress]->getPixelFEDCard().SCbaseln & 0xfff));
    assert((FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nbaseln & 0xfff)==
 	  (FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Sbaseln & 0xfff));
+
+   //if(debug) cout<<" 2 "<<ifed<<endl;
+
    twoVpp[fednumber]= (FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nadcg & 0x1); // taking peak-to-peak of channel 1 for the whole FED now
+
+   //if(debug) cout<<" 3 "<<ifed<<endl;
+
    assert((FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nadcg==0&&
 	   FEDInterface_[vmeBaseAddress]->getPixelFEDCard().NCadcg==0&&
 	   FEDInterface_[vmeBaseAddress]->getPixelFEDCard().SCadcg==0&&
@@ -93,6 +91,8 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 	   FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Sadcg==0xf)
 	  );
    
+   //if(debug) cout<<" 4 "<<ifed<<endl;
+
    opticalReceiverSlope=opticalReceiverSlope1Vpp;
 
     if (twoVpp[fednumber]) {
@@ -100,20 +100,31 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
       channelOffsetSlope=1;
     }
 
+    //if(debug) cout<<" 5 "<<ifed<<endl;
+
     for (unsigned int ichannel=0; ichannel<fedsAndChannels_[ifed].second.size(); ++ichannel) {
+
+      //if(debug) cout<<" 9 "<<fednumber<<endl;
 
       dirMakerFED_->cdDirectory(fedsAndChannels_[ifed].first,fedsAndChannels_[ifed].second[ichannel]);
       
       uint32_t buffer[pos::fifo1TranspDepth];
       unsigned int channel=fedsAndChannels_[ifed].second[ichannel];
 
+      //if(debug) cout<<" 10 "<<channel<<" "<<fednumber<<endl;
+
       int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+      //if(debug) cout<<" 11 "<<channel<<" "<<fednumber<<endl;
+
       PixelDecodedFEDRawData decodedRawData(buffer, 100., 100., 150., 0., 100., 0., 150.);
+      //if(debug) cout<<" 12 "<<channel<<" "<<fednumber<<endl;
+
       std::string tbmSignalFilename=outputDir()+"/FIFO1Signal_"+itoa(iteration_)+"_"+itoa(fednumber)+"_"+itoa(channel)+".gif";
       std::string tbmSignalFilenameShort="FIFO1Signal_"+itoa(iteration_)+"_"+itoa(fednumber)+"_"+itoa(channel)+".gif";
       std::string tbmSignalFilenameshort="FIFO1Signal_"+itoa(iteration_)+"_"+itoa(fednumber)+"_"+itoa(channel);
 
       decodedRawData.drawToFile(tbmSignalFilename,tbmSignalFilenameshort,150);
+      //if(debug) cout<<" 13 "<<channel<<" "<<fednumber<<endl;
 
       std::stringstream *tbmSignal=new std::stringstream("~");
 
@@ -136,9 +147,9 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
       for (unsigned int j=1;j<i;++j) {
         unsigned int ADC=((buffer[j] & 0xffc00000) >> 22);
         B_Channel.at(channelindex).push_back(ADC);
-        if (debug) {                                                                // Reducing printout to console
-          std::cout<<"[PixelFEDBaselineCalibration::execute] Channel= "<<channel<<", slot="<<j<<", ADC="<<ADC<<std::endl;
-        }
+        //if (debug) {                                                                // Reducing printout to console
+	//std::cout<<"[PixelFEDBaselineCalibration::execute] Channel= "<<channel<<", slot="<<j<<", ADC="<<ADC<<std::endl;
+        //}
       }
       
       if (debug) {                                                                  // Reducing printout to console
@@ -161,12 +172,18 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 
       summary_long_[fednumber][channel].push_back(tbmSignal);
      
+      //if(debug) cout<<" 14 "<<channel<<" "<<fednumber<<endl;
 
     }//channel
+
+    //if(debug) cout<<" 15 "<<fednumber<<endl;
+
 
   }//feds
   
   
+  //if(debug) cout<<" 2 "<<endl;
+
  
   outputFile_->cd();
   
@@ -266,6 +283,7 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
     // Iteration over FED Channels
     for (unsigned int ichannel=0; ichannel<fedsAndChannels_[ifed].second.size(); ++ichannel) {
       unsigned int channel=fedsAndChannels_[ifed].second[ichannel];
+
       assert(channel>0 && channel<37);
 
       int oldInputOffsetValue=fedCard.opt_inadj[(channel-1)/12];
@@ -300,7 +318,11 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 	*(summary_long_[fednumber][channel].back())<<"UB Std.dev. = "<<UB_Channel.at(fednumber*channelsPerFED+channel-1).stddev()<<"<br>"<<endl;
 	*(summary_long_[fednumber][channel].back())<<"B Std.dev. = "<<B_Channel.at(fednumber*channelsPerFED+channel-1).stddev()<<"<br>"<<endl;
 
-	std::cout<<"FED/channel = "<<fednumber<<"/"<<channel<<"Black mean is not within "<<blackTolerance<<" of "<<targetBlack[fednumber]<<std::endl;
+	std::cout<<"FED/channel = "<<fednumber<<"/"<<channel
+		 <<" Black mean is not within "<<blackTolerance<<" of "
+		 <<targetBlack[fednumber]<<" "
+		 <<B_Channel.at(fednumber*channelsPerFED+channel-1).mean()
+		 <<std::endl;
 
       } else {
 
@@ -359,22 +381,34 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
       unsigned int channel=fedsAndChannels_[ifed].second[ichannel];
       fedCard.offs_dac[channel-1]=ChannelOffsetDAC.at(fednumber*channelsPerFED+channel-1);
 
-      //int recommendedBlackHi=int(B_Channel.at(fednumber*channelsPerFED+channel-1).mean()+3*B_Channel.at(fednumber*channelsPerFED+channel-1).stddev()+50);
-      //int recommendedBlackLo=int(B_Channel.at(fednumber*channelsPerFED+channel-1).mean()-3*B_Channel.at(fednumber*channelsPerFED+channel-1).stddev()-50);
-      //int recommendedUblack=int(UB_Channel.at(fednumber*channelsPerFED+channel-1).mean()+3*UB_Channel.at(fednumber*channelsPerFED+channel-1).stddev()+50);
-      
-      // use middle point between B and UB as separation (M.M.)
-      int lowBCut = int(  (B_Channel.at(fednumber*channelsPerFED+channel-1).mean() +
-			  UB_Channel.at(fednumber*channelsPerFED+channel-1).mean() )/2. );
-      int recommendedBlackHi = 1000;
-      int recommendedBlackLo = lowBCut;
-      int recommendedUblack  = lowBCut-1;
+      int recommendedBlackHi=int(B_Channel.at(fednumber*channelsPerFED+channel-1).mean()+3*B_Channel.at(fednumber*channelsPerFED+channel-1).stddev()+50);
+
+      int recommendedBlackLo=int(B_Channel.at(fednumber*channelsPerFED+channel-1).mean()-3*B_Channel.at(fednumber*channelsPerFED+channel-1).stddev()-50);
+
+      int recommendedUblack=int(UB_Channel.at(fednumber*channelsPerFED+channel-1).mean()+3*UB_Channel.at(fednumber*channelsPerFED+channel-1).stddev()+50);
 
       if (recommendedBlackLo>0 && recommendedBlackHi>0 && recommendedUblack>=0 && recommendedBlackLo>recommendedUblack) {
-	
-        fedCard.BlackHi[channel-1] = recommendedBlackHi;
-        fedCard.BlackLo[channel-1] = recommendedBlackLo;
-        fedCard.Ublack[channel-1]  = recommendedUblack;
+
+	// modified to take care of the bpix very low TBM ub 
+
+	// Use the middle point between UB and B as the cut
+	float ub = UB_Channel.at(fednumber*channelsPerFED+channel-1).mean();
+	// nomal case when ub=150
+	int lowBCut = int(  (B_Channel.at(fednumber*channelsPerFED+channel-1).mean() + ub )/2. );
+	if(ub<74.) { // for special channels with very low ub
+	  std::cout<<" FED ID = "<<fednumber<<", Channel = "<<channel
+		   <<" Low UB "<< ub <<" make the cut asymmetric "<<lowBCut;
+	  lowBCut = int( (B_Channel.at(fednumber*channelsPerFED+channel-1).mean())*0.45 + ub*0.55 );
+	  std::cout<<" -> "<<lowBCut<<std::endl;
+	}
+
+	//fedCard.BlackHi[channel-1] = recommendedBlackHi;
+        //fedCard.BlackLo[channel-1] = recommendedBlackLo;
+	//fedCard.Ublack[channel-1]  = recommendedUblack;
+
+        fedCard.BlackHi[channel-1] = 1000;
+        fedCard.BlackLo[channel-1] = lowBCut;
+        fedCard.Ublack[channel-1]  = lowBCut-1;
 
       } else {
         std::cout<<"PixelFEDSupervisor::FEDBaselineCalibrationWithPixels reports: "<<std::endl;

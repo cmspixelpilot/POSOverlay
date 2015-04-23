@@ -21,7 +21,7 @@
 #include "TProfile.h"
 
 class TProfile;
-class pos::PixelCalibConfiguration;
+//class pos::PixelCalibConfiguration;
 
 class PixelFEDClockPhaseCalibration: public PixelFEDCalibrationBase {
  public:

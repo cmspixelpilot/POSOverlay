@@ -52,12 +52,12 @@ class PixelFEDVsfAndVHldDelCalibration: public PixelFEDCalibrationBase {
   
   std::map <pos::PixelROCName, unsigned int> VsfValuesFromConfig_;
   
-  typedef struct branch{
+   struct branch{
     float pass;
     char rocName[38];
   };
 
-  typedef struct branch_sum{
+   struct branch_sum{
     float delta_Vsf;
     float new_Vsf;
     float delta_VHldDel;

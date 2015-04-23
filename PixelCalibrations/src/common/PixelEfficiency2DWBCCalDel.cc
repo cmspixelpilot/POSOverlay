@@ -121,7 +121,7 @@ void PixelEfficiency2DWBCCalDel::saveEff(double numerator,std::string filename){
 void PixelEfficiency2DWBCCalDel::findSettings(double numerator, double WBC,
 					      double fract){
 
-  const bool localPrint=false;
+  const bool localPrint=true;
 
   if(localPrint) cout << "nbins1_="<<nbins1_<<endl;
   if(localPrint) cout << "nbins2_="<<nbins2_<<endl;
@@ -212,34 +212,43 @@ void PixelEfficiency2DWBCCalDel::findSettings(double numerator, double WBC,
     return;
   }
 
-  double tmp1 = m22l-m12l*m12l/m11l;
-  double tmp2 = m22r-m12r*m12r/m11r;
-  if( tmp1==0 || tmp2 == 0 ) {
-    caldel_=0;
-    cout<<" Failed-2 "<<tmp1<<" "<<tmp2;
-    cout<<" Return caldel=0, old value will be stored"<<endl;
-    return;
+
+  double caldel_right=-1.;
+  double caldel_left =-1.;
+  // take care of 1 WBC case, d.k. 13/1/15
+  if( (nleft_ ==1) && (nright_ == 1) )  { //special case with 1 WBC only 
+
+    if(localPrint) cout<<" 1 WBC only use simple non-interpolated edges "<<endl;
+    caldel_right=y1r;
+    caldel_left=y1l;
+
+  } else { // more than 1 WBC, standard option
+    double tmp1 = m22l-m12l*m12l/m11l;
+    double tmp2 = m22r-m12r*m12r/m11r;
+    if( tmp1==0 || tmp2 == 0 ) {
+      caldel_=0;
+      cout<<" Failed-2 "<<tmp1<<" "<<tmp2;
+      cout<<" Return caldel=0, old value will be stored"<<endl;
+      return;
+    }
+    
+    //double bl=(y2l-m12l*y1l/m11l)/(m22l-m12l*m12l/m11l);
+    double bl=(y2l-m12l*y1l/m11l)/tmp1;
+    double al=(y1l-m12l*bl)/m11l;
+    
+    //double br=(y2r-m12r*y1r/m11r)/(m22r-m12r*m12r/m11r);
+    double br=(y2r-m12r*y1r/m11r)/tmp2;
+    double ar=(y1r-m12r*br)/m11r;
+    
+    if(localPrint) cout << "left  a,b:"<<al<<" "<<bl<<" "<<WBC<<endl;
+    if(localPrint) cout << "right a,b:"<<ar<<" "<<br<<" "<<WBC<<endl;
+    
+    caldel_right=ar+br*WBC;
+    caldel_left=al+bl*WBC;
   }
- 
-  //double bl=(y2l-m12l*y1l/m11l)/(m22l-m12l*m12l/m11l);
-  double bl=(y2l-m12l*y1l/m11l)/tmp1;
-  double al=(y1l-m12l*bl)/m11l;
-
-  //double br=(y2r-m12r*y1r/m11r)/(m22r-m12r*m12r/m11r);
-  double br=(y2r-m12r*y1r/m11r)/tmp2;
-  double ar=(y1r-m12r*br)/m11r;
-
-  if(localPrint) cout << "left  a,b:"<<al<<" "<<bl<<" "<<WBC<<endl;
-  if(localPrint) cout << "right a,b:"<<ar<<" "<<br<<" "<<WBC<<endl;
-
-  double caldel_right=ar+br*WBC;
-  double caldel_left=al+bl*WBC;
 
   if(localPrint) cout<<y1r<<" "<<y1l<<" "<<caldel_right<<" "<<caldel_left<<endl;
 
-
-  //caldel_right=y1r;
-  //caldel_left=y1l;
 
   // failed
   if (caldel_left<0||caldel_right<0 || caldel_left>255||caldel_right>255) {

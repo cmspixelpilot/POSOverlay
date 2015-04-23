@@ -48,12 +48,12 @@ class PixelFEDLinearityVsVsfCalibration: public PixelFEDCalibrationBase {
   std::map <pos::PixelROCName, map < std::pair <unsigned int, unsigned int>, map <unsigned int, PixelScanRecord> > > PH_vs_Vcal_;
   //                                            pixel column  pixel row           Vsf value
 
-  typedef struct branch{
+   struct branch{
     float pass;
     char rocName[38];
   };
 
-  typedef struct branch_sum{
+   struct branch_sum{
     float delta_Vsf;
     float new_Vsf;
     char rocName[38];
