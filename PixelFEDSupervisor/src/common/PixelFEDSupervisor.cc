@@ -4,6 +4,10 @@
  * All rights reserved.                                                  *
  * Authors: Souvik Das, Anders Ryd, Karl Ecklund   		         *
  *************************************************************************/
+// Fix the bug in workloop if not FED enabled.
+// Merge Physics and EmulatedPhysics
+// Move ResetFED before workloop start. d.dk. 7/14
+
 #define READ_LASTDAC  // Enable the last dac writing
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
@@ -51,6 +55,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <limits>
 #include <sys/time.h>
 
 using namespace pos;
@@ -1274,6 +1279,12 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
   Receive(msg, parameter);
   runNumber_=parameter[0].value_;
   diagService_->reportError("Received SOAP message to Start. Run Number = "+runNumber_, DIAGINFO);
+  unsigned int runNumberInt = atol((parameter[0].value_).c_str());
+  if (runNumberInt > std::numeric_limits< xdata::UnsignedInteger32 >::max() || runNumberInt < 0) {
+    diagService_->reportError("ERROR: Run Number = "+stringF(runNumberInt)+ "is greater than numerical limit for xdata::UnsignedInteger32: "+stringF(std::numeric_limits< xdata::UnsignedInteger32 >::max())+" or negative", DIAGERROR);
+    return MakeSOAPMessageReference("StartFailed");
+  }
+  
   countLoopsThisRun_=-1;
 
 
@@ -1314,13 +1325,12 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
 
   setupOutputDir();
 
-
-  if (theCalibObject_==0) {
+  if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
 
     std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
     for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
       unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
-
+      
       fedStuckInBusy_[fednumber] = 0; //clear the stuck in busy counter
       //      cout<<"fedStuckInBusy for fed "<<fednumber<<" set to "<< fedStuckInBusy_[fednumber]<<endl; //JMT very verbose debug info
 
@@ -1333,13 +1343,14 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
       uint32_t runNumber32=atol(runNumber_.c_str());
 
 
-
       fwrite(&runNumber64, sizeof(uint64_t), 1, dataFile_[fednumber]);
       fwrite(&runNumber32, sizeof(uint32_t), 1, errorFile_[fednumber]);
 #ifdef READ_LASTDAC
       lastDacFile_[fednumber]=fopen((outputDir_+"/LastDacFED_"+itoa(fednumber)+"_"+runNumber_+".ld").c_str(), "wb");
 #endif
     }
+
+    EndOfRunFEDReset(); //reset FED, clear SLink (at Start despite its name)	 
 
     //i don't know if we really have to protect a bool with a lock. But it can't hurt
     phlock_->take(); workloopContinue_=true; physicsRunningSentSoftErrorDetected = false;
@@ -1348,35 +1359,11 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
 
     diagService_->reportError("PixelFEDSupervisor::Start. Calib object == 0. Physics data taking workloop activated.", DIAGINFO);
     *console_<<"Start. Calib Object == 0. Physics data taking workloop activated."<<std::endl;
-
-    EndOfRunFEDReset(); //reset FED, clear SLink (at Start despite its name)	 
- 
-  } else if (theCalibObject_->mode()=="EmulatedPhysics") {    
-
-    std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
-    for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
-      unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
-      dataFile_[fednumber]=fopen((outputDir_+"/PhysicsDataFED_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
-      errorFile_[fednumber]=fopen((outputDir_+"/ErrorDataFED_"+itoa(fednumber)+"_"+runNumber_+".err").c_str(), "wb");
-      setbuf(errorFile_[fednumber], NULL);
-      ttsFile_[fednumber]=fopen((outputDir_+"/TTSDataFED_"+itoa(fednumber)+"_"+runNumber_+".tts").c_str(), "wb");
-      setbuf(ttsFile_[fednumber], NULL);
-      uint64_t runNumber64=atol(runNumber_.c_str());
-      uint32_t runNumber32=atol(runNumber_.c_str());
-      fwrite(&runNumber64, sizeof(uint64_t), 1, dataFile_[fednumber]);
-      fwrite(&runNumber32, sizeof(uint32_t), 1, errorFile_[fednumber]);
-    }
-
-    phlock_->take(); workloopContinue_=true; physicsRunningSentSoftErrorDetected = false;
-    physicsRunningSentRunningDegraded = false; phlock_->give();
-    workloop_->activate();
-    diagService_->reportError("PixelFEDSupervisor::Start. Emulated Physics workloop activated", DIAGINFO);
-    *console_<<"Start. Emulated Physics workloop activated."<<std::endl;
   }
-
+ 
   // Create the FEDCalibration object.
-  if ( theCalibObject_ != 0 )
-  {
+  if ( theCalibObject_ != 0 ) {
+
     //Create pointers to give to the calibration object
     PixelFEDSupervisorConfiguration* pixFEDSupConfPtr = dynamic_cast <PixelFEDSupervisorConfiguration*> (this);
     SOAPCommander* soapCmdrPtr = dynamic_cast <SOAPCommander*> (this);
@@ -1417,7 +1404,7 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
   diagService_->reportError("--- STOP ---",DIAGINFO);
   *console_<<"--- Stopping ---"<<std::endl;
 
-  if (theCalibObject_==0) {
+  if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
 
     if (fsm_.getStateName(fsm_.getCurrentState())=="Running") {
       
@@ -1456,36 +1443,8 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
 #endif
       }
     }
-   
+    
     EndOfRunFEDReset(); //reset FED, clear SLink
-  } else if (theCalibObject_->mode()=="EmulatedPhysics") {
-
-    if (fsm_.getStateName(fsm_.getCurrentState())=="Running") {
-      phlock_->take(); workloopContinue_=false; phlock_->give();
-      workloop_->cancel();
-      diagService_->reportError("PixelFEDSupervisor::Stop. Emulated Physics workloop is cancelled.", DIAGINFO);
-      *console_<<"Stop. Emulated Physics Taking workloop is cancelled."<<std::endl;    
-      
-      std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
-      for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
-	unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
-	fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
-	fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
-        fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
-      }
-
-    } else if (fsm_.getStateName(fsm_.getCurrentState())=="Paused") {
-      diagService_->reportError("PixelFEDSupervisor::Stop. Emulated Physics workloop is cancelled.", DIAGINFO);
-      *console_<<"Stop. Emulated Physics Taking workloop is cancelled."<<std::endl;
-
-      std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
-      for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
-        unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
-        fclose(dataFile_[fednumber]);   dataFile_[fednumber]=0;
-        fclose(errorFile_[fednumber]);  errorFile_[fednumber]=0;
-        fclose(ttsFile_[fednumber]);    ttsFile_[fednumber]=0;
-      }
-    }
 
   }
 
@@ -1527,24 +1486,18 @@ xoap::MessageReference PixelFEDSupervisor::Pause (xoap::MessageReference msg) th
   *console_<<"--- Pausing ---"<<std::endl;
 
   try {
-    if (theCalibObject_==0) {
+    if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
       
       phlock_->take(); workloopContinue_=false; phlock_->give();
       workloop_->cancel();
       diagService_->reportError("Pause. Physics data taking workloop cancelled.", DIAGINFO);
       *console_<<"Pause. Physics data taking workloop cancelled."<<std::endl;
       
-    } else if (theCalibObject_->mode()=="EmulatedPhysics") {
-      
-      phlock_->take(); workloopContinue_=false; phlock_->give();
-      workloop_->cancel();
-      diagService_->reportError("Pause. Emulated Physics data taking workloop cancelled.", DIAGINFO);
-      *console_<<"Pause. Emulated Physics data taking workloop cancelled."<<std::endl;
-      
     }
 
     toolbox::Event::Reference e(new toolbox::Event("Pause", this));
     fsm_.fireEvent(e);
+
   } catch (toolbox::fsm::exception::Exception & e) {
 
     *console_<<"[PixelFEDSupervisor::Pause] Pause is an invalid command for the "<<state_.toString()<<" state."<<std::endl;
@@ -1562,21 +1515,13 @@ xoap::MessageReference PixelFEDSupervisor::Resume (xoap::MessageReference msg) t
   diagService_->reportError("--- RESUME ---",DIAGINFO);
   *console_<<"--- Resuming ---"<<std::endl;
 
-  if (theCalibObject_==0) {
+  if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
 
     phlock_->take(); workloopContinue_=true; physicsRunningSentSoftErrorDetected = false;
     physicsRunningSentRunningDegraded = false;  phlock_->give();
     workloop_->activate();
     diagService_->reportError("Resume. Physics data taking workloop activated.", DIAGINFO);
     *console_<<"Resume. Physics data taking workloop activated."<<std::endl;
-
-  } else if (theCalibObject_->mode()=="EmulatedPhysics") {
-
-    phlock_->take(); workloopContinue_=true; physicsRunningSentSoftErrorDetected = false;
-    physicsRunningSentRunningDegraded = false;  phlock_->give();
-    workloop_->activate();
-    diagService_->reportError("Resume. Emulated Physics data taking workloop activated.", DIAGINFO);
-    *console_<<"Resume. Emulated Physics data taking workloop activated."<<std::endl;
 
   }
 
@@ -1602,8 +1547,8 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
   PixelTimer halttimer;
   halttimer.start();
   diagService_->reportError("--- HALT ---",DIAGINFO);
-
-  if (theCalibObject_==0) {
+  
+  if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
 
     if (fsm_.getStateName(fsm_.getCurrentState())=="Configured") {
 
@@ -1653,44 +1598,6 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
     }
 
     EndOfRunFEDReset(); //reset FED, clear SLink
-  } else if (theCalibObject_->mode()=="EmulatedPhysics") {
-
-    if (fsm_.getStateName(fsm_.getCurrentState())=="Configured") {
-
-      workloop_->remove(physicsRunning_);
-      diagService_->reportError("Halt from Configured. Removed Emulated Physics data taking job from the workloop.", DIAGINFO);
-      *console_<<"Halt from Configured. Removed Emulated Physics data taking job from the workloop."<<std::endl;
-
-    } else if (fsm_.getStateName(fsm_.getCurrentState())=="Running") {
-
-      phlock_->take(); workloopContinue_=false; phlock_->give();
-      workloop_->cancel();
-      workloop_->remove(physicsRunning_);
-      std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
-      for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
-        unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
-        fclose(dataFile_[fednumber]);   dataFile_[fednumber]=0;
-        fclose(errorFile_[fednumber]);  errorFile_[fednumber]=0;
-        fclose(ttsFile_[fednumber]);    ttsFile_[fednumber]=0;
-      }
-      diagService_->reportError("Halt from Running. Cancelled Emulated Physics data taking workloop, removed job from it and closed file.", DIAGINFO);
-      *console_<<"Halt from Running. Cancelled Emulated Physics data taking workloop, removed job from it and closed file."<<std::endl;
-      
-    } else if (fsm_.getStateName(fsm_.getCurrentState())=="Paused") {
-
-      workloop_->remove(physicsRunning_);
-      std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
-      for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
-        unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
-        fclose(dataFile_[fednumber]);   dataFile_[fednumber]=0;
-        fclose(errorFile_[fednumber]);  errorFile_[fednumber]=0;
-        fclose(ttsFile_[fednumber]);    ttsFile_[fednumber]=0;
-      }
-      
-      diagService_->reportError("Halt from Paused. Removed Emulated Physics data taking job from workloop. Closed file.", DIAGINFO);
-      *console_<<"Halt from Paused. Removed Emulated Physics data taking job from workloop. Closed file."<<std::endl;
-
-    }
 
   }
 
@@ -2163,7 +2070,7 @@ void PixelFEDSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 
 bool PixelFEDSupervisor::job_Configure ()
 {
-
+  cout << " job configure " << endl;
   PixelTimer getFEDCardTimer, configBoardTimer;
 
   // ASCII address table
@@ -2177,8 +2084,24 @@ bool PixelFEDSupervisor::job_Configure ()
   busAdapter_ = new HAL::VMEDummyBusAdapter();
 #else
   diagService_->reportError("I think I own the whole VME crate and will create a bus adapter.",DIAGTRACE);
+
   busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,0,0,HAL::CAENLinuxBusAdapter::A3818) ;
-  //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
+
+//  // The link has to depend on the crate number
+//  // crate =1, link=1
+//  // crate =2, link=2
+//  // crate =3, link=1
+//  int mytmplnk = 0;
+//  if(crate_>=1 && crate_<3) mytmplnk = crate_;
+//  else if(crate_==3) mytmplnk = 1; // for fpix, crate 3 is link 1
+//  const int link = mytmplnk;  // bpix has 2 crates = 1 supervisors 
+//  cout << " Bus Adapter: " << " crate # = " << crate_ << " link "<<link
+//       <<" crate "<<crate_<<endl;
+//  busAdapter_  = new HAL::CAENLinuxBusAdapter( HAL::CAENLinuxBusAdapter::V2718,
+//  				     link,0, HAL::CAENLinuxBusAdapter::A3818 );
+//  cout << " Bus Adapter 2 " << endl;
+//  //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
+
   //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
   diagService_->reportError("Got a CAEN Linux Bus Adapter to the FED",DIAGTRACE);
 #endif  
@@ -2392,36 +2315,43 @@ bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_I2O(toolbox::task::WorkLoop *w
 
   return true;
 }
-
+//----------------------------------------------------------------------
 // Write Error FIFO and Data FIFO 3 contents to files
 bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 
-  //  ::sleep(1); return true; //disable physics workloop
 
-  const bool useSharedMemory = false; // //FIXME Matt: Does this work?  Was false, set to true in order to test shared memory
-  const bool readSpyFifo3  = false; // true;
+  const bool useSharedMemory = false; //  KEEP false, set to true in order to test shared memory
+  const bool readSpyFifo3  = true; // true;
   const bool readErrorFifo = true;
-  //const bool readTTSFifo   = false; // true;
-  bool readTTSFifo = false; //not a const so we can make it true at the beginning of a run, for instance.
+  bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
   const bool readBaselineCorr = true;
-  const bool readLastDACFifo  = true;
+  const bool readLastDACFifo  = false;
   const bool readFifoStatusAndLFF = true;
-  const bool useSEURecovery = true; // Enable SEU recovery mechanism
+  const bool useSEURecovery = false; // Enable SEU recovery mechanism
   const bool timing = false;        // print output from Pixel Timers on each exit from the loop
+  const bool localPrint = false; 
+
+  //::sleep(1); return true; //disable physics workloop
 
   PixelTimer wlTimer;
   wlTimer.start();
 
+  // Skip if there are no active feds in this fed
+  if( vmeBaseAddressAndFEDNumberAndChannels_.size() == 0 ) return true;
+  
   try { //hardware and SOAP
 
     //    static std::map <unsigned long, map <unsigned int, Moments> > baselineAdj; //FIXME not used?
   std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
 
+  if(localPrint) cout<<" loops "<<countLoopsThisRun_<<endl;
+
   PixelFEDInterface *iFED=FEDInterface_[(i_vmeBaseAddressAndFEDNumberAndChannels->first.first)];
   int newEventNumber=iFED->readEventCounter();
-
   bool newEvent = newEventNumber!=eventNumber_; // If the Event Number of any FED incremented, it'd mean an increment for all FEDs - sdas
   bool firstCallThisRun = errorCountMap.empty() && ttsStateChangeCounterMap.empty() && lffMap.empty() && fifoStatusMap.empty();
+  
+  if(localPrint) cout<<" event "<<newEventNumber<<" "<<eventNumber_<<" "<<newEvent<<" "<<firstCallThisRun <<endl;
 
   // logic to spy one FED on each entry to workloop, rotating through
   static unsigned int lastFEDSpied;
@@ -2431,10 +2361,12 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   if (firstCallThisRun) {
     lastFEDSpied = 32768;//nonsense number
     spyNextFED = true;
+    if(localPrint) cout<<" spy "<<lastFEDSpied<<" "<<spyNextFED<<endl;
   }
 
+
   if(countLoopsThisRun_<100) readTTSFifo = true;
-  //cout << "countLoops=" << countLoops << ", countLoopsThisRun_=" << countLoopsThisRun_ << ", newEventNumber=" << newEventNumber << ", readTTSFifo=" << readTTSFifo << endl; //Ben - for making sure the counters work for the above line
+  if(localPrint) cout << "countLoops=" << countLoops << ", countLoopsThisRun_=" << countLoopsThisRun_ << ", newEventNumber=" << newEventNumber << ", readTTSFifo=" << readTTSFifo << endl; //Ben - for making sure the counters work for the above line
    
   PixelTimer statusTimer, statusTimerHW;
   PixelTimer spyTimer,spyTimerHW;
@@ -2449,12 +2381,17 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   //errTable->addColumn("OOSErrors","unsigned int 32");
   //errTable->addColumn("TimeOutErrors","unsigned int 32");
   
-  //  if (newEventNumber!=eventNumber_) { 
-  {
-    countLoops++;
-    countLoopsThisRun_++;
-    unsigned int counter = 1;
-    for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
+  //  if (newEventNumber!=eventNumber_) {
+
+  countLoops++;
+  countLoopsThisRun_++;
+  unsigned int counter = 1;
+
+  if(localPrint) cout<<" FED loop: event "<<newEventNumber<<" countLoops "<<countLoops
+		     <<" countLoopsThisRun "<<countLoopsThisRun_
+		     <<" counter "<<counter<<endl;
+
+  for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
 
       //check if we want to immediately kill this workloop
       //return 'true' because we don't want workloop_->cancel to throw an exception
@@ -2464,8 +2401,9 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
       iFED=FEDInterface_[vmeBaseAddress];
 
-      // We also want to check here if we're already in RunningDegraded
-      if (iFED->runDegraded && !physicsRunningSentRunningDegraded
+
+      // SEU stuff. We want to check here if we're already in RunningDegraded
+      if (useSEURecovery && iFED->runDegraded && !physicsRunningSentRunningDegraded
           && fsm_.getStateName(fsm_.getCurrentState()) == "Running") {
         cout << "FED " << fednumber << " tells us to go to RunningDegraded" << endl;
 	try {
@@ -2488,7 +2426,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	    diagService_->reportError("PixelFEDSupervisor::RunningDegraded: Failed to transition to Failed state!",DIAGFATAL);
 	  }
 	}
-      }
+      } // end if
 
       // Check for SEUs
       if (useSEURecovery && !physicsRunningSentSoftErrorDetected) {
@@ -2516,65 +2454,75 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       // each time workloop is entered, add 0-39 hits on each channel of each FED
       // randomly chosen, channel by channel
       //      if (fednumber == 6 || fednumber == 34 || fednumber == 35 || fednumber==38 ||fednumber==22) {
-      if (false) {   // Special test, normally disabled 
-	int SubAddr_Sim[9];
-	SubAddr_Sim[0]=0x3c000; 
-	SubAddr_Sim[1]=0x5c000; 
-	SubAddr_Sim[2]=0x7c000;
-	SubAddr_Sim[3]=0x9c000; 
-	SubAddr_Sim[4]=0xbc000; 
-	SubAddr_Sim[5]=0xdc000;
-	SubAddr_Sim[6]=0xfc000; 
-	SubAddr_Sim[7]=0x11c000; 
-	SubAddr_Sim[8]=0x13c000;
+      if (false && countLoops==0) {   // Special test, normally disabled 
+	const int SubAddr_Sim[9]={0x3c000,0x5c000,0x7c000,0x9c000,0xbc000,0xdc000,0xfc000,0x11c000,0x13c000};
+	//SubAddr_Sim[0]=0x3c000; 
+	//SubAddr_Sim[1]=0x5c000; 
+	//SubAddr_Sim[2]=0x7c000;
+	//SubAddr_Sim[3]=0x9c000; 
+	//SubAddr_Sim[4]=0xbc000; 
+	//SubAddr_Sim[5]=0xdc000;
+	//SubAddr_Sim[6]=0xfc000; 
+	//SubAddr_Sim[7]=0x11c000; 
+	//SubAddr_Sim[8]=0x13c000;
 
-	unsigned int data=0;     // # hits/ROC in normal event
-	unsigned int bigdata=30; // # hits/ROC in a large event
-	unsigned int norm=10000; // 1/norm chance of hitting the jackpot
-	int wait=10;  // time to wait before shutting off large payload
+	const unsigned int data=1; // 0;     // # hits/ROC in normal event
+  // const unsigned int bigdata=30; // # hits/ROC in a large event
+  // const unsigned int norm=10000; // 1/norm chance of hitting the jackpot
+  // const int wait=10;  // time to wait before shutting off large payload
        
 	for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
-	  if (rand()%norm==0) {
-	    cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+1 << " nhits/roc=" << bigdata <<endl;
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	    usleep(wait);
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	  }
+	  cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+1 << " nhits/roc=" << data <<SubAddr_Sim[jk]<<endl;
+	  VMEPtr_[vmeBaseAddress]->write("LAD_N", data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	  VMEPtr_[vmeBaseAddress]->write("LAD_NC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	  VMEPtr_[vmeBaseAddress]->write("LAD_SC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	  VMEPtr_[vmeBaseAddress]->write("LAD_S", data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
 	}
 
-	for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
-	  if (rand()%norm==0) {
-	    cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+10 << " nhits/roc=" << bigdata <<endl;
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	    usleep(wait);
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	  }
-	}
+	// for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
+	//   if (rand()%norm==0) {
+	//     cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+1 << " nhits/roc=" << bigdata <<endl;
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//     usleep(wait);
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//   }
+	// }
 
-	for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
-	  if (rand()%norm==0) {
-	    cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+19 << " nhits/roc=" << bigdata <<endl;
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	    usleep(wait);
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	  }
-	}
+	// for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
+	//   if (rand()%norm==0) {
+	//     cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+10 << " nhits/roc=" << bigdata <<endl;
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//     usleep(wait);
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//   }
+	// }
 
-	for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
-	  if (rand()%norm==0) {
-	    cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+28 << " nhits/roc=" << bigdata <<endl;
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	    usleep(wait);
-	    VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
-	  }
-	}
-      } // end of special test payload
+	// for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
+	//   if (rand()%norm==0) {
+	//     cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+19 << " nhits/roc=" << bigdata <<endl;
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//     usleep(wait);
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//   }
+	// }
+
+	// for(int jk=0;jk<9;jk++){//loop through all 9 channels in each FPGA
+	//   if (rand()%norm==0) {
+	//     cout << "set FED 0x" << hex << vmeBaseAddress << dec << " channel " << jk+28 << " nhits/roc=" << bigdata <<endl;
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",bigdata,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//     usleep(wait);
+	//     VMEPtr_[vmeBaseAddress]->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+	//   }
+	// }
+
+      } // end if, for special test payload
     
       statusTimer.start();
 
       // Read the FIFO status register and LFF  
       uint32_t LFFbit = 0; //want to keep this in wider scope so that we can see it later
       if(readFifoStatusAndLFF ) { // LFF and fifo status appear to be available at 40 MHz
+
 	// Read fifo status
 	statusTimerHW.start();
         unsigned int fstat=iFED->getFifoStatus();
@@ -2582,10 +2530,14 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
         iFED->dump_FifoStatus(fstat); // Verbose?  This produces output via cout.
 	fstat=fstat&0x3ff;  
         if(fstat!=0) diagService_->reportError(" FIFO Status for event number "+stringF(newEventNumber)+" "+htoa(fstat), DIAGINFO);
+
+	if(localPrint) cout<<"ReadFifoStatus: stat "<<hex<<fstat<<dec<<endl;
+
 	// accumulate statistics in map of moments
 	for (unsigned int ibit=0; ibit<10;ibit++) {
 	  fifoStatusMap[fednumber][ibit].push_back( (fstat >> ibit) & 0x1LL );
 	}
+
 	// Read event counter register (including Link Full Flag)
         //ReadSpyPause[31]    SLinkLFF[30]   all zero [29..24]   EventCounter[23..0]
 	statusTimerHW.start();
@@ -2712,10 +2664,19 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  uint32_t ondata=0;
 	  unsigned int errTableRowNumber = 0;
 	  unsigned int errorRowNumberCorrection = (crate_ - 1) * 16;
+	  if(localPrint) cout<<" Error report"<<endl;
+
           for (int iw=1;iw<37;iw++){
             VMEPtr_[vmeBaseAddress]->read("LAD_C",&ondata,(0x080000+0x4*iw));
-            if((ondata&0x3fff)>0) statusFile << " chnl: "<<iw<<" Num. of OOS: " << (ondata&0x3fff) << std::endl;
-            if((ondata&0xffffc000)>0) statusFile << " chnl: "<<iw<<" Num. of NOR Errs: " << ((ondata&0xffffc000)>>14) << std::endl;
+            if((ondata&0x3fff)>0) {
+ 	      statusFile << " chnl: "<<iw<<" Num. of OOS: " << (ondata&0x3fff) << std::endl;
+ 	      if(localPrint) cout<< " chnl: "<<iw<<" Num. of OOS: " << (ondata&0x3fff) << std::endl;
+
+	    }
+            if((ondata&0xffffc000)>0) {
+	      statusFile<<" chnl: "<<iw<<" Num. of NOR Errs: " << ((ondata&0xffffc000)>>14) << std::endl;
+	      if(localPrint) cout<<" chnl: "<<iw<<" Num. of NOR Errs: " <<((ondata&0xffffc000)>>14)<<endl;
+	    }
 
             errTableRowNumber = ((fednumber - errorRowNumberCorrection) *36)+(iw-1);
 
@@ -2732,9 +2693,14 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	    	    
 	    // Add the timouts (not enabled yet, needs new firmware) Enable 21/9/12 d.k.
 	    VMEPtr_[vmeBaseAddress]->read("LAD_C",&ondata,(0x088000+0x4*iw));
-	    if((ondata&0x3fff)>0) statusFile << " chnl: "<<iw<<" Num. of Timeouts: " << (ondata) << std::endl;	   
+
+	    if((ondata&0x3fff)>0) {
+	      statusFile << " chnl: "<<iw<<" Num. of Timeouts: " << (ondata) << std::endl;	   
+	      if(localPrint) cout<<" chnl: "<<iw<<" Num. of Timeouts: " <<(ondata)<<endl;	   
+	    }
 	    *numTimeOutErrors = (ondata);
 	    errTable->setValueAt(errTableRowNumber,"TimeOutErrors", *numTimeOutErrors);
+
 	  }
 	  
 	  VMEPtr_[vmeBaseAddress]->read("LAD_C",&ondata,0x098000);
@@ -2755,11 +2721,15 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       }
       statusTimer.stop();
 
+
       // Drain DataFIFO 3 and write to file
-      if(readSpyFifo3 && newEvent  && spyNextFED && !spiedFED ) {
+      //if(readSpyFifo3 && newEvent  && spyNextFED && !spiedFED ) {
+      if(readSpyFifo3 && newEvent ) {
+	if(localPrint) cout<<" Read spy fifo3"<<endl;
 	spyTimer.start();
 	lastFEDSpied=fednumber;
 	spiedFED=true;  //resets to false on each entrance to PhysicsRunning
+
 	// Drain DataFIFO 3 and write to file
 	spyTimerHW.start();
 	uint64_t buffer64[4096];
@@ -2768,6 +2738,8 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
+	    if(localPrint) cout<<" fifo3 length "<<dataLength<<endl;
+
 	    if(dataLength>0){  // Add protection from Will
 	      fwrite(buffer64, sizeof(uint64_t), dataLength, dataFile_[fednumber]);
 	    } else {
@@ -2777,6 +2749,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	      // dump first 10 words
 	      for (int i=0; i<=4;++i) std::cout<<" "<<i<<" = 0x"<<std::hex<<buffer64[i]<<std::dec<<std::endl;
 	    }  // end protection from will
+
 
 	    // Compare FED ID from SLink Header and present FED Number
 	    unsigned int fednumber_header=(buffer64[0] & 0x00000000000fff00)>>8;
@@ -2824,23 +2797,25 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	unsigned int errorLength=iFED->drainErrorFifo(errBuffer); // (int)errorLength -> (unsigned int)errorLength
 	errTimerHW.stop();
 	if (errorLength>0) {
-	  //cout<<"Error fifo not empty for FED "<<fednumber<<" "<<errorLength<<endl;
+	  if(localPrint) cout<<"Error fifo not empty for FED "<<fednumber<<" "<<errorLength<<endl;
 	  // add time and error length
 	  struct timeval tv;
 	  gettimeofday(&tv, NULL);
 	  double tt1 = tv.tv_sec;
 	  //double tt2 = tv.tv_usec;
-	  fwrite(&tt1,         sizeof(double),        1, errorFile_[fednumber]);
-	  fwrite(&errorLength, sizeof(unsigned int), 1, errorFile_[fednumber]); // sizeof(unsigned long) -> sizeof(unsigned int)
-
+	  fwrite(&tt1,         sizeof(double),       1, errorFile_[fednumber]);
+	  // sizeof(unsigned long) -> sizeof(unsigned int)
+	  fwrite(&errorLength, sizeof(unsigned int), 1, errorFile_[fednumber]); 
 	  fwrite(errBuffer, sizeof(uint32_t), errorLength, errorFile_[fednumber]);      
 	  //fflush(errorFile_[fednumber]);  //be sure buffer is flushed // now unbuffered
+
 	  //Set the errors
 	  if (useSharedMemory) {
 	    dat->getWritableAddress()->setErrors(errBuffer,errorLength);
 	    //fire the update event
 	    ErrorCollectionDataOwner.fireObjectUpdateEvent(ss.str());
 	  }
+
 	  //fill map
 	  errorCountMap[fednumber][0]+=errorLength;
 	  // could unpack the errors and count by channel
@@ -2850,6 +2825,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	}
       } // if readErrorFifo
       errTimer.stop();
+
 
 
       // Read the TTS fifo (Do this every time workloop is called)
@@ -2968,7 +2944,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
     // End and update the event counter
     eventNumber_=newEventNumber;
 
-  }  // if new event
+    //}  // if new event
   // tuning output from timers
   wlTimer.stop();
 
@@ -2997,6 +2973,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
     std::cout << "PhysicsRunning readBaselineHW times=" << stringF(blTimerHW.ntimes()) << " total time =" << stringF(blTimerHW.tottime()) 
 	      << " avg time =" << stringF(blTimerHW.avgtime()) << std::endl;
   }
+
   } catch ( HAL::BusAdapterException & hardwareError ) {
     diagService_->reportError("Hardware error in the FED Physics workloop. Message: "+string(hardwareError.what()),DIAGERROR);
   }
@@ -3344,7 +3321,6 @@ xoap::MessageReference PixelFEDSupervisor::BaselineMonitor (xoap::MessageReferen
     } 
        
   }
-
 
 
   xoap::MessageReference reply=MakeSOAPMessageReference("BaselineMonitorDone");
@@ -3987,9 +3963,8 @@ xoap::MessageReference PixelFEDSupervisor::SetFEDOffsetsEnMass (xoap::MessageRef
 	return reply;
 }
 
-void PixelFEDSupervisor::EndOfRunFEDReset()
-{
-  
+
+void PixelFEDSupervisor::EndOfRunFEDReset() {
   
   std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
   for (; i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end(); ++i_vmeBaseAddressAndFEDNumberAndChannels) {
@@ -4545,19 +4520,12 @@ void PixelFEDSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine &
   try {
 
       //Code from Pause/Resume with space for any needed function.  For now just a state transition.....
-      if (theCalibObject_==0) {
+    if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
         
       phlock_->take(); workloopContinue_=false; phlock_->give();
         workloop_->cancel();
         diagService_->reportError("PixelFEDSupervisor::stateFixingSoftError: Physics data taking workloop cancelled.", DIAGINFO);
         *console_<<"PixelFEDSupervisor::stateFixingSoftError: Physics data taking workloop cancelled."<<std::endl;
-        
-      } else if (theCalibObject_->mode()=="EmulatedPhysics") {
-        
-        phlock_->take(); workloopContinue_=false; phlock_->give();
-        workloop_->cancel();
-        diagService_->reportError("PixelFEDSupervisor::stateFixingSoftError: Emulated Physics data taking workloop cancelled.", DIAGINFO);
-        *console_<<"PixelFEDSupervisor::stateFixingSoftError: Emulated Physics data taking workloop cancelled."<<std::endl;
         
       }
       
@@ -4577,21 +4545,13 @@ void PixelFEDSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine &
 	  
 	}
       
-      if (theCalibObject_==0) {
+      if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
         
         phlock_->take(); workloopContinue_=true; physicsRunningSentSoftErrorDetected = false;
         physicsRunningSentRunningDegraded = false;  phlock_->give();
         workloop_->activate();
         diagService_->reportError("PixelFEDSupervisor::ResumeFromSoftError. Physics data taking workloop activated.", DIAGINFO);
         *console_<<"PixelFEDSupervisor::ResumeFromSoftError. Physics data taking workloop activated."<<std::endl;
-        
-      } else if (theCalibObject_->mode()=="EmulatedPhysics") {
-        
-        phlock_->take(); workloopContinue_=true; physicsRunningSentSoftErrorDetected = false;
-        physicsRunningSentRunningDegraded = false; phlock_->give();
-        workloop_->activate();
-        diagService_->reportError("PixelFEDSupervisor::ResumeFromSoftError: Emulated Physics data taking workloop activated.", DIAGINFO);
-        *console_<<"PixelFEDSupervisor::ResumeFromSoftError: Emulated Physics data taking workloop activated."<<std::endl;
         
       }  
     

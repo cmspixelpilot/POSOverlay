@@ -253,11 +253,6 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     void createFEDVMEAccess();
     void deleteHardware();
 
-    // Keep track of when we've sent SOAP messages in physics workloop
-    // so we don't send them multiple times
-    bool physicsRunningSentRunningDegraded, physicsRunningSentSoftErrorDetected;
-		
-
     #ifdef VMEDUMMY
       HAL::VMEDummyBusAdapter *busAdapter_;
     #else
@@ -299,7 +294,11 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
 
     toolbox::BSem m_lock;
     int  m_credits;
-
+    
+    // Keep track of when we've sent SOAP messages in physics workloop
+    // so we don't send them multiple times
+    bool physicsRunningSentRunningDegraded, physicsRunningSentSoftErrorDetected;
+    
     std::string runNumber_;
     std::string outputDir_;
 
