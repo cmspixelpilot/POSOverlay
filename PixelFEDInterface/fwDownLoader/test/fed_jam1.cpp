@@ -673,6 +673,7 @@ one_ms_delay =int(10000.0*(100000000.0/(1.0*diff)));
 //one_ms_delay = 50000L;
 
 cout<<"one ms # loops ="<<one_ms_delay<<endl;
+cout<<" you may need to uncomment here and use a minimum number if there are failures. Suggested min is 620000"<<endl;
 }
 
 char *error_text[] =
@@ -711,35 +712,21 @@ char *error_text[] =
 /* VME - SUPPORT */
 int main (int argc, char *argv[])
 {
-	CVBoardTypes  VMEBoard = cvV2718;  // define interface type
-  int         Link = 0;  // define device & link
-  int         Device = 0;
  	char reply;
 	char comm[256];
 	
 	//Cls();
 	printf("welcome to VMERA stdio version\n");
 	
-	// init vxi
-    if (CAENVME_Init(VMEBoard, Device, Link, &BHandle) != cvSuccess)
+
+if( (argc != 6) )
     {
-  	  printf ("Unable to Initialize CAEN library... exiting");
-	  return -1;	/* Initialisation failure */
-    }
-    else
-    {
-      printf("CAEN initialized. lets go to work... \n\n");
-    }
-
-
-
-
-if( (argc != 5) )
-    {
-    printf("Usage: fed_jam1.exe <ACTION> <BASEADDRESS> <FPGA GROUP> <FILENAME> \n");
+    printf("Usage: fed_jam1.exe <ACTION> <BASEADDRESS> <FPGA GROUP> <DEVICE> <FILENAME> \n");
     printf("<ACTION> may be PROGRAM or VERIFY\n");
     printf("<BASEADDRESS> should be hex e.g. 0x1C000000\n");
     printf("<FPGA GROUP> should be FRONT or CENTER\n");
+     printf("<DEVICE> is which fiber in the VME opto card (old PCI card = 0) \n");
+
     exit(1);
     }
 else 
@@ -754,8 +741,27 @@ else
             exit(1);
             }
           }
+	CVBoardTypes  VMEBoard = cvV2718;  // define interface type
+  int         Link = 0;  // define device & link
+  int         Device = 0;
+ 
+sscanf((char*)argv[4], "%d", &Device);
+
+
+//init the CAEN VME
+
+    if (CAENVME_Init(VMEBoard, Device, Link, &BHandle) != cvSuccess)
+    {
+  	  printf ("Unable to Initialize CAEN library... exiting");
+	  return -1;	/* Initialisation failure */
+    }
+    else
+    {
+      printf("CAEN initialized. lets go to work... \n\n");
+    }
+
 	  
-   filename=(char*)argv[4];	  
+   filename=(char*)argv[5];	  
    sprintf(comm,"ls -l %s",filename);
    printf("\n=====================================================================\n");
    system(comm);

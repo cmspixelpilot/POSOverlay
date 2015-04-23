@@ -5,7 +5,8 @@
 // Correct the bug in address level loading. 19/04/06, d.k.
 // Change to the event counter. 26/04/06, d.k.
 // Add Fifo readouts for all channels. 28/04/06. d.k.
- 
+// Add brackets.
+
 #include <iostream>
 #include <time.h>
 #include <assert.h>
@@ -1371,7 +1372,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
   }
 #endif // USE_HAL
 
-  usleep(10);
+  usleep(20);
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds );
@@ -1381,7 +1382,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(10);//
+  usleep(20);//
   
   // I2C PAYLOAD
   ds =  Register_Nr;
@@ -1393,7 +1394,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_LOAD"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(10);//
+  usleep(20);//
   
   i2c_addr=7*2; 
   i2c_nbytes=1;
@@ -1407,7 +1408,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_ADDR_RW"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(10);//
+  usleep(20);//
   
   usleep(300);
   
@@ -1420,7 +1421,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in read TTCRX_I2C_REG_READ"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret);   }
 #endif // USE_HAL
-  usleep(10);//
+  usleep(20);//
   
   //Report Status 
   if((d&0xff)==1)printf("ERROR: BUS BUSY !! \n");
@@ -1438,8 +1439,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(10);
-
+  usleep(20);
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1449,7 +1449,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(10);
+  usleep(20);
     
   /////////////////////////////  I2C READ  //////////////////////////////////
  
@@ -1464,7 +1464,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       cout<<"Error in write TTCRX_I2C_ADDR_RW"<<hex<<ret<<" "<<ds<<dec<<endl;
       analyzeError(ret); }
 #endif // USE_HAL
-    usleep(10);//
+    usleep(20);//
     //Check Status
 #ifdef USE_HAL // Use HAL
     vmeDevicePtr->read("I2C_RD_STAT",&d);
@@ -1474,7 +1474,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       cout<<"Error in read TTCRX_I2C_RD_STAT"<<hex<<ret<<" "<<ds<<dec<<endl;
       analyzeError(ret);   }
 #endif // USE_HAL
-    usleep(10);//
+    usleep(20);//
     //Report Status 
     if((d&0xff)==1)printf("ERROR: BUS BUSY !! \n");
     if((d&0xff)==2)printf("ERROR: I2C_ADDR NOT ACKNOWLEDGED !! \n");
@@ -1489,7 +1489,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       analyzeError(ret);   }
 #endif // USE_HAL
     
-    usleep(10);//
+    usleep(20);//
     return(d&0xff);
 }
 ////////////////////////////////////////////////////////////////////////////////// 
@@ -2199,7 +2199,8 @@ if(((data[960]&0xff)==0xff)&&((data[959]&0xff)!=0xff)){count+=961;} else
 return 1000;}
 
 //cout<<" call fixBBB "<<chnl<<endl; 
-int newstatus = FixBBB(chnl,data);
+//int newstatus = FixBBB(chnl,data);
+ FixBBB(chnl,data);
 
   return count;
 }
@@ -3395,23 +3396,23 @@ int PixelFEDInterface::setPhases(void) {
       int data = pixelFEDCard.clkphs1_9;
       //cout << "set phase of channel " << chan << " to " << phase << endl;
       //cout << "OLD clkphs1_9 = " << data << endl;
-      data = (data & ~(1 << chan-1)) | (phase << (chan-1)); //set to 0 or 1
+      data = (data & ~(1 << (chan-1))) | (phase << (chan-1)); //set to 0 or 1
       //cout << "NEW clkphs1_9 = " << data << endl;
       pixelFEDCard.clkphs1_9=data;
      } 
     else if(chan<19) {  // channels 10-18, in NC
        int data = pixelFEDCard.clkphs10_18; 
-       data = (data & ~(1 << chan-10)) | (phase << (chan-10)); //set to 0 or 1
+       data = (data & ~(1 << (chan-10))) | (phase << (chan-10)); //set to 0 or 1
        pixelFEDCard.clkphs10_18=data;
     } 
     else if(chan<28) {  // channels 19-27, in SC
       int data = pixelFEDCard.clkphs19_27; 
-      data = (data & ~(1 << chan-19)) | (phase << (chan-19)); //set to 0 or 1
+      data = (data & ~(1 << (chan-19))) | (phase << (chan-19)); //set to 0 or 1
       pixelFEDCard.clkphs19_27=data;
     } 
     else if(chan<37) {  // channels 28-36, in S
        int data = pixelFEDCard.clkphs28_36; // 
-       data = (data & ~(1 << chan-28)) | (phase << (chan-28)); //set to 0 or 1
+       data = (data & ~(1 << (chan-28))) | (phase << (chan-28)); //set to 0 or 1
        pixelFEDCard.clkphs28_36=data;
     }
 else return(-1);
@@ -4082,29 +4083,36 @@ void PixelFEDInterface::get_MODE_front() {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 int PixelFEDInterface::get_adc_1v2v(int chnl) {
+  
+  // bracket logic:
+  // (1<<((((chnl%2)+chnl)/2)-1))
+  // each bit controls 2 adc channels. E.g.
+  // 1,2 bit 0
+  // 3,4 bit 1
+  // 5,6 bit 2
 
-	if(chnl<1 | chnl>36){
+	if((chnl<1) | (chnl>36)){
 		cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of range "<<endl;
 		assert(0);}
 	
 	if(chnl<13){
 	
-		if ( (int)(pixelFEDCard.Nadcg&(1<<((chnl%2+chnl)/2)-1)) != 0 ) return 1;
+		if ( (int)(pixelFEDCard.Nadcg&(1<<((((chnl%2)+chnl)/2)-1))) != 0 ) return 1;
 		else                                                           return 0;
 	
-	} else if(chnl>12 & chnl <21) {
+	} else if((chnl>12) & (chnl <21)) {
 	
-		if ( (int)(pixelFEDCard.NCadcg&(1<<(((chnl-12)%2+(chnl-12))/2) -1)) != 0 ) return 1;
+		if ( (int)(pixelFEDCard.NCadcg&(1<<((((chnl-12)%2+(chnl-12))/2) -1))) != 0 ) return 1;
 		else                                                                       return 0;
 
-	} else if(chnl>20 & chnl <29) {
+	} else if((chnl>20) & (chnl <29)) {
 	
-		if ( (int)(pixelFEDCard.SCadcg&(1<<(((chnl-20)%2+(chnl-20))/2)-1)) != 0 ) return 1;
+		if ( (int)(pixelFEDCard.SCadcg&(1<<((((chnl-20)%2+(chnl-20))/2)-1))) != 0 ) return 1;
 		else                                                                      return 0;
 	
 	} else {
 	
-		if ( (int)(pixelFEDCard.Sadcg&(1<<(((chnl-28)%2+(chnl-28))/2)-1)) != 0 ) return 1;
+		if ( (int)(pixelFEDCard.Sadcg&(1<<((((chnl-28)%2+(chnl-28))/2)-1))) != 0 ) return 1;
 		else                                                                     return 0;
 
 	}
@@ -4118,29 +4126,29 @@ int PixelFEDInterface::get_adc_1v2v(int chnl) {
 // IMPORTANT!!! each adc has 2 channels
 void PixelFEDInterface::set_adc_1v2v(int mode,int chnl) {
 
-if(chnl<1 | chnl>36){
+if((chnl<1) | (chnl>36)){
     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of range "<<endl;
     return;}
 
 if(chnl<13){
 
-if(mode==1)pixelFEDCard.Nadcg = pixelFEDCard.Nadcg|(1<<((chnl%2+chnl)/2)-1);
-if(mode==0)pixelFEDCard.Nadcg = pixelFEDCard.Nadcg&(0x3f ^ (1<<((chnl%2+chnl)/2)-1));
+if(mode==1)pixelFEDCard.Nadcg = pixelFEDCard.Nadcg|(1<<(((chnl%2+chnl)/2)-1));
+if(mode==0)pixelFEDCard.Nadcg = pixelFEDCard.Nadcg&(0x3f ^ (1<<(((chnl%2+chnl)/2)-1)));
 
-} else if(chnl>12 & chnl <21) {
+} else if((chnl>12) & (chnl <21)) {
 
-if(mode==1)pixelFEDCard.NCadcg =pixelFEDCard.NCadcg|(1<<(((chnl-12)%2+(chnl-12))/2) -1);
-if(mode==0)pixelFEDCard.NCadcg =pixelFEDCard.NCadcg&(0xf ^ (1<<(((chnl-12)%2+(chnl-12))/2)-1));
+if(mode==1)pixelFEDCard.NCadcg =pixelFEDCard.NCadcg|(1<<((((chnl-12)%2+(chnl-12))/2) -1));
+if(mode==0)pixelFEDCard.NCadcg =pixelFEDCard.NCadcg&(0xf ^ (1<<((((chnl-12)%2+(chnl-12))/2)-1)));
 
-} else if(chnl>20 & chnl <29) {
+} else if((chnl>20) & (chnl <29)) {
 
-if(mode==1)pixelFEDCard.SCadcg =pixelFEDCard.SCadcg|(1<<(((chnl-20)%2+(chnl-20))/2)-1);
-if(mode==0)pixelFEDCard.SCadcg =pixelFEDCard.SCadcg&(0xf ^ (1<<(((chnl-20)%2+(chnl-20))/2)-1));
+if(mode==1)pixelFEDCard.SCadcg =pixelFEDCard.SCadcg|(1<<((((chnl-20)%2+(chnl-20))/2)-1));
+if(mode==0)pixelFEDCard.SCadcg =pixelFEDCard.SCadcg&(0xf ^ (1<<((((chnl-20)%2+(chnl-20))/2)-1)));
 
 } else {
 
-if(mode==1)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg|(1<<(((chnl-28)%2+(chnl-28))/2)-1);
-if(mode==0)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg&(0xf ^ (1<<(((chnl-28)%2+(chnl-28))/2)-1));
+if(mode==1)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg|(1<<((((chnl-28)%2+(chnl-28))/2)-1));
+if(mode==0)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg&(0xf ^ (1<<((((chnl-28)%2+(chnl-28))/2)-1)));
 
 }
 
@@ -5588,13 +5596,13 @@ if(pixelFEDCard.fifo3Wrnlvl<1){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" fifo-3 
 // new code to set the Warining limit for fifo2
   const uint32_t fifo2_limit = (uint32_t) pixelFEDCard.FIFO2Limit;
   cout<<" The limit on fifi-2 is "<<pixelFEDCard.FIFO2Limit<<endl;
-  uint32_t data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff)+(fifo2_limit)<<10;
+  uint32_t data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
   vmeDevicePtr->write("NFifo1bzlv", data );
-  data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff)+(fifo2_limit)<<10;
+  data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
   vmeDevicePtr->write("NCFifo1bzlv", data );
-  data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff)+(fifo2_limit)<<10;
+  data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
   vmeDevicePtr->write("SCFifo1bzlv", data );
-  data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff)+(fifo2_limit)<<10;
+  data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
   vmeDevicePtr->write("SFifo1bzlv", data );
 
 
@@ -5727,6 +5735,7 @@ data = (pixelFEDCard.S_hitlimit&0x3ff)+(12<<16);
 void PixelFEDInterface::set_ROCskip(void)
 {
 #if 0
+
 //Check data words
  if((pixelFEDCard.N_testreg&0x7e0)>0){
 if((pixelFEDCard.N_testreg&0x7e0)>(0x120))
@@ -5770,6 +5779,37 @@ vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, of
 vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
+
+#if 0
+  // test BBB
+  // if(pixelFEDCard.N_testreg>0){cout<<" skip BBB ROC "<<hex
+  //                                   <<pixelFEDCard.N_testreg
+  //                                   <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  //                                   <<endl;}
+  // if(pixelFEDCard.NC_testreg>0){cout<<" skip BBB ROC "<<hex
+  //                                    <<pixelFEDCard.NC_testreg
+  //                                    <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  //                                   <<endl;}
+  // if(pixelFEDCard.SC_testreg>0){cout<<" skip BBB ROC "<<hex
+  //                                    <<pixelFEDCard.SC_testreg
+  //                                    <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  //                                    <<endl;}
+  // if(pixelFEDCard.S_testreg>0){cout<<" skip BBB ROC "<<hex
+  //                                   <<pixelFEDCard.S_testreg
+  //                                   <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  //                                   <<endl;}
+
+
+uint32_t offset = 0x1a8000;
+uint32_t data = (pixelFEDCard.N_testreg&0xfff);
+ vmeDevicePtr->write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
+data = (pixelFEDCard.NC_testreg&0xfff);
+ vmeDevicePtr->write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
+data = (pixelFEDCard.SC_testreg&0xfff);
+ vmeDevicePtr->write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
+data = (pixelFEDCard.S_testreg&0xfff);
+ vmeDevicePtr->write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -5806,7 +5846,8 @@ return 0;
 
 } else if((chnl>27)&(chnl<37)){
 
-pixelFEDCard.S_testreg=chnl<<5+(roc-1);
+  //pixelFEDCard.S_testreg=chnl<<5+(roc-1);
+  pixelFEDCard.S_testreg=(chnl<<5)+(roc-1);
 set_ROCskip();
 return 0;
 
@@ -5846,38 +5887,64 @@ int PixelFEDInterface::FixBBB(int chan,uint32_t *data)
 
   const bool debug = false;
 
+  // // test BBB
+  // if(pixelFEDCard.N_testreg>0){cout<<" skip BBB ROC "<<hex
+  // 				   <<pixelFEDCard.N_testreg
+  // 				   <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  // 				   <<" " <<chan<<endl;}
+  // if(pixelFEDCard.NC_testreg>0){cout<<" skip BBB ROC "<<hex
+  // 				    <<pixelFEDCard.NC_testreg
+  // 				    <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  // 				    <<" " <<chan<<endl;}
+  // if(pixelFEDCard.SC_testreg>0){cout<<" skip BBB ROC "<<hex
+  // 				    <<pixelFEDCard.SC_testreg
+  // 				    <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  // 				    <<" " <<chan<<endl;}
+  // if(pixelFEDCard.S_testreg>0){cout<<" skip BBB ROC "<<hex
+  // 				   <<pixelFEDCard.S_testreg
+  // 				   <<" for fed "<<dec<<pixelFEDCard.fedNumber
+  // 				   <<" " <<chan<<endl;}
+
+
   if(debug) cout<<"BBB entered channel "<<chan<<dec<<((pixelFEDCard.N_testreg&0x7e0)>>5)<<" trans channel "<<chan<<hex<<" testreg 0x"<<pixelFEDCard.N_testreg<<dec<<endl;
 
 
-int iroc=0;
-if(chan<10){if(chan!=((pixelFEDCard.N_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.N_testreg&0x1f);}}
-if(chan>9&&chan<19){if(chan!=((pixelFEDCard.NC_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.NC_testreg&0x1f);}}
-if(chan>18&&chan<28){if(chan!=((pixelFEDCard.SC_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.SC_testreg&0x1f);}}
-if(chan>27){if(chan!=((pixelFEDCard.S_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.SC_testreg&0x1f);}}
+  int iroc=0;
+  if(chan<10){if(chan!=((pixelFEDCard.N_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.N_testreg&0x1f);}}
+  if(chan>9&&chan<19){if(chan!=((pixelFEDCard.NC_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.NC_testreg&0x1f);}}
+  if(chan>18&&chan<28){if(chan!=((pixelFEDCard.SC_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.SC_testreg&0x1f);}}
+  if(chan>27){if(chan!=((pixelFEDCard.S_testreg&0x7e0)>>5)){ return -1;}else{iroc=(pixelFEDCard.SC_testreg&0x1f);}}
+  
 
- if(debug) cout<<" attempting ub insertion for channel "<<chan<<" roc "<<iroc<<endl;
+ if(debug) cout<<" attempting ub insertion for channel "<<chan<<" roc "
+	       <<iroc<< " "<<  pixelFEDCard.Ublack[chan-1] <<endl;
 
-int ubpos[32];int nubs=0;int ublvls[32];
+ int ubpos[32];int nubs=0;int ublvls[32];
+ for(int ij=0;ij<100;ij++) { //header
+   //cout<<data[ij]<<" "<< ((data[ij]&0xffc00000)>>22) <<endl;
+   if( (int((data[ij]  &0xffc00000)>>22)<pixelFEDCard.Ublack[chan-1])&&
+       (int((data[ij+1]&0xffc00000)>>22)<pixelFEDCard.Ublack[chan-1])&&
+       (int((data[ij+2]&0xffc00000)>>22)<pixelFEDCard.Ublack[chan-1])&&
+       (nubs==0) ) {  //found UB
+     nubs=3;ubpos[0]=ij;ubpos[1]=ij+1;ubpos[2]=ij+2;
+     ublvls[0]=((data[ij]   & 0xffc00000)>>22);
+     ublvls[1]=((data[ij+1] & 0xffc00000)>>22);
+     ublvls[2]=((data[ij+2] & 0xffc00000)>>22);
 
-for(int ij=0;ij<100;ij++){//header
-
-if( (int((data[ij] & 0xffc00000)>>22)<pixelFEDCard.Ublack[chan-1])&&
-(int((data[ij+1] & 0xffc00000)>>22)<pixelFEDCard.Ublack[chan-1])&&
-(int((data[ij+2] & 0xffc00000)>>22)<pixelFEDCard.Ublack[chan-1])&&(nubs==0) ) {//found UB
-nubs=3;ubpos[0]=ij;ubpos[1]=ij+1;ubpos[2]=ij+2;
-ublvls[0]=((data[ij] & 0xffc00000)>>22);
-ublvls[1]=((data[ij+1] & 0xffc00000)>>22);
-ublvls[2]=((data[ij+2] & 0xffc00000)>>22);
-break;
+     if(debug) cout<<" found "<<ublvls[0]<<" "<<ublvls[1]<<" "<<ublvls[2]<<endl;
+     break;
+   }
+   //cout<<"if no ultrablack header...don't change the buffer "<<nubs<<endl;
+   //return 0;
+ }//header
+ 
+ if(nubs==0) { // stop here if the UBUBUB was not found 
+   cout<<"no ultrablack header found ...don't change the buffer, exit "
+       <<nubs<<endl;
+   return 0;
  }
-///if no ultrablack header...don't change the buffer
-// return 0;
-}//header
 
-if(debug) cout<<" BBB header found at "<<ubpos[0]<<" level "<<endl;
-
-
-
+ if(debug) cout<<" BBB header found at "<<ubpos[0]<<" level "<<endl;
 
 
 for(int ij=ubpos[2]+6;ij<960;ij+=3){

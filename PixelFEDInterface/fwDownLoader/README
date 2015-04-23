@@ -4,26 +4,23 @@ Fed Firmware Downloader
 gmake                 makes a static library
 gmake Set=fed_jam1    makes executable fed_jam1.exe in bin/... directory
 
-As returned by the program:
-Usage: fedjam1 <ACTION> <BASEADDRESS> <FPGA GROUP> <FILENAME> 
 
-(you probably need to use fed_jam1.exe in place of fedjam1)
+prompt> bin/.../fed_jam1.exe  <ACTION> <BASEADDRESS> <FPGA GROUP> <DEVICE> <FILENAME> 
+
     <ACTION> may be PROGRAM or VERIFY
     <BASEADDRESS> should be hex e.g. 0x1C000000
     <FPGA GROUP> should be FRONT or CENTER
+    <DEVICE> is which fiber in the VME opto card (old PCI card = 0)
 
-for example, I think it will work like this with the CMS build stuff
+for example, it will work like this with the CMS build stuff
 
-prompt> fed_jam1.exe VERIFY 0x1C000000 CENTER center.jbc
+prompt> fed_jam1.exe VERIFY 0x1C000000 CENTER 1 center.jbc
 
-Hopefully I can update this after it is working!
-
-If you are the first person to use this code on your machine, you may
-need to fine tune a parameter if your CPU is fast-ish. Depending on
-your patience, you can increase: (in test/fed_jam1.cpp)
-one_ms_delay = 50000L; 
-to 
-one_ms_delay = 500000L; 
-etc. Until things work for you.   
+On the new machines, there may be more than one programming going at a time.
+Since we determine a delay using a number of loops, the programming could
+fail if the load on the machine is not balanced. In that case, we should put
+a minimum in for the number of loops delay. As a test I found 620000 to be a
+good minimum for a machine that is only running the one programming process
+one_ms_delay = 620000L; 
 
 

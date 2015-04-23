@@ -544,14 +544,14 @@ uint32_t PixelFEDFifoData::decodeErrorFifo(const uint32_t *const data, const int
   
   for(int i=0; i<length; i++) {
     uint32_t chan = (data[i] & decodeMask) >> offset;
-    uint64_t thischannel = ( (long long) 0x1 << chan-1);
+    uint64_t thischannel = ( (long long) 0x1 << (chan-1));
     if( (channelMask & thischannel) && //require channel to enabled
 	( !((errorMask & data[i])==trailError) | 
 	  (  ((errorMask & data[i])==trailError) &&  
 	     ((data[i] & RocErrMask)|
 	      (data[i] & FsmErrMask)|
 	      (data[i] & overflowMask) |
-	      (data[i] & tbmStatusMask != 255))  //ignore trailer "errors" from cal-sync only (temporary kludge)
+	      (data[i] & (tbmStatusMask != 255)))  //ignore trailer "errors" from cal-sync only (temporary kludge)
 	     )
 	  )
 	) { 

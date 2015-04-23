@@ -41,11 +41,11 @@ int main(int argc, void *argv[]) {
   try {
   int status=0;
   bool transparentMode = false; // use FED in transparent mode
-  bool DACMode = true; // read emulated data from the DAC 
+  bool DACMode = false; // read emulated data from the DAC 
   bool readFifo1 = false; // read data from Fifo1
   bool readSpyFifo1 = false; // read data from SpyFifo1's (chnls 1-4 and 32-36)
   bool readFifo2 = false; // read data Fifo2 Spy memories
-  bool readFifo3 = false; // read data from Fifo3 Spy memories
+  bool readFifo3 = true; // read data from Fifo3 Spy memories
   bool BaselineCorr = true; // set the fed to perform baseline correction
   const int nMax = 100000; // max number of loops
   const bool testingOthers = true; // for more complete testing, switch off for speed tests
@@ -84,14 +84,23 @@ int main(int argc, void *argv[]) {
   // if you want to play with real hardware you need a real busAdapter:
   // change the comments below:
   //HAL::VMEDummyBusAdapter busAdapter;
+  
+  cout<<"expecting arguments for baseaddress (e.g. 0x16000000) and link (e.g. 1 or 2)"<<endl;
   uint32_t fedBase = 0x18000000; // FED base addresss
   uint32_t number;
   sscanf((char*)argv[1], "%lx", &fedBase);
   printf("BaseAddress 0x%lx\n",fedBase);
+  int link;
+  sscanf((char*)argv[2], "%d", &link);
+  printf("link %d\n",link);
+
   
 
 //HAL::CAENLinuxBusAdapter busAdapter( HAL::CAENLinuxBusAdapter::V1718 );
-  HAL::CAENLinuxBusAdapter busAdapter( HAL::CAENLinuxBusAdapter::V2718 );
+//  HAL::CAENLinuxBusAdapter busAdapter( HAL::CAENLinuxBusAdapter::V2718 );
+HAL::CAENLinuxBusAdapter busAdapter(HAL::CAENLinuxBusAdapter::V2718,link,0, HAL::CAENLinuxBusAdapter::A3818 );
+
+
   cout<<"mapper"<<endl;
   HAL::VMEAddressTableASCIIReader addressTableReader("FEDAddressMap.dat");
   cout<<"reader"<<endl;
@@ -128,10 +137,10 @@ int main(int argc, void *argv[]) {
   // Try the FPGA reload 
   // resets histogram fifo counters
   //fed1.loadFPGA(); return 0;  // clears the error and lastdac fifos (tts fifo still has 1 entry)
-  // Reset FED 
+  // Reset FED
   cout<<"************reset"<<endl;
   status=fed1.reset();
-  if(status!=0) exit(0); // exit error
+  if(status!=0) return(0); // exit error
  
   // Read in parameters from a file and download them to the FED
   string fileName("params_fed.dat"); // define the file name
@@ -149,6 +158,8 @@ cout<<"Starting conditions for Front control Registers:"<<endl;
   pos::PixelFEDCard pixelFEDCard(fileName); // instantiate the FED settings (should be private)
 
 //  status = fed1.setupFromDB(fileName);
+ PixFEDCard.read("SWrRdCntrReg",&idata);
+ cout<<hex<<"South 0x"<<idata<<dec<<endl;
   status = fed1.setupFromDB(pixelFEDCard);
   if(status==-1) {
     cout<<" No configuration file "<<endl;
