@@ -6,6 +6,11 @@
 	<xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:1973/">
 
 		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
+		  <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
+		    <UseTCDS xsi:type="xsd:boolean">false</UseTCDS>
+		    <UseTTC xsi:type="xsd:boolean">true</UseTTC>
+		    <TTCSupervisorApplicationName xsi:type="xsd:string">ttc::TTCciControl</TTCSupervisorApplicationName>
+		  </properties>
 		<xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
 
 		<xc:Application class="PixelFECSupervisor" id="60" instance="1" network="local" group="daq"/>
