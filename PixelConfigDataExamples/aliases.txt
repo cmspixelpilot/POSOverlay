@@ -4,6 +4,7 @@ VcThrCalDel     32   ;
 PixelAlive     14   ;
 PixelAlive5x5     44   ;
 SCurve     12   ;
+Gain	   4	;
 TBMDelay     33   ;
 Iana	     45	  ;
 TTCPeriodicL1A     15   ;

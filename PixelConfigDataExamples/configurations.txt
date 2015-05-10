@@ -76,12 +76,12 @@ lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
-fedcard   0
-dac   0
+fedcard   3
+dac   5
 mask   0
 trim   0
 calib   4
-tbm   0
+tbm   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -220,7 +220,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   6
+dac   5
 mask   0
 trim   0
 calib 9
