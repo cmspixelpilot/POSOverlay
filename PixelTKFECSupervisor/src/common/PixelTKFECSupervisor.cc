@@ -58,6 +58,8 @@ using namespace pos::PortCardSettingNames;
 
 #define MYTEST  // special tests 
 
+#define NO_PILOT_RESET // don't send crate/ring resets for pilot blade since this turns off/on modules on BmO
+
 const bool DEBUG = true; // some additinal debuging messages
 const bool do_force_ccu_readout = false; // force reading of CCU for each workloop (also force reset if enabled)
 
@@ -1602,7 +1604,9 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 		// seems to propogate reset down to all mFECs and all CCUs
 		// overkill, but probably safe
 		if(fecAccess_) {
-		  //crateReset( fecAccess_, false , 42, 42 );  //FIXME this is overkill! (but works)
+#ifndef NO_PILOT_RESET
+		  crateReset( fecAccess_, false , 42, 42 );  //FIXME this is overkill! (but works)
+#endif
 		}
 		
 		if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After carteReset");
@@ -1640,7 +1644,9 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	//send reset, check if ring has been reset alerady 
 	if( !ringInit[(ring-1)]) {  // rings go from 1-8
 	  cout<<" Reset slot/mfec "<<slot<<"/"<<ring<<endl;
-	  //resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
+#ifndef NO_PILOT_RESET
+	  resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
+#endif
 	  ringInit[(ring-1)]=true;
 	}
 	else
@@ -2006,7 +2012,9 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
      ring = tempPortCard->getringAddress();
      if( !ringInit[(ring-1)]) {  // rings go from 1-8
        cout<<" Reset slot/mfec "<<TKFECAddress<<"/"<<ring<<endl;
-       //resetPlxFec ( fecAccess_, TKFECAddress, ring, loop, tms ) ;
+#ifndef NO_PILOT_RESET
+       resetPlxFec ( fecAccess_, TKFECAddress, ring, loop, tms ) ;
+#endif
        ringInit[(ring-1)]=true;
      }
 
