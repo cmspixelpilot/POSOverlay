@@ -3243,11 +3243,13 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
       TTCConfigureTime.start();
       for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
-        // Configuring only allowed from halted
-        if (statePixelTTCSupervisors_[i_PixelTTCSupervisor->first] == "Halted") {
+        // Configuring only allowed from halted (if TCDS)
+        if (useTTC_ || statePixelTTCSupervisors_[i_PixelTTCSupervisor->first] == "Halted") {
           std::string reply;
-          if (useTTC_)
+          if (useTTC_) {
             reply = Send(i_PixelTTCSupervisor->second, "configure");
+	    statePixelTTCSupervisors_[i_PixelTTCSupervisor->first]="Configured";
+	  }
           if (useTCDS_) {
             statePixelTTCSupervisors_[i_PixelTTCSupervisor->first]="Configuring";
             reply = Send(i_PixelTTCSupervisor->second, "Configure");
