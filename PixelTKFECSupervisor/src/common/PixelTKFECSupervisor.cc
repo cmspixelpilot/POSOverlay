@@ -1477,9 +1477,10 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- Power check finished");
     
     if (proceed) {
-      
-      //const long loop = 1 ;
-      //const unsigned long tms  = 0 ;  // wait tms microseconds
+#ifndef NO_PILOT_RESET
+      const long loop = 1 ;
+      const unsigned long tms  = 0 ;  // wait tms microseconds
+#endif
       string fecAccessType = "unset";
       bool fack=true;
       
@@ -1976,8 +1977,10 @@ end of redundancy ring comment */
 // Split the pure portcard programming from other things in stateConfiguring
 bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
      
-  //const long loop = 1 ; // number of resets 
-  //const unsigned long tms  = 0 ;  // wait tms microseconds after reset
+#ifndef NO_PILOT_RESET
+  const long loop = 1 ; // number of resets 
+  const unsigned long tms  = 0 ;  // wait tms microseconds after reset
+#endif
   //unsigned int slot=9999; 
   unsigned int ring =9999;
   static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
