@@ -71,7 +71,6 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
                           rcmsStateNotifier_(getApplicationLogger(), getApplicationDescriptor(),getApplicationContext()),
 			  extratimers_(false)
 {
-
   diagService_ = new DiagBagWizard(
                                    ("ReconfigurationModule") ,
                                    this->getApplicationLogger(),
@@ -1947,6 +1946,7 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       std::string reply;
       if (useTTC_) {
         reply = Send(i_PixelTTCSupervisor->second, "reset");
+	statePixelTTCSupervisors_[i_PixelTTCSupervisor->first]="Halted";
       }
       if (useTCDS_) {
         reply = Send(i_PixelTTCSupervisor->second, "Halt");
@@ -3233,7 +3233,6 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
 
   if (!configuredTTCs) {
-
     if (!PixelTTCSupervisors_.empty()) {
       // Send a SOAP message to PixelTTCSupervisor
       //if(useTTC_){
