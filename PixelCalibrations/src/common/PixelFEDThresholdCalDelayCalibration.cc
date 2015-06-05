@@ -89,9 +89,15 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 	  assert(rocid>0);
 	  unsigned int channel=decode.channel(ihit);
 
-	  PixelROCName roc=theNameTranslation_->ROCNameFromFEDChannelROC(fednumber,
-									 channel,
-									 rocid-1);
+
+	  PixelROCName roc;
+
+	  if (theNameTranslation_->ROCNameFromFEDChannelROCExists(fednumber, channel, rocid-1))
+	    roc=theNameTranslation_->ROCNameFromFEDChannelROC(fednumber,
+							      channel,
+							      rocid-1);
+	  else
+	    cout << "ROC with fednumber="<<fednumber << " channel="<<channel<<" rocid="<<rocid<< " does not exist in translation!" << endl;
 
 	  map <PixelROCName, PixelEfficiency2DVcThrCalDel>::iterator it=eff_.find(roc);
 
@@ -103,7 +109,7 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 
 	  else{
 	    cout << "Could not find ROC " << roc.rocname() << " with fednumber="<<fednumber
-		      << " channel="<<channel<<" rocid="<<rocid<<endl;
+		 << " channel="<<channel<<" rocid="<<rocid<< " in our map" <<endl;
 	  }	  
 	}
    
