@@ -30,8 +30,8 @@ PixelSupervisorConfiguration::PixelSupervisorConfiguration(std::string* runNumbe
   diagService_=0;
   
   //TTCSupervisorApplicationName_="pixel::ici::PixeliCISupervisor";
-  useTTC_=false;
-  useTCDS_=true;
+  useTTC_=true;
+  useTCDS_=false;
   TCDSSessionID_="dummy-session";
 }
 

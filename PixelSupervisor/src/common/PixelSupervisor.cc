@@ -284,17 +284,17 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   configurationTimer_.setName("PixelSupervisorConfigurationTimer");
 
   // Check infospace for TCDS/TTC running
-  useTCDS_=false;
-  useTTC_=true;
+  useTCDS_=true;
+  useTTC_=false;
   TTCSupervisorApplicationName_="ttc::TTCciControl"; // pixel::ici::PixeliCISupervisor
-  if (useTCDS_) TTCSupervisorApplicationName_="pixel::ici::PixeliCISupervisor";
+  if (useTCDS_) TTCSupervisorApplicationName_="pixel::tcds::PixeliCISupervisor";
   LTCSupervisorApplicationName_="";
   if (useTCDS_) LTCSupervisorApplicationName_="pixel::tcds::PixelPISupervisor";
   getApplicationInfoSpace()->fireItemAvailable("UseTTC", &useTTC_);
   getApplicationInfoSpace()->fireItemAvailable("UseTCDS", &useTCDS_);
   getApplicationInfoSpace()->fireItemAvailable("TTCSupervisorApplicationName", &TTCSupervisorApplicationName_);
   getApplicationInfoSpace()->fireItemAvailable("LTCSupervisorApplicationName", &LTCSupervisorApplicationName_);
-
+  std::cout << "useTCDS is " <<  useTCDS_ << " " <<  TTCSupervisorApplicationName_.toString() << " " <<  LTCSupervisorApplicationName_.toString() << std::endl;
   //  assert(useTTC_ != useTCDS_);
 }
 
