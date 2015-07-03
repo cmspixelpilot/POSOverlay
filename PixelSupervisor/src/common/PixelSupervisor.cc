@@ -284,7 +284,7 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   configurationTimer_.setName("PixelSupervisorConfigurationTimer");
 
   // Check infospace for TCDS/TTC running
-#if defined POS_TTC
+#if defined SETUP_TIF
   useTCDS_ = false;
   useTTC_  = true;
 #else
