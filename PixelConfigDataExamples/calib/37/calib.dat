@@ -1,0 +1,12 @@
+Mode: VcThrCalibration
+Rows:
+10 | 20
+Cols:
+10 | 20
+VcalLow
+Scan: WBC 166 168 1
+Scan: VcThr 0 200 2
+Set: Vcal 50
+Repeat: 25
+ToCalibrate:
+all
