@@ -1,6 +1,9 @@
 ConfigurationAliases
+TestPhysics     47   ;
+TestPhysicsEmulator     48   ;
 Delay25     7   ;
 VcThrCalDel     32   ;
+VcThr     46   ;
 PixelAlive     14   ;
 PixelAlive5x5     44   ;
 SCurve     12   ;
@@ -18,6 +21,8 @@ detconfig  1 BmIOnly ;
 detconfig  2 BmOOnly ;
 fedconfig  0 Default ;
 fecconfig  0 Default ;
+fedcard  5 Noslinkemulator ;
+fedcard  4 Noslink ;
 fedcard  3 Default ;
 fedcard  0 BmIOnly ;
 fedcard  0 BmOOnly ;
@@ -30,5 +35,8 @@ portcardmap  0 Default ;
 calib  34 TBMDelay ;
 tkfecconfig  0 Default ;
 ttcciconfig  0 Default ;
+ttcciconfig  6 iCILocal ;
+ttcciconfig  7 iCIGlobal ;
+ltcconfig  0 Default ;
 calib  32 VcThrCalDel ;
 calib  35 PixelAlive5x5 ;
