@@ -3,6 +3,16 @@
 	
   <xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:1973/">
 
+    <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libtoolbox.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxdaq.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxdata.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
+
     <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vmepc-s2b18-08-01.cms" port="1914" network="xmas"/>
 
     <xc:Application class="PixelSupervisor" id="51" instance="0" network="xmas" group="daq">
@@ -42,15 +52,6 @@
         <hardwareConfigurationFile xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/pixel_ici_config_local.txt</hardwareConfigurationFile>
       </properties>  
     </xc:Application>
-    <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libtoolbox.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxdaq.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxdata.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTCDSSupervisor.so</xc:Module>
 
     <xc:Application class="pixel::tcds::PixelPISupervisor" id="86" instance="2" network="xmas" group="daq">
@@ -62,15 +63,6 @@
         <hardwareConfigurationFile xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/pixel_pi_config.txt</hardwareConfigurationFile>
       </properties>  
     </xc:Application>
-    <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libtoolbox.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxdaq.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxdata.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTCDSSupervisor.so</xc:Module>
 
     <xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="xmas">
@@ -83,10 +75,7 @@
 
   </xc:Context>
 
-  <!-- P5 PSX server: http://srv-c2c03-16.cms:9923/urn:xdaq-application:lid=30/ -->
-  <!-- 9923 is just pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
-  <!-- <xc:Context id="6" url="http://srv-c2c03-16.cms:9922"> -->
-  <!-- <xc:Context id="6" url="http://cmspsx.cms:9922"> works with PSX running! Otherwise works with 9920 -->
+  <!-- P5 PSX server: 9923 is pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
   <xc:Context id="6" url="http://cmspsx.cms:9923">
     <xc:Application class="psx" id="30" instance="0" network="xmas" group="dcs" service="psx"/>
   </xc:Context>
