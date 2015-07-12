@@ -3771,12 +3771,13 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   // This workloop monitors the TBM settings registers and sends DetectSoftError to PixelSupervisor
   // if they change from the database values
 
+  // For pilot it does nothing.
+
+#if 0
   // get all modules
   std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
   std::vector <PixelModuleName>::iterator module_name;
 
-  assert(0);
-#if 0
   for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
 
     if (find(tbmReadbackBadChannels_.begin(), tbmReadbackBadChannels_.end(), module_name->modulename()) != tbmReadbackBadChannels_.end())
@@ -3875,10 +3876,11 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
     } // end if feccrate == crate_
     ////Only work with this module if it belongs to this PixelFECSupervisor's crate
   } // End of loop over all modules
+#endif
 
   phlock_->take(); if (workloopContinue_)  phlock_->give(); else {phlock_->give(); return true;}
   usleep(1000000);
-#endif
+
   return true;
 }
 
