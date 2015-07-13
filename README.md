@@ -7,32 +7,32 @@
 
 Setup TIF POS dir with the following:
 
-git clone https://github.com/odysei/POSOverlay pixel
-cd pixel
+git clone https://github.com/odysei/POSOverlay pixel<br />
+cd pixel<br />
 git checkout tif_pos_development
 
 # TIF specific (for now):
-ln -s ~/POS_config config
+ln -s ~/POS_config config<br />
 
-ln -s POSRelease/RPM.version
-ln -s POSRelease/VERSION
-ln -s ../DiagSystem/gwtapplets/LogReaderWithFileServer/
-ln -s POSRelease/Makefile
+ln -s POSRelease/RPM.version<br />
+ln -s POSRelease/VERSION<br />
+ln -s ../DiagSystem/gwtapplets/LogReaderWithFileServer/<br />
+ln -s POSRelease/Makefile<br />
 
-cd PixelSupervisor
-mv Makefile Makefile_default
-ln -s Makefile_TIF Makefile
-cd ..
+cd PixelSupervisor<br />
+mv Makefile Makefile_default<br />
+ln -s Makefile_TIF Makefile<br />
+cd ..<br />
 
-cd PixelTKFECSupervisor
-mv Makefile Makefile_default
-ln -s Makefile_TIF Makefile
-cd ..
+cd PixelTKFECSupervisor<br />
+mv Makefile Makefile_default<br />
+ln -s Makefile_TIF Makefile<br />
+cd ..<br />
 
-cd PixelFECSupervisor
-mv Makefile Makefile_default
-ln -s Makefile_TIF Makefile
-cd ..
+cd PixelFECSupervisor<br />
+mv Makefile Makefile_default<br />
+ln -s Makefile_TIF Makefile<br />
+cd ..<br />
 
-make install
-make Set=pixel
+make install<br />
+make Set=pixel<br />
