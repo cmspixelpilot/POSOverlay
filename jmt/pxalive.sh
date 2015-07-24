@@ -5,3 +5,4 @@ ${BUILD_HOME}/pixel/PixelAnalysisTools/test/bin/linux/x86_64_slc6/PixelAnalysis.
 PixelAlive $RUN | gzip > $LOGFN
 
 echo $LOGFN
+

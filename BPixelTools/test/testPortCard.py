@@ -1,7 +1,7 @@
 import sys,time,os, re
 from datetime import date
 from time import sleep
-sockdir="/nfshome0/pixelpilot/build/TriDAS/pixel/BPixelTools/tools/python"
+sockdir="/home/cmspixp1/build/TriDAS/pixel/BPixelTools/tools/python"
 if not sockdir in sys.path: sys.path.append(sockdir)
 from SimpleSocket import SimpleSocket
 from SystemTests import SECTOR, TestRedundancy, TestTriggerStatusFED, tDOH, DELAY25, PortCard, PLL
@@ -35,8 +35,8 @@ log=Logger()
 ccu.send("cratereset").readlines()
 ccu.send("reset").readlines()
 ccu.send("piareset all").readlines()
-fecring = 7
-#fecring = 8
+#fecring = 7
+fecring = 8
 fecslot = 9
 print "fecring=",fecring
 print "fecslot=",fecslot
@@ -48,17 +48,17 @@ fecfound=False
 status=""
 for l in ccu.send("mapccu").readlines():
     print l
-    if l.strip().startswith("FEC %d"%(fecslot)):
-        fecfound=True
-    if l.strip().startswith(tag):
-        fecringfound=True
-        status=l.strip().split(":")[1].strip()
-if not fecfound:
-    log.error("No such FEC %d"%fecslot)
-    sys.exit(1)
-if not fecringfound:
-    log.error("ring/mfec not found "+tag)
-    sys.exit(1)
+#    if l.strip().startswith("FEC %d"%(fecslot)):
+#        fecfound=True
+#    if l.strip().startswith(tag):
+#        fecringfound=True
+#        status=l.strip().split(":")[1].strip()
+#if not fecfound:
+#    log.error("No such FEC %d"%fecslot)
+#    sys.exit(1)
+#if not fecringfound:
+#    log.error("ring/mfec not found "+tag)
+#    sys.exit(1)
     
 if status=="no CCU found":
     log.error("no CCU found "+tag)

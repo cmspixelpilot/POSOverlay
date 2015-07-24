@@ -213,6 +213,7 @@ int main(int argc, char *argv[]) {
     cout<<" PFED Board ID = "<<data<<endl;
     //PixFEDCard.write("WriteID",data);
 
+    
     // get Firmware
     //cout<<" FPGA Firmware version "<<endl;
     for(int i=0;i<5;++i) {
@@ -338,6 +339,7 @@ int main(int argc, char *argv[]) {
     // Set the control register
     cout<<" Load control register with "<<hex<<value<<dec<<" dec="<<value<<endl;
     status = fed1.setControlRegister(value);
+    
   } // end if Lite_Mode
 
   if(Setup_Only) return 0;

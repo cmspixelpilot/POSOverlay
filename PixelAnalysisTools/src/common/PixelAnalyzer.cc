@@ -37,7 +37,7 @@ PixelAnalyzer::~PixelAnalyzer(){
 // void PixelAnalyzer::loopOverDataFile(int nEventsToProcess){
 // }
 void PixelAnalyzer::loopOverDataFile(int nEventsToProcess){
-  bool PRINT = false;
+  bool PRINT = true;
   string mthn = "[PixelAnalyzer::loopOverDataFile()]\t";
 
   //Variables to measure timings

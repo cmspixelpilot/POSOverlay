@@ -62,6 +62,8 @@ bool PixelTBMDelayCalibration::execute() {
   if (DelayBeforeFirstTrigger && firstOfPattern)
     usleep(1000);
 
+  //  usleep(100000);
+
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();
 

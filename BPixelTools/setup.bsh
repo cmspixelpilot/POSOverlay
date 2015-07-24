@@ -1,6 +1,6 @@
 #!/bin/bash
 # common initializations for BPIXELTOOLS
-export PIXEL_HOME=/nfshome0/pixelpilot/build
+export PIXEL_HOME=/home/cmspixp1/build/
 export PORT_BASE=2000
 #export CAEN_PS=$PIXEL_HOME/CAEN_PS_cpp
 

@@ -1,5 +1,5 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<!DOCTYPE PixelAnalysis SYSTEM "$HOME/build/TriDAS/pixel/PixelAnalysisTools/dtd/PixelAnalysis.dtd">
+<!DOCTYPE PixelAnalysis SYSTEM "/home/cmspixp1/build/TriDAS/pixel/PixelAnalysisTools/dtd/PixelAnalysis.dtd">
 <PixelAnalysis>
   <!--There are 3 types of calibrations available: SCurve,PixelAlive,Gain. -->
   <Calibration Type="PixelAlive" />

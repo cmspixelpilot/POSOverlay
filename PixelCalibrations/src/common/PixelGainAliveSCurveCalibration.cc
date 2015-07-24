@@ -108,6 +108,8 @@ bool PixelGainAliveSCurveCalibration::execute()
     fecTimer_.stop();
 
   }
+
+  usleep(100000);
   
   ttcTimer_.start();
 
