@@ -7,7 +7,7 @@ from Logger import Logger
 from optparse import OptionParser
 from math import *
 
-sockdir="/home/cmspixel/TriDAS/pixel/BPixelTools/test_CLEANROOM/"
+sockdir = os.path.expanduser("~") + "/TriDAS/pixel/BPixelTools/test_CLEANROOM/"
 if not sockdir in sys.path: sys.path.append(sockdir)
 from SimpleSocket import SimpleSocket
 

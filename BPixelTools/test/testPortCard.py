@@ -1,7 +1,7 @@
 import sys,time,os, re
 from datetime import date
 from time import sleep
-sockdir="/home/cmspixp1/build/TriDAS/pixel/BPixelTools/tools/python"
+sockdir = os.path.expanduser("~") + "/build/TriDAS/pixel/BPixelTools/tools/python"
 if not sockdir in sys.path: sys.path.append(sockdir)
 from SimpleSocket import SimpleSocket
 from SystemTests import SECTOR, TestRedundancy, TestTriggerStatusFED, tDOH, DELAY25, PortCard, PLL
