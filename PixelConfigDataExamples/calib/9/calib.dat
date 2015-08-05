@@ -1,8 +1,13 @@
 Mode: SCurve
 Rows:
-10 | 30
+ 0 |  9 |
+18 | 27 |
+36 | 45 |
+54 | 63 |
+72
 Cols:
-10 | 30
+3  16 29 | 42 4  17 |
+30 43 5
 VcalLow
 Scan: Vcal 10 120 1
 Repeat:
