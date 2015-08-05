@@ -2036,7 +2036,7 @@ Channel Enbable bits chnls 28-36(on = 0):0x1ff
 TTCrx Coarse Delay Register 2:0
 TTCrc      ClkDes2 Register 3:0x13
 TTCrc Fine Dlay ClkDes2 Reg 1:5
-Center Chip Control Reg:0x0
+Center Chip Control Reg:0xf0010
 Initial Slink DAQ mode:8
 Channel ADC Gain bits chnls  1-12(1Vpp = 0):0x0
 Channel ADC Gain bits chnls 13-20(1Vpp = 0):0x0
