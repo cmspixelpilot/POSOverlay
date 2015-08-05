@@ -2,13 +2,6 @@
 # Example configuration file for the TTCSpy in the PI.
 #----------------------------------------------------------------------
 
-# Enable/disable the TTCSpy functionality in the PI.
-#   0 -> Disabled. This will lead to the TTCSpy being enabled and
-#        configured to trap TTC stream errors.
-#   1 -> Enabled.
-#ttcspy.logging_control.enabled                               0x00000001
-ttcspy_enable                                                 0x00000001
-
 # The data value sent upon reception of a BC0 B-go. Upon reception of
 # a broadcast B-command with this data payload the internal bunch-
 # crossing counter is set to the expected BX value.
