@@ -36,7 +36,7 @@ PixelAnalyzer::~PixelAnalyzer() {}
 // }
 void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 {
-	bool PRINT = true;
+	bool DEBUG = true;	// was PRINT
 	string mthn = "[PixelAnalyzer::loopOverDataFile()]\t";
 
 	// Variables to measure timings
@@ -80,7 +80,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 			(numberOfFiles * nEventsToProcess) /
 			(numberOfTriggersPerPattern * numberOfVCalPerPattern);
 	}
-	if (PRINT)
+	if (DEBUG)
 		cout << mthn << "patternleft: " << numberOfPatterns
 			 << " numberOfFiles: " << numberOfFiles
 			 << " nEventsToProcess: " << nEventsToProcess
@@ -99,7 +99,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 		unsigned int numberOfFeds = findNumberOfFeds(it->first);
 		//     unsigned int numberOfFeds = 2;
 
-		if (PRINT)
+		if (DEBUG)
 			cout << " File " << fileNumber << " feds " << numberOfFeds << endl;
 
 		ifstream dataFile;
@@ -135,7 +135,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 		double deltaPatterns = 0;
 		while (readEvent(sLinkDecoder, sLinkEvents) &&
 			   eventNumber < (unsigned int)nEventsToProcess) {
-			if (PRINT)
+			if (DEBUG)
 				cout << " event number " << eventNumber << endl;
 
 			if (eventNumber == 0) {
@@ -151,7 +151,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 
 			for (unsigned int fedCounter = 0; fedCounter < numberOfFeds;
 				 ++fedCounter) {
-				if (PRINT)
+				if (DEBUG)
 					cout << " FED " << fedCounter << ", loop 1\n";
 
 				if (eventNumber % maxTriggerCounterValue !=
@@ -177,7 +177,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 
 			if (newPattern) {
 
-				if (PRINT)
+				if (DEBUG)
 					cout << " enter new pattern " << numberOfPatterns << " "
 						 << numberOfPatternsLeft << endl;
 
@@ -206,7 +206,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 						int secondsLeft = (int)(timeLeft - minutesLeft * 60);
 						cout << mthn << "Time remaining: " << minutesLeft
 							 << "m:" << secondsLeft << "s!" << endl;
-						if (PRINT)
+						if (DEBUG)
 							cout << mthn << "Each pattern takes "
 								 << difftime(endPattern, lastTimeUpdate) /
 										deltaPatterns << "s time: "
@@ -239,7 +239,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 			if (eventNumber == 0) {
 				for (unsigned int fedCounter = 0; fedCounter < numberOfFeds;
 					 ++fedCounter) {
-					if (PRINT)
+					if (DEBUG)
 						cout << " FED " << fedCounter << ", loop 2\n";
 					if (firstCounterValues[fedCounter] != 1) {
 						*logger_
@@ -261,7 +261,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 
 			for (unsigned int fedCounter = 0; fedCounter < numberOfFeds;
 				 ++fedCounter) {
-				if (PRINT)
+				if (DEBUG)
 					cout << " FED " << fedCounter << ", loop 3\n";
 
 				// get fedid and skip if not in [fedmin,fedmax]
@@ -296,7 +296,7 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 						thePixelHistoManager_->setWrongAddress(fed, channel,
 															   roc);
 
-						if (PRINT)
+						if (DEBUG)
 							cout << mthn << "Event: " << eventNumber
 								 << " fed: " << fed << " chan: " << channel
 								 << " roc: " << roc << " row: " << row
