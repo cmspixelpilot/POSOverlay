@@ -1,0 +1,25 @@
+Mode: SCurve
+Rows:
+0 |
+8 |
+16 |
+24 |
+32 |
+40 |
+48 |
+56 |
+64 |
+72 
+Cols:
+0 8 16 |
+24 32 40 |
+48
+VcalLow
+Scan: Vcal 20 250 1
+SetRelative: VcThr -5
+Repeat:
+3
+ToCalibrate:
++ all
+
+
