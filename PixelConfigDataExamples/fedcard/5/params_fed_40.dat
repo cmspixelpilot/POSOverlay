@@ -2046,10 +2046,10 @@ Channel Baseline Enbable chnls 1-9  (on = (0x1ff<<16)+):0x14a
 Channel Baseline Enbable chnls 10-18(on = (0x1ff<<16)+):0x14a
 Channel Baseline Enbable chnls 19-27(on = (0x1ff<<16)+):0x14a
 Channel Baseline Enbable chnls 28-36(on = (0x1ff<<16)+):0x14a
-TBM trailer mask chnls 1-9  (0xff = all masked):0x2
-TBM trailer mask chnls 10-18(0xff = all masked):0x2
-TBM trailer mask chnls 19-27(0xff = all masked):0x2
-TBM trailer mask chnls 28-36(0xff = all masked):0x2
+TBM trailer mask chnls 1-9  (0xff = all masked):0xee
+TBM trailer mask chnls 10-18(0xff = all masked):0xee
+TBM trailer mask chnls 19-27(0xff = all masked):0xee
+TBM trailer mask chnls 28-36(0xff = all masked):0xee
 Private 8 bit word chnls 1-9  :0xb1
 Private 8 bit word chnls 10-18:0xb2
 Private 8 bit word chnls 19-27:0xb3
