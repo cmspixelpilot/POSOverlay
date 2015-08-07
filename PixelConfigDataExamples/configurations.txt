@@ -784,7 +784,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   8
+dac   9
 mask   0
 trim   0
 calib   37
