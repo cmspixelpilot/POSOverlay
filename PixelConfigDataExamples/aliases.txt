@@ -6,6 +6,8 @@ VcThrCalDel     32   ;
 VcThr     46   ;
 PixelAlive     14   ;
 PixelAlive5x5     44   ;
+PixelAliveForThreshMin     49   ;
+PixelAliveForThreshMinAllPixEnabled     50   ;
 SCurve     12   ;
 Gain	   4	;
 TBMDelay     33   ;
