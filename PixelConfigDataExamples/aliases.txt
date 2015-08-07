@@ -27,6 +27,7 @@ fedcard  3 Default ;
 fedcard  0 BmIOnly ;
 fedcard  0 BmOOnly ;
 dac  8 Default ;
+dac  9 FromVcThrCalDelWithVcalLow150 ;
 mask  0 Default ;
 trim  0 Default ;
 tbm  1 Default ;
