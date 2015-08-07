@@ -32,6 +32,8 @@ dac  8 Default ;
 dac  9 FromVcThrCalDelWithVcalLow150 ;
 mask  0 Default ;
 trim  0 Default ;
+trim  0 TrimOff ;
+trim  1 TrimOn ;
 tbm  1 Default ;
 portcard  0 Default ;
 portcardmap  0 Default ;
