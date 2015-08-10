@@ -962,9 +962,9 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   12
+dac   13
 mask   0
-trim   0
+trim   2
 calib   40
 tbm   1
 portcard   0
