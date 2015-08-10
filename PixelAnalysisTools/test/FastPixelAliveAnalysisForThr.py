@@ -13,7 +13,7 @@ import itertools
 from itertools import islice
 import browseCalibFiles
 
-pixelAnalysisExe   = './bin/linux/x86_64_slc5/PixelAnalysis.exe'
+pixelAnalysisExe   = './bin/linux/x86_64_slc6/PixelAnalysis.exe'
 config             = 'configuration/PixelAliveAnalysis.xml'
 rundir             = os.environ['POS_OUTPUT_DIRS']
 dacdir             = os.environ['PIXELCONFIGURATIONBASE']+'/dac'
@@ -154,7 +154,7 @@ def ChangeVcThr(run,key,filename,iteration,excluded,deltafilename,singleStep,lar
     if os.path.isfile('%s_%d.txt'%(deltafilename,iteration-1) ):
         deltafile = open("%s_%d.txt"%(deltafilename,iteration-1),'r')
         list = [line.replace('\n','').split() for line in deltafile]
-        rocsdelta = { el[0]:int(el[1]) for el in list } 
+        rocsdelta = dict((el[0],int(el[1])) for el in list)
         #print rocsdelta
 
     # --- Copy dac settings used for the PixelAlive run locally ---------------------------------------------
