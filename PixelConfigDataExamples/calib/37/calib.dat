@@ -6,7 +6,7 @@ Cols:
 VcalLow
 Scan: WBC 166 168 1
 Scan: VcThr 0 200 2
-Set: Vcal 50
+Set: Vcal 80
 Repeat: 25
 ToCalibrate:
 all
