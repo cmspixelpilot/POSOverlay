@@ -277,10 +277,18 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 					unsigned int roc = ihit->getROC_id() - 1;
 					if (!thePixelConfigurationsManager_->isDataToAnalyze(
 							fed, channel, roc)) {
+						if (DEBUG)
+							cout << "!isDataToAnalyze. fed, channel, roc: "
+								 << fed << ", " << channel << ", " << roc
+								 << endl;
 						continue;
 					}
 					if (!thePixelConfigurationsManager_->dataIsExpected(
 							fed, channel, roc)) {
+						if (DEBUG)
+                            cout << "!dataIsExpected. fed, channel, roc: "
+                                 << fed << ", " << channel << ", " << roc
+                                 << endl;
 						continue;
 					}
 
@@ -288,6 +296,10 @@ void PixelAnalyzer::loopOverDataFile(int nEventsToProcess)
 					unsigned int col = ihit->getColumn();
 					if (!thePixelConfigurationsManager_->isAnAllowedPixel(
 							row, col)) {
+						if (DEBUG)
+                            cout << "!isAnAllowedPixel. roc, col: "
+                                 << row << ", " << col
+                                 << endl;
 						continue;
 					}
 					if (!thePixelConfigurationsManager_->patternIsExpected(

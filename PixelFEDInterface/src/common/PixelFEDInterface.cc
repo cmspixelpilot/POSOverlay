@@ -30,7 +30,7 @@ PixelFEDInterface::PixelFEDInterface(const HAL::VMEDevice * const vmeDeviceP ) :
   runDegraded(false), vmeDevicePtr(vmeDeviceP)  {
 
   cout<<" PixelFEDInterface constructor "<<endl;
-  Printlevel=7;
+  Printlevel=1;
   printIfSlinkHeaderMessedup = true;
   // Initilize the FPGA register names for HAL, there is probably a better way of doing it
   FPGAName[0] = "LAD_N"; //
