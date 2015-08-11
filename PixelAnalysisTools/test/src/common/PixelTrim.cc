@@ -141,14 +141,16 @@ int main(int argc, char **argv){
     int row,col;
     double threshold;
 
-
-    inDefault >> row >> col >> threshold >> tmp;
+    inDefault >> row >> col >> tmp >> threshold;  // tmp is sigma = noise term
 
     if (threshold>200.0) threshold=-1.0;
     if (threshold<20.0) threshold=-1.0;
 
     theMap[theRoc][row][col].default_=threshold;
 
+    inDefault >> dummy; // istat
+    inDefault >> dummy; // chi2
+    inDefault >> dummy; // prob
     inDefault >> dummy;
     inDefault >> roc;
     
@@ -170,13 +172,16 @@ int main(int argc, char **argv){
     int row,col;
     double threshold;
 
-    inVcThr >> row >> col >> threshold >> tmp;
+    inVcThr >> row >> col >> tmp >> threshold;  // tmp is sigma = noise term
 
     if (threshold>200.0) threshold=-1.0;
     if (threshold<20.0) threshold=-1.0;
 
     theMap[theRoc][row][col].vcthr_=threshold;
 
+    inVcThr >> dummy; // istat
+    inVcThr >> dummy; // chi2
+    inVcThr >> dummy; // prob
     inVcThr >> dummy;
     inVcThr >> roc;
     
@@ -197,13 +202,16 @@ int main(int argc, char **argv){
     int row,col;
     double threshold;
 
-    inVtrim >> row >> col >> threshold >> tmp;
+    inVtrim >> row >> col >> tmp >> threshold;
 
     if (threshold>200.0) threshold=-1.0;
     if (threshold<20.0) threshold=-1.0;
 
     theMap[theRoc][row][col].vtrim_=threshold;
 
+    inVtrim >> dummy; // istat
+    inVtrim >> dummy; // chi2
+    inVtrim >> dummy; // prob
     inVtrim >> dummy;
     inVtrim >> roc;
     
@@ -225,13 +233,16 @@ int main(int argc, char **argv){
     int row,col;
     double threshold;
 
-    inOff >> row >> col >> threshold >> tmp;
+    inOff >> row >> col >> tmp >> threshold;
 
     if (threshold>200.0) threshold=-1.0;
     if (threshold<20.0) threshold=-1.0;
 
     theMap[theRoc][row][col].off_=threshold;
 
+    inOff >> dummy;
+    inOff >> dummy;
+    inOff >> dummy;
     inOff >> dummy;
     inOff >> roc;
     
@@ -252,13 +263,16 @@ int main(int argc, char **argv){
     int row,col;
     double threshold;
 
-    inOn >> row >> col >> threshold >> tmp;
+    inOn >> row >> col >> tmp >> threshold;
 
     if (threshold>200.0) threshold=-1.0;
     if (threshold<20.0) threshold=-1.0;
 
     theMap[theRoc][row][col].on_=threshold;
 
+    inOn >> dummy;
+    inOn >> dummy;
+    inOn >> dummy;
     inOn >> dummy;
     inOn >> roc;
     

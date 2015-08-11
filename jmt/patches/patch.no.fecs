@@ -1,0 +1,65 @@
+diff --git a/PixelSupervisor/src/common/PixelSupervisor.cc b/PixelSupervisor/src/common/PixelSupervisor.cc
+index c60c6f9..1545a0b 100755
+--- a/PixelSupervisor/src/common/PixelSupervisor.cc
++++ b/PixelSupervisor/src/common/PixelSupervisor.cc
+@@ -3303,10 +3303,6 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
+     proceed = false; // do not continue with other supervisors before LTCSupervisors are not configured
+   }
+ 
+-
+-
+-
+-
+   // Send a SOAP message to PixelTKFECSupervisor to configure
+   // Also time the procedure
+   bool configuredTKFECs=true;
+@@ -3380,8 +3376,9 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
+   }
+ 
+   // Pixel FEDs can only configure once clock is present
+-  if (configuredTTCs) {
++  if (1) { //configuredTTCs) {
+ 
++    sleep(10);
+     // Send a SOAP message to PixelFEDSupervisor
+     if (!PixelFEDSupervisors_.empty()) {
+ 
+@@ -3660,7 +3657,7 @@ void PixelSupervisor::transitionHaltedToConfiguring (toolbox::Event::Reference e
+     *console_<<"done."<<std::endl;
+   }
+ 
+-  if (theFECConfiguration_==0 || theFEDConfiguration_==0) XCEPT_RAISE(toolbox::fsm::exception::Exception, "Failed to get FEC or FED Configuration!");
++  if (theFEDConfiguration_==0) XCEPT_RAISE(toolbox::fsm::exception::Exception, "Failed to get FEC or FED Configuration!");
+   }
+   catch (toolbox::fsm::exception::Exception & e) {
+     //    throw;
+@@ -4447,7 +4444,7 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
+   bool proceed=true;
+ 
+   // Send a SOAP message to PixelFECSupervisor
+-  if (!PixelFECSupervisors_.empty()) {
++  if (false) { //!PixelFECSupervisors_.empty()) {
+     diagService_->reportError("[PixelSupervisor::stateFixingSoftError] FECs exist...",DIAGINFO);
+     Supervisors::iterator i_PixelFECSupervisor;
+     for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
+diff --git a/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS.xml b/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS.xml
+index 8950091..6bfe47d 100755
+--- a/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS.xml
++++ b/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS.xml
+@@ -25,16 +25,6 @@
+     </xc:Application>
+     <xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
+ 
+-    <xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="xmas" group="daq">
+-      <properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
+-        <readDCU_workloop_usleep xsi:type="xsd:integer">10000000</readDCU_workloop_usleep>
+-      </properties>
+-    </xc:Application>
+-    <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
+-
+-    <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq"/>
+-    <xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
+-
+     <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq">
+       <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
+         <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>

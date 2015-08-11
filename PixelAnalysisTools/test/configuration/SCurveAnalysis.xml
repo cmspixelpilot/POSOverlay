@@ -51,7 +51,7 @@
     </Fit>
     <Flag>
       <!-- Maximum number of Noisy and Error histogram to be saved-->
-      <SaveHistograms     Max="2000"/>
+      <SaveHistograms     Max="20000000"/>
       <!-- This flags the Scurve as noisy based on the rms of the fit. The histogram is saved in the noisy directory-->
       <NoiseSigma         Min="4"/>
       <!-- Rocs with a mean sigma on the noise greater than the value are printed out and marked as bad-->

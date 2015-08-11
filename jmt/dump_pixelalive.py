@@ -34,6 +34,27 @@ c.cd(0)
 #pdf_fn = os.path.join(out_dir, 'all.pdf')
 #c.Print(pdf_fn + '[')
 
+def CountDeadPixels (maxDeadPixels, outfile, excludedrocs):
+    maxeff = 100
+
+    for roc in gDirectory.GetListOfKeys(): ## ROC folder: find one TH2F for each ROC                                                                                                                    
+        histo = roc.ReadObj()
+        hname   = histo.GetName()
+        xBins   = histo.GetNbinsX()
+        yBins   = histo.GetNbinsY()
+
+        # count dead pixels in each roc                                                                                                                                                                 
+        numDeadPixels = 0
+        for x in range(1,xBins+1):
+            for y in range(1,yBins+1):
+                if histo.GetBinContent(x,y) < maxeff:
+                    numDeadPixels=numDeadPixels+1;
+        if (numDeadPixels > maxDeadPixels):
+            rocname = hname.replace(' (inv)','')
+            print '%s - Number of dead pixels = %d' %(rocname,numDeadPixels)
+            if (rocname not in excludedrocs):
+                outfile.write('%s\n'%rocname)
+
 for d in dirs:
     if not f.Get(d):
         continue

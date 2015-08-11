@@ -2324,12 +2324,12 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   const bool readSpyFifo3  = true; // true;
   const bool readErrorFifo = true;
   bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
-  const bool readBaselineCorr = true;
+  const bool readBaselineCorr = false;
   const bool readLastDACFifo  = false;
   const bool readFifoStatusAndLFF = true;
   const bool useSEURecovery = false; // Enable SEU recovery mechanism
-  const bool timing = false;        // print output from Pixel Timers on each exit from the loop
-  const bool localPrint = false; 
+  const bool timing = true;        // print output from Pixel Timers on each exit from the loop
+  const bool localPrint = true; 
 
   //::sleep(1); return true; //disable physics workloop
 
@@ -2544,6 +2544,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	VMEPtr_[vmeBaseAddress]->read("RdEventCntr",&LFFbit); // old event counter  //FIXME why are we doing vme access here directly and not via FEDInterface?
 	statusTimerHW.stop();
 	LFFbit = LFFbit&0x40000000;  // get the LFF bit (latched at a trigger)
+	if (localPrint) cout << "LFFbit = " << std::hex << LFFbit << std::dec << std::endl;
 	if(LFFbit!=0) diagService_->reportError("FEDID:"+stringF(fednumber)+" LFF status 0x"+htoa(LFFbit)+" for event "+stringF(newEventNumber), DIAGINFO); 
 	// accumulate statistics in map of moments
 	LFFbit = LFFbit>>30;
@@ -2738,7 +2739,23 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
-	    if(localPrint) cout<<" fifo3 length "<<dataLength<<endl;
+	    if(localPrint) { cout<<" fifo3 length "<<dataLength<<endl;
+	      FIFO3Decoder decode3(buffer64);
+	      if (dataLength) {
+		for (int i = 0; i <= dataLength; ++i)
+		  std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer64[i]>>32) << " " << std::setw(8) << (buffer64[i] & 0xFFFFFFFF) << std::dec << std::endl;
+		std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
+		for (unsigned i = 0; i < decode3.nhits(); ++i) {
+		  //const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3.channel(i), decode3.rocid(i)-1);
+		  std::cout << "#" << i << ": ch: " << decode3.channel(i)
+			    << " rocid: " << decode3.rocid(i)
+		    //    << " (" << rocname << ")"
+			    << " dcol: " << decode3.dcol(i)
+			    << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
+			    << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
+		}
+	      }
+	    }
 
 	    if(dataLength>0){  // Add protection from Will
 	      fwrite(buffer64, sizeof(uint64_t), dataLength, dataFile_[fednumber]);
@@ -2797,7 +2814,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	unsigned int errorLength=iFED->drainErrorFifo(errBuffer); // (int)errorLength -> (unsigned int)errorLength
 	errTimerHW.stop();
 	if (errorLength>0) {
-	  if(localPrint) cout<<"Error fifo not empty for FED "<<fednumber<<" "<<errorLength<<endl;
+	  if(localPrint) { cout<<"Error fifo not empty for FED "<<fednumber<<" "<<errorLength<<endl;
+	    ErrorFIFODecoder decodeErr(errBuffer, errorLength);
+	    decodeErr.printToStream(std::cout);
+	  }
 	  // add time and error length
 	  struct timeval tv;
 	  gettimeofday(&tv, NULL);

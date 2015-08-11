@@ -5,6 +5,6 @@ rm -f lastlog
 ln -s $LOGFN lastlog
 echo $LOGFN
 echo
-echo JMT turned off INFO level messages because the TTCciSupervisor is way too chatty...
-echo
-${XDAQ_ROOT}/bin/xdaq.sh -l WARN -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS.xml 2>&1 -z pixel | tee $LOGFN
+#echo JMT turned off INFO level messages because the TTCciSupervisor is way too chatty...
+#echo
+${XDAQ_ROOT}/bin/xdaq.sh -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS.xml 2>&1 -z pixel | tee $LOGFN
