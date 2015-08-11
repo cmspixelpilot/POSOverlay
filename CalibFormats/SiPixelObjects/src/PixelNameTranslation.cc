@@ -15,7 +15,7 @@
 #include <vector>
 #include <assert.h>
 #include <stdexcept>
-#include <iostream>
+
 using namespace pos;
 using namespace std;
 
