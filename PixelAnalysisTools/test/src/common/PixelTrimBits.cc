@@ -119,14 +119,18 @@ int main(int argc, char **argv){
     double threshold;
 
 
-    inDefault >> row >> col >> threshold >> tmp;
+    inDefault >> row >> col >> tmp >> threshold;
 
     if (threshold>130.0) threshold=-1.0;
     if (threshold<40.0) threshold=-1.0;
 
     theMap[theRoc][row][col].default_=threshold;
 
-    inDefault >> dummy >> roc;
+    inDefault >> dummy; // istat
+    inDefault >> dummy; // chi2
+    inDefault >> dummy; // prob
+    inDefault >> dummy;
+    inDefault >> roc;
     
   }
 
