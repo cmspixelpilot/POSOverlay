@@ -58,6 +58,7 @@ class PixelIanaCalibration: public PixelCalibrationBase {
   double ianares_;
   bool MixVanas_;
   bool TurnOffVsf_;
+  bool ManualReads_;
 
    struct branch{
     float pass;

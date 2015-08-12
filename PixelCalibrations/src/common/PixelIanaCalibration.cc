@@ -104,12 +104,14 @@ bool PixelIanaCalibration::execute()
 	  setDAC(aROC, pos::k_DACAddress_Vsf, 0);
       }
 
-      //need to sleep more at p5?
-      if (vana==0) ::sleep(sleeptime0_);
+      if (!ManualReads_) {
+	//need to sleep more at p5?
+	if (vana==0) ::sleep(sleeptime0_);
 
-      ::sleep(sleeptime_);
+	::sleep(sleeptime_);
+      }
 
-      unsigned int Nread=2;
+      unsigned int Nread=ManualReads_ ? 1 : 2;
 
       for (unsigned int i=0;i<Nread;i++){
 	cout << "iread: " << i << endl;
@@ -126,23 +128,30 @@ bool PixelIanaCalibration::execute()
 	  const unsigned fednumber = hdwAddress->fednumber();
 	  const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(fednumber);
 	  const unsigned fedvmebaseaddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
-	  const unsigned fecnumber = hdwAddress->fecnumber();
-	  const unsigned feccrate = theFECConfiguration_->crateFromFECNumber(fecnumber);
-	  const unsigned fecvmebaseaddress = theFECConfiguration_->VMEBaseAddressFromFECNumber(fecnumber);
+	  //const unsigned fecnumber = hdwAddress->fecnumber();
+	  //const unsigned feccrate = theFECConfiguration_->crateFromFECNumber(fecnumber);
+	  //const unsigned fecvmebaseaddress = theFECConfiguration_->VMEBaseAddressFromFECNumber(fecnumber);
 	  double iana=0;  unsigned int ntries=0; bool caughtexception=false;
 	  cout<<"Selected ROC:" << aROC<<" "<<endl;
 
-	  do {
-	    caughtexception=false;
-	    try {
-	      iana=readIana(idpName->first);
-	    } catch  (xdaq::exception::Exception& e) {
-	      cout<<endl<<"ERROR reading current; exception caught"<<endl;
-	      caughtexception=true;
-	      ::sleep(5);
-	      ntries++;
-	    }
-	  }  while (caughtexception && ntries<3);
+	  if (ManualReads_) {
+	    cout << "let it settle, then tell me the current in A: ";
+	    fflush(stdout);
+	    cin >> iana;
+	  }
+	  else {
+	    do {
+	      caughtexception=false;
+	      try {
+		iana=readIana(idpName->first);
+	      } catch  (xdaq::exception::Exception& e) {
+		cout<<endl<<"ERROR reading current; exception caught"<<endl;
+		caughtexception=true;
+		::sleep(5);
+		ntries++;
+	      }
+	    }  while (caughtexception && ntries<3);
+	  }
 
 	  cout<<"Iana: " << iana<<endl;
 	  Iana_[idpName->first][iROC][ivana].push_back(iana);
@@ -262,6 +271,9 @@ void PixelIanaCalibration::beginCalibration(){
 
   TurnOffVsf_ = tempCalibObject->parameterValue("TurnOffVsf") != "no";
   cout << "TurnOffVsf? " << TurnOffVsf_ << endl;
+
+  ManualReads_ = tempCalibObject->parameterValue("ManualReads") == "yes";
+  cout << "ManualReads? " << ManualReads_ << endl;
 
   PixelConfigInterface::get(lowVoltageMap_, "pixel/lowvoltagemap/", *theGlobalKey_); 
   if (lowVoltageMap_==0){
