@@ -1038,7 +1038,9 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
 
   if (useTCDS_)
     {
-      TCDSSessionID_=toolbox::toString("#%d",rand());
+      // TCDSSessionID_=toolbox::toString("#%d",rand());
+      // TCDS session ID fixed to string for now, above solution is better and should be used again later
+      TCDSSessionID_="PixelTCDS";
       diagService_->reportError("Created TCDS session ID: "+TCDSSessionID_, DIAGINFO);
       *console_<<"Created TCDS session ID: " + TCDSSessionID_<<std::endl;
       std::cout <<"Created TCDS session ID: " + TCDSSessionID_<<std::endl;
