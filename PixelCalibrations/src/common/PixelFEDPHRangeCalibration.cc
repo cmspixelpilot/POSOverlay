@@ -53,8 +53,6 @@ PixelFEDPHRangeCalibration::PixelFEDPHRangeCalibration(const PixelFEDSupervisorC
 
 xoap::MessageReference PixelFEDPHRangeCalibration::execute(xoap::MessageReference msg)
 {
-  cout << "JMT need to implement for digital ROC\n";
-  assert(0);
 	Attribute_Vector parameters(2);
 	parameters[0].name_="WhatToDo";
 	parameters[1].name_="StateNum";
