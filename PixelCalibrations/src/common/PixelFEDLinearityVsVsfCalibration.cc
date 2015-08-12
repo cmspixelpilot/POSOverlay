@@ -291,8 +291,12 @@ void PixelFEDLinearityVsVsfCalibration::Analyze()
 				TF1* func = new TF1(tempString, "[0] + [1]*tanh((x-[2])/[3])", 0, 255);
 				func->SetParNames("ymid", "ysize", "xmid", "xsize");
 				func->SetParameters(160,60,50,50);
+				func->SetParLimits(0, 0, 255);
+				func->SetParLimits(1, 0, 255);
+				func->SetParLimits(2, 0, 255);
+				func->SetParLimits(3, 0, 255);
 				fitTimer.start();
-				int status = plot.Fit(func, "Q");
+				int status = plot.Fit(func, "QR");
 				fitTimer.stop();
 				canvas.Draw();
 				TPaveStats * stats = (TPaveStats*)plot.GetListOfFunctions()->FindObject("stats");
