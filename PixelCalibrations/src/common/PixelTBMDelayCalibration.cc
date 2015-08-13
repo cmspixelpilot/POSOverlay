@@ -18,7 +18,7 @@ void PixelTBMDelayCalibration::beginCalibration() {
 
   // Check that PixelCalibConfiguration settings make sense.
 	
-  if (!tempCalibObject->singleROC() && tempCalibObject->maxNumHitsPerROC() > 2) {
+  if (!tempCalibObject->singleROC() && tempCalibObject->maxNumHitsPerROC() > 2 && tempCalibObject->parameterValue("OverflowWarning") != "no") {
     std::cout << "ERROR:  FIFO3 will overflow with more than two hits on each ROC.  To run this calibration, use 2 or less hits per ROC, or use SingleROC mode.  Now aborting..." << std::endl;
     assert(0);
   }
@@ -29,6 +29,7 @@ void PixelTBMDelayCalibration::beginCalibration() {
   ToggleChannels = tempCalibObject->parameterValue("ToggleChannels") == "yes";
   CycleFIFO2Channels = tempCalibObject->parameterValue("CycleFIFO2Channels") == "yes";
   DelayBeforeFirstTrigger = tempCalibObject->parameterValue("DelayBeforeFirstTrigger") == "yes";
+  DelayEveryTrigger = tempCalibObject->parameterValue("DelayEveryTrigger") == "yes";
 }
 
 bool PixelTBMDelayCalibration::execute() {
@@ -61,6 +62,9 @@ bool PixelTBMDelayCalibration::execute() {
 
   if (DelayBeforeFirstTrigger && firstOfPattern)
     usleep(1000);
+
+  if (DelayEveryTrigger)
+    usleep(100000);
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();
