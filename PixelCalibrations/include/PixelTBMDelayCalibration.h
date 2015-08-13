@@ -15,6 +15,7 @@ class PixelTBMDelayCalibration : public PixelCalibrationBase {
   bool ToggleChannels;
   bool CycleFIFO2Channels;
   bool DelayBeforeFirstTrigger;
+  bool DelayEveryTrigger;
 };
 
 #endif
