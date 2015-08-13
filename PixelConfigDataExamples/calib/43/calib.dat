@@ -6,9 +6,9 @@ Rows:
 54 | 63 |
 72
 Cols:
-3  16 29 | 42 4  17 | 30 43 5
+3 | 16 | 29 | 42 | 4 | 17 | 30 | 43 | 5
 VcalLow
-Scan: Vcal 20 200 1
+Scan: Vcal 20 190 1
 Repeat:
 10
 ToCalibrate:
