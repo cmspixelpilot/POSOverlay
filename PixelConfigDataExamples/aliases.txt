@@ -1,6 +1,6 @@
 ConfigurationAliases
-TestPhysics     47   ;
-TestPhysicsEmulator     48   ;
+Physics     47   ;
+PhysicsEmulator     48   ;
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
