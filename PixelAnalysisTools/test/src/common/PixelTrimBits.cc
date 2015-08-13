@@ -148,7 +148,7 @@ int main(int argc, char **argv){
     }
   }
 
-  cout << "Have read the pixels" << endl;
+  cout << "Have read " << count <<" pixels" << endl;
 
   ifstream inDer("rocder.dat");
 
