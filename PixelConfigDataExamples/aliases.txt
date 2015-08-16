@@ -23,6 +23,7 @@ TrimDefault0    91   ;
 TrimDefault1    92   ;
 TrimDefault2    93   ;
 TrimDefault3    94   ;
+TrimDefault3_resume    118   ;
 TrimDefault4    95   ;
 TrimDefault5    96   ;
 TrimDefault6    97   ;
