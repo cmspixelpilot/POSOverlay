@@ -5,5 +5,4 @@ bin
 *.o
 *.so
 *.exe
-config
 *.pyc
