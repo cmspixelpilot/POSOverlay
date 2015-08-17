@@ -2186,10 +2186,12 @@ bool PixelFEDSupervisor::job_Configure ()
       configBoardTimer.stop();
 
       //Print out the FED firmware dates
+      FEDInterface_[vmeBaseAddress]->get_VMEFirmwareDate();
       for(int i=0;i<5;i++){
         FEDInterface_[vmeBaseAddress]->get_FirmwareDate(i);
       }
-      
+      if (pilotFED)
+	FEDInterface_[vmeBaseAddress]->get_PiggyFirmwareVer();
     }
 
   }

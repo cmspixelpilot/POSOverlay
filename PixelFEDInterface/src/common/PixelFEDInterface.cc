@@ -4632,6 +4632,19 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" VME FPGA (update via jtag pins only) f
 
 return iwrdat;
 }//end
+
+void PixelFEDInterface::get_PiggyFirmwareVer() {
+  uint32_t du, dd;
+  vmeDevicePtr->read("LAD_N", &du, 0x158000);
+  vmeDevicePtr->read("LAD_N", &dd, 0x178000);
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" N Piggy version: ";
+  printf("%1x%1x%1x%1x%1x%1x\n", (dd>>20)&0xf, (dd>>12)&0xf, (dd>>4)&0xf, (du>>20)&0xf, (du>>12)&0xf, (du>>4)&0xf);
+  vmeDevicePtr->read("LAD_S", &du, 0x158000);
+  vmeDevicePtr->read("LAD_S", &dd, 0x178000);
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S Piggy version: ";
+  printf("%1x%1x%1x%1x%1x%1x\n", (dd>>20)&0xf, (dd>>12)&0xf, (dd>>4)&0xf, (du>>20)&0xf, (du>>12)&0xf, (du>>4)&0xf);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Read BX counter
 int PixelFEDInterface::readBXCounter() {

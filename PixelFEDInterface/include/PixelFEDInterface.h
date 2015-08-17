@@ -118,6 +118,7 @@ class PixelFEDInterface {
   int get_BaselineCorr(int chnl); //gets the current baseline corection value from the FED for a channel
    uint32_t get_FirmwareDate(int chip);
    uint32_t get_VMEFirmwareDate(void);
+   void get_PiggyFirmwareVer();
   // Cable Test Methods
   void testTTSbits(uint32_t data,int enable);
   int testSlink();
