@@ -1,4 +1,6 @@
 Mode: SCurve
+Parameters:
+PrintFirstScan yes
 Rows:
 72 | 73 | 74
 Cols:
