@@ -1,8 +1,8 @@
 diff --git a/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc b/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
-index b31babb..937489e 100644
+index a7905e4..b747826 100644
 --- a/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
 +++ b/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
-@@ -1045,7 +1045,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+@@ -1063,7 +1063,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
        PixelROCTrimBits* rocTrims=rocInfo_[i].trims_;
  
        //Turn off all pixels
@@ -11,7 +11,7 @@ index b31babb..937489e 100644
  
      }
  
-@@ -1089,26 +1089,26 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+@@ -1107,26 +1107,26 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
  	  }
  	}
  
@@ -58,7 +58,7 @@ index b31babb..937489e 100644
  
  	if (dacs_[j].dacchannel()==k_DACAddress_WBC) {
  	  changedWBC=true;
-@@ -1119,11 +1119,11 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+@@ -1137,11 +1137,11 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
        
        PixelROCTrimBits* rocTrims=rocInfo_[i].trims_;
  
@@ -75,23 +75,16 @@ index b31babb..937489e 100644
  
      }
    }
-@@ -1163,10 +1163,9 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
- 
-       int dacvalue = scanValue(ii, state, rocs_[i]);
- 
--      //cout << "dacname ii:"<<dacs_[ii].name()<<" "<<ii<<endl;
-+      cout << "roc " << rocs_[i] << " dacname ii:"<<dacs_[ii].name()<<" "<<ii<<" value " << dacvalue << endl;
+@@ -1184,7 +1184,6 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+       //cout << "dacname ii:"<<dacs_[ii].name()<<" "<<ii<<endl;
        
        if (dacs_[ii].relative()){
 -
  	//We have to find the default DAC setting so that we can
  	//add the offset as we are in relative mode.
  
-@@ -1175,27 +1174,28 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
- 	dacvalue+=rocInfo_[i].defaultDACs_[ii].second;
- 	//cout << "[PixelCalibConfiguration::nextFECState] ROC="<<rocs_[i]
+@@ -1195,25 +1194,25 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
  	//     << " dac="<<dacs_[ii].name()<<" new value="<<dacvalue<<endl;
-+	cout << " is relative " << dacvalue <<endl;
        }
  
 -      if (dacs_[ii].isTBM()) {
@@ -135,7 +128,7 @@ index b31babb..937489e 100644
  
        if (dacs_[ii].dacchannel()==k_DACAddress_WBC) {
  	changedWBC=true;
-@@ -1218,12 +1218,12 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+@@ -1236,12 +1235,12 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
          if (mode==1) rocMasks=0;
  
          //std::cout << "Will enable pixels!" <<std::endl;
@@ -154,7 +147,7 @@ index b31babb..937489e 100644
  
        }
  
-@@ -1241,23 +1241,23 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+@@ -1259,23 +1258,23 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
  	if (highVCalRange_) roccontrolword|=0x4;  //turn range bit on
  	else roccontrolword&=0xfb;                //turn range bit off
        
@@ -191,7 +184,7 @@ index b31babb..937489e 100644
  
        // Program the pixel pattern.
        unsigned int nrow=rows_[i_row].size();
-@@ -1271,47 +1271,47 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+@@ -1289,47 +1288,46 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
          if (icol>=ncol) icol=ncol-1;
          unsigned int row=rows_[i_row][irow];
          unsigned int col=cols_[i_col][icol];
@@ -204,7 +197,6 @@ index b31babb..937489e 100644
 -					      col,
 -					      row,
 -					      1,_bufferData);
-+	cout << "col " << col << " row " << row << endl;
 +//        pixelFECs[theROC.fecnumber()]->calpix(theROC.mfec(),
 +//					      theROC.mfecchannel(),
 +//					      theROC.hubaddress(),
@@ -289,18 +281,9 @@ index 432eb9c..8c59158 100755
    ttcTimer_.stop();
    
 diff --git a/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc b/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc
-index 979e199..5756ae3 100755
+index 979e199..e4c6a58 100755
 --- a/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc
 +++ b/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc
-@@ -19,7 +19,7 @@ using namespace pos;
- using namespace std;
- 
- namespace {
--  const bool PRINT = false;
-+  const bool PRINT = true;
- }
- 
- PixelGainAliveSCurveCalibration::PixelGainAliveSCurveCalibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
 @@ -110,76 +110,76 @@ bool PixelGainAliveSCurveCalibration::execute()
    }
    
