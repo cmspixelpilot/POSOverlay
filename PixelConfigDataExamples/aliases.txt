@@ -39,6 +39,8 @@ TrimDefault13_resume2    120   ;
 TrimDefault14    105   ;
 TrimDefault15    106   ;
 TrimDefault16    107   ;
+TrimDefault16_resumep1    121   ;
+TrimDefault16_resumep2    122   ;
 TrimDefault17    108   ;
 TrimDefault18    109   ;
 TrimDefault19    110   ;
