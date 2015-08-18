@@ -6189,3 +6189,11 @@ void PixelFEDInterface::storeEnbableBits() {
   SC_enbable_last = SC_enbable_expected;
   S_enbable_last = S_enbable_expected;
 }
+
+void PixelFEDInterface::sendResets() {
+  const uint32_t data = 0x80000000;
+  vmeDevicePtr->write("LRES",data);
+  usleep(10);
+  vmeDevicePtr->write("CLRES",data);
+  usleep(10);
+}

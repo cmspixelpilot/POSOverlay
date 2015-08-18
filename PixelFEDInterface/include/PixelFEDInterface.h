@@ -41,6 +41,8 @@ class PixelFEDInterface {
 
   void test(void);
 
+  void sendResets();
+
 #else // direct CAEN
 
   PixelFEDInterface(const uint32_t fedBase, long BHandle);
