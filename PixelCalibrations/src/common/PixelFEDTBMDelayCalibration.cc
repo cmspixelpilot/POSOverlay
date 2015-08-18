@@ -26,6 +26,7 @@ PixelFEDTBMDelayCalibration::PixelFEDTBMDelayCalibration(const PixelFEDSuperviso
 void PixelFEDTBMDelayCalibration::initializeFED() {
   setFEDModeAndControlRegister(0x8, 0x30010);
   printIfSlinkHeaderMessedup_off();
+  sendResets();
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::MessageReference msg) {
@@ -195,7 +196,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	  const int col = d->roc_hit_col[tbm][h];
 	  const int row = d->roc_hit_row[tbm][h];
 	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
-	  if (col == 5 && row == 234)
+
+	  if ((col == 8 && row == 277) || (col == 17 && row == 276))
 	    ++nright;
 	  else
 	    ++nwrong;
@@ -216,8 +218,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       int nwrong = 0, nright = 0;
       for (size_t h = 0; h< d->hits_.size(); ++h) {
 	if (PrintHits) std::cout << "c " << d->hits_[h].col << " r " << d->hits_[h].row << " ";
-	if (d->hits_[h].col == 5 && d->hits_[h].row == 234) // col 10 row 10
-	//if (d->hits_[h].col == 26 && d->hits_[h].row == 68) // col 40 row 60
+	const int col = d->hits_[h].col;
+	const int row = d->hits_[h].row;
+	if ((col == 8 && row == 277) || (col == 17 && row == 276))
 	  ++nright;
 	else
 	  ++nwrong;
@@ -437,6 +440,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     }
     delete decode3;
   }
+
+  sendResets();
 }
 
 void PixelFEDTBMDelayCalibration::Analyze() {
