@@ -1,9 +1,27 @@
 from JMTTools import *
 
-run = run_from_argv()
-calib = calib_dat(run)
-detconfig = detconfig_dat(run)
-trim_fn = glob(run_fn(run, 'Trim*dat'))[0]
+try:
+    run = run_from_argv()
+except ValueError:
+    run = None
+
+if run is not None:
+    calib = calib_dat(run)
+    calib_rocs = calib.rocs
+    pixels = calib.pixels
+
+    detconfig = detconfig_dat(run)
+    rocs_qual = detconfig.rocs['qual']
+    rocs_noqual = detconfig.rocs['noqual']
+
+    trim_fn = glob(run_fn(run, 'Trim*dat'))[0]
+else:
+    calib_rocs = ['all']
+    pixels = [(r,c) for r in xrange(80) for c in range(52)]
+    rocs_qual = []
+    rocs_noqual =  ['Pilt_BmO_D3_BLD%i_PNL%i_PLQ1_ROC%i' % (bld, pnl, roc) for bld in (10,11) for pnl in (1,2) for roc in range(16) if (bld,pnl) != (11,1)]
+    rocs_noqual += ['Pilt_BmI_D3_BLD%i_PNL%i_PLQ1_ROC%i' % (bld, pnl, roc) for bld in   (2,3) for pnl in (1,2) for roc in range(16)]
+    trim_fn = sys.argv[1]
 
 print 'run:', run
 
@@ -28,19 +46,19 @@ for t in trims:
     trims_by_roc_px[(t.roc, t.row, t.col)].append(t)
 assert all(len(v) == 1 for v in trims_by_roc_px.itervalues())
 
-assert calib.rocs == ['all']
-for roc, quals in detconfig.rocs['qual']:
+assert calib_rocs == ['all']
+for roc, quals in rocs_qual:
     assert quals == ('noAnalogSignal',)
 
 print '# trims:', len(trims)
-print '# rocs:', len(detconfig.rocs['noqual'])
-print '# pix:', len(calib.pixels)
-should = len(detconfig.rocs['noqual']) * len(calib.pixels)
+print '# rocs:', len(rocs_noqual)
+print '# pix:', len(pixels)
+should = len(rocs_noqual) * len(pixels)
 print '-> should have %i trims, missing %i' % (should, should-len(trims))
 
 no_trim = defaultdict(list)
-for roc in detconfig.rocs['noqual']:
-    for r,c in calib.pixels:
+for roc in rocs_noqual:
+    for r,c in pixels:
         if not trims_by_roc_px.has_key((roc, r, c)):
             no_trim[roc].append((r,c))
 if no_trim:
@@ -48,5 +66,3 @@ if no_trim:
     for roc in sorted(no_trim.iterkeys()):
         print roc.ljust(40), '# pix:', len(no_trim[roc])
 print 'sum:', sum(len(v) for v in no_trim.itervalues())
-        
-    
