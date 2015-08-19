@@ -8,5 +8,5 @@ for x in xrange(4):
             z = (x << 6) | d
             y.append(z)
             print z,
-print
+print -1
 print len(y)
