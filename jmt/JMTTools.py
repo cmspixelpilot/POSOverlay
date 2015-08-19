@@ -2,6 +2,7 @@ import sys, os
 from glob import glob
 from collections import defaultdict
 from pprint import pprint
+from itertools import izip
 
 POS_OUTPUT_DIRS = os.environ['POS_OUTPUT_DIRS']
 
