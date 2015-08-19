@@ -128,10 +128,16 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
     iFED->readDigFEDStatus(false, false);
 
+    const int MaxChans = 37;    
+    uint32_t bufferFifo1[MaxChans][1024];
+    int statusFifo1[MaxChans] = {0};
+    for (int ch = 1; ch <= 36; ++ch)
+      statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
+
     const int MaxChips = 8;
-    uint32_t buffer1[MaxChips][pos::fifo1TranspDepth];
-    uint32_t buffer2[MaxChips][pos::fifo2Depth];
-    uint64_t buffer3[pos::slinkDepth];
+    uint32_t buffer1[MaxChips][16384];
+    uint32_t buffer2[MaxChips][16384];
+    uint64_t buffer3[16384];
     uint32_t bufferErr[36*1024];
     int status2[MaxChips] = {0};
     for (int chip = 1; chip <= 7; chip += 2) {
@@ -265,6 +271,53 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     if (DumpFIFOs) {
       std::cout << "FIFO statuses:\n";
       iFED->dump_FifoStatus(fifoStatus);
+
+      std::cout << "-----------------------------------" << std::endl;
+      std::cout << "Contents of FIFO 1 for all channels" << std::endl;
+      std::cout << "-----------------------------------" << std::endl;
+      for (int ch = 1; ch <= 36; ++ch) {
+	std::cout << "ch #" << std::setw(2) << ch << ": status: " << statusFifo1[ch] << "\n";
+	if (statusFifo1[ch] > 0) {
+	  for (int i = 0; i < statusFifo1[ch]; ++i) {
+	    uint32_t w = bufferFifo1[ch][i];
+	    std::cout << "Word " << std::setw(4) << std::setfill(' ') << i << " = 0x " << std::hex << std::setw(4) << std::setfill('0') << (bufferFifo1[ch][i]>>16) << " " << std::setw(4) << std::setfill('0') << (bufferFifo1[ch][i] & 0xFFFF) << std::dec << "  ";
+	    for (int j = 31; j >= 0; --j){
+	      if (w & (1 << j)) std::cout << "1";
+	      else std::cout << "0";
+	      if (j % 4 == 0) std::cout << " ";
+	    }
+	    std::cout << std::setfill(' ') << "  ";
+	    uint32_t ch = (w >> 26) & 0x3f;
+	    uint32_t mk = (w >> 21) & 0x1f;
+	    uint32_t az = (w >> 8) & 0x1fff;
+	    uint32_t dc = (w >> 16) & 0x1f;
+	    uint32_t px = (w >> 8) & 0xff;
+	    uint32_t f8 = w & 0xff;
+	    std::cout << "ch " << ch << " ";
+	    if (mk == 0x1f) {
+	      std::cout << "header ";
+	      if (az != 0)
+		std::cout << "(w/o 13 zeros) ";
+	      std::cout << " trg# " << f8;
+	    }
+	    else if (mk == 0x1e) {
+	      std::cout << "trailer ";
+	      if (az & 8)
+		std::cout << "inv#rocs ";
+	      if (az & 1)
+		std::cout << ">192 px/ch ";
+	      std::cout << "fsm errbyte: " << (az >> 1) << " trailer word " << std::hex << f8 << std::dec;
+	    }
+	    else { 
+	      if (az == 0)
+		std::cout << "roc header  lastdac: " << std::hex << f8 << std::dec;
+	      else
+		std::cout << "hit dcol " << std::setw(2) << dc << " pxl " << std::setw(3) << px << " ph " << std::setw(3) << f8;
+	    }
+	    std::cout << std::endl;
+	  }
+	}
+      }
 
       int col2=-1, row2=-1;
       std::cout << "FIFO 2 buffer sizes: ";
