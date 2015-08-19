@@ -1484,9 +1484,9 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   15
+dac   16
 mask   0
-trim   6
+trim   9
 calib   43
 tbm   1
 portcard   0
@@ -1502,9 +1502,9 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   15
+dac   16
 mask   0
-trim   6
+trim   9
 calib   44
 tbm   1
 portcard   0
@@ -1520,9 +1520,9 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   15
+dac   16
 mask   0
-trim   6
+trim   9
 calib   45
 tbm   1
 portcard   0
@@ -1538,7 +1538,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   15
+dac   16
 mask   0
 trim   1
 calib   43
@@ -1556,7 +1556,7 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   15
+dac   16
 mask   0
 trim   0
 calib   43
