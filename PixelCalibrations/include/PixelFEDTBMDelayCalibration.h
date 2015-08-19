@@ -40,12 +40,12 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
     F11almostFull, F13almostFull, F15almostFull, F17almostFull,
     F21almostFull, F23almostFull, F25almostFull, F27almostFull,
     F31almostFull, F37almostFull,
-    F11nTBMHeader, F11nTBMHeaders, F11nTBMTrailer, F11nTBMTrailers, F11nROCHeaders, F11wrongPix, F11rightPix,
-    F17nTBMHeader, F17nTBMHeaders, F17nTBMTrailer, F17nTBMTrailers, F17nROCHeaders, F17wrongPix, F17rightPix,
-    F21nTBMHeader, F21nTBMTrailer, F21nROCHeaders, F21wrongPix, F21rightPix, F21dangling,
-    F23nTBMHeader, F23nTBMTrailer, F23nROCHeaders, F23wrongPix, F23rightPix, F23dangling,
-    F25nTBMHeader, F25nTBMTrailer, F25nROCHeaders, F25wrongPix, F25rightPix, F25dangling,
-    F27nTBMHeader, F27nTBMTrailer, F27nROCHeaders, F27wrongPix, F27rightPix, F27dangling,
+    FT1nTBMHeader, FT1nTBMHeaders, FT1nTBMTrailer, FT1nTBMTrailers, FT1nROCHeaders, FT1wrongPix, FT1rightPix,
+    FT7nTBMHeader, FT7nTBMHeaders, FT7nTBMTrailer, FT7nTBMTrailers, FT7nROCHeaders, FT7wrongPix, FT7rightPix,
+    FS1nTBMHeader, FS1nTBMTrailer, FS1nROCHeaders, FS1wrongPix, FS1rightPix, FS1dangling,
+    FS3nTBMHeader, FS3nTBMTrailer, FS3nROCHeaders, FS3wrongPix, FS3rightPix, FS3dangling,
+    FS5nTBMHeader, FS5nTBMTrailer, FS5nROCHeaders, FS5wrongPix, FS5rightPix, FS5dangling,
+    FS7nTBMHeader, FS7nTBMTrailer, FS7nROCHeaders, FS7wrongPix, FS7rightPix, FS7dangling,
     F3fifoErr, F3wrongRoc, F3wrongPix, F3rightPix,
     nDecode
   };

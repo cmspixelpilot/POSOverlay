@@ -1,13 +1,13 @@
-#ifndef _FIFO1DigDecoder_h_
-#define _FIFO1DigDecoder_h_
+#ifndef _DigTransDecoder_h_
+#define _DigTransDecoder_h_
 
 #include <iostream>
 #include <stdint.h>
 #include <vector>
 
-class FIFO1DigDecoder {
+class DigTransDecoder {
  public:
-  FIFO1DigDecoder(const uint32_t* buffer);
+  DigTransDecoder(const uint32_t* buffer);
   void printToStream(std::ostream& out);
 
   struct hit_t {

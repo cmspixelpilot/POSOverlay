@@ -1,10 +1,10 @@
-#include "PixelUtilities/PixelFEDDataTools/include/FIFO2DigDecoder.h"
+#include "PixelUtilities/PixelFEDDataTools/include/DigScopeDecoder.h"
 #include <cassert>
 #include <cstdio>
 #include <iomanip>
 
 ///////////////////////////////////////////////////////////////////////////
-// Decode the FIFO-2 data in  transparent mode from piggy
+// Decode the scope data in  transparent mode from piggy
 // ADD SIZE
 int decodePTrans(unsigned * data1, unsigned * data2, const int length) {
 unsigned long mydat[16]=
@@ -41,7 +41,7 @@ return (tempcode1+tempcode2+tempcode3);
 } // end
 
 ///////////////////////////////////////////////////////////////////////////
-//// Decode the FIFO-2 data in  transparent mode from piggy
+//// Decode the scope data in  transparent mode from piggy
 //// ADD SIZE
 int decodePTrans2(unsigned  * data1, unsigned * data2, const int length) {
   //unsigned long mydat[16]=
@@ -137,7 +137,7 @@ if((mytr1<7*4)||(mytr2<6*4))tempcode5=16;
       } // end
 
 ///////////////////////////////////////////////////////////////////////////
-// Decode the FIFO-2 data in  transparent mode from piggy
+// Decode the scope data in  transparent mode from piggy
 // ADD SIZE
 // Checks for 1 hit per ROC from both chs
 void decodePTrans3(unsigned * data1, unsigned * data2, const int length) {
@@ -182,7 +182,7 @@ int a[4]={0,0,0,0};
       
 } // end
 
-FIFO2DigDecoder::FIFO2DigDecoder(const uint32_t* buffer, unsigned int size) {
+DigScopeDecoder::DigScopeDecoder(const uint32_t* buffer, unsigned int size) {
   const uint8_t tbm_header_magic[4] = { 0x80, 0x90, 0xA0, 0xB0 };
   const uint8_t tbm_trailer_magic[4] = { 0xC0, 0xD0, 0xE0, 0xF0 };
   const uint8_t roc_header_magic = 0x70;
@@ -263,7 +263,7 @@ FIFO2DigDecoder::FIFO2DigDecoder(const uint32_t* buffer, unsigned int size) {
   tbm_trailer_found_ = true;
 }
 
-void FIFO2DigDecoder::printToStream(std::ostream& out) {
+void DigScopeDecoder::printToStream(std::ostream& out) {
   out << "TBM header found? " << tbm_header_found_ << " payload (sz: " << tbm_header_payload_.size() << "): ";
   for (size_t i = 0; i < tbm_header_payload_.size(); ++i)
     out << std::hex << tbm_header_payload_[i] << std::dec << " ";
