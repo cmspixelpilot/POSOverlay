@@ -99,8 +99,8 @@ class PixelFEDInterface {
   void set_chnls_onoff(int mode); // Enable/Disable channles
   void set_TBMmask(uint32_t mask); //Set common 8bit mask for TBM trlr
   void set_PrivateWord(uint32_t pword); //Set common gap/fill 8bit word
-  void set_SpyFifo2Channel(int which, uint32_t ch); // Set one of the chips' spy fifo-2 channel
-  void set_SpyFifo2Channels(uint32_t N_ch, uint32_t NC_ch, uint32_t SC_ch, uint32_t S_ch); // Set channels for spy fifo-2
+  void set_ScopeChannel(int which, uint32_t ch); // Set one of the chips' spy scope channel
+  void set_ScopeChannels(uint32_t N_ch, uint32_t NC_ch, uint32_t SC_ch, uint32_t S_ch); // Set channels for spy scope
   void set_SpecialDac(uint32_t mode); // Set Special Random DAC mode for RNDM Trigs 1on 0off
   void set_MODE_front(); // Set Mode REGs for front(N,NC,SC,S) FPGAs
   void get_MODE_front(); // Print Mode REGs+ for front(N,NC,SC,S) FPGAs

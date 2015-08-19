@@ -27,7 +27,7 @@ void PixelTBMDelayCalibration::beginCalibration() {
     std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
 
   ToggleChannels = tempCalibObject->parameterValue("ToggleChannels") == "yes";
-  CycleFIFO2Channels = tempCalibObject->parameterValue("CycleFIFO2Channels") == "yes";
+  CycleScopeChannels = tempCalibObject->parameterValue("CycleScopeChannels") == "yes";
   DelayBeforeFirstTrigger = tempCalibObject->parameterValue("DelayBeforeFirstTrigger") == "yes";
   DelayEveryTrigger = tempCalibObject->parameterValue("DelayEveryTrigger") == "yes";
 }
@@ -46,15 +46,15 @@ bool PixelTBMDelayCalibration::execute() {
     commandToAllFECCrates("CalibRunning");
   }
 
-  if (CycleFIFO2Channels) {
+  if (CycleScopeChannels) {
     const int em36 = event_ % 36;
     const int which = em36 / 9;
     const int channel = em36 % 9;
-    std::cout << "fiddling with SetSpyFifo2Channel event_ = " << event_ << " % 36 = " << em36 << " which = " << which << " channel = " << channel << std::endl;
+    std::cout << "fiddling with SetScopeChannel event_ = " << event_ << " % 36 = " << em36 << " which = " << which << " channel = " << channel << std::endl;
     Attribute_Vector parametersToFED(2);
     parametersToFED[0].name_ = "Which"; parametersToFED[0].value_ = itoa(which);
     parametersToFED[1].name_ = "Ch";    parametersToFED[1].value_ = itoa(channel);
-    commandToAllFEDCrates("SetSpyFIFO2Channel", parametersToFED);
+    commandToAllFEDCrates("SetScopeChannel", parametersToFED);
   }
 
   // should take this out

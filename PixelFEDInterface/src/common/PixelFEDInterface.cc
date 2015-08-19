@@ -424,22 +424,22 @@ int PixelFEDInterface::configFile(string fileName) {
     printf("Private 8 bit word chnls 28-36:%x\n",pixelFEDCard.S_Pword);
 
       //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fscanf(infile,"N  Spy Fifo-2 channel(0-8):%x\n",
-         &pixelFEDCard.N_SpyFifo2Ch);
-  fscanf(infile,"NC Spy Fifo-2 channel(0-8):%x\n",
-         &pixelFEDCard.NC_SpyFifo2Ch);
-  fscanf(infile,"SC Spy Fifo-2 channel(0-8):%x\n",
-         &pixelFEDCard.SC_SpyFifo2Ch);
-  fscanf(infile,"S  Spy Fifo-2 channel(0-8):%x\n",
-         &pixelFEDCard.S_SpyFifo2Ch);
+  fscanf(infile,"N  Scope channel(0-8):%x\n",
+         &pixelFEDCard.N_ScopeCh);
+  fscanf(infile,"NC Scope channel(0-8):%x\n",
+         &pixelFEDCard.NC_ScopeCh);
+  fscanf(infile,"SC Scope channel(0-8):%x\n",
+         &pixelFEDCard.SC_ScopeCh);
+  fscanf(infile,"S  Scope channel(0-8):%x\n",
+         &pixelFEDCard.S_ScopeCh);
   if(DEBUG)
-    printf("N  Spy Fifo-2 channel(0-8):%x\n",pixelFEDCard.N_SpyFifo2Ch);
+    printf("N  Scope channel(0-8):%x\n",pixelFEDCard.N_ScopeCh);
   if(DEBUG)
-    printf("NC Spy Fifo-2 channel(0-8):%x\n",pixelFEDCard.NC_SpyFifo2Ch);
+    printf("NC Scope channel(0-8):%x\n",pixelFEDCard.NC_ScopeCh);
   if(DEBUG)
-    printf("SC Spy Fifo-2 channel(0-8):%x\n",pixelFEDCard.SC_SpyFifo2Ch);
+    printf("SC Scope channel(0-8):%x\n",pixelFEDCard.SC_ScopeCh);
   if(DEBUG)
-    printf("S  Spy Fifo-2 channel(0-8):%x\n",pixelFEDCard.S_SpyFifo2Ch);
+    printf("S  Scope channel(0-8):%x\n",pixelFEDCard.S_ScopeCh);
 
        //These bit sets the special dac mode for random triggers 
   fscanf(infile,"Special Random testDAC mode (on = 0x1, off=0x0):%x\n",
@@ -3971,23 +3971,23 @@ void PixelFEDInterface::set_PrivateWord(uint32_t pword) {
 
  }
 
-// The 1st 4 bits set the channel used in the spy fifo-2 (Piggy card)
- void PixelFEDInterface::set_SpyFifo2Channel(int which, uint32_t ch) {
-   if      (which == 0) pixelFEDCard.N_SpyFifo2Ch  = ch & 0xF;
-   else if (which == 1) pixelFEDCard.NC_SpyFifo2Ch = ch & 0xF;
-   else if (which == 2) pixelFEDCard.SC_SpyFifo2Ch = ch & 0xF;
-   else if (which == 3) pixelFEDCard.S_SpyFifo2Ch  = ch & 0xF;
+// The 1st 4 bits set the channel used in the spy scope (Piggy card)
+ void PixelFEDInterface::set_ScopeChannel(int which, uint32_t ch) {
+   if      (which == 0) pixelFEDCard.N_ScopeCh  = ch & 0xF;
+   else if (which == 1) pixelFEDCard.NC_ScopeCh = ch & 0xF;
+   else if (which == 2) pixelFEDCard.SC_ScopeCh = ch & 0xF;
+   else if (which == 3) pixelFEDCard.S_ScopeCh  = ch & 0xF;
    else
      assert(0);
    set_MODE_front();
  }
 
-// The 1st 4 bits set the channel used in the spy fifo-2 (Piggy card)
- void PixelFEDInterface::set_SpyFifo2Channels(uint32_t N_ch, uint32_t NC_ch, uint32_t SC_ch, uint32_t S_ch) {
-   pixelFEDCard.N_SpyFifo2Ch  =  N_ch & 0xF;
-   pixelFEDCard.NC_SpyFifo2Ch = NC_ch & 0xF;
-   pixelFEDCard.SC_SpyFifo2Ch = SC_ch & 0xF;
-   pixelFEDCard.S_SpyFifo2Ch  =  S_ch & 0xF;
+// The 1st 4 bits set the channel used in the spy scope (Piggy card)
+ void PixelFEDInterface::set_ScopeChannels(uint32_t N_ch, uint32_t NC_ch, uint32_t SC_ch, uint32_t S_ch) {
+   pixelFEDCard.N_ScopeCh  =  N_ch & 0xF;
+   pixelFEDCard.NC_ScopeCh = NC_ch & 0xF;
+   pixelFEDCard.SC_ScopeCh = SC_ch & 0xF;
+   pixelFEDCard.S_ScopeCh  =  S_ch & 0xF;
    set_MODE_front();
  }
 
@@ -4007,32 +4007,32 @@ void PixelFEDInterface::set_SpecialDac(uint32_t mode) {
 // for the front FPGA's
 //Bits 32-24 used to mask TBM trialer bits
 //Bits 23-16 the private word that gets put in gap and fill words
-//Bits 11-8 the channel for spy fifo-2
+//Bits 11-8 the channel for spy scope
 //1st bit in N FPGA is used for a special DAC mode for random trigs  
 
 void PixelFEDInterface::set_MODE_front() {
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Mode REG in Front FPGA's "<<endl;
 
   uint32_t data = 
-    (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
+    (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_ScopeCh&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("NWrModeReg",data);
 
 
-  data = ((pixelFEDCard.NC_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.NC_ScopeCh&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("NCWrModeReg",data);
 
 
-  data = ((pixelFEDCard.SC_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.SC_ScopeCh&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("SCWrModeReg",data);
 
 
-  data = ((pixelFEDCard.S_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.S_ScopeCh&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("SWrModeReg",data);
@@ -4048,32 +4048,32 @@ void PixelFEDInterface::get_MODE_front() {
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Printing Mode REG in Front FPGA's "<<endl;
 
   uint32_t data = 
-    (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
+    (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_ScopeCh&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Special Dac   0x"<<hex<<(pixelFEDCard.SpecialDac&0x1)<<dec<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Spy Fifo-2 Ch 0x"<<hex<<(pixelFEDCard.N_SpyFifo2Ch&0xf)<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Scope Ch 0x"<<hex<<(pixelFEDCard.N_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Private word  0x"<<hex<<(pixelFEDCard.N_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North TBM trlr mask 0x"<<hex<<(pixelFEDCard.N_TBMmask&0xff)<<dec<<endl;
 
-  data = ((pixelFEDCard.NC_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.NC_ScopeCh&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center Spy Fifo-2 Ch 0x"<<hex<<(pixelFEDCard.NC_SpyFifo2Ch&0xf)<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center Scope Ch 0x"<<hex<<(pixelFEDCard.NC_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center Private word  0x"<<hex<<(pixelFEDCard.NC_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center TBM trlr mask 0x"<<hex<<(pixelFEDCard.NC_TBMmask&0xff)<<dec<<endl;
 
-  data = ((pixelFEDCard.SC_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.SC_ScopeCh&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center Spy Fifo-2 Ch 0x"<<hex<<(pixelFEDCard.SC_SpyFifo2Ch&0xf)<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center Scope Ch 0x"<<hex<<(pixelFEDCard.SC_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center Private word  0x"<<hex<<(pixelFEDCard.SC_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center TBM trlr mask 0x"<<hex<<(pixelFEDCard.SC_TBMmask&0xff)<<dec<<endl;
 
-  data = ((pixelFEDCard.S_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.S_ScopeCh&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Spy Fifo-2 Ch 0x"<<hex<<(pixelFEDCard.S_SpyFifo2Ch&0xf)<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Scope Ch 0x"<<hex<<(pixelFEDCard.S_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Private word  0x"<<hex<<(pixelFEDCard.S_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South TBM trlr mask 0x"<<hex<<(pixelFEDCard.S_TBMmask&0xff)<<dec<<endl;
 
