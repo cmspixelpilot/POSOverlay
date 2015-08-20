@@ -1,0 +1,1939 @@
+diff --git a/PixelFEDInterface/include/PixelFEDInterface.h b/PixelFEDInterface/include/PixelFEDInterface.h
+index 3334cee..ef3307f 100755
+--- a/PixelFEDInterface/include/PixelFEDInterface.h
++++ b/PixelFEDInterface/include/PixelFEDInterface.h
+@@ -41,6 +41,67 @@ class PixelFEDInterface {
+ 
+   void test(void);
+ 
++  template <typename T>
++    void vmeDevicePtr_read(const char* addr, T* data) const {
++    vmeDevicePtr->read(addr, data);
++    std::cout << "vmeDevicePtr_read addr=" << addr << " data=0x"  << std::hex << *data << std::dec << std::endl;
++  }
++  template <typename T, typename T2>
++    void vmeDevicePtr_read(const char* addr, T* data, T2 offset) const {
++    vmeDevicePtr->read(addr, data, offset);
++    std::cout << "vmeDevicePtr_read addr=" << addr << " + offset=0x" << std::hex << offset << std::dec << "  data=0x"  << std::hex << *data << std::dec << std::endl;
++  }
++  
++  template <typename T, typename T2>
++    void vmeDevicePtr_readBlock(const char* addr, size_t length, char* buf, T something, T2 offset) const {
++    vmeDevicePtr->readBlock(addr, length, buf, something, offset);
++    std::cout << "vmeDevicePtr_readBlock addr=" << addr << " + offset=0x" << std::hex << offset << std::dec << "  length=" << length << std::endl;
++  }
++
++  template <typename T>
++    void vmeDevicePtr_write(const char* addr, T data) const {
++    std::cout << "vmeDevicePtr_write addr=" << addr << " data=0x"  << std::hex << data << std::dec << std::endl;
++    vmeDevicePtr->write(addr, data);
++  }
++
++  template <typename T, typename T2, typename T3>
++    void vmeDevicePtr_write(const char* addr, T data, T2 something, T3 offset) const {
++    std::cout << "vmeDevicePtr_write addr=" << addr << " + offset=0x" << std::hex << offset << std::dec << "  data=0x"  << std::hex << data << std::dec << std::endl;
++    vmeDevicePtr->write(addr, data, something, offset);
++  }
++
++
++  template <typename T>
++    void vmeDevicePtr_read(const std::string& addr, T* data) const {
++    vmeDevicePtr->read(addr, data);
++    std::cout << "vmeDevicePtr_read addr=" << addr << " data=0x"  << std::hex << *data << std::dec << std::endl;
++  }
++  template <typename T, typename T2>
++    void vmeDevicePtr_read(const std::string& addr, T* data, T2 offset) const {
++    vmeDevicePtr->read(addr, data, offset);
++    std::cout << "vmeDevicePtr_read addr=" << addr << " + offset=0x" << std::hex << offset << std::dec << "  data=0x"  << std::hex << *data << std::dec << std::endl;
++  }
++  
++  template <typename T, typename T2>
++    void vmeDevicePtr_readBlock(const std::string& addr, size_t length, char* buf, T something, T2 offset) const {
++    vmeDevicePtr->readBlock(addr, length, buf, something, offset);
++    std::cout << "vmeDevicePtr_readBlock addr=" << addr << " + offset=0x" << std::hex << offset << std::dec << "  length=" << length << std::endl;
++  }
++
++  template <typename T>
++    void vmeDevicePtr_write(const std::string& addr, T data) const {
++    std::cout << "vmeDevicePtr_write addr=" << addr << " data=0x"  << std::hex << data << std::dec << std::endl;
++    vmeDevicePtr->write(addr, data);
++  }
++
++  template <typename T, typename T2, typename T3>
++    void vmeDevicePtr_write(const std::string& addr, T data, T2 something, T3 offset) const {
++    std::cout << "vmeDevicePtr_write addr=" << addr << " + offset=0x" << std::hex << offset << std::dec << "  data=0x"  << std::hex << data << std::dec << std::endl;
++    vmeDevicePtr->write(addr, data, something, offset);
++  }
++
++  
++
+ #else // direct CAEN
+ 
+   PixelFEDInterface(const uint32_t fedBase, long BHandle);
+diff --git a/PixelFEDInterface/src/common/PixelFEDInterface.cc b/PixelFEDInterface/src/common/PixelFEDInterface.cc
+index 3feb82e..e9f1888 100755
+--- a/PixelFEDInterface/src/common/PixelFEDInterface.cc
++++ b/PixelFEDInterface/src/common/PixelFEDInterface.cc
+@@ -30,7 +30,7 @@ PixelFEDInterface::PixelFEDInterface(const HAL::VMEDevice * const vmeDeviceP ) :
+   runDegraded(false), vmeDevicePtr(vmeDeviceP)  {
+ 
+   cout<<" PixelFEDInterface constructor "<<endl;
+-  Printlevel=1;
++  Printlevel=7;
+   printIfSlinkHeaderMessedup = true;
+   // Initilize the FPGA register names for HAL, there is probably a better way of doing it
+   FPGAName[0] = "LAD_N"; //
+@@ -86,7 +86,7 @@ PixelFEDInterface::~PixelFEDInterface(void) {
+ void PixelFEDInterface::test(void) {
+   cout<<"PixelFEDInterface::test "<<endl;
+   uint32_t value;
+-  vmeDevicePtr->read("READ_GA", &value );
++  vmeDevicePtr_read("READ_GA", &value );
+   cout<<" GA = 0x"<<hex<<value<<dec<<endl;
+ }
+ /////////////////////////////////////////////////////////////////////////
+@@ -700,17 +700,17 @@ int PixelFEDInterface::resetDigFEDpll(void) {
+   
+   cout<<" --- resetDigFEDPll --- "<< endl;
+   //For North Piggy
+-  vmeDevicePtr->write("TopDauCard_pll", data );
++  vmeDevicePtr_write("TopDauCard_pll", data );
+   usleep(200);
+   data=0x0;
+-  vmeDevicePtr->write("TopDauCard_pll", data );
++  vmeDevicePtr_write("TopDauCard_pll", data );
+   
+   //For South Piggy
+   data=0x1;
+-  vmeDevicePtr->write("BottomDauCard_pll", data );
++  vmeDevicePtr_write("BottomDauCard_pll", data );
+   usleep(200);
+   data=0x0;
+-  vmeDevicePtr->write("BottomDauCard_pll", data );
++  vmeDevicePtr_write("BottomDauCard_pll", data );
+     
+ #else  // Use direct CAEN 
+   //For North Piggy
+@@ -762,17 +762,17 @@ int PixelFEDInterface::resetDigFEDreg(void) {
+   
+   cout<<" --- resetDigFEDreg --- "<< endl;
+   //For North Piggy
+-  vmeDevicePtr->write("TopDauCard_pll", data );
++  vmeDevicePtr_write("TopDauCard_pll", data );
+   usleep(200);
+   data=0x0;
+-  vmeDevicePtr->write("TopDauCard_pll", data );
++  vmeDevicePtr_write("TopDauCard_pll", data );
+   
+   //For South Piggy
+   data=0x2;
+-  vmeDevicePtr->write("BottomDauCard_pll", data );
++  vmeDevicePtr_write("BottomDauCard_pll", data );
+   usleep(200);
+   data=0x0;
+-  vmeDevicePtr->write("BottomDauCard_pll", data );
++  vmeDevicePtr_write("BottomDauCard_pll", data );
+   
+ #else  // Use direct CAEN 
+   //For North Piggy
+@@ -841,7 +841,7 @@ int PixelFEDInterface::reset(void) {
+     
+     data=0x0;
+     
+-    vmeDevicePtr->write("ResTTCrx", data );
++    vmeDevicePtr_write("ResTTCrx", data );
+     
+     usleep(20000);
+     cout<<" After reset TTCrx, sleep for 20ms,  and programming of the TTCrx "<<endl;
+@@ -869,15 +869,15 @@ int PixelFEDInterface::reset(void) {
+   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Reset PLLs"<<endl;
+   data = 0x20000000; 
+ 
+-  vmeDevicePtr->write("NWrResetPls", data );
++  vmeDevicePtr_write("NWrResetPls", data );
+   usleep(10);
+-  vmeDevicePtr->write("NCWrResetPls", data );
++  vmeDevicePtr_write("NCWrResetPls", data );
+   usleep(10);
+-  vmeDevicePtr->write("SCWrResetPls", data );
++  vmeDevicePtr_write("SCWrResetPls", data );
+   usleep(10);
+-  vmeDevicePtr->write("SWrResetPls", data );
++  vmeDevicePtr_write("SWrResetPls", data );
+   usleep(10);
+-  vmeDevicePtr->write("ResetPls", data );
++  vmeDevicePtr_write("ResetPls", data );
+   usleep(10);
+   
+   // Make Sure to execute for pilotFED only!!!!
+@@ -900,7 +900,7 @@ int PixelFEDInterface::reset(void) {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("LRES",data);
++  vmeDevicePtr_write("LRES",data);
+ 
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,LRES,&data,am,dw);
+@@ -919,7 +919,7 @@ int PixelFEDInterface::reset(void) {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("CLRES",data );
++  vmeDevicePtr_write("CLRES",data );
+ 
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,CLRES,&data,am,dw);
+@@ -937,11 +937,11 @@ int PixelFEDInterface::reset(void) {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  //vmeDevicePtr->write("BrcstResetPls", data ); maybe replace by individual 
+-  vmeDevicePtr->write("NWrResetPls", data );
+-  vmeDevicePtr->write("NCWrResetPls", data );
+-  vmeDevicePtr->write("SCWrResetPls", data );
+-  vmeDevicePtr->write("SWrResetPls", data );
++  //vmeDevicePtr_write("BrcstResetPls", data ); maybe replace by individual 
++  vmeDevicePtr_write("NWrResetPls", data );
++  vmeDevicePtr_write("NCWrResetPls", data );
++  vmeDevicePtr_write("SCWrResetPls", data );
++  vmeDevicePtr_write("SWrResetPls", data );
+ 
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,RESET_SPY_FIFOS,&data,am,dw);
+@@ -974,7 +974,7 @@ void PixelFEDInterface::armDigFEDOSDFifo(int channel, int rochi, int roclo) {
+   const uint32_t data = ((rochi & 0x1F) << 5) | (roclo & 0x1F);
+   //std::cout << "armDigFEDOSDFifo chip = " << chip << " offset = 0x" << std::hex << offset << std::dec << " data = 0x" << std::hex << data << std::dec << std::endl;
+ #ifdef USE_HAL
+-  vmeDevicePtr->write(FPGAName[chip], data, HAL::HAL_NO_VERIFY, offset);
++  vmeDevicePtr_write(FPGAName[chip], data, HAL::HAL_NO_VERIFY, offset);
+ #else
+ #error armDigFEDOSDFifo not implemented for direct CAEN VME access
+ #endif
+@@ -986,7 +986,7 @@ uint32_t PixelFEDInterface::readDigFEDOSDFifo(int channel) {
+   uint32_t data;
+   //std::cout << "readDigFEDOSDFifo chip = " << chip << " offset = 0x" << std::hex << offset << std::dec;
+ #ifdef USE_HAL
+-  vmeDevicePtr->read(FPGAName[chip], &data, offset);
++  vmeDevicePtr_read(FPGAName[chip], &data, offset);
+ #else
+ #error readDigFEDOSDFifo not implemented for direct CAEN VME access
+ #endif
+@@ -1001,7 +1001,7 @@ void PixelFEDInterface::readDigFEDTempFifo(){
+     
+   printf("\n\n\nTEMP FIFO Sup\n\n");
+   for(i=0;i<256;i++)  { 
+-    vmeDevicePtr->read("BottomDauCard_UpTmpFifo",&d);
++    vmeDevicePtr_read("BottomDauCard_UpTmpFifo",&d);
+     if(d) { 
+       printf("%x\n",d); 
+       printf("CH#:%2d",((d>>26)&0x3f));
+@@ -1012,7 +1012,7 @@ void PixelFEDInterface::readDigFEDTempFifo(){
+   
+   printf("\n\n\nTEMP FIFO Sdown\n\n");
+   for(i=0;i<256;i++)  { 
+-    vmeDevicePtr->read("BottomDauCard_DnTmpFifo",&d);
++    vmeDevicePtr_read("BottomDauCard_DnTmpFifo",&d);
+     if(d) { 
+       printf("%x\n",d); 
+       printf("CH#:%2d",((d>>26)&0x3f));
+@@ -1023,7 +1023,7 @@ void PixelFEDInterface::readDigFEDTempFifo(){
+   
+   printf("\n\n\nTEMP FIFO NCup\n\n");
+   for(i=0;i<256;i++)  { 
+-    vmeDevicePtr->read("TopDauCard_UpTempFifo",&d);
++    vmeDevicePtr_read("TopDauCard_UpTempFifo",&d);
+     if(d) { 
+       printf("%x\n",d); 
+       printf("CH#:%2d",((d>>26)&0x3f));
+@@ -1034,7 +1034,7 @@ void PixelFEDInterface::readDigFEDTempFifo(){
+   
+   printf("\n\n\nTEMP FIFO NCdown\n\n");
+   for(i=0;i<256;i++)  { 
+-    vmeDevicePtr->read("TopDauCard_DownTempFifo",&d);
++    vmeDevicePtr_read("TopDauCard_DownTempFifo",&d);
+     if(d) { 
+       printf("%x\n",d); 
+       printf("CH#:%2d",((d>>26)&0x3f));
+@@ -1128,12 +1128,12 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
+ 
+ #ifdef USE_HAL // Use HAL
+   
+-  vmeDevicePtr->write("TopDauCard_com",dataTop);
+-  vmeDevicePtr->write("BottomDauCard_com",dataBot);
++  vmeDevicePtr_write("TopDauCard_com",dataTop);
++  vmeDevicePtr_write("BottomDauCard_com",dataBot);
+ 
+   if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
+   for(i=0;i<Npoll;i++)  {
+-    vmeDevicePtr->read("TopDauCard_UpStatus",&d);
++    vmeDevicePtr_read("TopDauCard_UpStatus",&d);
+     const bool islocked = (d>>24)&0x1;
+     if (islocked) ++nlock[0];
+     if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+@@ -1141,7 +1141,7 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
+   
+   if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
+   for(i=0;i<Npoll;i++)  {
+-    vmeDevicePtr->read("TopDauCard_DownStatus",&d);
++    vmeDevicePtr_read("TopDauCard_DownStatus",&d);
+     const bool islocked = (d>>24)&0x1;
+     if (islocked) ++nlock[1];
+     if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+@@ -1149,7 +1149,7 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
+   
+   if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
+   for(i=0;i<Npoll;i++)  {
+-    vmeDevicePtr->read("BottomDauCard_UpStatus",&d);
++    vmeDevicePtr_read("BottomDauCard_UpStatus",&d);
+     const bool islocked = (d>>24)&0x1;
+     if (islocked) ++nlock[2];
+     if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+@@ -1157,7 +1157,7 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
+   
+   if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
+   for(i=0;i<Npoll;i++)  {
+-    vmeDevicePtr->read("BottomDauCard_DnStatus",&d);
++    vmeDevicePtr_read("BottomDauCard_DnStatus",&d);
+     const bool islocked = (d>>24)&0x1;
+     if (islocked) ++nlock[3];
+     if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+@@ -1238,17 +1238,17 @@ void PixelFEDInterface::loadFPGADigFED(){
+ #ifdef USE_HAL // Use HAL
+   
+   cout<< " --- loadFPGADigFED --- " << endl;
+-  vmeDevicePtr->write("TopDauCard_nConfig", data );
++  vmeDevicePtr_write("TopDauCard_nConfig", data );
+   usleep(10000);
+   data=0x0;
+-  vmeDevicePtr->write("TopDauCard_nConfig", data );
++  vmeDevicePtr_write("TopDauCard_nConfig", data );
+   usleep(1000);
+   
+   data=0x10;
+-  vmeDevicePtr->write("BottomDauCard_nConfig", data );
++  vmeDevicePtr_write("BottomDauCard_nConfig", data );
+   usleep(10000);
+   data=0x0;
+-  vmeDevicePtr->write("BottomDauCard_nConfig", data );
++  vmeDevicePtr_write("BottomDauCard_nConfig", data );
+   
+     
+ #else // Use direct CAEN
+@@ -1292,16 +1292,16 @@ void PixelFEDInterface::loadFPGADigFED(){
+ 
+   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Loading FPGA's from Program EEPROMs"<<endl;
+   data=0x1;
+-  vmeDevicePtr->write("nCONFIG", data );
++  vmeDevicePtr_write("nCONFIG", data );
+   usleep(1000); //min is 40us in manual to initiate
+   data=0x0;
+-  vmeDevicePtr->write("nCONFIG", data );
++  vmeDevicePtr_write("nCONFIG", data );
+   usleep(1000000); //10ms in example programs, extra time now for clock
+   data=0x2;
+-  vmeDevicePtr->write("nCONFIG", data );
++  vmeDevicePtr_write("nCONFIG", data );
+   usleep(1000); //min is 40us in manual to initiate
+   data=0x0;
+-  vmeDevicePtr->write("nCONFIG", data );
++  vmeDevicePtr_write("nCONFIG", data );
+   usleep(1000000); //10ms in example programs, extra time now for clock
+ 
+   
+@@ -1346,9 +1346,9 @@ uint32_t fbufr[1024];
+ drainFifo1(fbufr);
+ 
+ data=0x80000000;
+- vmeDevicePtr->write("LRES",data);
++ vmeDevicePtr_write("LRES",data);
+ data=0x80000000;
+- vmeDevicePtr->write("CLRES",data);
++ vmeDevicePtr_write("CLRES",data);
+ 
+ 
+ if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Be sure to call reset() and reload (setup())all constants before proceeding"<<endl;
+@@ -1363,7 +1363,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   //  RESET I2C STATE MACHINE : Reset procedure :  set 0x2 then set 0x0
+   uint32_t ds =  0x2;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1375,7 +1375,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   usleep(20);
+   ds =  0x0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds );
++  vmeDevicePtr_write("I2C_RES",ds );
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1387,7 +1387,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   // I2C PAYLOAD
+   ds =  Register_Nr;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_LOAD",ds);
++  vmeDevicePtr_write("I2C_LOAD",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_LOAD,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1401,7 +1401,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   //VXIout (0x3,I2C_ADDR_RW, 2, (i2c_nbytes<<8)+(i2c_addr<<1)+0/*WRITE*/);
+   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_ADDR_RW",ds);
++  vmeDevicePtr_write("I2C_ADDR_RW",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_ADDR_RW,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1414,7 +1414,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   
+   //Check Status
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->read("I2C_RD_STAT",&d);
++  vmeDevicePtr_read("I2C_RD_STAT",&d);
+ #else  // Use direct CAEN 
+   ret = CAENVME_ReadCycle(BHandle,I2C_RD_STAT,&d,am,dw);
+   if(ret != cvSuccess) {
+@@ -1432,7 +1432,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   //  RESET I2C STATE MACHINE
+   ds =  0x2;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1442,7 +1442,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+   usleep(20);
+   ds =  0x0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1457,7 +1457,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+     //VXIout (0x3,I2C_ADDR_RW, 2, (i2c_nbytes<<8)+(i2c_addr<<1)+0/*WRITE*/);
+     ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+1;
+ #ifdef USE_HAL // Use HAL
+-    vmeDevicePtr->write("I2C_ADDR_RW",ds);
++    vmeDevicePtr_write("I2C_ADDR_RW",ds);
+ #else  // Use direct CAEN 
+     ret = CAENVME_WriteCycle(BHandle,I2C_ADDR_RW,&ds,am,dw);
+     if(ret != cvSuccess) {  // Error
+@@ -1467,7 +1467,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+     usleep(20);//
+     //Check Status
+ #ifdef USE_HAL // Use HAL
+-    vmeDevicePtr->read("I2C_RD_STAT",&d);
++    vmeDevicePtr_read("I2C_RD_STAT",&d);
+ #else  // Use direct CAEN 
+     ret = CAENVME_ReadCycle(BHandle,I2C_RD_STAT,&d,am,dw);
+     if(ret != cvSuccess) {
+@@ -1481,7 +1481,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
+     
+     //Get Payload
+ #ifdef USE_HAL // Use HAL
+-    vmeDevicePtr->read("I2C_RD_DATA",&d);
++    vmeDevicePtr_read("I2C_RD_DATA",&d);
+ #else  // Use direct CAEN 
+     ret = CAENVME_ReadCycle(BHandle,I2C_RD_DATA,&d,am,dw);
+     if(ret != cvSuccess) {
+@@ -1500,7 +1500,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+ 
+   uint32_t ds =  0x2;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1511,7 +1511,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   
+   ds =  0x0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1523,7 +1523,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   //I2C PAYLOAD 
+   ds =  Register_Nr;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_LOAD",ds);
++  vmeDevicePtr_write("I2C_LOAD",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_LOAD,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1536,7 +1536,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   i2c_nbytes=1;
+   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_ADDR_RW",ds);
++  vmeDevicePtr_write("I2C_ADDR_RW",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_ADDR_RW,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1547,7 +1547,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   usleep(1000);
+   
+ #ifdef USE_HAL // Use HAL
+-    vmeDevicePtr->read("I2C_RD_STAT",&d);
++    vmeDevicePtr_read("I2C_RD_STAT",&d);
+ #else  // Use direct CAEN 
+   ret = CAENVME_ReadCycle(BHandle,I2C_RD_STAT,&d,am,dw);
+   if(ret != cvSuccess) {
+@@ -1566,7 +1566,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   //RESET I2C STATE MACHINE
+   ds =  0x2;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1578,7 +1578,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   
+   ds =  0x0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_RES",ds);
++  vmeDevicePtr_write("I2C_RES",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_RES,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1590,7 +1590,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+  
+   ds =  Value;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_LOAD",ds);
++  vmeDevicePtr_write("I2C_LOAD",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_LOAD,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1603,7 +1603,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+    i2c_addr=7*2+1; i2c_nbytes=1;
+   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("I2C_ADDR_RW",ds);
++  vmeDevicePtr_write("I2C_ADDR_RW",ds);
+ #else  // Use direct CAEN 
+   ret = CAENVME_WriteCycle(BHandle,I2C_ADDR_RW,&ds,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -1617,7 +1617,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
+   usleep(300);
+  
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->read("I2C_RD_STAT",&d);
++  vmeDevicePtr_read("I2C_RD_STAT",&d);
+ #else  // Use direct CAEN 
+   ret = CAENVME_ReadCycle(BHandle,I2C_RD_STAT,&d,am,dw);
+   if(ret != cvSuccess) {
+@@ -1774,10 +1774,10 @@ int PixelFEDInterface::setup(void) {
+   // Do additional settings
+   // Set the timeout for the UP/DN counter (from Wills setUPDNBusy
+    cout<<"Program the UP/DOWN counter timeout to 3 (1.6ms)"<<endl;
+-   vmeDevicePtr->write("LAD_N", 0x3,HAL::HAL_NO_VERIFY,0x198000);	
+-   vmeDevicePtr->write("LAD_NC",0x3,HAL::HAL_NO_VERIFY,0x198000);	
+-   vmeDevicePtr->write("LAD_SC",0x3,HAL::HAL_NO_VERIFY,0x198000);	
+-   vmeDevicePtr->write("LAD_S", 0x3,HAL::HAL_NO_VERIFY,0x198000);	
++   vmeDevicePtr_write("LAD_N", 0x3,HAL::HAL_NO_VERIFY,0x198000);	
++   vmeDevicePtr_write("LAD_NC",0x3,HAL::HAL_NO_VERIFY,0x198000);	
++   vmeDevicePtr_write("LAD_SC",0x3,HAL::HAL_NO_VERIFY,0x198000);	
++   vmeDevicePtr_write("LAD_S", 0x3,HAL::HAL_NO_VERIFY,0x198000);	
+ 
+ 
+   return status;
+@@ -1804,7 +1804,7 @@ void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const
+   for(int i=0;i<256;i++) {
+     uint32_t offset = i*4;
+     //cout<<i<<" "<<offset<<" "<<hex<<TestData[i]<<dec<<endl;
+-    vmeDevicePtr->write("TestDAC0",TestData[i],HAL::HAL_NO_VERIFY,offset);
++    vmeDevicePtr_write("TestDAC0",TestData[i],HAL::HAL_NO_VERIFY,offset);
+   }
+   
+   // block write does not work??
+@@ -1812,7 +1812,7 @@ void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const
+ //   uint32_t length = 1024; // in bytes
+ //   char * buffer = (char *) TestData;
+ //   uint32_t offset = 0;
+-//   vmeDevicePtr->writeBlock("TestDAC",length,buffer,HAL::HAL_NO_VERIFY,
++//   vmeDevicePtr_writeBlock("TestDAC",length,buffer,HAL::HAL_NO_VERIFY,
+ // 			   HAL::HAL_DO_INCREMENT,offset);
+ 
+ #else // direct CAEN VME access
+@@ -1907,7 +1907,7 @@ void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R,
+   for(int i=0;i<256;i++) {
+     uint32_t offset = i*4;
+     //cout<<i<<" "<<offset<<" "<<hex<<TestData[i]<<dec<<endl;
+-    vmeDevicePtr->write("TestDAC0",compositePulseTrain[i],HAL::HAL_NO_VERIFY,offset);
++    vmeDevicePtr_write("TestDAC0",compositePulseTrain[i],HAL::HAL_NO_VERIFY,offset);
+   }
+  
+ #else // direct CAEN VME access
+@@ -1959,7 +1959,7 @@ void PixelFEDInterface::fillDACRegister2(void) const {
+ //   for(int i=0;i<256;i++) {
+ //     uint32_t offset = i*4;
+ //     //cout<<i<<" "<<offset<<" "<<hex<<TestData[i]<<dec<<endl;
+-//     vmeDevicePtr->write("TestDAC0",TestData[i],HAL::HAL_NO_VERIFY,offset);
++//     vmeDevicePtr_write("TestDAC0",TestData[i],HAL::HAL_NO_VERIFY,offset);
+ //   }
+                                                                                 
+ //   // block write does not work??
+@@ -1967,7 +1967,7 @@ void PixelFEDInterface::fillDACRegister2(void) const {
+ // //   uint32_t length = 1024; // in bytes
+ // //   char * buffer = (char *) TestData;
+ // //   uint32_t offset = 0;
+-// //   vmeDevicePtr->writeBlock("TestDAC",length,buffer,HAL::HAL_NO_VERIFY,
++// //   vmeDevicePtr_writeBlock("TestDAC",length,buffer,HAL::HAL_NO_VERIFY,
+ // //                         HAL::HAL_DO_INCREMENT,offset);
+  
+ // #else // direct CAEN VME access
+@@ -2013,7 +2013,7 @@ void PixelFEDInterface::fillDACRegisterLength(const int *const dac1, const int *
+   for(int i=0;i<256;i++) {
+     uint32_t offset = i*4;
+     //cout<<i<<" "<<offset<<" "<<hex<<TestData[i]<<dec<<endl;
+-    vmeDevicePtr->write("TestDAC0",TestData[i],HAL::HAL_NO_VERIFY,offset);
++    vmeDevicePtr_write("TestDAC0",TestData[i],HAL::HAL_NO_VERIFY,offset);
+   }
+   
+   // block write does not work??
+@@ -2021,7 +2021,7 @@ void PixelFEDInterface::fillDACRegisterLength(const int *const dac1, const int *
+ //   uint32_t length = 1024; // in bytes
+ //   char * buffer = (char *) TestData;
+ //   uint32_t offset = 0;
+-//   vmeDevicePtr->writeBlock("TestDAC",length,buffer,HAL::HAL_NO_VERIFY,
++//   vmeDevicePtr_writeBlock("TestDAC",length,buffer,HAL::HAL_NO_VERIFY,
+ // 			   HAL::HAL_DO_INCREMENT,offset);
+ 
+ #else // direct CAEN VME access
+@@ -2045,7 +2045,7 @@ void PixelFEDInterface::fillDACRegisterLength(const int *const dac1, const int *
+   void PixelFEDInterface::setup_testDAC(int pedestal){//pre-load the testDAC with a pedestal value
+ 
+ uint32_t value = 0x0e;
+-vmeDevicePtr->write("CtrlReg",value);
++vmeDevicePtr_write("CtrlReg",value);
+ 
+ int dac0[256];
+ for(int i=0;i<256;i++) dac0[i]=pedestal&0x3ff;
+@@ -2054,13 +2054,13 @@ usleep(100);
+ 
+ resetSlink();
+ value=0x1;
+-vmeDevicePtr->write("ModeReg",value);
++vmeDevicePtr_write("ModeReg",value);
+ generateVMETrigger();
+ 
+ uint32_t data=0x80000000;
+- vmeDevicePtr->write("LRES",data);
++ vmeDevicePtr_write("LRES",data);
+ data=0x80000000;
+- vmeDevicePtr->write("CLRES",data);
++ vmeDevicePtr_write("CLRES",data);
+ 
+ int status = loadControlRegister();
+ if(status<0)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error Setting Control Word! status ="<<status<<endl;
+@@ -2073,7 +2073,7 @@ if(status<0)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error Setting Mode Word! s
+   void PixelFEDInterface::stop_testDAC(){//load the testDAC with finite length
+ 
+ uint32_t value = 0x0e;
+-vmeDevicePtr->write("CtrlReg",value);
++vmeDevicePtr_write("CtrlReg",value);
+ 
+ int dac0[256];
+ for(int i=0;i<256;i++) dac0[i]=0;
+@@ -2083,15 +2083,15 @@ usleep(100);
+ 
+ resetSlink();
+ value=0x1;
+-vmeDevicePtr->write("ModeReg",value);
++vmeDevicePtr_write("ModeReg",value);
+ 
+ 
+ generateVMETrigger();
+ 
+ uint32_t data=0x80000000;
+- vmeDevicePtr->write("LRES",data);
++ vmeDevicePtr_write("LRES",data);
+ data=0x80000000;
+- vmeDevicePtr->write("CLRES",data);
++ vmeDevicePtr_write("CLRES",data);
+  
+ int status = loadControlRegister();
+ if(status<0)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error Setting Control Word! status ="<<status<<endl;
+@@ -2110,7 +2110,7 @@ void PixelFEDInterface::drainDigTransFifo(const int chip, uint32_t* data) {
+   else
+     return;
+ 
+-  vmeDevicePtr->readBlock(chipname, 4096, (char*)data, HAL::HAL_NO_INCREMENT, 0x20000);
++  vmeDevicePtr_readBlock(chipname, 4096, (char*)data, HAL::HAL_NO_INCREMENT, 0x20000);
+ }
+ 
+ //////////////////////////////////////////////////////////////////////
+@@ -2176,8 +2176,8 @@ int PixelFEDInterface::drain_transBuffer(int chnl, uint32_t *data) {
+   //cout<<" readout fifo1 "<<length<<endl;
+ 
+   uint32_t datadum;
+-  vmeDevicePtr->read(item0,&datadum,offset);//dummy read to align buffer
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_read(item0,&datadum,offset);//dummy read to align buffer
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+ 
+   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Read transparent buffer from FIFO1 for channel "<<dec<<chnl<<endl;
+   //cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Read transparent buffer from FIFO1 for channel "<<dec<<chnl<<endl;
+@@ -2294,10 +2294,10 @@ int PixelFEDInterface::drainFifo1(int chnl, uint32_t *data,
+   char * buffer = (char *) data;
+   //cout<<" readout fifo1 "<<length<<endl;
+   uint32_t datadum;
+-  vmeDevicePtr->read(item0,&datadum,offset);//dummy read to align buffer
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_read(item0,&datadum,offset);//dummy read to align buffer
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+   //for(int icx=0;icx<256;icx++) { // READ FIFO1 for V2
+-  //vmeDevicePtr->read(item0,&data[icx],offset);
++  //vmeDevicePtr_read(item0,&data[icx],offset);
+   //}
+ 
+   // Find the real length
+@@ -2348,7 +2348,7 @@ int PixelFEDInterface::drainDataFifo3(uint32_t *data) {
+   string item = "RdSpyFifoUp";
+   const uint32_t length = spyFifo3Length; // size of SPY-FIFO3 in bytes, is it 128?
+   char * buffer = (char *) data;
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+ 
+   uint32_t olddata = 99999;
+   for(uint32_t i=0; i<(length/4);i++) {
+@@ -2370,7 +2370,7 @@ int PixelFEDInterface::drainDataFifo3(uint32_t *data) {
+ 
+   item = "RdSpyFifoDn";
+   buffer = (char *) &data[wordCount];
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+   count=0;
+   for(uint32_t i=0; i<(length/4);i++) {
+     //cout<<i<<" "<<hex<<data[i+wordCount]<<dec<<endl;
+@@ -2419,7 +2419,7 @@ int PixelFEDInterface::drainTTSFifo(uint32_t *data) {
+  
+   while( count < (TTSFifoLength/4) ) {  // assume error and lastdac fifo same size
+     count++;
+-    vmeDevicePtr->read(item,&data0,offset);  // replace with block transfer?
++    vmeDevicePtr_read(item,&data0,offset);  // replace with block transfer?
+     
+     if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"TTS "<<wdcnt<<" "<<data0<<" "<<lastTTS<<endl;
+     //cout<<count<<" "<<wdcnt<<" "<<hex<<data0<<" "<<lastTTS<<dec<<endl;
+@@ -2517,12 +2517,12 @@ int PixelFEDInterface::drainErrorFifo(const int chip, uint32_t *data) {
+   char * buffer = (char *) tbuf;
+   //cout<<" readout fifo1 "<<length<<endl;
+   uint32_t length=errorFifoLength;
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+ 
+   while( count < (errorFifoLength/4) ) {  // assume error and lastdac fifo same size
+ datanew=tbuf[count];
+     count++;
+-//    vmeDevicePtr->read(item,&datanew,offset);  // replace with block transfer?
++//    vmeDevicePtr_read(item,&datanew,offset);  // replace with block transfer?
+ 
+     if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" "<<wordCount<<" "<<hex <<datanew<<" "<<hex<<dataold<<endl;
+     //cout<<count<<" "<<wordCount<<" "<<hex<<datanew<<" "<<dataold<<dec<<endl;
+@@ -2657,12 +2657,12 @@ int PixelFEDInterface::drainTemperatureFifo(const int chip, uint32_t *data) {
+   char * buffer = (char *) tbuf;
+   //cout<<" readout fifo1 "<<length<<endl;
+   uint32_t length=lastDACFifoLength;
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+  
+   while( count < (lastDACFifoLength/4) ) {  // assume error and lastdac fifo same size
+    datanew=tbuf[count];
+     count++;
+-//    vmeDevicePtr->read(item,&datanew,offset);  // replace with block transfer?
++//    vmeDevicePtr_read(item,&datanew,offset);  // replace with block transfer?
+ 
+     if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" "<<wordCount<<" "<<datanew<<" "<<dataold<<endl;
+     //cout<<count<<" "<<wordCount<<" "<<hex<<datanew<<" "<<dataold<<dec<<endl;
+@@ -2753,7 +2753,7 @@ int PixelFEDInterface::drainDataFifo2(const int chip, uint32_t *data) {
+   // Chanege to block read at some point
+   const uint32_t length = 1024; //spyFifo2Length; // size of SPY-FIFO2 in bytes, is it 128? 
+   char * buffer = (char *) data;
+-  vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
+   //find the wordCount?
+   for(uint32_t i=0; i<(length/4);i++) {
+     //cout<<i<<" "<<hex<<data[i]<<dec<<endl;
+@@ -2814,7 +2814,7 @@ int PixelFEDInterface::drainFifo2(uint32_t VmeAddress, uint32_t *pnt) {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-    vmeDevicePtr->read(item,&data,offset);  // replace with block transfer?
++    vmeDevicePtr_read(item,&data,offset);  // replace with block transfer?
+ 
+ #else // direct CAEN VME access
+ 
+@@ -2863,7 +2863,7 @@ int PixelFEDInterface::setModeRegister(int mode) {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("ModeReg",data);
++  vmeDevicePtr_write("ModeReg",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,MODE,&data,am,dw);
+@@ -2904,7 +2904,7 @@ int PixelFEDInterface::generateVMETrigger(void) {
+                               // set it first using the routine below CAUTION: do not
+ 			      // set the event number(bit 8) and trigger (bit 9) at the same time.)
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("WrEventNum",data);
++  vmeDevicePtr_write("WrEventNum",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,EVENT_TRIG,&data,am,dw);
+@@ -2921,7 +2921,7 @@ int PixelFEDInterface::setVMEevntnmbr(const int value) {
+   //cout<<"Set VME event number = "<<dec<<value<<endl;
+   uint32_t data = 0x100+(value&0xff); // lower 8 bits(7-0) for event number, next bit(8) to write 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("WrEventNum",data);
++  vmeDevicePtr_write("WrEventNum",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,WrEventNum,&data,am,dw);
+@@ -2947,7 +2947,7 @@ int PixelFEDInterface::loadControlRegister(void) {
+    if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
+    uint32_t data = value;
+ #ifdef USE_HAL // Use HAL
+-   vmeDevicePtr->write("CtrlReg",data);
++   vmeDevicePtr_write("CtrlReg",data);
+ 
+ #else // direct CAEN VME access
+    ret = CAENVME_WriteCycle(BHandle,CTRL,&data,am,dw);
+@@ -2965,7 +2965,7 @@ int PixelFEDInterface::loadControlRegister(void) {
+  int PixelFEDInterface::getControlRegister(void) {
+   uint32_t data = 0; 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->read("CtrlReg",&data);
++  vmeDevicePtr_read("CtrlReg",&data);
+   
+ #else // direct CAEN VME access
+   ret = CAENVME_ReadCycle(BHandle,CTRL,&data,am,dw);
+@@ -2991,7 +2991,7 @@ int PixelFEDInterface::loadFedIDRegister(void) {
+ 
+    cout<<"Set FEDID register "<<hex<<value<<dec<<endl;
+    uint32_t data = value;
+-   vmeDevicePtr->write("SetFedID",data);
++   vmeDevicePtr_write("SetFedID",data);
+    int status = getFedIDRegister();
+    if(data!=(uint32_t)status) cout<<"soft FEDID = "<<data<<" doesn't match hard board FEDID = "<<status<<endl;
+    return 0;
+@@ -3000,7 +3000,7 @@ int PixelFEDInterface::loadFedIDRegister(void) {
+  // Read the permanent hardware register.
+  int PixelFEDInterface::getFedIDRegister(void) {
+   uint32_t data = 0; 
+-  vmeDevicePtr->read("READ_GA",&data);
++  vmeDevicePtr_read("READ_GA",&data);
+   return data;
+ }
+ 
+@@ -3010,7 +3010,7 @@ void PixelFEDInterface::set_Hold(void) {
+   //set the holdoff from the database
+ 	uint32_t data = (uint32_t) pixelFEDCard.TriggerHoldoff;
+ 	
+-  vmeDevicePtr->write("LAD_C",data,HAL::HAL_NO_VERIFY,0x0e8000);
++  vmeDevicePtr_write("LAD_C",data,HAL::HAL_NO_VERIFY,0x0e8000);
+ 
+ }
+   ////////////////////////////////////////////////////////////////////////////
+@@ -3018,7 +3018,7 @@ void PixelFEDInterface::set_Hold(uint32_t data) {
+   //set the holdoff, over-ride the database
+   cout<<"Over-riding data base value for the trigger holdoff!!!!! Value set to "<<dec<<data<<endl;
+ 
+-  vmeDevicePtr->write("LAD_C",data,HAL::HAL_NO_VERIFY,0x0e8000);
++  vmeDevicePtr_write("LAD_C",data,HAL::HAL_NO_VERIFY,0x0e8000);
+ 
+ }
+   ////////////////////////////////////////////////////////////////////////////
+@@ -3044,13 +3044,13 @@ void PixelFEDInterface::set_SimulatedHits(void) {
+ 
+   for(int jk=0;jk<9;jk++){ //loop through all 9 channels in each FPGA
+     
+-    vmeDevicePtr->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
++    vmeDevicePtr_write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+ 
+-    vmeDevicePtr->write("LAD_NC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
++    vmeDevicePtr_write("LAD_NC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
+ 
+-    vmeDevicePtr->write("LAD_SC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
++    vmeDevicePtr_write("LAD_SC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
+ 
+-    vmeDevicePtr->write("LAD_S",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
++    vmeDevicePtr_write("LAD_S",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+   }
+ 
+ }
+@@ -3078,13 +3078,13 @@ void PixelFEDInterface::set_SimulatedHits(uint32_t data) {
+ 
+   for(int jk=0;jk<9;jk++){ //loop through all 9 channels in each FPGA
+     
+-    vmeDevicePtr->write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
++    vmeDevicePtr_write("LAD_N",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+ 
+-    vmeDevicePtr->write("LAD_NC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
++    vmeDevicePtr_write("LAD_NC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
+ 
+-    vmeDevicePtr->write("LAD_SC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
++    vmeDevicePtr_write("LAD_SC",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);	
+ 
+-    vmeDevicePtr->write("LAD_S",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
++    vmeDevicePtr_write("LAD_S",data,HAL::HAL_NO_VERIFY,SubAddr_Sim[jk]);
+   }
+ 
+ }
+@@ -3096,8 +3096,8 @@ int PixelFEDInterface::readEventCounter() {
+   uint32_t data; 
+ 
+ #ifdef USE_HAL // Use HAL
+-  //vmeDevicePtr->read("RdEventCntr",&data);
+-  vmeDevicePtr->read("RdEventCntrVME",&data); // switch to the new counter
++  //vmeDevicePtr_read("RdEventCntr",&data);
++  vmeDevicePtr_read("RdEventCntrVME",&data); // switch to the new counter
+ 
+ #else // direct CAEN VME access
+   CVErrorCodes ret = CAENVME_ReadCycle(BHandle,EVENT_NUM,&data,am,dw);
+@@ -3120,7 +3120,7 @@ void PixelFEDInterface::resetSlink() {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("ModeReg",data);
++  vmeDevicePtr_write("ModeReg",data);
+ 
+ #else // direct CAEN VME access
+   CVErrorCodes ret = CAENVME_WriteCycle(BHandle,MODE,&data,am,dw);
+@@ -3136,7 +3136,7 @@ void PixelFEDInterface::resetSlink() {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("ModeReg",data);
++  vmeDevicePtr_write("ModeReg",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,MODE,&data,am,dw);	
+@@ -3157,7 +3157,7 @@ void PixelFEDInterface::set_opto_params() {
+       <<pixelFEDCard.opt_inadj[0]<<dec<<endl;
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("OptoRec1Par",data);
++  vmeDevicePtr_write("OptoRec1Par",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,OPTOPAR_RECEIVERS1,&data,am,dw);	
+@@ -3172,7 +3172,7 @@ void PixelFEDInterface::set_opto_params() {
+   data = (pixelFEDCard.opt_cap[1]<<6)+pixelFEDCard.opt_inadj[1]+(pixelFEDCard.opt_ouadj[1]<<4); 
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("OptoRec2Par",data);
++  vmeDevicePtr_write("OptoRec2Par",data);
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,OPTOPAR_RECEIVERS2,&data,am,dw);
+   if(ret != cvSuccess) {  // Error
+@@ -3187,7 +3187,7 @@ void PixelFEDInterface::set_opto_params() {
+   data =(pixelFEDCard.opt_cap[2]<<6)+pixelFEDCard.opt_inadj[2]+(pixelFEDCard.opt_ouadj[2]<<4);  
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("OptoRec3Par",data);
++  vmeDevicePtr_write("OptoRec3Par",data);
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,OPTOPAR_RECEIVERS3,&data,am,dw);	
+   if(ret != cvSuccess) {  // Error
+@@ -3210,7 +3210,7 @@ void PixelFEDInterface::set_offset_dacs() {
+       cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Input 1, channel "<<ix<<" "<<hex<<pixelFEDCard.offs_dac[ix]<<dec<<endl;
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("DacChanOffset",data);
++  vmeDevicePtr_write("DacChanOffset",data);
+ 
+ #else // direct CAEN VME access
+     CVErrorCodes ret = CAENVME_WriteCycle(BHandle,OFFSET_DAC,&data,am,dw);
+@@ -3226,7 +3226,7 @@ void PixelFEDInterface::set_offset_dacs() {
+     if(Printlevel&2) 
+       cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Input 2, channel "<<(ix+12)<<" "<<hex<<pixelFEDCard.offs_dac[ix+12]<<dec<<endl;
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("DacChanOffset",data);
++  vmeDevicePtr_write("DacChanOffset",data);
+ 
+ #else // direct CAEN VME access
+     ret = CAENVME_WriteCycle(BHandle,OFFSET_DAC,&data,am,dw);
+@@ -3243,7 +3243,7 @@ void PixelFEDInterface::set_offset_dacs() {
+       cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Input 3, channel "<<(ix+24)<<" "<<hex<<pixelFEDCard.offs_dac[ix+24]<<dec<<endl;
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("DacChanOffset",data);
++  vmeDevicePtr_write("DacChanOffset",data);
+ 
+ #else // direct CAEN VME access
+     ret = CAENVME_WriteCycle(BHandle,OFFSET_DAC,&data,am,dw);
+@@ -3442,7 +3442,7 @@ for now all set to negative clock edge
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("ClockEdgeN",data);
++  vmeDevicePtr_write("ClockEdgeN",data);
+ 
+ #else // direct CAEN VME access
+   CVErrorCodes ret = CAENVME_WriteCycle(BHandle,PHASE[0],&data,am,dw);	
+@@ -3455,7 +3455,7 @@ for now all set to negative clock edge
+   data = pixelFEDCard.clkphs10_18; // data all negative clock phase
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("ClockEdgeNC",data);
++  vmeDevicePtr_write("ClockEdgeNC",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,PHASE[1],&data,am,dw);	
+@@ -3468,7 +3468,7 @@ for now all set to negative clock edge
+   data = pixelFEDCard.clkphs19_27; // data all negative clock phase
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("ClockEdgeSC",data);
++  vmeDevicePtr_write("ClockEdgeSC",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,PHASE[2],&data,am,dw);	
+@@ -3481,7 +3481,7 @@ for now all set to negative clock edge
+   data = pixelFEDCard.clkphs28_36; // data all negative clock phase
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("ClockEdgeS",data);
++  vmeDevicePtr_write("ClockEdgeS",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,PHASE[3],&data,am,dw);	
+@@ -3509,7 +3509,7 @@ for now all set to negative clock edge
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-     vmeDevicePtr->write("ClockPhase",data);
++     vmeDevicePtr_write("ClockPhase",data);
+ 
+ #else // direct CAEN VME access
+     CVErrorCodes ret = CAENVME_WriteCycle(BHandle,DELAY,&data,am,dw);	
+@@ -3545,7 +3545,7 @@ void PixelFEDInterface::set_blk_ublk_thold() {
+ 
+ #ifdef USE_HAL // Use HAL
+       uint32_t offset = (channel<<17)+(2<<14);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+       
+ #else // direct CAEN VME access
+       uint32_t UB_B_ThreshAddr=CHIP[chip_nr]+(channel<<17)+(2<<14);
+@@ -3582,7 +3582,7 @@ void PixelFEDInterface::set_blk_ublk_trans_thold() {
+       //      UBLvl  BlackLowLvl   BlackHighLvl       
+ 
+       uint32_t offset = (channel<<17)+(2<<14);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+     }
+   }
+   
+@@ -3612,7 +3612,7 @@ void PixelFEDInterface::set_chnl_nrocs() {
+       }
+ #ifdef USE_HAL // Use HAL
+       uint32_t offset = (channel<<17);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+       
+ #else // direct CAEN VME access
+       uint32_t NrocAddr=CHIP[chip_nr]+(channel<<17);
+@@ -3658,7 +3658,7 @@ void PixelFEDInterface::set_data_levels() {
+ #ifdef USE_HAL // Use HAL
+ 
+       uint32_t offset = (channel<<17)+(4<<14)+(0<<2);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+       //cout<<FPGAName[chip_nr]<<" "<<hex<<offset<<dec;
+ 
+ #else // direct CAEN VME access
+@@ -3687,7 +3687,7 @@ void PixelFEDInterface::set_data_levels() {
+ #ifdef USE_HAL // Use HAL
+ 
+       offset = (channel<<17)+(5<<14)+(0<<2);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+ 
+ #else // direct CAEN VME access
+ 
+@@ -3723,7 +3723,7 @@ void PixelFEDInterface::set_data_levels() {
+ #ifdef USE_HAL // Use HAL
+ 
+ 	offset = (channel<<17)+(4<<14)+((roc+1)<<2);
+-	vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++	vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+       
+ #else // direct CAEN VME access
+ 	vmeAddress = L012_ThreshAddr+((roc+1)<<2);
+@@ -3747,7 +3747,7 @@ void PixelFEDInterface::set_data_levels() {
+ #ifdef USE_HAL // Use HAL
+ 	
+ 	offset = (channel<<17)+(5<<14)+((roc+1)<<2);
+-	vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++	vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+ 	
+ #else // direct CAEN VME access
+ 	
+@@ -3779,7 +3779,7 @@ void PixelFEDInterface::set_data_levels() {
+ #ifdef USE_HAL // Use HAL
+       
+       offset = (channel<<17)+(4<<14)+((pixelFEDCard.NRocs[chip_nr*9+channel-1]+1)<<2);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+       
+ #else // direct CAEN VME access
+       
+@@ -3804,7 +3804,7 @@ void PixelFEDInterface::set_data_levels() {
+ #ifdef USE_HAL // Use HAL
+       
+       offset = (channel<<17)+(5<<14)+((pixelFEDCard.NRocs[chip_nr*9+channel-1]+1)<<2);
+-      vmeDevicePtr->write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
++      vmeDevicePtr_write(FPGAName[chip_nr],data,HAL::HAL_NO_VERIFY,offset);
+       
+ #else // direct CAEN VME access
+       
+@@ -3888,7 +3888,7 @@ void PixelFEDInterface::set_chnls_onoff() {
+   // bits 0-8 on = channels 1-9 off
+   uint32_t data = pixelFEDCard.Ncntrl; 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("NWrRdCntrReg",data);
++  vmeDevicePtr_write("NWrRdCntrReg",data);
+ 
+ #else // direct CAEN VME access
+   uint32_t vmeAddress = LAD_N+0x1a0000;
+@@ -3902,7 +3902,7 @@ void PixelFEDInterface::set_chnls_onoff() {
+   data = pixelFEDCard.NCcntrl; // bits 0-8 on = channels 10-18 on
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("NCWrRdCntrReg",data);
++  vmeDevicePtr_write("NCWrRdCntrReg",data);
+ 
+ #else // direct CAEN VME access
+   vmeAddress = LAD_NC+0x1a0000;
+@@ -3916,7 +3916,7 @@ void PixelFEDInterface::set_chnls_onoff() {
+   data = pixelFEDCard.SCcntrl; // bits 0-8 on = channels 19-27 on
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("SCWrRdCntrReg",data);
++  vmeDevicePtr_write("SCWrRdCntrReg",data);
+ 
+ #else // direct CAEN VME access
+   vmeAddress = LAD_SC+0x1a0000;
+@@ -3930,7 +3930,7 @@ void PixelFEDInterface::set_chnls_onoff() {
+   data = pixelFEDCard.Scntrl; // bits 0-8 on = channels 28-36 on
+ 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->write("SWrRdCntrReg",data);
++  vmeDevicePtr_write("SWrRdCntrReg",data);
+ 
+ #else // direct CAEN VME access
+   vmeAddress = LAD_S+0x1a0000;
+@@ -4017,25 +4017,25 @@ void PixelFEDInterface::set_MODE_front() {
+     (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
+ 
+   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+-  vmeDevicePtr->write("NWrModeReg",data);
++  vmeDevicePtr_write("NWrModeReg",data);
+ 
+ 
+   data = ((pixelFEDCard.NC_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
+ 
+   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+-  vmeDevicePtr->write("NCWrModeReg",data);
++  vmeDevicePtr_write("NCWrModeReg",data);
+ 
+ 
+   data = ((pixelFEDCard.SC_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
+ 
+   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+-  vmeDevicePtr->write("SCWrModeReg",data);
++  vmeDevicePtr_write("SCWrModeReg",data);
+ 
+ 
+   data = ((pixelFEDCard.S_SpyFifo2Ch&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
+ 
+   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+-  vmeDevicePtr->write("SWrModeReg",data);
++  vmeDevicePtr_write("SWrModeReg",data);
+ 
+ } // end
+ /////////////////////////////////////////////////////////////////////////
+@@ -4195,16 +4195,16 @@ void PixelFEDInterface::set_adc_1v2v() {
+ 
+   // bits 0-5 on(off) = channels 1-12 set 2Vpp(1Vpp)
+   uint32_t data = pixelFEDCard.Nadcg;
+-  vmeDevicePtr->write("NWrGainReg",data);
++  vmeDevicePtr_write("NWrGainReg",data);
+ 
+   data = pixelFEDCard.NCadcg; // bits 0-3 on(off) = channels 13-20 set 2Vpp(1Vpp)
+-  vmeDevicePtr->write("NCWrGainReg",data);
++  vmeDevicePtr_write("NCWrGainReg",data);
+ 
+   data = pixelFEDCard.SCadcg; // bits 0-8 on(off) = channels 21-28 set 2Vpp(1Vpp)
+-  vmeDevicePtr->write("SCWrGainReg",data);
++  vmeDevicePtr_write("SCWrGainReg",data);
+ 
+   data = pixelFEDCard.Sadcg; // bits 0-8 on(off) = channels 29-36 set 2Vpp(1Vpp)
+-  vmeDevicePtr->write("SWrGainReg",data);
++  vmeDevicePtr_write("SWrGainReg",data);
+ 
+ } // end
+ 
+@@ -4247,7 +4247,7 @@ data=(pixelFEDCard.Sbaseln&0x3ff);
+ set_BaselineCorr(4,data); 
+ 
+ data=0x80000000;
+- vmeDevicePtr->write("LRES",data);
++ vmeDevicePtr_write("LRES",data);
+ 
+ //cout<<"A local reset has been issued to shut off baseline correction"<<endl;
+ 
+@@ -4344,7 +4344,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of (1-36)range!!"<<endl;
+ }
+ 
+ uint32_t data=0x80000000;
+- vmeDevicePtr->write("LRES",data);
++ vmeDevicePtr_write("LRES",data);
+ 
+ //cout<<"A local reset has been issued to shut off baseline correction"<<endl;
+ 
+@@ -4358,16 +4358,16 @@ uint32_t data=0x80000000;
+ 
+ if(chip==1){
+ pixelFEDCard.Nbaseln=value;
+- vmeDevicePtr->write("NWrBaseLAdj",value);
++ vmeDevicePtr_write("NWrBaseLAdj",value);
+ } else if(chip==2) {
+ pixelFEDCard.NCbaseln=value;
+- vmeDevicePtr->write("NCWrBaseLAdj",value);
++ vmeDevicePtr_write("NCWrBaseLAdj",value);
+ } else if(chip==3) {
+ pixelFEDCard.SCbaseln=value;
+- vmeDevicePtr->write("SCWrBaseLAdj",value);
++ vmeDevicePtr_write("SCWrBaseLAdj",value);
+ } else if(chip==4) {
+ pixelFEDCard.Sbaseln=value;
+- vmeDevicePtr->write("SWrBaseLAdj",value);
++ vmeDevicePtr_write("SWrBaseLAdj",value);
+ } else {
+ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Chip must be 1(NORTH),  2(NORTH CENTER),  3(SOUTH CENTER), or 4(SOUTH)"<<endl;
+ }
+@@ -4380,17 +4380,17 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Chip must be 1(NORTH),  2(NORTH CENTER
+ //cout<<"PixelFEDInterface::set_BaselineCorr() ENTERED!!"<<endl;
+ 
+ uint32_t value = pixelFEDCard.Nbaseln;
+- vmeDevicePtr->write("NWrBaseLAdj",value);
++ vmeDevicePtr_write("NWrBaseLAdj",value);
+ 
+ value = pixelFEDCard.NCbaseln;
+- vmeDevicePtr->write("NCWrBaseLAdj",value);
++ vmeDevicePtr_write("NCWrBaseLAdj",value);
+ 
+ value = pixelFEDCard.SCbaseln;
+- vmeDevicePtr->write("SCWrBaseLAdj",value);
++ vmeDevicePtr_write("SCWrBaseLAdj",value);
+ 
+ value = pixelFEDCard.Sbaseln;
+  //cout<<"PixelFEDInterface::set_BaselineCorr().. SW =0x"<<hex<<value<<dec<<endl;
+- vmeDevicePtr->write("SWrBaseLAdj",value);
++ vmeDevicePtr_write("SWrBaseLAdj",value);
+ 
+   }//end
+ /////////////////////////////////////////////////////////////////////////////
+@@ -4401,54 +4401,54 @@ void PixelFEDInterface::dump_BaselineCorr() {
+ 
+ uint32_t iwrdat;
+ int blstat[36];
+-vmeDevicePtr->read("NRdBaseL321",&iwrdat);
++vmeDevicePtr_read("NRdBaseL321",&iwrdat);
+ blstat[0]=(iwrdat&0x3ff);
+ blstat[1]=(iwrdat&0xffc00)>>10;
+ blstat[2]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NRdBaseL654",&iwrdat);
++vmeDevicePtr_read("NRdBaseL654",&iwrdat);
+ blstat[3]=(iwrdat&0x3ff);
+ blstat[4]=(iwrdat&0xffc00)>>10;
+ blstat[5]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NRdBaseL987",&iwrdat);
++vmeDevicePtr_read("NRdBaseL987",&iwrdat);
+ blstat[6]=(iwrdat&0x3ff);
+ blstat[7]=(iwrdat&0xffc00)>>10;
+ blstat[8]=(iwrdat&0x3ff00000)>>20;
+ 
+-vmeDevicePtr->read("NCRdBaseL321",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL321",&iwrdat);
+ blstat[9]=(iwrdat&0x3ff);
+ blstat[10]=(iwrdat&0xffc00)>>10;
+ blstat[11]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NCRdBaseL654",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL654",&iwrdat);
+ blstat[12]=(iwrdat&0x3ff);
+ blstat[13]=(iwrdat&0xffc00)>>10;
+ blstat[14]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NCRdBaseL987",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL987",&iwrdat);
+ blstat[15]=(iwrdat&0x3ff);
+ blstat[16]=(iwrdat&0xffc00)>>10;
+ blstat[17]=(iwrdat&0x3ff00000)>>20;
+ 
+-vmeDevicePtr->read("SCRdBaseL321",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL321",&iwrdat);
+ blstat[18]=(iwrdat&0x3ff);
+ blstat[19]=(iwrdat&0xffc00)>>10;
+ blstat[20]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SCRdBaseL654",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL654",&iwrdat);
+ blstat[21]=(iwrdat&0x3ff);
+ blstat[22]=(iwrdat&0xffc00)>>10;
+ blstat[23]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SCRdBaseL987",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL987",&iwrdat);
+ blstat[24]=(iwrdat&0x3ff);
+ blstat[25]=(iwrdat&0xffc00)>>10;
+ blstat[26]=(iwrdat&0x3ff00000)>>20;
+ 
+-vmeDevicePtr->read("SRdBaseL321",&iwrdat);
++vmeDevicePtr_read("SRdBaseL321",&iwrdat);
+ blstat[27]=(iwrdat&0x3ff);
+ blstat[28]=(iwrdat&0xffc00)>>10;
+ blstat[29]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SRdBaseL654",&iwrdat);
++vmeDevicePtr_read("SRdBaseL654",&iwrdat);
+ blstat[30]=(iwrdat&0x3ff);
+ blstat[31]=(iwrdat&0xffc00)>>10;
+ blstat[32]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SRdBaseL987",&iwrdat);
++vmeDevicePtr_read("SRdBaseL987",&iwrdat);
+ blstat[33]=(iwrdat&0x3ff);
+ blstat[34]=(iwrdat&0xffc00)>>10;
+ blstat[35]=(iwrdat&0x3ff00000)>>20;
+@@ -4471,54 +4471,54 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Baseline Adjust for Channel "<<dec<<i+
+ //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
+ void PixelFEDInterface::get_BaselineCorr(int * blstat) {
+ uint32_t iwrdat;
+-vmeDevicePtr->read("NRdBaseL321",&iwrdat);
++vmeDevicePtr_read("NRdBaseL321",&iwrdat);
+ blstat[0]=(iwrdat&0x3ff);
+ blstat[1]=(iwrdat&0xffc00)>>10;
+ blstat[2]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NRdBaseL654",&iwrdat);
++vmeDevicePtr_read("NRdBaseL654",&iwrdat);
+ blstat[3]=(iwrdat&0x3ff);
+ blstat[4]=(iwrdat&0xffc00)>>10;
+ blstat[5]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NRdBaseL987",&iwrdat);
++vmeDevicePtr_read("NRdBaseL987",&iwrdat);
+ blstat[6]=(iwrdat&0x3ff);
+ blstat[7]=(iwrdat&0xffc00)>>10;
+ blstat[8]=(iwrdat&0x3ff00000)>>20;
+ 
+-vmeDevicePtr->read("NCRdBaseL321",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL321",&iwrdat);
+ blstat[9]=(iwrdat&0x3ff);
+ blstat[10]=(iwrdat&0xffc00)>>10;
+ blstat[11]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NCRdBaseL654",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL654",&iwrdat);
+ blstat[12]=(iwrdat&0x3ff);
+ blstat[13]=(iwrdat&0xffc00)>>10;
+ blstat[14]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("NCRdBaseL987",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL987",&iwrdat);
+ blstat[15]=(iwrdat&0x3ff);
+ blstat[16]=(iwrdat&0xffc00)>>10;
+ blstat[17]=(iwrdat&0x3ff00000)>>20;
+ 
+-vmeDevicePtr->read("SCRdBaseL321",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL321",&iwrdat);
+ blstat[18]=(iwrdat&0x3ff);
+ blstat[19]=(iwrdat&0xffc00)>>10;
+ blstat[20]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SCRdBaseL654",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL654",&iwrdat);
+ blstat[21]=(iwrdat&0x3ff);
+ blstat[22]=(iwrdat&0xffc00)>>10;
+ blstat[23]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SCRdBaseL987",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL987",&iwrdat);
+ blstat[24]=(iwrdat&0x3ff);
+ blstat[25]=(iwrdat&0xffc00)>>10;
+ blstat[26]=(iwrdat&0x3ff00000)>>20;
+ 
+-vmeDevicePtr->read("SRdBaseL321",&iwrdat);
++vmeDevicePtr_read("SRdBaseL321",&iwrdat);
+ blstat[27]=(iwrdat&0x3ff);
+ blstat[28]=(iwrdat&0xffc00)>>10;
+ blstat[29]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SRdBaseL654",&iwrdat);
++vmeDevicePtr_read("SRdBaseL654",&iwrdat);
+ blstat[30]=(iwrdat&0x3ff);
+ blstat[31]=(iwrdat&0xffc00)>>10;
+ blstat[32]=(iwrdat&0x3ff00000)>>20;
+-vmeDevicePtr->read("SRdBaseL987",&iwrdat);
++vmeDevicePtr_read("SRdBaseL987",&iwrdat);
+ blstat[33]=(iwrdat&0x3ff);
+ blstat[34]=(iwrdat&0xffc00)>>10;
+ blstat[35]=(iwrdat&0x3ff00000)>>20;
+@@ -4536,62 +4536,62 @@ int PixelFEDInterface::get_BaselineCorr(int chnl) {
+ uint32_t iwrdat;
+ int blstat=0;
+ if((chnl==1)|(chnl==2)|(chnl==3)){
+-vmeDevicePtr->read("NRdBaseL321",&iwrdat);
++vmeDevicePtr_read("NRdBaseL321",&iwrdat);
+ if(chnl==1)blstat=(iwrdat&0x3ff);
+ if(chnl==2)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==3)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==4)|(chnl==5)|(chnl==6)){
+-vmeDevicePtr->read("NRdBaseL654",&iwrdat);
++vmeDevicePtr_read("NRdBaseL654",&iwrdat);
+ if(chnl==4)blstat=(iwrdat&0x3ff);
+ if(chnl==5)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==6)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==7)|(chnl==8)|(chnl==9)){
+-vmeDevicePtr->read("NRdBaseL987",&iwrdat);
++vmeDevicePtr_read("NRdBaseL987",&iwrdat);
+ if(chnl==7)blstat=(iwrdat&0x3ff);
+ if(chnl==8)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==9)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==10)|(chnl==11)|(chnl==12)){
+-vmeDevicePtr->read("NCRdBaseL321",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL321",&iwrdat);
+ if(chnl==10)blstat=(iwrdat&0x3ff);
+ if(chnl==11)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==12)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==13)|(chnl==14)|(chnl==15)){
+-vmeDevicePtr->read("NCRdBaseL654",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL654",&iwrdat);
+ if(chnl==13)blstat=(iwrdat&0x3ff);
+ if(chnl==14)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==15)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==16)|(chnl==17)|(chnl==18)){
+-vmeDevicePtr->read("NCRdBaseL987",&iwrdat);
++vmeDevicePtr_read("NCRdBaseL987",&iwrdat);
+ if(chnl==16)blstat=(iwrdat&0x3ff);
+ if(chnl==17)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==18)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==19)|(chnl==20)|(chnl==21)){
+-vmeDevicePtr->read("SCRdBaseL321",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL321",&iwrdat);
+ if(chnl==19)blstat=(iwrdat&0x3ff);
+ if(chnl==20)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==21)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==22)|(chnl==23)|(chnl==24)){
+-vmeDevicePtr->read("SCRdBaseL654",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL654",&iwrdat);
+ if(chnl==22)blstat=(iwrdat&0x3ff);
+ if(chnl==23)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==24)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==25)|(chnl==26)|(chnl==27)){
+-vmeDevicePtr->read("SCRdBaseL987",&iwrdat);
++vmeDevicePtr_read("SCRdBaseL987",&iwrdat);
+ if(chnl==25)blstat=(iwrdat&0x3ff);
+ if(chnl==26)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==27)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==28)|(chnl==29)|(chnl==30)){
+-vmeDevicePtr->read("SRdBaseL321",&iwrdat);
++vmeDevicePtr_read("SRdBaseL321",&iwrdat);
+ if(chnl==28)blstat=(iwrdat&0x3ff);
+ if(chnl==29)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==30)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==31)|(chnl==32)|(chnl==33)){
+-vmeDevicePtr->read("SRdBaseL654",&iwrdat);
++vmeDevicePtr_read("SRdBaseL654",&iwrdat);
+ if(chnl==31)blstat=(iwrdat&0x3ff);
+ if(chnl==32)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==33)blstat=(iwrdat&0x3ff00000)>>20;
+ } else if ((chnl==34)|(chnl==35)|(chnl==36)){
+-vmeDevicePtr->read("SRdBaseL987",&iwrdat);
++vmeDevicePtr_read("SRdBaseL987",&iwrdat);
+ if(chnl==34)blstat=(iwrdat&0x3ff);
+ if(chnl==35)blstat=(iwrdat&0xffc00)>>10;
+ if(chnl==36)blstat=(iwrdat&0x3ff00000)>>20;
+@@ -4610,7 +4610,7 @@ uint32_t iwrdat=0;
+ if(chip<0) return(0);
+ else if(chip>4) return(0);
+ uint32_t offset=0x1f0000;
+-vmeDevicePtr->read(FPGAName[chip],&iwrdat,offset);
++vmeDevicePtr_read(FPGAName[chip],&iwrdat,offset);
+ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" "<<FPGAName[chip]<<" FPGA firmware date d/m/y "
+ <<dec<<((iwrdat&0xff000000)>>24)<<"/"
+ <<dec<<((iwrdat&0xff0000)>>16)<<"/"
+@@ -4624,7 +4624,7 @@ uint32_t PixelFEDInterface::get_VMEFirmwareDate(void) {
+ 
+ uint32_t iwrdat=0;
+ uint32_t offset=0xa0003c;
+-vmeDevicePtr->read("LAD_N",&iwrdat,offset);
++vmeDevicePtr_read("LAD_N",&iwrdat,offset);
+ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" VME FPGA (update via jtag pins only) firmware date d/m/y "
+ <<dec<<((iwrdat&0xff000000)>>24)<<"/"
+ <<dec<<((iwrdat&0xff0000)>>16)<<"/"
+@@ -4635,12 +4635,12 @@ return iwrdat;
+ 
+ void PixelFEDInterface::get_PiggyFirmwareVer() {
+   uint32_t du, dd;
+-  vmeDevicePtr->read("LAD_N", &du, 0x158000);
+-  vmeDevicePtr->read("LAD_N", &dd, 0x178000);
++  vmeDevicePtr_read("LAD_N", &du, 0x158000);
++  vmeDevicePtr_read("LAD_N", &dd, 0x178000);
+   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" N Piggy version: ";
+   printf("%1x%1x%1x%1x%1x%1x\n", (dd>>20)&0xf, (dd>>12)&0xf, (dd>>4)&0xf, (du>>20)&0xf, (du>>12)&0xf, (du>>4)&0xf);
+-  vmeDevicePtr->read("LAD_S", &du, 0x158000);
+-  vmeDevicePtr->read("LAD_S", &dd, 0x178000);
++  vmeDevicePtr_read("LAD_S", &du, 0x158000);
++  vmeDevicePtr_read("LAD_S", &dd, 0x178000);
+   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S Piggy version: ";
+   printf("%1x%1x%1x%1x%1x%1x\n", (dd>>20)&0xf, (dd>>12)&0xf, (dd>>4)&0xf, (du>>20)&0xf, (du>>12)&0xf, (du>>4)&0xf);
+ }
+@@ -4650,7 +4650,7 @@ void PixelFEDInterface::get_PiggyFirmwareVer() {
+ int PixelFEDInterface::readBXCounter() {
+   uint32_t data; 
+ #ifdef USE_HAL // Use HAL
+-  vmeDevicePtr->read("RdBunchCntr",&data);
++  vmeDevicePtr_read("RdBunchCntr",&data);
+ 
+ #else // direct CAEN VME access
+   CVErrorCodes ret = CAENVME_ReadCycle(BHandle,BX_NUM,&data,am,dw);
+@@ -4693,7 +4693,7 @@ int PixelFEDInterface::readBXCounter() {
+      loctrip=trip;
+ 
+ #ifdef USE_HAL // Use HAL
+-     vmeDevicePtr->write("TripleSelUp",loctrip);
++     vmeDevicePtr_write("TripleSelUp",loctrip);
+ 
+ #else // direct CAEN VME access
+      ret = CAENVME_WriteCycle(BHandle,TripleSelUp,&loctrip,am,dw);
+@@ -4706,7 +4706,7 @@ int PixelFEDInterface::readBXCounter() {
+      loctrip=trip-6;
+ 
+ #ifdef USE_HAL // Use HAL
+-     vmeDevicePtr->write("TripleSelDn",loctrip);
++     vmeDevicePtr_write("TripleSelDn",loctrip);
+ 
+ #else // direct CAEN VME access
+      ret = CAENVME_WriteCycle(BHandle,TripleSelDn,&loctrip,am,dw);
+@@ -4747,8 +4747,8 @@ int PixelFEDInterface::readBXCounter() {
+ // memory counter to reset the next read = 26 real reads + 6 dummy reads
+ 
+ 
+-for(int j=1;j<27;j++){vmeDevicePtr->read("ROCHisMemUp",&locdata,offset);*data=locdata;data++;}
+-for(int j=27;j<33;j++){vmeDevicePtr->read("ROCHisMemUp",&locdata);} //DC 27 - 31 dummy
++for(int j=1;j<27;j++){vmeDevicePtr_read("ROCHisMemUp",&locdata,offset);*data=locdata;data++;}
++for(int j=27;j<33;j++){vmeDevicePtr_read("ROCHisMemUp",&locdata);} //DC 27 - 31 dummy
+ 
+ #else // direct CAEN VME access
+ 
+@@ -4766,8 +4766,8 @@ for(int j=27;j<33;j++){vmeDevicePtr->read("ROCHisMemUp",&locdata);} //DC 27 - 31
+    } else {  //looking at channels 19-36
+ 
+ # ifdef USE_HAL // Use HAL                                                                                                                           
+-for(int j=1;j<27;j++){vmeDevicePtr->read("ROCHisMemDn",&locdata,offset);*data=locdata;data++;}
+-for(int j=27;j<33;j++){vmeDevicePtr->read("ROCHisMemDn",&locdata);}//DC 27 - 31 dummy 
++for(int j=1;j<27;j++){vmeDevicePtr_read("ROCHisMemDn",&locdata,offset);*data=locdata;data++;}
++for(int j=27;j<33;j++){vmeDevicePtr_read("ROCHisMemDn",&locdata);}//DC 27 - 31 dummy 
+ 
+ 
+ #else // direct CAEN VME access
+@@ -4936,7 +4936,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+ 
+ #ifdef USE_HAL // Use HAL
+ 
+-  vmeDevicePtr->write("EnabHisto",data);
++  vmeDevicePtr_write("EnabHisto",data);
+ 
+ #else // direct CAEN VME access
+   ret = CAENVME_WriteCycle(BHandle,EnabHisto,&data,am,dw);
+@@ -4954,7 +4954,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+    uint32_t data = 0x1; // Toggle???
+    
+ #ifdef USE_HAL // Use HAL
+-   vmeDevicePtr->write("ClearHist",data);
++   vmeDevicePtr_write("ClearHist",data);
+ #else  
+    CVErrorCodes  ret = CAENVME_WriteCycle(BHandle,ClearHist,&data,am,dw);
+    if(ret != cvSuccess) {  // Error
+@@ -4988,7 +4988,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+    int mwdcnt=-1;
+    
+    //drain whole spy fifo
+-   vmeDevicePtr->readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
++   vmeDevicePtr_readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+    
+    if(((mbuffer[0]&0xf0000000)>>28)!=0x5) {
+      if (printIfSlinkHeaderMessedup) {
+@@ -5014,7 +5014,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+      {cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" No trailer in 1024 words, Dumping diagnostics:"<<endl;
+ 
+    //drain whole other half of spy fifo
+-   vmeDevicePtr->readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
++   vmeDevicePtr_readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+ 
+    cout<<"Dumping spy fifo-3 buffer"<<endl;
+     for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
+@@ -5051,7 +5051,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+    }
+    
+    //unpack just as many words as we need
+-   vmeDevicePtr->readBlock("RdSpyFifoDn",(uint32_t) (mwdcnt+1)*4,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
++   vmeDevicePtr_readBlock("RdSpyFifoDn",(uint32_t) (mwdcnt+1)*4,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+    
+    for(int i=0;i<mwdcnt+1;i++) {//	cout<<"data = "<<hex<<data[i]<<" mbuffer= "<<mbuffer[i]<<dec<<endl;
+      data[i]=(data[i] + mbuffer[i]);
+@@ -5088,7 +5088,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+    int mwdcnt=-1;
+    
+    //drain whole spy fifo
+-   vmeDevicePtr->readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
++   vmeDevicePtr_readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+    
+    if(((mbuffer[0]&0xf0000000)>>28)!=0x5) {
+      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Slink Header Messed up!"<<endl;
+@@ -5114,7 +5114,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+      
+      
+    //drain whole other half of spy fifo
+-   vmeDevicePtr->readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
++   vmeDevicePtr_readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+ 
+    cout<<"Dumping spy fifo-3 buffer"<<endl;
+     for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
+@@ -5154,7 +5154,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
+    }
+    
+    //unpack just as many words as we need
+-   vmeDevicePtr->readBlock("RdSpyFifoDn",(uint32_t) (mwdcnt+1)*4,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
++   vmeDevicePtr_readBlock("RdSpyFifoDn",(uint32_t) (mwdcnt+1)*4,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+    
+    for(int i=0;i<mwdcnt+1;i++) {//	cout<<"data = "<<hex<<data[i]<<" mbuffer= "<<mbuffer[i]<<dec<<endl;
+      data[i]=(data[i] + mbuffer[i]);
+@@ -5397,7 +5397,7 @@ uint32_t offset = 0;
+   // Chanege to block read at some point
+   const uint32_t length = spyFifo2Length; // size of SPY-FIFO2 in bytes, is it 128? 
+   char * buffer = (char *) data;
+-  vmeDevicePtr->readBlock("NRdSpyIUp",length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock("NRdSpyIUp",length,buffer,HAL::HAL_NO_INCREMENT,offset);
+   //find the wordCount?
+   for(uint32_t i=0; i<(length/4);i++) {
+     //cout<<dec<<i<<" "<<hex<<data[i]<<endl;
+@@ -5421,7 +5421,7 @@ uint32_t offset = 0;
+   // Chanege to block read at some point
+   const uint32_t length = spyFifo2Length; // size of SPY-FIFO2 in bytes, is it 128? 
+   char * buffer = (char *) data;
+-  vmeDevicePtr->readBlock("NRdSpyIDn",length,buffer,HAL::HAL_NO_INCREMENT,offset);
++  vmeDevicePtr_readBlock("NRdSpyIDn",length,buffer,HAL::HAL_NO_INCREMENT,offset);
+   //find the wordCount?
+   for(uint32_t i=0; i<(length/4);i++) {
+     //cout<<dec<<i<<" "<<hex<<data[i]<<endl;
+@@ -5445,14 +5445,14 @@ if(enable>0){data=((data|0x80000000)&0x8000000f);}
+ else 
+ {data=data&0x0000000f;}
+ 
+-  vmeDevicePtr->write("TTStest",data);
++  vmeDevicePtr_write("TTStest",data);
+ } //end
+ /////////////////////////////////////////////////////////////////////////
+ int PixelFEDInterface::testSlink() {
+ //sends a test word on the slink, then resets the mode register to the database value
+ 
+ uint32_t data =pixelFEDCard.modeRegister | 0x80000000;
+-  vmeDevicePtr->write("ModeReg",data);
++  vmeDevicePtr_write("ModeReg",data);
+ 
+ usleep(10);
+ 
+@@ -5464,7 +5464,7 @@ uint32_t PixelFEDInterface::getFifoStatus(void) {
+ //gets the word containg status of fifoI,II,III
+ 
+ uint32_t data = 0;
+-  vmeDevicePtr->read("CtrlReg",&data);
++  vmeDevicePtr_read("CtrlReg",&data);
+ 
+ return data; 
+ } //end
+@@ -5506,7 +5506,7 @@ bool PixelFEDInterface::isWholeEvent(uint32_t nTries)
+   PixelTimer timer;
+    do {
+      timer.start();
+-     vmeDevicePtr->read("RdEventCntr", &data);
++     vmeDevicePtr_read("RdEventCntr", &data);
+      usleep(10);
+      eventExists=((data & 0x80000000)!=0x0);
+      ++itry;
+@@ -5529,7 +5529,7 @@ bool PixelFEDInterface::isNewEvent(uint32_t nTries)
+   do {
+      timer.start();
+      usleep(10);
+-     vmeDevicePtr->read("RdEventCntr", &data);
++     vmeDevicePtr_read("RdEventCntr", &data);
+      eventExists=((data & 0x80000000)==0x0);
+      ++itry;
+      timer.stop();
+@@ -5556,7 +5556,7 @@ if(pixelFEDCard.Errlvl<1){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" number of TT
+   uint32_t oosErrOr = (uint32_t) pixelFEDCard.TimeoutOROOSLimit;
+   uint32_t data = (pixelFEDCard.Ooslvl&0x3ff) + ((pixelFEDCard.Errlvl&0x3ff)<<10) + ((oosErrOr&0x3ff)<<20);
+ 
+-  vmeDevicePtr->write("TTsErrOoslvl", data );  // program it
++  vmeDevicePtr_write("TTsErrOoslvl", data );  // program it
+ 
+   cout<<"TTS-OOS, TTS-ERROT, TTS-OR limits:"<<pixelFEDCard.Ooslvl<<" "<<pixelFEDCard.Errlvl<<" "<<oosErrOr<<endl;
+ 
+@@ -5574,7 +5574,7 @@ if(inmerr<1){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" number of TTs EER <1, set
+   uint32_t data = (pixelFEDCard.Ooslvl&0x3ff) + ((pixelFEDCard.Errlvl&0x3ff)<<10) + ((oosErrOr&0x3ff)<<20);
+ //uint32_t data = (pixelFEDCard.Ooslvl&0x3ff) + ((pixelFEDCard.Errlvl&0x3ff)<<10);
+ 
+-  vmeDevicePtr->write("TTsErrOoslvl", data );  // program it
++  vmeDevicePtr_write("TTsErrOoslvl", data );  // program it
+ 
+   cout<<"TTS-OOS, TTS-ERROT, TTS-OR limits:"<<pixelFEDCard.Ooslvl<<" "<<pixelFEDCard.Errlvl<<" "<<oosErrOr<<endl;
+ 
+@@ -5596,27 +5596,27 @@ if(pixelFEDCard.fifo3Wrnlvl<1){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" fifo-3
+ 
+ 
+ //   uint32_t data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff);
+-//   vmeDevicePtr->write("NFifo1bzlv", data );
++//   vmeDevicePtr_write("NFifo1bzlv", data );
+ //   data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff);
+-//   vmeDevicePtr->write("NCFifo1bzlv", data );
++//   vmeDevicePtr_write("NCFifo1bzlv", data );
+ //   data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff);
+-//   vmeDevicePtr->write("SCFifo1bzlv", data );
++//   vmeDevicePtr_write("SCFifo1bzlv", data );
+ //   data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff);
+-//   vmeDevicePtr->write("SFifo1bzlv", data );
++//   vmeDevicePtr_write("SFifo1bzlv", data );
+ //   data =(pixelFEDCard.fifo3Wrnlvl&0x1fff);
+-//   vmeDevicePtr->write("Fifo3Warnlvl", data );
++//   vmeDevicePtr_write("Fifo3Warnlvl", data );
+ 
+ // new code to set the Warining limit for fifo2
+   const uint32_t fifo2_limit = (uint32_t) pixelFEDCard.FIFO2Limit;
+   cout<<" The limit on fifi-2 is "<<pixelFEDCard.FIFO2Limit<<endl;
+   uint32_t data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
+-  vmeDevicePtr->write("NFifo1bzlv", data );
++  vmeDevicePtr_write("NFifo1bzlv", data );
+   data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
+-  vmeDevicePtr->write("NCFifo1bzlv", data );
++  vmeDevicePtr_write("NCFifo1bzlv", data );
+   data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
+-  vmeDevicePtr->write("SCFifo1bzlv", data );
++  vmeDevicePtr_write("SCFifo1bzlv", data );
+   data = ((pixelFEDCard.Nfifo1Bzlvl&0x3ff)+fifo2_limit)<<10;
+-  vmeDevicePtr->write("SFifo1bzlv", data );
++  vmeDevicePtr_write("SFifo1bzlv", data );
+ 
+ 
+ 
+@@ -5642,13 +5642,13 @@ if(Sfif1>1023){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S fifo-1 almost full le
+ if(Sfif1<1){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S fifo-1 almost full level<1! setting to 1 "<<endl;pixelFEDCard.Sfifo1Bzlvl=1;}
+ 
+ uint32_t data = (pixelFEDCard.Nfifo1Bzlvl&0x3ff);
+-  vmeDevicePtr->write("NFifo1bzlv", data );
++  vmeDevicePtr_write("NFifo1bzlv", data );
+ data = (pixelFEDCard.NCfifo1Bzlvl&0x3ff);
+-  vmeDevicePtr->write("NCFifo1bzlv", data );
++  vmeDevicePtr_write("NCFifo1bzlv", data );
+ data = (pixelFEDCard.SCfifo1Bzlvl&0x3ff);
+-  vmeDevicePtr->write("SCFifo1bzlv", data );
++  vmeDevicePtr_write("SCFifo1bzlv", data );
+ data = (pixelFEDCard.Sfifo1Bzlvl&0x3ff);
+-  vmeDevicePtr->write("SFifo1bzlv", data );
++  vmeDevicePtr_write("SFifo1bzlv", data );
+ }
+ ////////////////////////////////////////////////////////////////////////
+ void PixelFEDInterface::set_Fifo3levels(int Cfif3)
+@@ -5657,7 +5657,7 @@ if(Cfif3>8191){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" fifo-3 almost full leve
+ if(Cfif3<1){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" fifo-3 almost full level<1! setting to 1 "<<endl;pixelFEDCard.fifo3Wrnlvl=1;}
+ 
+ uint32_t data =(pixelFEDCard.fifo3Wrnlvl&0x1fff);
+-  vmeDevicePtr->write("Fifo3Warnlvl", data );
++  vmeDevicePtr_write("Fifo3Warnlvl", data );
+ }
+ ////////////////////////////////////////////////////////////////////////
+ //These bits set the limit on the number of hits/event on the channels
+@@ -5701,13 +5701,13 @@ if(pixelFEDCard.S_hitlimit>900){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S fifo
+  minW = minW<<24;   // change from 23 d.k. 24/8/11
+       
+  uint32_t data = (pixelFEDCard.N_hitlimit&0x3ff)+busyWhenBehind+minW;
+- vmeDevicePtr->write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
+  data = (pixelFEDCard.NC_hitlimit&0x3ff)+busyWhenBehind+minW;
+- vmeDevicePtr->write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
+  data = (pixelFEDCard.SC_hitlimit&0x3ff)+busyWhenBehind+minW;
+- vmeDevicePtr->write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
+  data = (pixelFEDCard.S_hitlimit&0x3ff)+busyWhenBehind+minW;
+- vmeDevicePtr->write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
+ 
+ }
+ ////////////////////////////////////////////////////////////////////////
+@@ -5733,13 +5733,13 @@ if(Slimt>1023){cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S fifo-1 hit limit exce
+       uint32_t offset = 0x1e8000;
+       
+ uint32_t data = (pixelFEDCard.N_hitlimit&0x3ff)+(12<<16);
+- vmeDevicePtr->write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
+ data = (pixelFEDCard.NC_hitlimit&0x3ff)+(12<<16);
+- vmeDevicePtr->write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
+ data = (pixelFEDCard.SC_hitlimit&0x3ff)+(12<<16);
+- vmeDevicePtr->write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
+ data = (pixelFEDCard.S_hitlimit&0x3ff)+(12<<16);
+- vmeDevicePtr->write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
+ }
+ ////////////////////////////////////////////////////////////////////////
+ //These bits allow a ROC to be skipped (1/fpga) if the ROC puts out
+@@ -5788,10 +5788,10 @@ else
+ 
+ uint32_t offset = 0x1a8000;
+ std::cout << "set_ROCskip " << std::hex << pixelFEDCard.N_testreg << " " << pixelFEDCard.NC_testreg << " " << pixelFEDCard.SC_testreg << " " << pixelFEDCard.S_testreg << std::dec << std::endl;
+-vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
+-vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
+-vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
+-vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
++vmeDevicePtr_write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
++vmeDevicePtr_write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
++vmeDevicePtr_write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
++vmeDevicePtr_write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
+ 
+ #if 0
+   // test BBB
+@@ -5815,13 +5815,13 @@ vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, of
+ 
+ uint32_t offset = 0x1a8000;
+ uint32_t data = (pixelFEDCard.N_testreg&0xfff);
+- vmeDevicePtr->write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[0],data,HAL::HAL_NO_VERIFY,offset);
+ data = (pixelFEDCard.NC_testreg&0xfff);
+- vmeDevicePtr->write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[1],data,HAL::HAL_NO_VERIFY,offset);
+ data = (pixelFEDCard.SC_testreg&0xfff);
+- vmeDevicePtr->write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[2],data,HAL::HAL_NO_VERIFY,offset);
+ data = (pixelFEDCard.S_testreg&0xfff);
+- vmeDevicePtr->write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
++ vmeDevicePtr_write(FPGAName[3],data,HAL::HAL_NO_VERIFY,offset);
+ #endif
+ }
+ 
+@@ -5874,7 +5874,7 @@ return -1;}
+ void PixelFEDInterface::set_FEDTTCDelay(void)
+ {
+ uint32_t data =(pixelFEDCard.FedTTCDelay&0x3);
+-  vmeDevicePtr->write("TTCBigDelay", data );
++  vmeDevicePtr_write("TTCBigDelay", data );
+ }
+ ////////////////////////////////////////////////////////////////////////
+ int PixelFEDInterface::get_FEDTTCDelay(void)
+@@ -5883,7 +5883,7 @@ int PixelFEDInterface::get_FEDTTCDelay(void)
+ void PixelFEDInterface::set_FeatureReg(void)
+ {
+   if (Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Feature Register 0x"<<hex<<pixelFEDCard.FeatureRegister<<dec<<endl;
+-vmeDevicePtr->write("LAD_C",(uint32_t)pixelFEDCard.FeatureRegister,HAL::HAL_NO_VERIFY,0x1e0000);	
++vmeDevicePtr_write("LAD_C",(uint32_t)pixelFEDCard.FeatureRegister,HAL::HAL_NO_VERIFY,0x1e0000);	
+ }
+ ///////////////////////////////////////////////////////////////////////				
+ int PixelFEDInterface::get_FeatureReg(void)
+@@ -6001,7 +6001,7 @@ void PixelFEDInterface::setXY( int X, int Y) {
+   uint32_t numOOS=X;
+   uint32_t numEvents=Y;
+   uint32_t XY=(numOOS&0xff) + ((numEvents&0xffffff)<<8); //LAD_C+0x080000 bits[7...0] number of OOS - found in bits[31...8]triggers
+-  vmeDevicePtr->write("LAD_C",XY,HAL::HAL_NO_VERIFY,0x080000);
++  vmeDevicePtr_write("LAD_C",XY,HAL::HAL_NO_VERIFY,0x080000);
+   return;
+ }
+ 
+@@ -6011,7 +6011,7 @@ int PixelFEDInterface::getXYCount() {
+   in Y triggers. X and Y are set by the setXY method.
+   */
+   uint32_t output;
+-  vmeDevicePtr->read("LAD_C",&output,0x090000);
++  vmeDevicePtr_read("LAD_C",&output,0x090000);
+   return (int)output;
+ }
+ 
+@@ -6020,7 +6020,7 @@ void PixelFEDInterface::resetXYCount() {
+   Reset the counter that is read out by getXYCount method to 0
+   */
+   uint32_t zero=0;
+-  vmeDevicePtr->write("LAD_C",zero,HAL::HAL_NO_VERIFY,0x090000);
++  vmeDevicePtr_write("LAD_C",zero,HAL::HAL_NO_VERIFY,0x090000);
+   return;
+ }
+ 
+@@ -6029,7 +6029,7 @@ int PixelFEDInterface::getNumFakeEvents() {
+   Read out the counter which keeps track of how many fake events the FED has sent.
+   */
+   uint32_t output=0;
+-  vmeDevicePtr->read("LAD_C",&output,0x098000);
++  vmeDevicePtr_read("LAD_C",&output,0x098000);
+   return (int)output;
+ }
+ 
+@@ -6038,7 +6038,7 @@ void PixelFEDInterface::resetNumFakeEvents() {
+   Reset the counter which keeps track of how many fake events the FED has sent
+   */
+   uint32_t zero=0;
+-  vmeDevicePtr->write("LAD_C",zero,HAL::HAL_NO_VERIFY,0x098000);
++  vmeDevicePtr_write("LAD_C",zero,HAL::HAL_NO_VERIFY,0x098000);
+   return;
+ }
+ 
+@@ -6051,10 +6051,10 @@ bool PixelFEDInterface::checkFEDChannelSEU() {
+   */
+   bool foundSEU = false;
+   uint32_t N_enbable_current_i = 0, NC_enbable_current_i=0, SC_enbable_current_i=0, S_enbable_current_i;
+-  vmeDevicePtr->read("NWrRdCntrReg", &N_enbable_current_i);
+-  vmeDevicePtr->read("NCWrRdCntrReg", &NC_enbable_current_i);
+-  vmeDevicePtr->read("SCWrRdCntrReg", &SC_enbable_current_i);
+-  vmeDevicePtr->read("SWrRdCntrReg", &S_enbable_current_i);
++  vmeDevicePtr_read("NWrRdCntrReg", &N_enbable_current_i);
++  vmeDevicePtr_read("NCWrRdCntrReg", &NC_enbable_current_i);
++  vmeDevicePtr_read("SCWrRdCntrReg", &SC_enbable_current_i);
++  vmeDevicePtr_read("SWrRdCntrReg", &S_enbable_current_i);
+   bitset<9> N_enbable_current(N_enbable_current_i);
+   bitset<9> NC_enbable_current(NC_enbable_current_i);
+   bitset<9> SC_enbable_current(SC_enbable_current_i);
+@@ -6157,13 +6157,13 @@ void PixelFEDInterface::resetEnbableBits() {
+       uint32_t sOtherConfigBits = 0;
+       uint32_t scOtherConfigBits = 0;
+       uint32_t otherBitsMask = 0xFFFFFE00;
+-      vmeDevicePtr->read("SWrRdCntrReg", &sOtherConfigBits);
++      vmeDevicePtr_read("SWrRdCntrReg", &sOtherConfigBits);
+       sOtherConfigBits &= otherBitsMask;
+-      vmeDevicePtr->read("SCWrRdCntrReg", &scOtherConfigBits);
++      vmeDevicePtr_read("SCWrRdCntrReg", &scOtherConfigBits);
+       scOtherConfigBits &= otherBitsMask;
+-      vmeDevicePtr->read("NWrRdCntrReg", &nOtherConfigBits);
++      vmeDevicePtr_read("NWrRdCntrReg", &nOtherConfigBits);
+       nOtherConfigBits &= otherBitsMask;
+-      vmeDevicePtr->read("NCWrRdCntrReg", &ncOtherConfigBits);
++      vmeDevicePtr_read("NCWrRdCntrReg", &ncOtherConfigBits);
+       ncOtherConfigBits &= otherBitsMask;
+ 
+       uint32_t N_write = (nOtherConfigBits | (uint32_t)N_enbable_expected.to_ulong());
+@@ -6172,10 +6172,10 @@ void PixelFEDInterface::resetEnbableBits() {
+       uint32_t S_write = (sOtherConfigBits | (uint32_t)S_enbable_expected.to_ulong());
+ 
+     // Set channels on/off as they were originally configured
+-      vmeDevicePtr->write("SWrRdCntrReg", S_write);
+-      vmeDevicePtr->write("SCWrRdCntrReg", SC_write);
+-      vmeDevicePtr->write("NWrRdCntrReg", N_write);
+-      vmeDevicePtr->write("NCWrRdCntrReg", NC_write);
++      vmeDevicePtr_write("SWrRdCntrReg", S_write);
++      vmeDevicePtr_write("SCWrRdCntrReg", SC_write);
++      vmeDevicePtr_write("NWrRdCntrReg", N_write);
++      vmeDevicePtr_write("NCWrRdCntrReg", NC_write);
+ }
+ 
+ void PixelFEDInterface::storeEnbableBits() {

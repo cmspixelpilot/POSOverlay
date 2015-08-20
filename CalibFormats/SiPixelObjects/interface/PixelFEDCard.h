@@ -107,8 +107,8 @@ namespace pos{
     //Bits (1st 8) used to set the Private Word in the gap and filler words
     unsigned int N_Pword,NC_Pword,SC_Pword,S_Pword;
 
-    //Bits (1st 4) used to set the channel you want to read in spy fifo2
-    unsigned int N_SpyFifo2Ch, NC_SpyFifo2Ch, SC_SpyFifo2Ch, S_SpyFifo2Ch;
+    //Bits (1st 4) used to set the channel you want to read in spy scope (piggy)
+    unsigned int N_ScopeCh, NC_ScopeCh, SC_ScopeCh, S_ScopeCh;
 
     // 1 = Special Random trigger DAC mode on, 0=off
     unsigned int SpecialDac;

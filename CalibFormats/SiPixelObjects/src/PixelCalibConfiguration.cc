@@ -1034,6 +1034,24 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
     if (scanCounter(i,state)!=0) first_scan=false;
   }
 
+  if (first_scan && parameterValue("PrintFirstScan") == "yes") {
+    printf("firstScan for (row,col)s:");
+    unsigned int nrow=rows_[i_row].size();
+    unsigned int ncol=cols_[i_col].size();
+    unsigned int nmax=std::max(nrow,ncol);
+    if (nrow==0||ncol==0) nmax=0;
+    for (unsigned int n=0;n<nmax;n++){
+      unsigned int irow=n;
+      unsigned int icol=n;
+      if (irow>=nrow) irow=nrow-1;
+      if (icol>=ncol) icol=ncol-1;
+      unsigned int row=rows_[i_row][irow];
+      unsigned int col=cols_[i_col][icol];
+      printf(" (%u,%u)", row, col);
+    }
+    printf("\n");
+  }
+
   // Disable all pixels at the beginning.
   if (state==0&&(mode==0||mode==1)) {
 

@@ -1,0 +1,430 @@
+diff --git a/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc b/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
+index a7905e4..b747826 100644
+--- a/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
++++ b/CalibFormats/SiPixelObjects/src/PixelCalibConfiguration.cc
+@@ -1063,7 +1063,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+       PixelROCTrimBits* rocTrims=rocInfo_[i].trims_;
+ 
+       //Turn off all pixels
+-      disablePixels(pixelFECs[theROC.fecnumber()], rocTrims, theROC);
++      //      disablePixels(pixelFECs[theROC.fecnumber()], rocTrims, theROC);
+ 
+     }
+ 
+@@ -1107,26 +1107,26 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+ 	  }
+ 	}
+ 
+-	if (dacs_[j].isTBM()) {
+-	  pixelFECs[theROC.fecnumber()]->tbmcmd(theROC.mfec(),
+-						theROC.mfecchannel(),
+-						dacs_[j].tbmchannel(),
+-						theROC.hubaddress(),
+-						4,
+-						rocInfo_[i].defaultDACs_[j].first,
+-						rocInfo_[i].defaultDACs_[j].second,
+-						0);
+-	}
+-	else {
+-	  pixelFECs[theROC.fecnumber()]->progdac(theROC.mfec(),
+-					       theROC.mfecchannel(),
+-					       theROC.hubaddress(),
+-					       theROC.portaddress(),
+-					       theROC.rocid(),
+-					       rocInfo_[i].defaultDACs_[j].first,
+-					       rocInfo_[i].defaultDACs_[j].second,
+-					       _bufferData);	
+-	}
++//	if (dacs_[j].isTBM()) {
++//	  pixelFECs[theROC.fecnumber()]->tbmcmd(theROC.mfec(),
++//						theROC.mfecchannel(),
++//						dacs_[j].tbmchannel(),
++//						theROC.hubaddress(),
++//						4,
++//						rocInfo_[i].defaultDACs_[j].first,
++//						rocInfo_[i].defaultDACs_[j].second,
++//						0);
++//	}
++//	else {
++//	  pixelFECs[theROC.fecnumber()]->progdac(theROC.mfec(),
++//					       theROC.mfecchannel(),
++//					       theROC.hubaddress(),
++//					       theROC.portaddress(),
++//					       theROC.rocid(),
++//					       rocInfo_[i].defaultDACs_[j].first,
++//					       rocInfo_[i].defaultDACs_[j].second,
++//					       _bufferData);	
++//	}
+ 
+ 	if (dacs_[j].dacchannel()==k_DACAddress_WBC) {
+ 	  changedWBC=true;
+@@ -1137,11 +1137,11 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+       
+       PixelROCTrimBits* rocTrims=rocInfo_[i].trims_;
+ 
+-      disablePixels(pixelFECs[theROC.fecnumber()], 
+-		    i_row_previous, 
+-		    i_col_previous, 
+-		    rocTrims, 
+-		    theROC);
++//      disablePixels(pixelFECs[theROC.fecnumber()], 
++//		    i_row_previous, 
++//		    i_col_previous, 
++//		    rocTrims, 
++//		    theROC);
+ 
+     }
+   }
+@@ -1184,7 +1184,6 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+       //cout << "dacname ii:"<<dacs_[ii].name()<<" "<<ii<<endl;
+       
+       if (dacs_[ii].relative()){
+-
+ 	//We have to find the default DAC setting so that we can
+ 	//add the offset as we are in relative mode.
+ 
+@@ -1195,25 +1194,25 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+ 	//     << " dac="<<dacs_[ii].name()<<" new value="<<dacvalue<<endl;
+       }
+ 
+-      if (dacs_[ii].isTBM()) {
+-	pixelFECs[theROC.fecnumber()]->tbmcmd(theROC.mfec(),
+-					      theROC.mfecchannel(),
+-					      dacs_[ii].tbmchannel(),
+-					      theROC.hubaddress(),
+-					      4,
+-					      dacs_[ii].dacchannel(),
+-					      dacvalue,
+-					      0);
+-      }
+-      else {
+-	pixelFECs[theROC.fecnumber()]->progdac(theROC.mfec(),
+-					     theROC.mfecchannel(),
+-					     theROC.hubaddress(),
+-					     theROC.portaddress(),
+-					     theROC.rocid(),
+-					     rocInfo_[i].defaultDACs_[ii].first,
+-					     dacvalue,_bufferData);
+-      }
++//      if (dacs_[ii].isTBM()) {
++//	pixelFECs[theROC.fecnumber()]->tbmcmd(theROC.mfec(),
++//					      theROC.mfecchannel(),
++//					      dacs_[ii].tbmchannel(),
++//					      theROC.hubaddress(),
++//					      4,
++//					      dacs_[ii].dacchannel(),
++//					      dacvalue,
++//					      0);
++//      }
++//      else {
++//	pixelFECs[theROC.fecnumber()]->progdac(theROC.mfec(),
++//					     theROC.mfecchannel(),
++//					     theROC.hubaddress(),
++//					     theROC.portaddress(),
++//					     theROC.rocid(),
++//					     rocInfo_[i].defaultDACs_[ii].first,
++//					     dacvalue,_bufferData);
++//      }
+ 
+       if (dacs_[ii].dacchannel()==k_DACAddress_WBC) {
+ 	changedWBC=true;
+@@ -1236,12 +1235,12 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+         if (mode==1) rocMasks=0;
+ 
+         //std::cout << "Will enable pixels!" <<std::endl;
+-        enablePixels(pixelFECs[theROC.fecnumber()], 
+-		     i_row, 
+-		     i_col, 
+-		     rocMasks, 
+-		     rocTrims, 
+-		     theROC);
++//        enablePixels(pixelFECs[theROC.fecnumber()], 
++//		     i_row, 
++//		     i_col, 
++//		     rocMasks, 
++//		     rocTrims, 
++//		     theROC);
+ 
+       }
+ 
+@@ -1259,23 +1258,23 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+ 	if (highVCalRange_) roccontrolword|=0x4;  //turn range bit on
+ 	else roccontrolword&=0xfb;                //turn range bit off
+       
+-	pixelFECs[theROC.fecnumber()]->progdac(theROC.mfec(),
+-					       theROC.mfecchannel(),
+-					       theROC.hubaddress(),
+-					       theROC.portaddress(),
+-					       theROC.rocid(),
+-					       0xfd,
+-					       roccontrolword,_bufferData);
+-	
++//	pixelFECs[theROC.fecnumber()]->progdac(theROC.mfec(),
++//					       theROC.mfecchannel(),
++//					       theROC.hubaddress(),
++//					       theROC.portaddress(),
++//					       theROC.rocid(),
++//					       0xfd,
++//					       roccontrolword,_bufferData);
++//	
+ 
+       }      
+ 
+       // Clear all pixels before setting the pixel pattern.
+-      pixelFECs[theROC.fecnumber()]->clrcal(theROC.mfec(),
+-					    theROC.mfecchannel(),
+-					    theROC.hubaddress(),
+-					    theROC.portaddress(),
+-					    theROC.rocid(),_bufferData);
++//      pixelFECs[theROC.fecnumber()]->clrcal(theROC.mfec(),
++//					    theROC.mfecchannel(),
++//					    theROC.hubaddress(),
++//					    theROC.portaddress(),
++//					    theROC.rocid(),_bufferData);
+ 
+       // Program the pixel pattern.
+       unsigned int nrow=rows_[i_row].size();
+@@ -1289,47 +1288,46 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
+         if (icol>=ncol) icol=ncol-1;
+         unsigned int row=rows_[i_row][irow];
+         unsigned int col=cols_[i_col][icol];
+-
+-        pixelFECs[theROC.fecnumber()]->calpix(theROC.mfec(),
+-					      theROC.mfecchannel(),
+-					      theROC.hubaddress(),
+-					      theROC.portaddress(),
+-					      theROC.rocid(),
+-					      col,
+-					      row,
+-					      1,_bufferData);
++//        pixelFECs[theROC.fecnumber()]->calpix(theROC.mfec(),
++//					      theROC.mfecchannel(),
++//					      theROC.hubaddress(),
++//					      theROC.portaddress(),
++//					      theROC.rocid(),
++//					      col,
++//					      row,
++//					      1,_bufferData);
+       }
+       
+     } // end of instructions for the beginning of a scan
+   } // end of loop over ROCs
+ 
+-  if (_bufferData) {
+-    std::map<unsigned int, PixelFECConfigInterface*>::iterator iPixelFEC=pixelFECs.begin();
+-    for(;iPixelFEC!=pixelFECs.end();++iPixelFEC){
+-      iPixelFEC->second->qbufsend();
+-    }
+-  }
+-  
+-  if (changedWBC){
+-    for(unsigned int i=0;i<rocs_.size();i++){
+-
+-      if (!rocInfo_[i].use_) continue;
+-      
+-      PixelHdwAddress theROC=*rocInfo_[i].hdwadd_;
+-      
+-      int tbmRegister = 14;  // define for TBM-A
+-#ifdef BPIX
+-      string tbmChannel = rocInfo_[i].tbmChannel_; // get TBM channel
+-      if( tbmChannel=="B") tbmRegister = 15;  // for TBM=B
+-#endif     
+-
+-      pixelFECs[theROC.fecnumber()]->rocreset(theROC.mfec(),
+-			 theROC.mfecchannel(),
+-			 tbmRegister, 
+-			 theROC.hubaddress());
+-    } // for rocs
+-  }
+-
++//  if (_bufferData) {
++//    std::map<unsigned int, PixelFECConfigInterface*>::iterator iPixelFEC=pixelFECs.begin();
++//    for(;iPixelFEC!=pixelFECs.end();++iPixelFEC){
++//      iPixelFEC->second->qbufsend();
++//    }
++//  }
++//  
++//  if (changedWBC){
++//    for(unsigned int i=0;i<rocs_.size();i++){
++//
++//      if (!rocInfo_[i].use_) continue;
++//      
++//      PixelHdwAddress theROC=*rocInfo_[i].hdwadd_;
++//      
++//      int tbmRegister = 14;  // define for TBM-A
++//#ifdef BPIX
++//      string tbmChannel = rocInfo_[i].tbmChannel_; // get TBM channel
++//      if( tbmChannel=="B") tbmRegister = 15;  // for TBM=B
++//#endif     
++//
++//      pixelFECs[theROC.fecnumber()]->rocreset(theROC.mfec(),
++//			 theROC.mfecchannel(),
++//			 tbmRegister, 
++//			 theROC.hubaddress());
++//    } // for rocs
++//  }
++//
+   return;
+ } 
+ 
+diff --git a/PixelCalibrations/src/common/PixelCalibrationBase.cc b/PixelCalibrations/src/common/PixelCalibrationBase.cc
+index 432eb9c..8c59158 100755
+--- a/PixelCalibrations/src/common/PixelCalibrationBase.cc
++++ b/PixelCalibrations/src/common/PixelCalibrationBase.cc
+@@ -326,7 +326,7 @@ void PixelCalibrationBase::nextFECConfig(unsigned int event){
+  
+   ttcTimer_.start();
+   if(resetROC_) {
+-    sendTTCROCReset();
++    //    sendTTCROCReset();
+   }
+   ttcTimer_.stop();
+   
+diff --git a/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc b/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc
+index 979e199..e4c6a58 100755
+--- a/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc
++++ b/PixelCalibrations/src/common/PixelGainAliveSCurveCalibration.cc
+@@ -110,76 +110,76 @@ bool PixelGainAliveSCurveCalibration::execute()
+   }
+   
+   ttcTimer_.start();
+-
+-  //if(false) { ////
+-  if(useLTC_) {
+-    //int sentTriggers =
+-    sendLTCCalSync(1);
+-  } else {
+-    sendTTCCalSync();
+-  }
+-  //} // end if 
++//
++//  //if(false) { ////
++//  if(useLTC_) {
++//    //int sentTriggers =
++//    sendLTCCalSync(1);
++//  } else {
++//    sendTTCCalSync();
++//  }
++//  //} // end if 
+ 
+   ttcTimer_.stop();
+ 
+-  if (PRINT) printf("PixelGainAliveSCurveCalibration TRIGGER, READ FED\n");
+-  fedTimer_.start();
+-
+-  Attribute_Vector parameters(8);
+-  parameters[0].name_="FIFO";     parameters[0].value_="3";
+-  parameters[1].name_="Mode";     parameters[1].value_="Normal";
+-  parameters[2].name_="ShipTo";   parameters[2].value_="File";
+-  parameters[3].name_="Additional";parameters[3].value_=itoa(0);  // should be VCal value
+-  parameters[4].name_="Filename"; parameters[4].value_=mode_;
+-  parameters[5].name_="Channel"; parameters[5].value_="*";
+-  parameters[6].name_="Time";     parameters[6].value_="First";
+-  parameters[7].name_="VMEBaseAddress";
+-
+-  
+-  //if(false) {  ////////////////////
+-
+-  bool flag=false;
+-  Supervisors::iterator i_PixelFEDSupervisor; 
+-  string action="ReadDataAndErrorFIFO";
+-  if(sendingMode_!="yes"){
+-    
+-    vector<int> messageIDs;
+-    
+-    for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
+-      
+-      if (event_==nTriggersTotal_-1) {
+-	parameters[6].value_="Last";  //closes output file
+-      } 
+-
+-      parameters[7].value_="*";
+-      
+-      int MessageID=send(i_PixelFEDSupervisor->second, action, flag, parameters);
+-      messageIDs.push_back(MessageID);
+-    }
+-    for (vector<int>::iterator itr=messageIDs.begin(), itr_end=messageIDs.end(); itr!=itr_end; ++itr){
+-      flag=waitForReply(*itr);
+-    }
+-  } else if(sendingMode_=="yes"){
+-
+-    for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
+-      
+-      if (event_==nTriggersTotal_-1) {
+-	parameters[6].value_="Last";  //closes output file
+-      } 
+-      
+-      parameters[7].value_="*";
+-      string reply=Send(i_PixelFEDSupervisor->second, action, parameters);
+-      if (reply!="ReadDataAndErrorFIFODone") {
+-	diagService_->reportError("Reading SpyFIFO could not be done!", DIAGWARN);
+-	cout<<"   Reading SpyFIFO"<<" could not be done. reply="<<reply<<endl;
+-      }
+-    }
+-  }
+-
+-  //} // end if False /////////////
+-
+-  fedTimer_.stop();
+-  if (PRINT) printf("PixelGainAliveSCurveCalibration FED READ DONE\n");
++//  if (PRINT) printf("PixelGainAliveSCurveCalibration TRIGGER, READ FED\n");
++//  fedTimer_.start();
++//
++//  Attribute_Vector parameters(8);
++//  parameters[0].name_="FIFO";     parameters[0].value_="3";
++//  parameters[1].name_="Mode";     parameters[1].value_="Normal";
++//  parameters[2].name_="ShipTo";   parameters[2].value_="File";
++//  parameters[3].name_="Additional";parameters[3].value_=itoa(0);  // should be VCal value
++//  parameters[4].name_="Filename"; parameters[4].value_=mode_;
++//  parameters[5].name_="Channel"; parameters[5].value_="*";
++//  parameters[6].name_="Time";     parameters[6].value_="First";
++//  parameters[7].name_="VMEBaseAddress";
++//
++//  
++//  //if(false) {  ////////////////////
++//
++//  bool flag=false;
++//  Supervisors::iterator i_PixelFEDSupervisor; 
++//  string action="ReadDataAndErrorFIFO";
++//  if(sendingMode_!="yes"){
++//    
++//    vector<int> messageIDs;
++//    
++//    for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
++//      
++//      if (event_==nTriggersTotal_-1) {
++//	parameters[6].value_="Last";  //closes output file
++//      } 
++//
++//      parameters[7].value_="*";
++//      
++//      int MessageID=send(i_PixelFEDSupervisor->second, action, flag, parameters);
++//      messageIDs.push_back(MessageID);
++//    }
++//    for (vector<int>::iterator itr=messageIDs.begin(), itr_end=messageIDs.end(); itr!=itr_end; ++itr){
++//      flag=waitForReply(*itr);
++//    }
++//  } else if(sendingMode_=="yes"){
++//
++//    for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
++//      
++//      if (event_==nTriggersTotal_-1) {
++//	parameters[6].value_="Last";  //closes output file
++//      } 
++//      
++//      parameters[7].value_="*";
++//      string reply=Send(i_PixelFEDSupervisor->second, action, parameters);
++//      if (reply!="ReadDataAndErrorFIFODone") {
++//	diagService_->reportError("Reading SpyFIFO could not be done!", DIAGWARN);
++//	cout<<"   Reading SpyFIFO"<<" could not be done. reply="<<reply<<endl;
++//      }
++//    }
++//  }
++//
++//  //} // end if False /////////////
++//
++//  fedTimer_.stop();
++//  if (PRINT) printf("PixelGainAliveSCurveCalibration FED READ DONE\n");
+   return (event_+1!=tempCalibObject->nTriggersTotal());
+   
+ }

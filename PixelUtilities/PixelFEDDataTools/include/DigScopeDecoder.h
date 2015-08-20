@@ -1,5 +1,5 @@
-#ifndef _FIFO2DigDecoder_h_
-#define _FIFO2DigDecoder_h_
+#ifndef _DigScopeDecoder_h_
+#define _DigScopeDecoder_h_
 
 #include <iostream>
 #include <stdint.h>
@@ -9,9 +9,9 @@ int decodePTrans(unsigned* data1, unsigned* data2, const int length);
 int decodePTrans2(unsigned * data1, unsigned* data2, const int length);
 void decodePTrans3(unsigned* data1, unsigned* data2, const int length);
 
-class FIFO2DigDecoder {
+class DigScopeDecoder {
  public:
-  FIFO2DigDecoder(const uint32_t* buffer, unsigned int size);
+  DigScopeDecoder(const uint32_t* buffer, unsigned int size);
   void printToStream(std::ostream& out);
 
   struct hit_t {

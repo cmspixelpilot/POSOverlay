@@ -2054,10 +2054,10 @@ Private 8 bit word chnls 1-9  :0xb1
 Private 8 bit word chnls 10-18:0xb2
 Private 8 bit word chnls 19-27:0xb3
 Private 8 bit word chnls 28-36:0xb4
-N  Spy Fifo-2 channel(0-8):0
-NC Spy Fifo-2 channel(0-8):0
-SC Spy Fifo-2 channel(0-8):0
-S  Spy Fifo-2 channel(0-8):0
+N  Scope channel(0-8):0
+NC Scope channel(0-8):0
+SC Scope channel(0-8):0
+S  Scope channel(0-8):0
 Special Random testDAC mode (on = 0x1, off=0x0):0x0
 Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:64
 Number of Consecutive (max 1023) Empty events till TTs ERR set:64

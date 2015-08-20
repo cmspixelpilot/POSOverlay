@@ -1,4 +1,4 @@
-#include "PixelUtilities/PixelFEDDataTools/include/FIFO1DigDecoder.h"
+#include "PixelUtilities/PixelFEDDataTools/include/DigTransDecoder.h"
 #include <cassert>
 #include <iomanip>
 #include <stdio.h>
@@ -20,7 +20,7 @@ namespace {
   }
 }
 
-FIFO1DigDecoder::FIFO1DigDecoder(const uint32_t* buffer) {
+DigTransDecoder::DigTransDecoder(const uint32_t* buffer) {
   const int size = 1024;
   const unsigned tbm_header = 2044;  // 0 1111 1111 100
   const unsigned tbm_trailer = 2046; // 0 1111 1111 110
@@ -185,7 +185,7 @@ FIFO1DigDecoder::FIFO1DigDecoder(const uint32_t* buffer) {
   }
 }
 
-void FIFO1DigDecoder::printToStream(std::ostream& out) {
+void DigTransDecoder::printToStream(std::ostream& out) {
   for (int j = 0; j < 2; ++j) {
     out << "tbm core " << j << "\n";
     const std::vector<int>* vs[3] = { &tbm_header_l[j], &roc_header_l[j], &tbm_trailer_l[j] };

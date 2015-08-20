@@ -62,9 +62,12 @@ public:
 
 int main(int argc, char **argv){
 
-  cout << "Usage: PixelTrim.exe <key> runTrimDefault" <<endl;
-
-  assert(argc==3);
+  if (argc < 3) {
+    cerr << "Usage: PixelTrimBits.exe <key> runTrimDefault\n"
+	 << " -or-\n"
+	 << "       PixelTrimBits.exe <key> file1.dat .. fileN.dat\n";
+    return 1;
+  }
 
   int ikey=atoi(argv[1]);
   cout << "key="<<ikey<<endl;
@@ -79,7 +82,19 @@ int main(int argc, char **argv){
   trimDefault+=argv[2];
   trimDefault+="/TrimDefault.dat";
 
-  cout << "trimDefault:"<<trimDefault<<endl;
+  std::vector<std::string> trimDefaults;
+
+  if (access(trimDefault.c_str(), F_OK) != -1)
+    trimDefaults.push_back(trimDefault);
+  else {
+    for (int i = 2; i < argc; ++i)
+      if (access(argv[i], F_OK) != -1)
+	trimDefaults.push_back(string(argv[i]));
+  }
+
+  cout << "trimDefault input files:"<<endl;
+  for (size_t i = 0; i < trimDefaults.size(); ++i)
+    cout << trimDefaults[i] << endl;
 
   PixelConfigKey key(ikey);
  
@@ -92,49 +107,48 @@ int main(int argc, char **argv){
   map<PixelModuleName, PixelTrimBase* > theTrims;
 
   string roc;
-
-  ifstream inDefault(trimDefault.c_str());
-
-  assert(inDefault.good());
-
-  double tmp;
-
-  string dummy;
-
-  inDefault >> dummy >> roc;
-
   int count=0;
 
-  while(!inDefault.eof()) {
+  for (size_t i = 0; i < trimDefaults.size(); ++i) {
+    ifstream inDefault(trimDefaults[i].c_str());
 
-    count++;
+    assert(inDefault.good());
 
-    if (count%1000000==0){
-      cout << count<<" roc="<<roc << endl;
-    }    
+    double tmp;
 
-    PixelROCName theRoc(roc);
+    string dummy;
 
-    int row,col;
-    double threshold;
+    inDefault >> dummy >> roc;
+
+    while(!inDefault.eof()) {
+
+      if (++count%1000000==0){
+	cout << count<<" roc="<<roc << endl;
+      }    
+
+      PixelROCName theRoc(roc);
+
+      int row,col;
+      double threshold;
 
 
-    inDefault >> row >> col >> tmp >> threshold;
+      inDefault >> row >> col >> tmp >> threshold;
 
-    if (threshold>130.0) threshold=-1.0;
-    if (threshold<40.0) threshold=-1.0;
+      if (threshold>130.0) threshold=-1.0;
+      if (threshold<40.0) threshold=-1.0;
 
-    theMap[theRoc][row][col].default_=threshold;
+      theMap[theRoc][row][col].default_=threshold;
 
-    inDefault >> dummy; // istat
-    inDefault >> dummy; // chi2
-    inDefault >> dummy; // prob
-    inDefault >> dummy;
-    inDefault >> roc;
+      inDefault >> dummy; // istat
+      inDefault >> dummy; // chi2
+      inDefault >> dummy; // prob
+      inDefault >> dummy;
+      inDefault >> roc;
     
+    }
   }
 
-  cout << "Have read the pixels" << endl;
+  cout << "Have read " << count <<" pixels" << endl;
 
   ifstream inDer("rocder.dat");
 

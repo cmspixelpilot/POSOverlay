@@ -111,10 +111,10 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
     NORTHCENTER_PWORD	      NOT NULL NUMBER(38)	     NC_Pword					
     SOUTH_PWORD 	      NOT NULL NUMBER(38)	     S_Pword					
     SOUTHCENTER_PWORD	      NOT NULL NUMBER(38)	     SC_Pword					
-    NORTH_SPYFIFO2CH 	      NOT NULL NUMBER(38)	     N_SpyFifo2Ch
-    NORTHCENTER_SPYFIFO2CH    NOT NULL NUMBER(38)	     NC_SpyFifo2Ch
-    SOUTH_SPYFIFO2CH 	      NOT NULL NUMBER(38)	     S_SpyFifo2Ch
-    SOUTHCENTER_SPYFIFO2CH    NOT NULL NUMBER(38)	     SC_SpyFifo2Ch
+    NORTH_SCOPECH 	      NOT NULL NUMBER(38)	     N_ScopeCh
+    NORTHCENTER_SCOPECH    NOT NULL NUMBER(38)	     NC_ScopeCh
+    SOUTH_SCOPECH 	      NOT NULL NUMBER(38)	     S_ScopeCh
+    SOUTHCENTER_SCOPECH    NOT NULL NUMBER(38)	     SC_ScopeCh
     SPECDAC		      NOT NULL NUMBER(38)	     SpecialDac 				
     OOS_LVL		      NOT NULL NUMBER(38)	     Ooslvl					
     ERR_LVL		      NOT NULL NUMBER(38)	     Errlvl					
@@ -209,10 +209,10 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
   colNames.push_back("NORTHCENTER_PWORD"       ); 
   colNames.push_back("SOUTH_PWORD"	       ); 
   colNames.push_back("SOUTHCENTER_PWORD"       ); 
-  colNames.push_back("NORTH_SPYFIFO2CH"        );
-  colNames.push_back("NORTHCENTER_SPYFIFO2CH"  );
-  colNames.push_back("SOUTH_SPYFIFO2CH"        );
-  colNames.push_back("SOUTHCENTER_SPYFIFO2CH"  );
+  colNames.push_back("NORTH_SCOPECH"        );
+  colNames.push_back("NORTHCENTER_SCOPECH"  );
+  colNames.push_back("SOUTH_SCOPECH"        );
+  colNames.push_back("SOUTHCENTER_SCOPECH"  );
   colNames.push_back("SPECDAC"    	       ); 
   colNames.push_back("OOS_LVL"    	       ); 
   colNames.push_back("ERR_LVL"    	       ); 
@@ -324,10 +324,10 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
       S_Pword      	= atoi(tableMat[1][colM["SOUTH_PWORD"]      	   ].c_str()) ;
       
       //Bits (1st 4) used to set the channel you want to read in spy fifo2
-      N_SpyFifo2Ch      = atoi(tableMat[1][colM["NORTH_SPYFIFO2CH"]      ].c_str()) ;
-      NC_SpyFifo2Ch     = atoi(tableMat[1][colM["NORTHCENTER_SPYFIFO2CH"]].c_str()) ;
-      SC_SpyFifo2Ch     = atoi(tableMat[1][colM["SOUTHCENTER_SPYFIFO2CH"]].c_str()) ;
-      S_SpyFifo2Ch      = atoi(tableMat[1][colM["SOUTH_SPYFIFO2CH"]      ].c_str()) ;
+      N_ScopeCh      = atoi(tableMat[1][colM["NORTH_SCOPECH"]      ].c_str()) ;
+      NC_ScopeCh     = atoi(tableMat[1][colM["NORTHCENTER_SCOPECH"]].c_str()) ;
+      SC_ScopeCh     = atoi(tableMat[1][colM["SOUTHCENTER_SCOPECH"]].c_str()) ;
+      S_ScopeCh      = atoi(tableMat[1][colM["SOUTH_SCOPECH"]      ].c_str()) ;
 
       Nbaseln      	= atoi(tableMat[1][colM["NORTH_BADJ"]       	   ].c_str()) ;
       NCbaseln     	= atoi(tableMat[1][colM["NORTHCENTER_BADJ"] 	   ].c_str()) ;
@@ -881,22 +881,22 @@ PixelFEDCard::PixelFEDCard(string fileName):
     printf("Private 8 bit word chnls 28-36:%x\n",S_Pword);
 
       //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fscanf(infile,"N  Spy Fifo-2 channel(0-8):%x\n",
-         &N_SpyFifo2Ch);
-  fscanf(infile,"NC Spy Fifo-2 channel(0-8):%x\n",
-         &NC_SpyFifo2Ch);
-  fscanf(infile,"SC Spy Fifo-2 channel(0-8):%x\n",
-         &SC_SpyFifo2Ch);
-  fscanf(infile,"S  Spy Fifo-2 channel(0-8):%x\n",
-         &S_SpyFifo2Ch);
+  fscanf(infile,"N  Scope channel(0-8):%x\n",
+         &N_ScopeCh);
+  fscanf(infile,"NC Scope channel(0-8):%x\n",
+         &NC_ScopeCh);
+  fscanf(infile,"SC Scope channel(0-8):%x\n",
+         &SC_ScopeCh);
+  fscanf(infile,"S  Scope channel(0-8):%x\n",
+         &S_ScopeCh);
   if(localDEBUG)
-    printf("N  Spy Fifo-2 channel(0-8):%x\n",N_SpyFifo2Ch);
+    printf("N  Scope channel(0-8):%x\n",N_ScopeCh);
   if(localDEBUG)
-    printf("NC Spy Fifo-2 channel(0-8):%x\n",NC_SpyFifo2Ch);
+    printf("NC Scope channel(0-8):%x\n",NC_ScopeCh);
   if(localDEBUG)
-    printf("SC Spy Fifo-2 channel(0-8):%x\n",SC_SpyFifo2Ch);
+    printf("SC Scope channel(0-8):%x\n",SC_ScopeCh);
   if(localDEBUG)
-    printf("S  Spy Fifo-2 channel(0-8):%x\n",S_SpyFifo2Ch);
+    printf("S  Scope channel(0-8):%x\n",S_ScopeCh);
 
        //These bit sets the special dac mode for random triggers 
   fscanf(infile,"Special Random testDAC mode (on = 0x1, off=0x0):%x\n",
@@ -1231,10 +1231,10 @@ void PixelFEDCard::clear(void)
   NC_Pword          = 0;
   SC_Pword          = 0;
   S_Pword           = 0;
-  N_SpyFifo2Ch      = 0;
-  NC_SpyFifo2Ch     = 0;
-  SC_SpyFifo2Ch     = 0;
-  S_SpyFifo2Ch      = 0;
+  N_ScopeCh      = 0;
+  NC_ScopeCh     = 0;
+  SC_ScopeCh     = 0;
+  S_ScopeCh      = 0;
   SpecialDac        = 0;
   Ooslvl            = 0;
   Errlvl            = 0;
@@ -1420,14 +1420,14 @@ void PixelFEDCard::writeASCII(std::string dir) const{
          S_Pword);
 
        //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fprintf(outfile,"N  Spy Fifo-2 channel(0-8):%x\n",
-	 N_SpyFifo2Ch);
-  fprintf(outfile,"NC Spy Fifo-2 channel(0-8):%x\n",
-	 NC_SpyFifo2Ch);
-  fprintf(outfile,"SC Spy Fifo-2 channel(0-8):%x\n",
-	 SC_SpyFifo2Ch);
-  fprintf(outfile,"S  Spy Fifo-2 channel(0-8):%x\n",
-	 S_SpyFifo2Ch);
+  fprintf(outfile,"N  Scope channel(0-8):%x\n",
+	 N_ScopeCh);
+  fprintf(outfile,"NC Scope channel(0-8):%x\n",
+	 NC_ScopeCh);
+  fprintf(outfile,"SC Scope channel(0-8):%x\n",
+	 SC_ScopeCh);
+  fprintf(outfile,"S  Scope channel(0-8):%x\n",
+	 S_ScopeCh);
 
        //These bit sets the special dac mode for random triggers 
   fprintf(outfile,"Special Random testDAC mode (on = 0x1, off=0x0):0x%x\n",
@@ -1760,10 +1760,10 @@ void PixelFEDCard::writeXML( std::ofstream *out) const
   *out << "   <NORTHCENTER_PWORD>178</NORTHCENTER_PWORD>"                                         	  << std::endl ;
   *out << "   <SOUTHCENTER_PWORD>179</SOUTHCENTER_PWORD>"                                         	  << std::endl ;
   *out << "   <SOUTH_PWORD>180</SOUTH_PWORD>"                                                     	  << std::endl ;
-  *out << "   <NORTH_SPYFIFO2CH>0</NORTH_SPYFIFO2CH>"                                                	  << std::endl ;
-  *out << "   <NORTHCENTER_SPYFIFO2CH>0</NORTHCENTER_SPYFIFO2CH>"                                    	  << std::endl ;
-  *out << "   <SOUTHCENTER_SPYFIFO2CH>0</SOUTHCENTER_SPYFIFO2CH>"                                   	  << std::endl ;
-  *out << "   <SOUTH_SPYFIFO2CH>0</SOUTH_SPYFIFO2CH>"                                              	  << std::endl ;
+  *out << "   <NORTH_SCOPECH>0</NORTH_SCOPECH>"                                                	  << std::endl ;
+  *out << "   <NORTHCENTER_SCOPECH>0</NORTHCENTER_SCOPECH>"                                    	  << std::endl ;
+  *out << "   <SOUTHCENTER_SCOPECH>0</SOUTHCENTER_SCOPECH>"                                   	  << std::endl ;
+  *out << "   <SOUTH_SCOPECH>0</SOUTH_SCOPECH>"                                              	  << std::endl ;
   *out << "   <SPECDAC>0</SPECDAC>"                                                               	  << std::endl ;
   *out << "   <OOS_LVL>0</OOS_LVL>"                                                               	  << std::endl ;
   *out << "   <ERR_LVL>0</ERR_LVL>"                                                               	  << std::endl ;
@@ -1866,10 +1866,10 @@ void PixelFEDCard::writeXML( std::ofstream *fedstream,
       *fedstream << "   <NORTHCENTER_PWORD>"        << NC_Pword     	   << "</NORTHCENTER_PWORD>"	    << std::endl ;
       *fedstream << "   <SOUTHCENTER_PWORD>"        << SC_Pword     	   << "</SOUTHCENTER_PWORD>"	    << std::endl ;
       *fedstream << "   <SOUTH_PWORD>"              << S_Pword      	   << "</SOUTH_PWORD>"  	    << std::endl ;
-      *fedstream << "   <NORTH_SPYFIFO2CH>"         << N_SpyFifo2Ch        << "</NORTH_SPYFIFO2CH>"  	    << std::endl ;
-      *fedstream << "   <NORTHCENTER_SPYFIFO2CH>"   << NC_SpyFifo2Ch       << "</NORTHCENTER_SPYFIFO2CH>"   << std::endl ;
-      *fedstream << "   <SOUTHCENTER_SPYFIFO2CH>"   << SC_SpyFifo2Ch       << "</SOUTHCENTER_SPYFIFO2CH>"   << std::endl ;
-      *fedstream << "   <SOUTH_SPYFIFO2CH>"         << S_SpyFifo2Ch        << "</SOUTH_SPYFIFO2CH>"  	    << std::endl ;
+      *fedstream << "   <NORTH_SCOPECH>"         << N_ScopeCh        << "</NORTH_SCOPECH>"  	    << std::endl ;
+      *fedstream << "   <NORTHCENTER_SCOPECH>"   << NC_ScopeCh       << "</NORTHCENTER_SCOPECH>"   << std::endl ;
+      *fedstream << "   <SOUTHCENTER_SCOPECH>"   << SC_ScopeCh       << "</SOUTHCENTER_SCOPECH>"   << std::endl ;
+      *fedstream << "   <SOUTH_SCOPECH>"         << S_ScopeCh        << "</SOUTH_SCOPECH>"  	    << std::endl ;
       *fedstream << "   <SPECDAC>"                  << SpecialDac   	   << "</SPECDAC>"		    << std::endl ;
       *fedstream << "   <OOS_LVL>"                  << Ooslvl       	   << "</OOS_LVL>"		    << std::endl ;
       *fedstream << "   <ERR_LVL>"                  << Errlvl       	   << "</ERR_LVL>"		    << std::endl ;
@@ -2078,10 +2078,10 @@ void PixelFEDCard::writeXML(pos::PixelConfigKey key, int version, std::string pa
   out << "   <NORTHCENTER_PWORD>178</NORTHCENTER_PWORD>"                                         << std::endl ;
   out << "   <SOUTHCENTER_PWORD>179</SOUTHCENTER_PWORD>"                                         << std::endl ;
   out << "   <SOUTH_PWORD>180</SOUTH_PWORD>"                                                     << std::endl ;
-  out << "   <NORTH_SPYFIFO2CH>0</NORTH_SPYFIFO2CH>"                                             << std::endl ;
-  out << "   <NORTHCENTER_SPYFIFO2CH>0</NORTHCENTER_SPYFIFO2CH>"                                 << std::endl ;
-  out << "   <SOUTHCENTER_SPYFIFO2CH>0</SOUTHCENTER_SPYFIFO2CH>"                                 << std::endl ;
-  out << "   <SOUTH_SPYFIFO2CH>0</SOUTH_SPYFIFO2CH>"                                             << std::endl ;
+  out << "   <NORTH_SCOPECH>0</NORTH_SCOPECH>"                                             << std::endl ;
+  out << "   <NORTHCENTER_SCOPECH>0</NORTHCENTER_SCOPECH>"                                 << std::endl ;
+  out << "   <SOUTHCENTER_SCOPECH>0</SOUTHCENTER_SCOPECH>"                                 << std::endl ;
+  out << "   <SOUTH_SCOPECH>0</SOUTH_SCOPECH>"                                             << std::endl ;
   out << "   <SPECDAC>0</SPECDAC>"                                                               << std::endl ;
   out << "   <OOS_LVL>0</OOS_LVL>"                                                               << std::endl ;
   out << "   <ERR_LVL>0</ERR_LVL>"                                                               << std::endl ;
@@ -2157,10 +2157,10 @@ void PixelFEDCard::writeXML(pos::PixelConfigKey key, int version, std::string pa
                 <NORTHCENTER_PWORD>178</NORTHCENTER_PWORD>
                 <SOUTHCENTER_PWORD>179</SOUTHCENTER_PWORD>
                 <SOUTH_PWORD>180</SOUTH_PWORD>          
-                <NORTH_SPYFIFO2CH>0</NORTH_SPYFIFO2CH>
-                <NORTHCENTER_SPYFIFO2CH>0</NORTHCENTER_SPYFIFO2CH>
-                <SOUTHCENTER_SPYFIFO2CH>0</SOUTHCENTER_SPYFIFO2CH>
-                <SOUTH_SPYFIFO2CH>0</SOUTH_SPYFIFO2CH>
+                <NORTH_SCOPECH>0</NORTH_SCOPECH>
+                <NORTHCENTER_SCOPECH>0</NORTHCENTER_SCOPECH>
+                <SOUTHCENTER_SCOPECH>0</SOUTHCENTER_SCOPECH>
+                <SOUTH_SCOPECH>0</SOUTH_SCOPECH>
                 <SPECDAC>0</SPECDAC>            
                 <OOS_LVL>0</OOS_LVL>
                 <ERR_LVL>0</ERR_LVL>

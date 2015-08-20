@@ -5,9 +5,4 @@ bin
 *.o
 *.so
 *.exe
-config
-LogReaderWithFileServer
-PixelConfigDBGUI/
-PixelSupervisorGUI/
 *.pyc
-PixelFunctionManager

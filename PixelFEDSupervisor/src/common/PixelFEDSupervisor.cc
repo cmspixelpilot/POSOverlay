@@ -148,8 +148,8 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::ResetFEDsEnMass, "ResetFEDsEnMass", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetPrivateWord, "SetPrivateWord", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ToggleChannels, "ToggleChannels", XDAQ_NS_URI);
-  xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channel, "SetSpyFIFO2Channel", XDAQ_NS_URI);
-  xoap::bind(this, &PixelFEDSupervisor::SetSpyFIFO2Channels, "SetSpyFIFO2Channels", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::SetScopeChannel, "SetScopeChannel", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::SetScopeChannels, "SetScopeChannels", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::JMTJunk, "JMTJunk", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ArmDigFEDOSDFifo, "ArmDigFEDOSDFifo", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::ReadDigFEDOSDFifo, "ReadDigFEDOSDFifo", XDAQ_NS_URI);
@@ -2186,10 +2186,12 @@ bool PixelFEDSupervisor::job_Configure ()
       configBoardTimer.stop();
 
       //Print out the FED firmware dates
+      FEDInterface_[vmeBaseAddress]->get_VMEFirmwareDate();
       for(int i=0;i<5;i++){
         FEDInterface_[vmeBaseAddress]->get_FirmwareDate(i);
       }
-      
+      if (pilotFED)
+	FEDInterface_[vmeBaseAddress]->get_PiggyFirmwareVer();
     }
 
   }
@@ -4081,7 +4083,7 @@ xoap::MessageReference PixelFEDSupervisor::ToggleChannels(xoap::MessageReference
   return reply;
 }
 
-xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channel(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+xoap::MessageReference PixelFEDSupervisor::SetScopeChannel(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   Attribute_Vector parametersReceived(2);
   parametersReceived[0].name_ = "Which";
   parametersReceived[1].name_ = "Ch";
@@ -4100,15 +4102,15 @@ xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channel(xoap::MessageRefer
       assert(0);
   }
 
-  cout << " PixelFEDSupervisor::SetSpyFifo2Channel which = " << parametersReceived[0].value_ << " = " << which << ", channel = " << parametersReceived[1].value_ << " = " << ch << endl;
+  cout << " PixelFEDSupervisor::SetScopeChannel which = " << parametersReceived[0].value_ << " = " << which << ", channel = " << parametersReceived[1].value_ << " = " << ch << endl;
   for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
-    iFED->second->set_SpyFifo2Channel(which, ch);
+    iFED->second->set_ScopeChannel(which, ch);
 
-  xoap::MessageReference reply=MakeSOAPMessageReference("SetSpyFIFO2ChannelDone");
+  xoap::MessageReference reply=MakeSOAPMessageReference("SetScopeChannelDone");
   return reply;
 }
 
-xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channels(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+xoap::MessageReference PixelFEDSupervisor::SetScopeChannels(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   Attribute_Vector parametersReceived(4);
   parametersReceived[0].name_ = "Nch";
   parametersReceived[1].name_ = "NCch";
@@ -4122,9 +4124,9 @@ xoap::MessageReference PixelFEDSupervisor::SetSpyFIFO2Channels(xoap::MessageRefe
   unsigned int Sch  = atoi(parametersReceived[3].value_.c_str());
 
   for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
-    iFED->second->set_SpyFifo2Channels(Nch, NCch, SCch, Sch);
+    iFED->second->set_ScopeChannels(Nch, NCch, SCch, Sch);
 
-  xoap::MessageReference reply=MakeSOAPMessageReference("SetSpyFIFO2ChannelsDone");
+  xoap::MessageReference reply=MakeSOAPMessageReference("SetScopeChannelsDone");
   return reply;
 }
 
@@ -4356,13 +4358,13 @@ void PixelFEDSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("ToggleChannels", attrib);
     std::string reciveMsg = Receive(this->ToggleChannels(soapMsg));
   }
-  else if(action=="SetSpyFIFO2Channel"){
-    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetSpyFIFO2Channel", attrib);
-    std::string reciveMsg = Receive(this->SetSpyFIFO2Channel(soapMsg));
+  else if(action=="SetScopeChannel"){
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetScopeChannel", attrib);
+    std::string reciveMsg = Receive(this->SetScopeChannel(soapMsg));
   }
-  else if(action=="SetSpyFIFO2Channels"){
-    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetSpyFIFO2Channels", attrib);
-    std::string reciveMsg = Receive(this->SetSpyFIFO2Channels(soapMsg));
+  else if(action=="SetScopeChannels"){
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetScopeChannels", attrib);
+    std::string reciveMsg = Receive(this->SetScopeChannels(soapMsg));
   }
   else if(action=="SetADC1V2VEnMass"){
 

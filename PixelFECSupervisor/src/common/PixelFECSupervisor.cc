@@ -1321,7 +1321,7 @@ bool PixelFECSupervisor::qpllCheck(toolbox::task::WorkLoop * w1) {
 	  ostringstream msg;
 	  msg<<"FEC at address 0x"<<hex<<i->first<<dec<<" has unlocked QPLL (status=0x"<<hex<<i->second<<dec<<")";
 	  diagService_->reportError(msg.str(),DIAGERROR);
-	  ::abort(); // added to make it clear, d.k. 8/1/15
+	  //::abort(); // added to make it clear, d.k. 8/1/15, disable 25/6/15
 	}
       }
     }
