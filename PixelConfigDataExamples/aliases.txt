@@ -76,7 +76,7 @@ dac  11 FromVcThrVcal80 ;
 mask  0 Default ;
 trim  9 Default ;
 trim  0 TrimOff ;
-trim  3 TrimOn ;
+trim  1 TrimOn ;
 tbm  1 Default ;
 portcard  0 Default ;
 portcardmap  0 Default ;
