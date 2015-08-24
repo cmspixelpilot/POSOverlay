@@ -4,6 +4,7 @@
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "PixelUtilities/PixelFEDDataTools/include/PixelFEDDataTypes.h"
 #include "PixelUtilities/PixelFEDDataTools/include/ErrorFIFODecoder.h"
+#include "PixelUtilities/PixelFEDDataTools/include/ColRowAddrDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/DigScopeDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/DigTransDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO3Decoder.h"
@@ -136,9 +137,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
 
     const int MaxChips = 8;
-    uint32_t bufferT[MaxChips][16384];
-    uint32_t bufferS[MaxChips][16384];
-    uint64_t buffer3[16384];
+    uint32_t bufferT[MaxChips][2048];
+    uint32_t bufferS[MaxChips][2048];
+    uint64_t buffer3[2048];
     uint32_t bufferErr[36*1024];
     int statusS[MaxChips] = {0};
     for (int chip = 1; chip <= 7; chip += 2) {
@@ -368,6 +369,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	      std::cout << "all 0xFFFFFFFF" << std::endl;
 	    }
 	    else {
+	      std::vector<char> bits[2]; // ha
 	      while (*datae == 0xffffffff)
 		++nend, --datae;
 	      trans_found = datae-data+1;
@@ -381,7 +383,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 		std::cout << std::hex << std::setw(4) << l << std::dec << "  ";
 		for (int j = 0; j < 2; ++j) {
 		  for (int i = 15; i >= 0; --i) {
-		    std::cout << ((ab[j] & (1 << i)) ? "1" : "0");
+		    char bit = (ab[j] & (1 << i)) ? '1' : '0';
+		    bits[!j].push_back(bit);
+		    std::cout << bit;
 		    if (i % 4 == 0) std::cout << " ";
 		  }
 		  std::cout << "  ";
@@ -390,6 +394,177 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 		++data;
 	      }
 	      std::cout << "then " << nend << " 0xFFFFFFFF" << std::endl;
+
+	      std::cout << "try to align with headers:\n";
+	      const int nroccands = 8;
+	      for (int j = 0; j < 2; ++j) {
+		std::cout << "tbm " << j << ":\n";
+		int besttbmhead = -1;
+		int besttbmheadcount = -1;
+		int besttbmtrail = -1;
+		int besttbmtrailcount = -1;
+		std::vector<int> bestroc(nroccands, -1);
+		std::vector<int> bestroccount(nroccands, -1);
+		std::vector<int> bestrocalign(nroccands, -1);
+		int count = -1;
+		const int nbits = bits[j].size();
+		if (nbits < 12)
+		  std::cout << "not enough bits\n";
+		else {
+		  for (int i = 0; i < nbits - 12; ++i) {
+		    count = 
+		      int(bits[j][i   ] == '0') +
+		      int(bits[j][i+ 1] == '1') +
+		      int(bits[j][i+ 2] == '1') +
+		      int(bits[j][i+ 3] == '1') +
+		      int(bits[j][i+ 4] == '1') +
+		      int(bits[j][i+ 5] == '1') +
+		      int(bits[j][i+ 6] == '1') +
+		      int(bits[j][i+ 7] == '1') +
+		      int(bits[j][i+ 8] == '1') +
+		      int(bits[j][i+ 9] == '1') +
+		      int(bits[j][i+10] == '0') +
+		      int(bits[j][i+11] == '0');
+		    if (count > besttbmheadcount) {
+		      besttbmheadcount = count;
+		      besttbmhead = i;
+		    }
+
+		    count = 
+		      int(bits[j][i   ] == '0') +
+		      int(bits[j][i+ 1] == '1') +
+		      int(bits[j][i+ 2] == '1') +
+		      int(bits[j][i+ 3] == '1') +
+		      int(bits[j][i+ 4] == '1') +
+		      int(bits[j][i+ 5] == '1') +
+		      int(bits[j][i+ 6] == '1') +
+		      int(bits[j][i+ 7] == '1') +
+		      int(bits[j][i+ 8] == '1') +
+		      int(bits[j][i+ 9] == '1') +
+		      int(bits[j][i+10] == '1') +
+		      int(bits[j][i+11] == '0');
+		    if (count > besttbmtrailcount) {
+		      besttbmtrailcount = count;
+		      besttbmtrail = i;
+		    }
+
+		    count = 
+		      int(bits[j][i   ] == '0') +
+		      int(bits[j][i+ 1] == '1') +
+		      int(bits[j][i+ 2] == '1') +
+		      int(bits[j][i+ 3] == '1') +
+		      int(bits[j][i+ 4] == '1') +
+		      int(bits[j][i+ 5] == '1') +
+		      int(bits[j][i+ 6] == '1') +
+		      int(bits[j][i+ 7] == '1') +
+		      int(bits[j][i+ 8] == '1') +
+		      int(bits[j][i+ 9] == '0');
+		    const int align = (i - (besttbmhead + 12 + 16)) % 12;
+		    if (align == 0) {
+		      for (int k = 0; k < nroccands; ++k) {
+			if (count > bestroccount[k]) {
+			  int tmpcount = bestroccount[k];
+			  int tmp = bestroc[k];
+			  bestroccount[k] = count;
+			  bestroc[k] = i;
+			  for (int l = nroccands-1; l > k+1; --l) {
+			    bestroccount[l] = bestroccount[l-1];
+			    bestroc[l] = bestroc[l-1];
+			  }
+			  if (k < nroccands-1) {
+			    bestroccount[k+1] = tmpcount;
+			    bestroc[k+1] = tmp;
+			  }
+			  break;
+			}
+		      }
+		    }
+		  }
+
+		  std::cout << "best match of tbm header  at " << std::setw(4) << nbeg*16 + besttbmhead  << " with count " << besttbmheadcount << "\n";
+		  std::cout << "best match of tbm trailer at " << std::setw(4) << nbeg*16 + besttbmtrail << " with count " << besttbmtrailcount << "\n";
+		  if ((besttbmtrail - (besttbmhead + 12 + 16)) % 12 != 0)
+		    std::cout << "  ^ tbm trailer misaligned wrt tbm header!\n";
+		  std::cout << "matches of roc headers:\n";
+		  int bestroccountsum = 0;
+		  for (int k = 0; k < nroccands; ++k) {
+		    std::cout << "  at " << std::setw(4) << nbeg*16 + bestroc[k] << " with count " << bestroccount[k] << "\n";
+		    if (k < 8) {
+		      bestroccountsum += bestroccount[k];
+		      if ((bestroc[k] - (besttbmhead + 12 + 16)) % 12 != 0)
+			std::cout << "    ^ roc header misaligned wrt tbm header!\n";
+		    }
+		  }
+
+//		  std::vector<std::pair<int, int> > roccands;
+//		  for (int k = 0; k < nroccands; ++k) {
+//		    if (bestroccount[k] == 10) {
+//		      roccands.push_back(std::make_pair(
+//		  }
+		  
+
+		  if (besttbmheadcount != 12 || besttbmtrailcount != 12 || bestroccountsum != 80)
+		    std::cout << "problem with headers or trailers!\n";
+
+		  std::cout << "print, aligning only with tbm header, and guessing where roc headers and hit bits should be based on " << tempCalibObject->maxNumHitsPerROC() << " hits / roc in calib\n";
+		  std::cout << "throw away: ";
+		  for (int i = 0; i < besttbmhead; ++i) {
+		    std::cout << bits[j][i];
+		    if (i % 4 == 3) std::cout << " ";
+		  }
+		  std::cout << "\n";
+
+		  std::cout << "tbm header: ";
+		  for (int i = besttbmhead; i < besttbmhead+12; ++i) {
+		    std::cout << bits[j][i];
+		  }
+		  std::cout << "  payload: ";
+		  for (int i = besttbmhead+12; i < besttbmhead+12+2*8; ++i) {
+		    std::cout << bits[j][i];
+		    const int id = i-(besttbmhead+12);
+		    if (id == 7 || id == 9) std::cout << " ";
+		  }
+		  std::cout << "\n";
+
+		  const int nhitsperroc = tempCalibObject->maxNumHitsPerROC();
+		  const int nbitsperroc = 12 + 3*8*nhitsperroc;
+		  for (int k = 0; k < 8; ++k) {
+		    const int ib = besttbmhead+12+2*8 + nbitsperroc*k;
+		    const int ic = besttbmhead+12+2*8 + nbitsperroc*k + 12;
+		    const int ie = besttbmhead+12+2*8 + nbitsperroc*(k+1);
+		    std::cout << "roc " << k << " header: ";
+		    for (int i = ib; i < ic; ++i) {
+		      std::cout << bits[j][i];
+		      if ((i-ib) == 9) std::cout << " ";
+		    }
+		    std::cout << "\nhits:\n";
+		    for (int i = ic; i < ie; ++i) {
+		      std::cout << bits[j][i];
+		      const int id = (i - ic) % 24;
+		      if (id == 5 || id == 14 || id == 18 || id == 19) std::cout << " ";
+		      else if (id == 23) std::cout << "\n";
+		    }
+		  }
+
+		  std::cout << "tbm trailer: ";
+		  {
+		    const int ib = besttbmhead+12+2*8 + nbitsperroc*8;
+		    const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
+		    for (int i = ib; i < ie; ++i)
+		      std::cout << bits[j][i];
+		  }
+		  std::cout << "  payload: ";
+		  {
+		    const int ib = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
+		    const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12 + 16;
+		    for (int i = ib; i < ie; ++i) {
+		      std::cout << bits[j][i];
+		      if ((i-ib) % 4 == 3) std::cout << " ";
+		    }
+		  }
+		  std::cout << std::endl;
+		}
+	      }
 	    }
 	  }
 	  else {
@@ -464,8 +639,17 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       if (status3 > 0) {
 	std::cout << "FIFO3Decoder thinks:\n"
 		  << "nhits: " << decode3->nhits() << std::endl;
+	int hits_by_ch[37] = {0};
+	int hits_by_roc[37][8] = {{0}};
+	unsigned lastroc = 0;
 	for (unsigned i = 0; i < decode3->nhits(); ++i) {
 	  const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3->channel(i), decode3->rocid(i)-1);
+	  ++hits_by_ch[decode3->channel(i)];
+	  ++hits_by_roc[decode3->channel(i)][decode3->rocid(i)-1];
+	  if (lastroc != 0 && decode3->rocid(i) != lastroc) {
+	    std::cout << "\n";
+	    lastroc = decode3->rocid(i);
+	  }
 	  std::cout << "#" << i << ": ch: " << decode3->channel(i)
 		    << " rocid: " << decode3->rocid(i)
 		    << " (" << rocname << ")"
@@ -473,6 +657,15 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 		    << " pxl: " << decode3->pxl(i) << " pulseheight: " << decode3->pulseheight(i)
 		    << " col: " << decode3->column(i) << " row: " << decode3->row(i) << std::endl;
 	}
+	std::cout << "Nhits by channel:\n";
+	for (int i = 1; i <= 36; ++i)
+	  if (hits_by_ch[i])
+	    std::cout << "Ch " << std::setw(2) << i << ": " << std::setw(3) << hits_by_ch[i] << "\n";
+	std::cout << "Nhits by roc:\n";
+	for (int i = 1; i <= 36; ++i)
+	  for (int j = 0; j < 8; ++j)
+	    if (hits_by_roc[i][j])
+	      std::cout << "Ch " << std::setw(2) << i << " roc " << j << ": " << std::setw(3) << hits_by_roc[i][j] << "\n";
 	if (decode3->nhits() > 0)
 	  std::cout << "(fifo2 col: " << colS << " row: " << rowS << "   fifo3 dcol: " << decode3->dcol(0) << " pxl: " << decode3->pxl(0) << " col: " << decode3->column(0) << " row: " << decode3->row(0) << ")\n";
       }
