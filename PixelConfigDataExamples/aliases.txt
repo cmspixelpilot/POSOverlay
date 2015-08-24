@@ -77,7 +77,7 @@ dac  9 FromVcThrCalDelWithVcalLow150 ;
 dac  10 FromVcThrVcal50 ;
 dac  11 FromVcThrVcal80 ;
 mask  0 Default ;
-trim  9 Default ;
+trim  11 Default ;
 trim  0 TrimOff ;
 trim  1 TrimOn ;
 tbm  1 Default ;
