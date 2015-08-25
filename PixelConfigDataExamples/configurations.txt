@@ -538,9 +538,9 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   8
+dac   17
 mask   0
-trim   0
+trim   11
 calib   32
 tbm   1
 portcard   0
