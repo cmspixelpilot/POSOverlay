@@ -1,4 +1,5 @@
 import sys, os
+from array import array
 from glob import glob
 from collections import defaultdict
 from pprint import pprint
@@ -130,8 +131,21 @@ class detconfig_dat:
                 self.rocs['qual'].append((line[0], tuple(line[1:])))
             else:
                 self.rocs['noqual'].append(line[0])
+
+class TrimResult:
+    def __init__(self, s):
+        s = s.split()
+        assert len(s) == 9
+        dummy, self.roc, r, c, noise, thresh, istat, chi2, prob = s
+        self.row = int(r)
+        self.col = int(c)
+        self.noise = float(noise)
+        self.thresh = float(thresh)
+        self.istat = int(istat)
+        self.chi2 = float(chi2)
+        self.prob = float(prob)
         
 if __name__ == '__main__':
     c = calib_dat(1440)
     d = detconfig_dat(1440)
-    
+

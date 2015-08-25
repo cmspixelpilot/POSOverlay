@@ -25,19 +25,6 @@ else:
 
 print 'run:', run
 
-class TrimResult:
-    def __init__(self, s):
-        s = s.split()
-        assert len(s) == 9
-        dummy, self.roc, r, c, noise, thresh, istat, chi2, prob = s
-        self.row = int(r)
-        self.col = int(c)
-        self.noise = float(noise)
-        self.thresh = float(thresh)
-        self.istat = int(istat)
-        self.chi2 = float(chi2)
-        self.prob = float(prob)
-
 trims = [TrimResult(x.strip()) for x in open(trim_fn).read().split('\n') if x.strip()]
 trims_by_roc = defaultdict(list)
 trims_by_roc_px = defaultdict(list)
