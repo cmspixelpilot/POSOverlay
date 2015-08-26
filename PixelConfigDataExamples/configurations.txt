@@ -220,9 +220,9 @@ nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
-dac   12
+dac   20
 mask   0
-trim   0
+trim   11
 calib 9
 tbm   1
 portcard   0
