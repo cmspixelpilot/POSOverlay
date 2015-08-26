@@ -34,26 +34,8 @@ c.cd(0)
 #pdf_fn = os.path.join(out_dir, 'all.pdf')
 #c.Print(pdf_fn + '[')
 
-def CountDeadPixels (maxDeadPixels, outfile, excludedrocs):
-    maxeff = 100
-
-    for roc in gDirectory.GetListOfKeys(): ## ROC folder: find one TH2F for each ROC                                                                                                                    
-        histo = roc.ReadObj()
-        hname   = histo.GetName()
-        xBins   = histo.GetNbinsX()
-        yBins   = histo.GetNbinsY()
-
-        # count dead pixels in each roc                                                                                                                                                                 
-        numDeadPixels = 0
-        for x in range(1,xBins+1):
-            for y in range(1,yBins+1):
-                if histo.GetBinContent(x,y) < maxeff:
-                    numDeadPixels=numDeadPixels+1;
-        if (numDeadPixels > maxDeadPixels):
-            rocname = hname.replace(' (inv)','')
-            print '%s - Number of dead pixels = %d' %(rocname,numDeadPixels)
-            if (rocname not in excludedrocs):
-                outfile.write('%s\n'%rocname)
+num_dead = defaultdict(int)
+eff_thresh = 100.
 
 for d in dirs:
     if not f.Get(d):
@@ -67,6 +49,11 @@ for d in dirs:
             name = rest + 'ROC0' + roc
         ntrigs = int(obj.Integral())
         by_ntrigs.append((ntrigs, name))
+        for x in xrange(1, obj.GetNbinsX()+1):
+            for y in xrange(1, obj.GetNbinsY()+1):
+                if obj.GetBinContent(x,y) < eff_thresh:
+                    num_dead[name] += 1
+            
         c.cd(iroc+1)
         obj.Draw('colz')
     c.cd(0)
@@ -77,6 +64,11 @@ for d in dirs:
 by_ntrigs.sort(key=lambda x: x[1])
 by_ntrigs.sort(key=lambda x: x[0], reverse=True)
 pprint(by_ntrigs)
+
+print '# dead pixels (eff lower than %f):' % eff_thresh
+for roc in sorted(num_dead.keys()):
+    if num_dead[roc]:
+        print '%s %10i' % (roc.ljust(35), num_dead[roc])
 
 if 'scp' in sys.argv:
     remote_dir = 'public_html/qwer/dump_pixelalive/%i' % run
