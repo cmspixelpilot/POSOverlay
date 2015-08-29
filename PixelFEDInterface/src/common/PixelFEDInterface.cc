@@ -200,6 +200,7 @@ extern void analyzeError(CVErrorCodes ret); // Wills VME error analyzer.
 ////////////////////////////////////////////////////////////////////////////
 // Read the configuration parameters from file
 int PixelFEDInterface::configFile(string fileName) {
+  printf("IN CONFIGFILE\n");
   int i;
   int DEBUG=0;
   int ijx,ijy;

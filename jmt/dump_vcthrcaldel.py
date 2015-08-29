@@ -53,6 +53,7 @@ for d in dirs:
                     x.Draw()
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.png')
+    c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.root')
 
 by_ntrigs.sort(key=lambda x: x[1])
 by_ntrigs.sort(key=lambda x: x[0], reverse=True)
