@@ -2330,8 +2330,8 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   const bool readLastDACFifo  = false;
   const bool readFifoStatusAndLFF = true;
   const bool useSEURecovery = false; // Enable SEU recovery mechanism
-  const bool timing = true;        // print output from Pixel Timers on each exit from the loop
-  const bool localPrint = true; 
+  const bool timing = false;        // print output from Pixel Timers on each exit from the loop
+  const bool localPrint = false; 
 
   //::sleep(1); return true; //disable physics workloop
 
