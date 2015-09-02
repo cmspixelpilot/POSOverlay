@@ -1,6 +1,8 @@
 ConfigurationAliases
-Physics     47   ;
-PhysicsEmulator     48   ;
+Physics     122   ;
+PhysicsEmulator     121   ;
+PhysicsNoSlink     47   ;
+PhysicsEmulatorNoSlink     48   ;
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
@@ -36,6 +38,7 @@ detconfig  1 BmIOnly ;
 detconfig  2 BmOOnly ;
 fedconfig  0 Default ;
 fecconfig  0 Default ;
+fedcard  6 Emulator ;
 fedcard  5 Noslinkemulator ;
 fedcard  4 Noslink ;
 fedcard  3 Default ;
