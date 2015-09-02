@@ -1,3 +1,4 @@
+#TCDS iCI local
 ###########################################################
 #
 # Test config to pixel tcds.
@@ -331,7 +332,7 @@ cyclic_generator0.configuration.trigger_word.l1a                  0x00000000
 
 # one shot CAL + TRIG (used by PixelSupervisor)
 ###CYCLICBGO 2 CH=15 STARTBX=100 REPETITIVE=n PERMANENT=n POST=1
-cyclic_generator1.configuration.enabled                           0x00000001
+cyclic_generator1.configuration.enabled                           0x00000000
 cyclic_generator1.configuration.permanent                         0x00000000
 cyclic_generator1.configuration.prescale                          0x00000000
 cyclic_generator1.configuration.initial_prescale                  0x00000000
@@ -345,12 +346,12 @@ cyclic_generator1.configuration.trigger_word.id                   0x0000000f
 cyclic_generator1.configuration.trigger_word.l1a                  0x00000000
 
 ###CYCLICTRIGGER 0 STARTBX=225 REPETITIVE=n PERMANENT=n POST=1 INITWAIT=1
-cyclic_generator2.configuration.enabled                           0x00000001
+cyclic_generator2.configuration.enabled                           0x00000000
 cyclic_generator2.configuration.permanent                         0x00000000
 cyclic_generator2.configuration.prescale                          0x00000000
 cyclic_generator2.configuration.initial_prescale                  0x00000001
 cyclic_generator2.configuration.postscale                         0x00000001
-cyclic_generator2.configuration.repeat_cycle                      0x00000000
+cyclic_generator2.configuration.repeat_cycle                      0x00000001
 cyclic_generator2.configuration.pause                             0x00000000
 cyclic_generator2.configuration.start_bx                          0x000000e1
 cyclic_generator2.configuration.trigger_word.bgo_command          0x00000000
