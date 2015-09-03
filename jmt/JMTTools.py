@@ -144,6 +144,14 @@ class TrimResult:
         self.istat = int(istat)
         self.chi2 = float(chi2)
         self.prob = float(prob)
+
+def dec(dcol, pxl):
+    dcol = dcol & 0x1f
+    pxl = pxl & 0xff
+    col = dcol*2 + pxl%2
+    row = 80 - pxl/2
+    return col, row
+
         
 if __name__ == '__main__':
     c = calib_dat(1440)
