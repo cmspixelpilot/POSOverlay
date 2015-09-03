@@ -796,14 +796,14 @@ ltcconfig   0
 tkfecconfig   0
 
 key 47
-detconfig   0
+detconfig   3
 lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   4
 dac   28
-mask   0
+mask   1
 trim   11
 tbm   1
 portcard   0
@@ -2143,14 +2143,14 @@ ltcconfig   0
 tkfecconfig   0
 
 key 122
-detconfig   0
+detconfig   3
 lowvoltagemap 0
 nametranslation   0
 fedconfig   0
 fecconfig   0
 fedcard   3
 dac   28
-mask   0
+mask   1
 trim   11
 tbm   1
 portcard   0

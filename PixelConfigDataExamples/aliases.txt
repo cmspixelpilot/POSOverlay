@@ -1,5 +1,6 @@
 ConfigurationAliases
 Physics     122   ;
+PhysicsReal     122   ;
 PhysicsEmulator     121   ;
 PhysicsNoSlink     47   ;
 PhysicsEmulatorNoSlink     48   ;
@@ -36,6 +37,7 @@ nametranslation  1 SwapBmIOAtPxFEC ;
 detconfig  0 Default ;
 detconfig  1 BmIOnly ;
 detconfig  2 BmOOnly ;
+detconfig  3 Golden ;
 fedconfig  0 Default ;
 fecconfig  0 Default ;
 fedcard  6 Emulator ;
