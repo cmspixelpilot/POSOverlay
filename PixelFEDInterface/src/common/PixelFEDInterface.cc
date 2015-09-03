@@ -1372,7 +1372,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
   }
 #endif // USE_HAL
 
-  usleep(20);
+  usleep(80);
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds );
@@ -1382,7 +1382,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
   // I2C PAYLOAD
   ds =  Register_Nr;
@@ -1394,7 +1394,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_LOAD"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
   i2c_addr=7*2; 
   i2c_nbytes=1;
@@ -1408,9 +1408,9 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_ADDR_RW"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
-  usleep(300);
+  //usleep(300);
   
   //Check Status
 #ifdef USE_HAL // Use HAL
@@ -1421,7 +1421,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in read TTCRX_I2C_REG_READ"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret);   }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
   //Report Status 
   if((d&0xff)==1)printf("ERROR: BUS BUSY !! \n");
@@ -1439,7 +1439,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);
+  usleep(80);
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1449,7 +1449,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);
+  usleep(80);
     
   /////////////////////////////  I2C READ  //////////////////////////////////
  
@@ -1464,7 +1464,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       cout<<"Error in write TTCRX_I2C_ADDR_RW"<<hex<<ret<<" "<<ds<<dec<<endl;
       analyzeError(ret); }
 #endif // USE_HAL
-    usleep(20);//
+    usleep(80);//
     //Check Status
 #ifdef USE_HAL // Use HAL
     vmeDevicePtr->read("I2C_RD_STAT",&d);
@@ -1474,7 +1474,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       cout<<"Error in read TTCRX_I2C_RD_STAT"<<hex<<ret<<" "<<ds<<dec<<endl;
       analyzeError(ret);   }
 #endif // USE_HAL
-    usleep(20);//
+    usleep(80);//
     //Report Status 
     if((d&0xff)==1)printf("ERROR: BUS BUSY !! \n");
     if((d&0xff)==2)printf("ERROR: I2C_ADDR NOT ACKNOWLEDGED !! \n");
@@ -1489,7 +1489,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       analyzeError(ret);   }
 #endif // USE_HAL
     
-    usleep(20);//
+    usleep(80);//
     return(d&0xff);
 }
 ////////////////////////////////////////////////////////////////////////////////// 
