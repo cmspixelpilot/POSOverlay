@@ -3306,7 +3306,7 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
   }
 
 
-
+  sleep(20);
 
 
   // Send a SOAP message to PixelTKFECSupervisor to configure
