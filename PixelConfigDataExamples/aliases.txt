@@ -40,6 +40,7 @@ detconfig  2 BmOOnly ;
 detconfig  3 Golden ;
 fedconfig  0 Default ;
 fecconfig  0 Default ;
+fedcard  7 Physics ;
 fedcard  6 Emulator ;
 fedcard  5 Noslinkemulator ;
 fedcard  4 Noslink ;
