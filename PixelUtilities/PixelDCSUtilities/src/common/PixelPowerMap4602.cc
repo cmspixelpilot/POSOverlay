@@ -10,9 +10,9 @@
 
 PixelPowerMap4602::PixelPowerMap4602()
 {
-  for (unsigned int i=0; i<1; ++i) {
-    for (unsigned int j=0; j<1; ++j) {
-      for (unsigned int k=0; k<1; ++k) {
+  for (unsigned int i=0; i<2; ++i) {
+    for (unsigned int j=0; j<2; ++j) {
+      for (unsigned int k=0; k<2; ++k) {
 	a4602_[i][j][k]=LV_UNDEFINED;
       }
     }
