@@ -144,6 +144,18 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 	in >> tag;
 	//std::cout << "Tag="<<tag<<std::endl;
+	assert(tag=="TBMANoTokenPass:");
+	in >> tmpint;
+	TBMANoTokenPass_=tmpint;
+
+	in >> tag;
+	//std::cout << "Tag="<<tag<<std::endl;
+	assert(tag=="TBMBNoTokenPass:");
+	in >> tmpint;
+	TBMBNoTokenPass_=tmpint;
+
+	in >> tag;
+	//std::cout << "Tag="<<tag<<std::endl;
 	assert(tag=="TBMAPKAMCount:");
 	in >> tmpint;
 	TBMAPKAMCount_=tmpint;
@@ -207,6 +219,8 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 	in >> TBMAAutoReset_;
 	in >> TBMBAutoReset_;
+	in >> TBMANoTokenPass_;
+	in >> TBMBNoTokenPass_;
 	in >> TBMAPKAMCount_;
 	in >> TBMBPKAMCount_;
 	in >> TBMPLLDelay_;
@@ -224,8 +238,10 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 void PixelTBMSettings::setTBMGenericValue(std::string what, int value) 
 {
- if     ( what == "TBMAAutoReset" ) {TBMAAutoReset_ = (bool)value;}
- else if( what == "TBMBAutoReset" ) {TBMBAutoReset_ = (bool)value;}
+ if     ( what == "TBMAAutoReset" ) {TBMAAutoReset_ = (unsigned char)value;}
+ else if( what == "TBMBAutoReset" ) {TBMBAutoReset_ = (unsigned char)value;}
+ else if( what == "TBMANoTokenPass" ) {TBMANoTokenPass_ = (unsigned char)value;}
+ else if( what == "TBMBNoTokenPass" ) {TBMBNoTokenPass_ = (unsigned char)value;}
  else if( what == "TBMAPKAMCount" ) {TBMAPKAMCount_ = (unsigned char)value;}
  else if( what == "TBMBPKAMCount" ) {TBMBPKAMCount_ = (unsigned char)value;}
  else if( what == "TBMPLLDelay" ) {TBMPLLDelay_ = (unsigned char)value;}
@@ -247,6 +263,8 @@ void PixelTBMSettings::writeBinary(std::string filename) const {
 
     out <<TBMAAutoReset_;
     out <<TBMBAutoReset_;
+    out <<TBMANoTokenPass_;
+    out <<TBMBNoTokenPass_;
     out <<TBMAPKAMCount_;
     out <<TBMBPKAMCount_;
     out <<TBMPLLDelay_;
@@ -268,6 +286,8 @@ void PixelTBMSettings::writeASCII(std::string dir) const {
 
     out << "TBMAAutoReset: "<<(int)TBMAAutoReset_<<std::endl;
     out << "TBMBAutoReset: "<<(int)TBMBAutoReset_<<std::endl;
+    out << "TBMANoTokenPass: "<<(int)TBMANoTokenPass_<<std::endl;
+    out << "TBMBNoTokenPass: "<<(int)TBMBNoTokenPass_<<std::endl;
     out << "TBMAPKAMCount: "<<(int)TBMAPKAMCount_<<std::endl;
     out << "TBMBPKAMCount: "<<(int)TBMBPKAMCount_<<std::endl;
     out << "TBMPLLDelay: "<<(int)TBMPLLDelay_<<std::endl;
@@ -299,15 +319,22 @@ void PixelTBMSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
 
     //pixelFEC->synccontrolregister(mfec);
 
+    unsigned int base0_A = 0, base0_B = 0;
+    if (!TBMAAutoReset_) base0_A |= 0x80;
+    if (!TBMBAutoReset_) base0_B |= 0x80;
+    if (TBMANoTokenPass_) base0_A |= 0x40;
+    if (TBMBNoTokenPass_) base0_B |= 0x40;
+      
     if (doResets) pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 2, 0x14, 0);
-    if (!TBMAAutoReset_) pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel,  hubaddress, 4, 0, 0x80, 0);
+    pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel,  hubaddress, 4, 0, base0_A, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 4, TBMAPKAMCount_, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 1, 0xC0, 0); // setting the mode, we should always stay in the CAL = 0xC0 mode since the EventNumberClear Mode = 0x80 does not work correctly
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 5, TBMADelay_, 0);
+
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 7, TBMPLLDelay_, 0);
 
     if (doResets) pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannelB, hubaddress, 4, 2, 0x14, 0);
-    if (!TBMBAutoReset_) pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannelB,  hubaddress, 4, 0, 0x80, 0);
+    pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannelB,  hubaddress, 4, 0, base0_B, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannelB, hubaddress, 4, 4, TBMBPKAMCount_, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannelB, hubaddress, 4, 1, 0xC0, 0); // setting the mode, we should always stay in the CAL = 0xC0 mode since the EventNumberClear Mode = 0x80 does not work correctly
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannelB, hubaddress, 4, 5, TBMBDelay_, 0);
@@ -317,8 +344,10 @@ void PixelTBMSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
 std::ostream& pos::operator<<(std::ostream& s, const PixelTBMSettings& tbm){
 
     s << "Module: "<<tbm.rocid_.rocname() <<std::endl; 
-    s << "TBMAAutoReset: "<<int(tbm.TBMAAutoReset_)<<std::endl;
-    s << "TBMBAutoReset: "<<int(tbm.TBMBAutoReset_)<<std::endl;
+    s << "TBMAAutoReset: "<<tbm.TBMAAutoReset_<<std::endl;
+    s << "TBMBAutoReset: "<<tbm.TBMBAutoReset_<<std::endl;
+    s << "TBMANoTokenPass: "<<tbm.TBMANoTokenPass_<<std::endl;
+    s << "TBMBNoTokenPass: "<<tbm.TBMBNoTokenPass_<<std::endl;
     s << "TBMAPKAMCount: "<<tbm.TBMAPKAMCount_<<std::endl;
     s << "TBMBPKAMCount: "<<tbm.TBMBPKAMCount_<<std::endl;
     s << "TBMPLLDelay: "<<tbm.TBMPLLDelay_<<std::endl;
