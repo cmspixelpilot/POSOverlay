@@ -276,6 +276,8 @@ bool checkSEUCounters(int);
 bool runDegraded;
 void storeEnbableBits();
 
+ uint32_t testReg(uint32_t data);
+
  private:
 
   // Private methods

@@ -23,6 +23,8 @@ namespace {
   //const bool PRINT = true;
 }
 
+#define PILOT_FED
+
 #ifdef USE_HAL // Access VME with HAL
 
 //// Constructor //////////////////////////////////////////////////
@@ -200,6 +202,8 @@ extern void analyzeError(CVErrorCodes ret); // Wills VME error analyzer.
 ////////////////////////////////////////////////////////////////////////////
 // Read the configuration parameters from file
 int PixelFEDInterface::configFile(string fileName) {
+  assert(0);
+
   int i;
   int DEBUG=0;
   int ijx,ijy;
@@ -819,9 +823,10 @@ int PixelFEDInterface::reset(void) {
   uint32_t data = 0x0; // data for reseta 
 
   cout<<" In reset() "<<endl;
+#ifndef PILOT_FED
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
   BaselineCorr_off();
-
+#endif
   // Reset TTCrx (to reset the event and bx counters)
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Check / Reset TTCrx"<<endl;
 
@@ -881,13 +886,13 @@ int PixelFEDInterface::reset(void) {
   usleep(10);
   
   // Make Sure to execute for pilotFED only!!!!
-  bool pilotFED = true;
-  if ( pilotFED ){
+#ifdef PILOT_FED
     cout << " pilotFED resets  "  << endl;
     resetDigFEDpll();
     usleep(200000);
     resetDigFEDreg();
-  }
+    usleep(200000);
+#endif
   
   // Reset LRES
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting LRES"<<endl;
@@ -1304,14 +1309,12 @@ void PixelFEDInterface::loadFPGADigFED(){
   vmeDevicePtr->write("nCONFIG", data );
   usleep(1000000); //10ms in example programs, extra time now for clock
 
-  
-  // Make Sure to execute for pilotFED only!!!!
-  bool pilotFED = true;
-  if ( pilotFED ) {
+#ifdef PILOT_FED  
     cout << " pilotFED load fpga  "<< endl;
     loadFPGADigFED();
-  }
-  
+#endif
+
+#ifndef PILOT_FED
 //new sequence for v4
 // load test constants
 // setup for VME trigger and testDAC
@@ -1336,14 +1339,17 @@ dac0[255]=0;//make sure any leftover testDAC setting is 0
 int mlength=256;//overkill-currently shuts off setDAC after stop bit
 fillDACRegisterLength(dac0,dac0,dac0,mlength);
 usleep(100);
+#endif
 
 resetSlink();
 setModeRegister(0x1);
 
 generateVMETrigger();
 
+#ifndef PILOT_FED
 uint32_t fbufr[1024];
 drainFifo1(fbufr);
+#endif
 
 data=0x80000000;
  vmeDevicePtr->write("LRES",data);
@@ -1639,6 +1645,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 // Read the file with the FED setup parameters.
 // Download these parameters to the FED. 
 int PixelFEDInterface::setupFromDB(string fileName) {
+  assert(0);
   int status = 0;
   cout<<" read setup parameters from file "<<fileName<<endl;
   status = configFile(fileName);
@@ -1674,25 +1681,30 @@ int PixelFEDInterface::setup(void) {
 
   loadFedIDRegister();
 
+#ifndef PILOT_FED
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Optical reciever parameters"<<endl;
   set_opto_params();
 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Clock Phases"<<endl;
   setPhases();  // Set all phases from DB
+#endif
 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Number of Rocs for each Channel"<<endl;
   set_chnl_nrocs();  // Set #Rocs from DB
- 
+
+#ifndef PILOT_FED 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting black, ultra-black Thresholds"<<endl;
   set_blk_ublk_thold();
      
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ROC, Header, Trailer level thresholds"<<endl;
   set_data_levels();
-                                                                                
+#endif
+
   // This is controls if a channel is on or off
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Turning on all all channels for Normal Running"<<endl;
   set_chnls_onoff(); //transfer control now handled by VME-trigger
- 
+
+#ifndef PILOT_FED 
   //Offset DAC V2:
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting the Offset DACs"<<endl;
   set_offset_dacs();
@@ -1700,31 +1712,34 @@ int PixelFEDInterface::setup(void) {
   //ADC Gain Registers
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ADC GAIN values"<<endl;
   set_adc_1v2v();
+#endif
 
   //make sure testDAC is not sending extra data
   stop_testDAC();//This also loads Control and Mode registers in the central chip!
 
+#ifndef PILOT_FED
   //Baseline Restoration Registers
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
   set_BaselineCorr();
-  
+#endif
+
   //TTs levels for warning and busy
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Values for TTs Warn and Busy Levels"<<endl;
   set_TTslevels();
 
-  //TTs levels for warning and busy
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Almost Full Values for fifo-1 and fifo-3"<<endl;
   set_Fifolevels();
-  
+
+#ifndef PILOT_FED  
   //Baseline Restoration Registers
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
   set_BaselineCorr();
-  
+#endif
+
   //FED Master Delay
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.FedTTCDelay<<" Setting FED Master Delay"<<endl;
   set_FEDTTCDelay();
 
-  
   //Hit Limits
   if(Printlevel&2) 
   {cout<<"FEDID:"<<pixelFEDCard.N_hitlimit<<"N Hit Limit"<<endl;
@@ -1788,6 +1803,7 @@ int PixelFEDInterface::setup(void) {
 // Test DAC is 256 words long.
 void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const dac2,
 					const int *const dac3) const {
+assert(0);
   uint32_t TestData[256];
 
   // Compose DACs
@@ -1833,6 +1849,7 @@ void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Fill the DAC test array and load it
 void PixelFEDInterface::fillDACRegister() const {
+assert(0);
   const uint32_t V_OFFSET=100; // 100; 
   const uint32_t UB =50;
   //const uint32_t B = 300;
@@ -1895,6 +1912,7 @@ void PixelFEDInterface::fillDACRegister() const {
 void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R, 
 					vector <uint32_t> pulseTrain_G, 
 					vector <uint32_t> pulseTrain_B) const {
+assert(0);
   uint32_t compositePulseTrain[256];
   
   for (int i=0;i<256;++i) {
@@ -1927,6 +1945,7 @@ void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R,
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::fillDACRegister2(void) const {
+assert(0);
   //const uint32_t V_OFFSET=100; // 100;
   //const uint32_t UB =50;
   //const uint32_t B = 300;
@@ -2043,7 +2062,7 @@ void PixelFEDInterface::fillDACRegisterLength(const int *const dac1, const int *
 // Read FIFOs
 /////////////////////////////////////////////////////////////////////////////////
   void PixelFEDInterface::setup_testDAC(int pedestal){//pre-load the testDAC with a pedestal value
-
+assert(0);
 uint32_t value = 0x0e;
 vmeDevicePtr->write("CtrlReg",value);
 
@@ -2198,9 +2217,11 @@ if(((data[960]&0xff)==0xff)&&((data[959]&0xff)!=0xff)){count+=961;} else
 {cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Warning:Transparent buffer Bad or MisAligned! channel ="<<chnl<<endl;
 return 1000;}
 
+#ifndef PILOT_FED
 //cout<<" call fixBBB "<<chnl<<endl; 
 //int newstatus = FixBBB(chnl,data);
  FixBBB(chnl,data);
+#endif
 
   return count;
 }
@@ -3151,6 +3172,7 @@ void PixelFEDInterface::resetSlink() {
 } // end
 ////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_opto_params() {
+assert(0);
   //form opto word from params
   uint32_t data = (pixelFEDCard.opt_cap[0]<<6)+pixelFEDCard.opt_inadj[0]+(pixelFEDCard.opt_ouadj[0]<<4);
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Write OptoRec1Par :"<<hex<<pixelFEDCard.opt_cap[0]<<" "<<pixelFEDCard.opt_ouadj[0]<<" "
@@ -3260,6 +3282,7 @@ void PixelFEDInterface::set_offset_dacs() {
 
 ///////////////////////////////////////////////////////////////////////////
   int PixelFEDInterface::setPhases(const int channel, int delay) {
+assert(0);
     // Select the +- clock phase 
     //uint32_t data = 0; //
 
@@ -3358,6 +3381,7 @@ void PixelFEDInterface::set_offset_dacs() {
   }
 ///////////////////////////////////////////////////////////////////////////////////
 int PixelFEDInterface::setPhases(void) {
+assert(0);
   // Select the +- clock phase 
   set_clock_phases();
   // Select the phase values
@@ -3428,6 +3452,7 @@ else return(-1);
 
 ///////////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_clock_phases() {
+assert(0);
 /* a 9 bit number, 1 bit for each of 9 channels in each of 4 chips
 1=on   means use negative clock edge    
 0=off        use positive clock edge
@@ -3497,7 +3522,7 @@ for now all set to negative clock edge
 //   controlled on the center chip, and we are setting delays
 //   for each input channel 1-36 		    
  void PixelFEDInterface::set_chnl_delays() {
-
+assert(0);
    for(int channel=1;channel<37;channel++) {
 
      //      enable channel(6 bits) delay(4 bits)
@@ -3562,7 +3587,7 @@ void PixelFEDInterface::set_blk_ublk_thold() {
 //////////////////////////////////////////////////////////////////////////////////
 //Load B thresholds to 1000 and 999, UB to 300 for each channel
 void PixelFEDInterface::set_blk_ublk_trans_thold() {
-
+assert(0);
 	//cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"Seeting Black for safe transparent mode"<<endl; 
   for(int chip_nr=0;chip_nr<4;chip_nr++) {
     for(int channel=1;channel<10;channel++) {
@@ -3630,7 +3655,7 @@ void PixelFEDInterface::set_chnl_nrocs() {
 /////////////////////////////////////////////////////////////////////////////
 // Set the address levels for TBM and all ROCs
 void PixelFEDInterface::set_data_levels() {
-
+assert(0);
   for(int chip_nr=0;chip_nr<4;chip_nr++) {  // loop over FPGs
     for(int channel=1;channel<10;channel++) {   // loop over channels
 
@@ -4083,7 +4108,7 @@ void PixelFEDInterface::get_MODE_front() {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 int PixelFEDInterface::get_adc_1v2v(int chnl) {
-  
+  assert(0);
   // bracket logic:
   // (1<<((((chnl%2)+chnl)/2)-1))
   // each bit controls 2 adc channels. E.g.
@@ -4125,7 +4150,7 @@ int PixelFEDInterface::get_adc_1v2v(int chnl) {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 void PixelFEDInterface::set_adc_1v2v(int mode,int chnl) {
-
+assert(0);
 if((chnl<1) | (chnl>36)){
     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of range "<<endl;
     return;}
@@ -4160,7 +4185,7 @@ if(mode==0)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg&(0xf ^ (1<<((((chnl-28)%2+(ch
 // This bits control the range of the ADC
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 void PixelFEDInterface::set_adc_1v2v(int mode) {
-
+assert(0);
   if(mode==1) {  // keep data in fifo1
 
     pixelFEDCard.Nadcg  = 0x3f;
@@ -4189,7 +4214,7 @@ void PixelFEDInterface::set_adc_1v2v(int mode) {
 // This bits control if the data is trasfered from FIFO1 to FIFO2
 // 0 - means data is transfered, 1 - data is not transfered.
 void PixelFEDInterface::set_adc_1v2v() {
-
+assert(0);
   //cout<<" ADC GAIN Set "<<hex<<pixelFEDCard.Nadcg<<" "<<pixelFEDCard.NCadcg
   //    <<" "<<pixelFEDCard.SCadcg<<" "<<pixelFEDCard.Sadcg<<dec<<endl;
 
@@ -4211,7 +4236,7 @@ void PixelFEDInterface::set_adc_1v2v() {
 /////////////////////////////////////////////////////////////////////////
 //This Method turns on the Baseline Adjustment for a whole fed
   void PixelFEDInterface::BaselineCorr_on(){
-
+assert(0);
 //cout<<"PixelFEDInterface::BaselineCorr_on() ENTERED!!!"<<endl;
 
 uint32_t data=(0x1ff<<16)+(pixelFEDCard.Nbaseln&0x3ff);
@@ -4231,7 +4256,7 @@ set_BaselineCorr(4,data);
 /////////////////////////////////////////////////////////////////////////
 //Turn off Baseline correction (whole fed)
   void PixelFEDInterface::BaselineCorr_off(){
-
+assert(0);
 if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" PixelFEDInterface::BaselineCorr_off() ENTERED!!!"<<endl;
 
 uint32_t data=(pixelFEDCard.Nbaseln&0x3ff);
@@ -4255,7 +4280,7 @@ data=0x80000000;
 /////////////////////////////////////////////////////////////////////////
 //get Baseline correction (single channel, but bits are common!)
 uint32_t PixelFEDInterface::get_BaselineCorrVal(int chnl){
-
+assert(0);
 uint32_t data=0xffffffff;
 
 if((chnl>0)&(chnl<10)){
@@ -4285,7 +4310,7 @@ return data;
 /////////////////////////////////////////////////////////////////////////
 //Turn on Baseline correction (single channel)
   void PixelFEDInterface::BaselineCorr_on(int chnl){
-
+assert(0);
 //cout<<"PixelFEDInterface::BaselineCorr_on(int "<<chnl<<") ENTERED!!!"<<endl;
 
 if((chnl>0)&(chnl<10)){
@@ -4317,6 +4342,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of (1-36)range!! Passed ch
 /////////////////////////////////////////////////////////////////////////
 //Turn off Baseline correction (single channel)
   void PixelFEDInterface::BaselineCorr_off(int chnl){
+assert(0);
 //cout<<"PixelFEDInterface::BaselineCorr_off(int "<<chnl<<") ENTERED!!!"<<endl;
 
  if((chnl>0)&(chnl<10)){
@@ -4352,7 +4378,7 @@ uint32_t data=0x80000000;
 /////////////////////////////////////////////////////////////////////////
 //Set the baseline correction value for an FPGA (1-4)  10 bits max!
   void PixelFEDInterface::set_BaselineCorr(int chip,uint32_t value){
-
+assert(0);
 //    cout<<"PixelFEDInterface::set_BaselineCorr(int "<<chip<<", uint32_t 0x"<<hex <<value<< dec << ") ENTERED!!!"<<endl;
 
 
@@ -4376,7 +4402,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Chip must be 1(NORTH),  2(NORTH CENTER
 /////////////////////////////////////////////////////////////////////////
 //Set the baseline corection values from the database
   void PixelFEDInterface::set_BaselineCorr(){
-
+assert(0);
 //cout<<"PixelFEDInterface::set_BaselineCorr() ENTERED!!"<<endl;
 
 uint32_t value = pixelFEDCard.Nbaseln;
@@ -4396,7 +4422,7 @@ value = pixelFEDCard.Sbaseln;
 /////////////////////////////////////////////////////////////////////////////
 //This method dumps the current value of the baseline adjustment
 void PixelFEDInterface::dump_BaselineCorr() {
-
+assert(0);
 //cout<<"PixelFEDInterface::dump_BaselineCorr() ENTERED!!"<<endl;
 
 uint32_t iwrdat;
@@ -4470,6 +4496,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Baseline Adjust for Channel "<<dec<<i+
 //This method gets all the current values of the baseline adjustment
 //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
 void PixelFEDInterface::get_BaselineCorr(int * blstat) {
+assert(0);
 uint32_t iwrdat;
 vmeDevicePtr->read("NRdBaseL321",&iwrdat);
 blstat[0]=(iwrdat&0x3ff);
@@ -4532,7 +4559,7 @@ if(blstat[ij]&0x200)blstat[ij]=-1*(((~blstat[ij])&0x1ff)+1);
 //This method gets the current value of the baseline adjustment for a single channel
 //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
 int PixelFEDInterface::get_BaselineCorr(int chnl) {
-
+assert(0);
 uint32_t iwrdat;
 int blstat=0;
 if((chnl==1)|(chnl==2)|(chnl==3)){
@@ -4682,6 +4709,7 @@ int PixelFEDInterface::readBXCounter() {
 // // 20 23 26 29 32 35 <-channel of middle 8 bit counter in word for triplet number
 // // 21 24 27 30 33 36 <-channel of highest 8 bit counter in word for triplet number
  int PixelFEDInterface::selectTripple(const int trip) {
+assert(0);
    uint32_t loctrip;                                                                                                                            
    if((trip<1)||(trip>12)){
      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error: Tripplet request "<<dec<<trip<<" out of bounds, must be 1-12"
@@ -4723,7 +4751,7 @@ int PixelFEDInterface::readBXCounter() {
 //////////////////////////////////////////////////////////////////////
 // Read expects 1st Roc to be #1
  int PixelFEDInterface::drainHisRoc(const int trip,const int Roc, uint32_t *data){
-
+assert(0);
    uint32_t offset = (Roc-1)*4;
    //const uint32_t length = 104; //number of double columns(26) *bytes(4) for block reads - wait for v4!
    uint32_t locdata;  
@@ -4790,6 +4818,7 @@ for(int j=27;j<33;j++){vmeDevicePtr->read("ROCHisMemDn",&locdata);}//DC 27 - 31 
 // // drain all the Double Columns in all rocs  for a particular tripple
 // // 
  int PixelFEDInterface::drainTripple(const int trip, uint32_t *pnt) {
+assert(0);
    int status=0;
    
    if((trip<1)||(trip>12)){
@@ -4912,6 +4941,7 @@ for(int j=0;j<(int)cycles;j++){*pnt=data[j];pnt++;}
 // particular fed
 // 
  int PixelFEDInterface::drainHisMemory(uint32_t *data) {
+assert(0);
    int status=0;
    int count=0;
    for(int trip=1;trip<13;trip++){
@@ -4951,6 +4981,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
 ////////////////////////////////////////////////////////////////////////////
 // Clear the histogrammming memories
  void PixelFEDInterface::clear_hismem(void) {
+assert(0);
    uint32_t data = 0x1; // Toggle???
    
 #ifdef USE_HAL // Use HAL
@@ -5747,8 +5778,7 @@ data = (pixelFEDCard.S_hitlimit&0x3ff)+(12<<16);
 //
 void PixelFEDInterface::set_ROCskip(void)
 {
-#if 0
-
+#ifndef PILOT_FED
 //Check data words
  if((pixelFEDCard.N_testreg&0x7e0)>0){
 if((pixelFEDCard.N_testreg&0x7e0)>(0x120))
@@ -5784,16 +5814,16 @@ else
 {int chanl=(pixelFEDCard.SC_testreg&0x7e0)>>5;if((pixelFEDCard.SC_testreg&0x1f)>=pixelFEDCard.NRocs[chanl-1])
 {pixelFEDCard.SC_testreg=0;cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" SC BBB skip exceeds #ROCS-1 or = 0, set to 0"<<endl;}}
   } else {pixelFEDCard.SC_testreg=0;}
-#endif
-
+#else
 uint32_t offset = 0x1a8000;
 std::cout << "set_ROCskip " << std::hex << pixelFEDCard.N_testreg << " " << pixelFEDCard.NC_testreg << " " << pixelFEDCard.SC_testreg << " " << pixelFEDCard.S_testreg << std::dec << std::endl;
 vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
+#endif
 
-#if 0
+#ifndef PILOT_FED
   // test BBB
   // if(pixelFEDCard.N_testreg>0){cout<<" skip BBB ROC "<<hex
   //                                   <<pixelFEDCard.N_testreg
@@ -6196,4 +6226,24 @@ void PixelFEDInterface::sendResets() {
   usleep(10);
   vmeDevicePtr->write("CLRES",data);
   usleep(10);
+}
+
+uint32_t PixelFEDInterface::testReg(uint32_t data) {
+  uint32_t ret = 0;
+  uint32_t d;
+  const char* regs[5] = {
+    "TestReg",
+    "NWrRdTestReg", 
+    "NCWrRdTestReg", 
+    "SCWrRdTestReg", 
+    "SWrRdTestReg"
+  };
+  for (int i = 0; i < 5; ++i) {
+    vmeDevicePtr->write(regs[i], data);
+    usleep(10000);
+    vmeDevicePtr->read(regs[i], &d);
+    usleep(10000);
+    ret |= int(data == d) << i;
+  }
+  return ret;
 }

@@ -9,6 +9,7 @@
 // Move ResetFED before workloop start. d.dk. 7/14
 
 #define READ_LASTDAC  // Enable the last dac writing
+#define PILOT_FED
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
@@ -551,6 +552,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
 
   *out<<"<h1> FED with Base Address 0x"<<std::hex<<vmeBaseAddress<<std::dec<<"</h1>"<<std::endl<<std::endl;
 
+#ifndef PILOT_FED
   // GUI for FED Channel Offset DACs and Optical Receiver Input Offsets
   *out<<"<form name=\"input\" method=\"get\" action=\""<<url+"/LowLevelXgiHandler"<<"\" enctype=\"multipart/form-data\">"<<std::endl;
   *out<<"<table border=1>"<<std::endl;
@@ -578,7 +580,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   *out<<"<input type=\"Submit\" name=\"Command\" value=\"SetChannelOffsets\">"<<std::endl;
   *out<<"<input type=\"hidden\" name=\"FEDBaseAddress\" value=\""<<vmeBaseAddress_string<<"\"/>"<<endl;
   *out<<"</form>"<<std::endl<<std::endl;
-
+#endif
 
   // GUI for the FED Control and Mode Registers
   unsigned int cReg=fedCard.Ccntrl;
@@ -765,6 +767,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   *out<<"<input type=\"hidden\" name=\"FEDBaseAddress\" value=\""<<vmeBaseAddress_string<<"\"/>"<<endl;
   *out<<"</form>"<<endl;
 
+#ifndef PILOT_FED
   // Baseline Release, Set and Hold
   *out<<"<table width=100% border=1>"<<endl;
   *out<<"<tr>"<<endl;
@@ -800,6 +803,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   HTML2XGI(out, htmlbase_+"/SetPhasesDelays.htm");
   *out<<"<input type=\"hidden\" name=\"FEDBaseAddress\" value=\""<<vmeBaseAddress_string<<"\"/>"<<endl;
   *out<<"</form>"<<endl;
+#endif
 
   // Reload Firmware and Reset FED
   *out<<"<form name=\"input\" method=\"get\" action=\""<<url+"/LowLevelXgiHandler"<<"\" enctype=\"multipart/form-data\">";
@@ -913,7 +917,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
   std::string vmeBaseAddress_string=cgi.getElement("FEDBaseAddress")->getValue();
   
   if (Command=="SetChannelOffsets") {
-
+assert(0);
     Attribute_Vector parametersXgi(channelsPerFED+opticalReceiversPerFED+1);
       
     for (unsigned int ichannel=0;ichannel<channelsPerFED;++ichannel){
@@ -1052,7 +1056,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
 
   }  else if (Command=="BaselineRelease") {
-
+assert(0);
     Attribute_Vector parametersXgi(2);
     parametersXgi[0].name_="VMEBaseAddress";parametersXgi[0].value_=vmeBaseAddress_string;
     parametersXgi[1].name_="FEDChannel"; parametersXgi[1].value_="*";
@@ -1064,7 +1068,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
  
   } else if (Command=="BaselineSet") {
-    
+assert(0);    
     Attribute_Vector parametersXgi(5);
     parametersXgi[0].name_="VMEBaseAddress"; parametersXgi[0].value_=vmeBaseAddress_string;
     parametersXgi[1].name_="Nbaseln"; parametersXgi[1].value_=cgi.getElement("Nbaseln")->getValue();
@@ -1079,7 +1083,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
 
   } else if (Command=="BaselineHold") {
-
+assert(0);
     Attribute_Vector parametersXgi(2);
     parametersXgi[0].name_="VMEBaseAddress";parametersXgi[0].value_=vmeBaseAddress_string;
     parametersXgi[1].name_="FEDChannel"; parametersXgi[1].value_="*";
@@ -1124,7 +1128,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
 
   } else if (Command=="SetPhasesDelays") {
-       
+       assert(0);
     Attribute_Vector parametersXgi(4);
     parametersXgi[0].name_="Channel";	parametersXgi[0].value_=cgi.getElement("Channel")->getValue();
     parametersXgi[1].name_="Phase";		parametersXgi[1].value_=cgi.getElement("Phase")->getValue();
@@ -2212,6 +2216,7 @@ bool PixelFEDSupervisor::job_Configure ()
 
 xoap::MessageReference PixelFEDSupervisor::MakeSOAPMessageReference_readLastDACFIFO(const char* tagName)
 {
+assert(0);
   xoap::MessageReference message = xoap::createMessage();
   xoap::SOAPEnvelope envelope = message->getSOAPPart().getEnvelope();
   xoap::SOAPName commandName = envelope.createName(tagName, "xdaq", XDAQ_NS_URI);
@@ -2272,6 +2277,7 @@ xoap::MessageReference PixelFEDSupervisor::MakeSOAPMessageReference_readLastDACF
 
 bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_SOAP(toolbox::task::WorkLoop *w1) 
 {
+assert(0);
   std::ostringstream diagMessage;
   diagMessage << "<PixelFEDSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::ReadLastDACFIFO_workloop_SOAP>:";
   diagService_->reportError(diagMessage.str(), DIAGINFO);
@@ -2292,6 +2298,7 @@ bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_SOAP(toolbox::task::WorkLoop *
 // Send Last DAC (temperature) readings to Pixel DCS System by I2O
 bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_I2O(toolbox::task::WorkLoop *w1) 
 {
+assert(0);
   std::ostringstream diagMessage;
   diagMessage << "<PixelFEDSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::ReadLastDACFIFO_workloop_I20>:";
   diagService_->reportError(diagMessage.str(), DIAGINFO);
@@ -2897,7 +2904,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       ttsTimer.stop();
 
 
-
+#ifndef PILOT_FED
       // Readout the baseline correction (Do this every time workloop is called)
       // loops over all FEDs
       blTimer.start();
@@ -2916,6 +2923,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	}
       } // if readBaselineCorr	
       blTimer.stop();
+#endif
 
       // Read the LastDAC FIFO
 #ifdef READ_LASTDAC
@@ -3026,6 +3034,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadLastDACFIFO (xoap::MessageReferen
 }
 
 xoap::MessageReference PixelFEDSupervisor::SetChannelOffsets (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(channelsPerFED+opticalReceiversPerFED+1);
   for (unsigned int ichannel=0;ichannel<channelsPerFED;++ichannel) parameters.at(ichannel).name_="ChannelOffsetDAC"+itoa(ichannel);
   for (unsigned int iopto=0;iopto<opticalReceiversPerFED;++iopto) parameters.at(channelsPerFED+iopto).name_="OpticalReceiverInput"+itoa(iopto);
@@ -3075,7 +3084,7 @@ xoap::MessageReference PixelFEDSupervisor::ResetFEDs (xoap::MessageReference msg
 }
 
 xoap::MessageReference PixelFEDSupervisor::FillTestDAC (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-
+assert(0);
   std::string reply="FillTestDACDone";
 
   if (theCalibObject_==0) {
@@ -3140,6 +3149,7 @@ xoap::MessageReference PixelFEDSupervisor::VMETrigger (xoap::MessageReference ms
 }
 
 xoap::MessageReference PixelFEDSupervisor::BaselineRelease (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(2);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="FEDChannel";
@@ -3164,6 +3174,7 @@ xoap::MessageReference PixelFEDSupervisor::BaselineRelease (xoap::MessageReferen
 }
 
 xoap::MessageReference PixelFEDSupervisor::BaselineSet (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(5);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="Nbaseln";
@@ -3183,6 +3194,7 @@ xoap::MessageReference PixelFEDSupervisor::BaselineSet (xoap::MessageReference m
 }
 
 xoap::MessageReference PixelFEDSupervisor::BaselineHold (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(2);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="FEDChannel";
@@ -3208,6 +3220,7 @@ xoap::MessageReference PixelFEDSupervisor::BaselineHold (xoap::MessageReference 
 
 xoap::MessageReference PixelFEDSupervisor::BaselineMonitor (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
   Attribute_Vector parameters(3);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="ShipTo";
@@ -3641,7 +3654,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadFIFO (xoap::MessageReference msg)
 	int status=iFED->spySlink64(buffer64);
 	
 	if (status>=0 && fileopen_[vmeBaseAddress]==true) {
-	  if (iFED->get_Printlevel()&2) {
+	  if (iFED->get_Printlevel()&4) {
 	    std::cout << "Contents of Spy FIFO 3 for fedid " << iFED->getPixelFEDCard().fedNumber<<std::endl;
 	    std::cout <<"----------------------"<<std::endl;
 	    for (int i=0; i<=status;++i)
@@ -3661,7 +3674,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadFIFO (xoap::MessageReference msg)
 	  }
 	  fwrite(buffer64, sizeof(uint64_t), status, fout_[vmeBaseAddress]);
 	}
-	if (status < 0 && iFED->get_Printlevel()&2)
+	if (status < 0 && iFED->get_Printlevel()&4)
 	  std::cout << "Spy FIFO3 for fedid " << iFED->getPixelFEDCard().fedNumber << " status is  " << status <<std::endl;
 
 	if (parameters[6].value_=="Last" && fileopen_[vmeBaseAddress]==true) {
@@ -3744,7 +3757,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadErrorFIFO (xoap::MessageReference
 
       if (errCount>=0 && errBufferOpen_[vmeBaseAddress]==true) {
 	//diagService_->reportError("Errors(s) from FED at VME "+ stringF(vmeBaseAddress),DIAGERROR);
-	if (iFED->get_Printlevel()&2) {
+	if (iFED->get_Printlevel()&4) {
 	  ErrorFIFODecoder decodedErrorFIFO(errBuffer, errCount); // Suppress disabled channels later
 	  decodedErrorFIFO.printToStream(std::cout);
 	}
@@ -3862,6 +3875,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
       diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading error FIFO failed!",DIAGERROR);
     }
 
+#ifndef PILOT_FED
     Attribute_Vector parameters(3);
     parameters[0].name_="VMEBaseAddress";
     parameters[1].name_="ShipTo";
@@ -3874,6 +3888,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
       cout << reply_string << " after BaselineMonitor" << endl;
       diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading baseline correction failed!",DIAGERROR);
     }
+#endif
   }
 
   
@@ -3886,6 +3901,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
 
 xoap::MessageReference PixelFEDSupervisor::SetADC1V2VEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
 	Attribute_Vector inputParameters(1);
 	inputParameters[0].name_ ="ADCRange";
 	Receive(msg, inputParameters);
@@ -3916,6 +3932,7 @@ xoap::MessageReference PixelFEDSupervisor::SetADC1V2VEnMass (xoap::MessageRefere
 
 xoap::MessageReference PixelFEDSupervisor::SetADC1V2VOneChannel (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
 	Attribute_Vector inputParameters(3);
 	inputParameters[0].name_ ="ADCRange";
 	inputParameters[1].name_ ="VMEBaseAddress";
@@ -3945,6 +3962,7 @@ xoap::MessageReference PixelFEDSupervisor::SetADC1V2VOneChannel (xoap::MessageRe
 
 xoap::MessageReference PixelFEDSupervisor::SetFEDOffsetsEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
 	Attribute_Vector inputParameters(2);
 	inputParameters[0].name_ ="FEDReceiverInputOffset";
 	inputParameters[1].name_ ="FEDChannelOffset";
@@ -4177,6 +4195,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDigFEDOSDFifo(xoap::MessageRefere
 }
 
 xoap::MessageReference PixelFEDSupervisor::SetPhasesDelays (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   xoap::MessageReference reply=MakeSOAPMessageReference("SetPhasesDelaysDone");
   Attribute_Vector parametersReceived(4);
   
@@ -4363,25 +4382,26 @@ void PixelFEDSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
     std::string reciveMsg = Receive(this->SetScopeChannels(soapMsg));
   }
   else if(action=="SetADC1V2VEnMass"){
-
+assert(0);
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetADC1V2VEnMass", attrib);
     
     std::string reciveMsg = Receive(this->SetADC1V2VEnMass(soapMsg));
   }
   else if(action=="SetFEDOffsetsEnMass"){
+assert(0);
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetFEDOffsetsEnMass", attrib);
     
     std::string reciveMsg = Receive(this->SetFEDOffsetsEnMass(soapMsg));
 
   }
   else if(action=="BaselineRelease"){
-    
+assert(0);    
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("BaselineRelease", attrib);
     
     std::string reciveMsg = Receive(this->BaselineRelease(soapMsg));
   }
   else if(action=="BaselineHold"){
-
+assert(0);
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("BaselineHold", attrib);
     
     std::string reciveMsg = Receive(this->BaselineHold(soapMsg));
