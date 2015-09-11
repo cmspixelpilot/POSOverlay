@@ -14,7 +14,7 @@
 UseDefaultAppender			FALSE
 
 ## messages of criticity at least equal to XXX (here INFO) must be routed to the LOG4C+ appender
-DefaultAppenderLogLevel 	INFO
+DefaultAppenderLogLevel 	TRACE
 
 ## --------------------------------
 ## base class appender settings
@@ -35,10 +35,10 @@ GlbErrorDispatcherLogLevel	TRACE
 GlbErrorDispatcherName		GlobalErrorDispatcher
 
 ## What's the instance of the XDAQ module acting as GlobalErrorDsipatcher ?
-GlbErrorDispatcherInstance	0
+GlbErrorDispatcherInstance	31
 
 ## What's the IP or machine name of the XDAQ module acting as GlobalErrorDsipatcher ?
-GlbErrorDispatcherIP		cmsfpix1.cern.ch
+GlbErrorDispatcherIP		vmepc-s2b18-08-01
 
 ## On which port of the machine can we reach the XDAQ module acting as GlobalErrorDsipatcher ?
-GlbErrorDispatcherPort		1960
+GlbErrorDispatcherPort		1973

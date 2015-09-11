@@ -41,10 +41,10 @@ GlbErrorDispatcherName		GlobalErrorDispatcher
 GlbErrorDispatcherInstance	0
 
 ## What's the IP or machine name of the XDAQ module acting as GlobalErrorDsipatcher ?
-GlbErrorDispatcherIP		vmepcs2b18-11.cms
+GlbErrorDispatcherIP		vmepc-s2b18-08-01.cms
 
 ## On which port of the machine can we reach the XDAQ module acting as GlobalErrorDsipatcher ?
-GlbErrorDispatcherPort		1975
+GlbErrorDispatcherPort		1973
 
 ## --------------------------------
 ## Input File Settings

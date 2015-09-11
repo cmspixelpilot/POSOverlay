@@ -28,7 +28,7 @@ DuplicateMsgToLocalConsole	TRUE
 ## Chainsaw settings
 ## --------------------------------
 ## Do we want to use Chainsaw as log reader? TRUE/FALSE
-UseChainsaw 				TRUE
+UseChainsaw 				FALSE
 
 ## What's the IP or machine name on which Chainsaw is running?
 ChainsawServerHost			cmsusr0.cern.ch

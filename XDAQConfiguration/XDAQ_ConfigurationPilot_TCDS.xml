@@ -32,13 +32,18 @@
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
 
-    <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq"/>
+    <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelFECSupervisor" xsi:type="soapenc:Struct">		        
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFECSupervisor/conf/clientApp.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
 
     <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
         <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
@@ -68,7 +73,7 @@
     <xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="xmas">
       <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
         <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
-        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
       </properties>
     </xc:Application>
     <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86_64_slc6/libGlobalErrorDispatcher.so</xc:Module>
