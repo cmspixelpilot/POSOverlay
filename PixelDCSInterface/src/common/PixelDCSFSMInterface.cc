@@ -1201,35 +1201,51 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     ///FIXME make this translation not so hardcoded?
       string nodenameA4603= "CMS_TRACKER";
       string nodenameA4602=nodenameA4603;
-      string powergroup="";
-      if (partition.find("FPix")!=string::npos ) { //fpix
-	string disc = rocname.substr(5,6); //eg BpI_D1
-	string blade = rocname.substr(12,5); //eg BLD7_ ; BLD11
-	unsigned int bladenum = atoi((blade.substr(4,1)=="_") ? blade.substr(3,1).c_str() :  blade.substr(3,2).c_str());
-	assert(bladenum>=1 && bladenum <=12);
-	unsigned int rognum= (bladenum-1)/3 +1; //int arithmetic trick
-	ostringstream os;
-	os<< fpixbase<<"_"<<disc<<"_ROG"<<rognum;
-	powergroup =os.str();
-	nodenameA4603+= ":" + fpixbase;
-	nodenameA4602+= ":" + fpixbase;
+      if (partition.substr(0,4) == "Pilt") {
+	if (partition.substr(5,8) == "BmI") {
+	  nodenameA4603 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1";
+	  nodenameA4602 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann";
+	}
+	else if (partition.substr(5,8) == "BmO") {
+	  nodenameA4603 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC";
+	  nodenameA4602 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann";
+	}
+	else {
+	  diagService_->reportError("Error reading ROC list for pilot ROC="+rocname, DIAGFATAL);
+	  assert(0);
+	}
       }
-      else if (partition.find("BPix") !=string::npos) {//bpix
-	string sector = rocname.substr(5,8); //eg BpI_SEC7
-	unsigned int layernum = atoi(rocname.substr(17,1).c_str());
-	assert(layernum>=1 && layernum <=3);
-	unsigned int rognum= (layernum==3) ? 3 : 1;
-	//it sure is stupid that we use LYR in roc names and LAY in DCS. C'est la vie.
-	ostringstream os;
-	os<<bpixbase<<"_"<<sector.substr(0,5)<<sector.substr(7,1)<<"_LAY"<<rognum;
-	powergroup=os.str();
-	nodenameA4603+= ":" + bpixbase;
-	nodenameA4602+= ":" + bpixbase;
+      else  {
+	string powergroup="";
+	if (partition.find("FPix")!=string::npos ) { //fpix
+	  string disc = rocname.substr(5,6); //eg BpI_D1
+	  string blade = rocname.substr(12,5); //eg BLD7_ ; BLD11
+	  unsigned int bladenum = atoi((blade.substr(4,1)=="_") ? blade.substr(3,1).c_str() :  blade.substr(3,2).c_str());
+	  assert(bladenum>=1 && bladenum <=12);
+	  unsigned int rognum= (bladenum-1)/3 +1; //int arithmetic trick
+	  ostringstream os;
+	  os<< fpixbase<<"_"<<disc<<"_ROG"<<rognum;
+	  powergroup =os.str();
+	  nodenameA4603+= ":" + fpixbase;
+	  nodenameA4602+= ":" + fpixbase;
+	}
+	else if (partition.find("BPix") !=string::npos) {//bpix
+	  string sector = rocname.substr(5,8); //eg BpI_SEC7
+	  unsigned int layernum = atoi(rocname.substr(17,1).c_str());
+	  assert(layernum>=1 && layernum <=3);
+	  unsigned int rognum= (layernum==3) ? 3 : 1;
+	  //it sure is stupid that we use LYR in roc names and LAY in DCS. C'est la vie.
+	  ostringstream os;
+	  os<<bpixbase<<"_"<<sector.substr(0,5)<<sector.substr(7,1)<<"_LAY"<<rognum;
+	  powergroup=os.str();
+	  nodenameA4603+= ":" + bpixbase;
+	  nodenameA4602+= ":" + bpixbase;
+	}
+	else {diagService_->reportError("Error reading ROC list (neither FPix nor BPix!) for ROC="+rocname,DIAGFATAL); assert(0);}
+	//finally we can assemble the full nodename
+	nodenameA4603 += ":"+powergroup.substr(0,15) +":"+powergroup.substr(0,18)+":"+powergroup;
+	nodenameA4602 += ":"+powergroup.substr(0,15) +":"+powergroup.substr(0,18)+":ControlPowerChann";
       }
-      else {diagService_->reportError("Error reading ROC list (neither FPix nor BPix!) for ROC="+rocname,DIAGFATAL); assert(0);}
-      //finally we can assemble the full nodename
-      nodenameA4603 += ":"+powergroup.substr(0,15) +":"+powergroup.substr(0,18)+":"+powergroup;
-      nodenameA4602 += ":"+powergroup.substr(0,15) +":"+powergroup.substr(0,18)+":ControlPowerChann";
   
       //if the power is off then the ROC should be set to noInit
       if ( iroc->second.get(PixelROCStatus::noInit) || iroc->second.get(PixelROCStatus::noAnalogSignal)) {
