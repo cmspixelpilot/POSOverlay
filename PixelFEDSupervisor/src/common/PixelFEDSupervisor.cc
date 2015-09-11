@@ -2554,7 +2554,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	statusTimerHW.stop();
 	LFFbit = LFFbit&0x40000000;  // get the LFF bit (latched at a trigger)
 	if (localPrint) cout << "LFFbit = " << std::hex << LFFbit << std::dec << std::endl;
-	if(LFFbit!=0) diagService_->reportError("FEDID:"+stringF(fednumber)+" LFF status 0x"+htoa(LFFbit)+" for event "+stringF(newEventNumber), DIAGINFO); 
+	if(LFFbit!=0 && !(iFED->getPixelFEDCard().modeRegister & 0x8)) diagService_->reportError("FEDID:"+stringF(fednumber)+" LFF status 0x"+htoa(LFFbit)+" for event "+stringF(newEventNumber), DIAGINFO); 
 	// accumulate statistics in map of moments
 	LFFbit = LFFbit>>30;
 	lffMap[fednumber].push_back(LFFbit);
