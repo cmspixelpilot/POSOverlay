@@ -77,6 +77,16 @@
       </properties>
     </xc:Application>
     <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86_64_slc6/libGlobalErrorDispatcher.so</xc:Module>
+
+    <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="xmas" group="dcs">
+      <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct"> 
+        <configuration xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
+        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
+      </properties>
+    </xc:Application>
+    <xc:Module>${BUILD_HOME}/pixel/lib/libPixelDCSInterface.so</xc:Module>
+
   </xc:Context>
 
   <!-- P5 PSX server: 9923 is pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
