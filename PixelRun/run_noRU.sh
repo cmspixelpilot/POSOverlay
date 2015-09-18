@@ -7,4 +7,4 @@ echo $LOGFN
 echo
 #echo JMT turned off INFO level messages because the TTCciSupervisor is way too chatty...
 #echo
-${XDAQ_ROOT}/bin/xdaq.sh -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/XDAQ_ConfigurationPilot_TCDS_DCS.xml 2>&1 -z pixel | tee $LOGFN
+${XDAQ_ROOT}/bin/xdaq.sh -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/XDAQ_ConfigurationPilot_AIO_TCDS_DCS.xml 2>&1 -z pixel | tee $LOGFN
