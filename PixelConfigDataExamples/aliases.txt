@@ -1,13 +1,13 @@
 ConfigurationAliases
-Physics     124   ;
-PhysicsReal     124   ;
+Physics     129   ;
+PhysicsReal     129   ;
 PhysicsEmulator     121   ;
-PhysicsNoSlink     125   ;
+PhysicsNoSlink     130   ;
 PhysicsEmulatorNoSlink     48   ;
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
-PixelAlive     14   ;
+PixelAlive     127   ;
 PixelAliveBy3     90   ;
 PixelAlive5x5     44   ;
 PixelAliveForThreshMin     49   ;
