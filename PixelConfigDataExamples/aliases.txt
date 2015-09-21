@@ -1,8 +1,8 @@
 ConfigurationAliases
 Physics     129   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Physics  fecconfig  Default  dac  Default  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  ;
-PhysicsEmulator     121   ;
-PhysicsNoSlink     130   ;
-PhysicsEmulatorNoSlink     48   ;
+PhysicsEmulator     136   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Emulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  ;
+PhysicsNoSlink     137   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Noslink  fecconfig  Default  dac  Default  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  ;
+PhysicsEmulatorNoSlink     138   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Noslinkemulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  ;
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
@@ -42,8 +42,8 @@ fedconfig  0 Default ;
 fecconfig  0 Default ;
 fedcard  12 NoTokenPassNoSlink ;
 fedcard  9 Physics ;
-fedcard  6 Emulator ;
-fedcard  5 Noslinkemulator ;
+fedcard  13 Emulator ;
+fedcard  14 Noslinkemulator ;
 fedcard  10 Noslink ;
 fedcard  3 Default ;
 fedcard  0 BmIOnly ;
