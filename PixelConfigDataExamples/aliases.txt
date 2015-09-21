@@ -7,7 +7,7 @@ PhysicsEmulatorNoSlink     48   ;
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
-PixelAlive     127   ;
+PixelAlive     135   ;
 PixelAliveBy3     90   ;
 PixelAlive5x5     44   ;
 PixelAliveForThreshMin     49   ;
