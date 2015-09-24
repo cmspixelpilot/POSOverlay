@@ -174,8 +174,8 @@
   <!-- ###################################################################################### -->
   <!-- PSX SERVICE-->
   <!-- P5 PSX server: 9923 is pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
-  <xc:Context url="http://cmspsx.cms:9923">
-    <xc:Application class="psx" id="30" instance="0" network="xmas" group="dcs" service="psx"/>
+  <xc:Context id="8" url="http://cmspsx.cms:9923">
+    <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
   </xc:Context>
 
   <!-- ###################################################################################### -->
@@ -198,7 +198,7 @@
   <!-- RCMS SERVICE: TO BE CHANGED TO RIGHT RCMS SERVICE -->
   <!-- ###################################################################################### -->
   <xc:Context url="http://cmsrc-pixeldev.cms:37000/rcms"> <!--37001???-->
-    <xc:Application class="RCMSStateListener" id="50" network="xmas" instance="0" path="/services/replycommandreceiver"/>
+    <xc:Application class="RCMSStateListener" id="37010" network="xmas" instance="0" path="/services/replycommandreceiver"/>
   </xc:Context>
 
 </xc:Partition>
