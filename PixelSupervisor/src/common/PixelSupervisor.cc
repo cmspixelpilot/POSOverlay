@@ -3305,10 +3305,10 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       diagService_->reportError("[PixelSupervisor::stateConfiguring] no LTCSupervisors exist...",DIAGFATAL);
     }
     proceed = false; // do not continue with other supervisors before LTCSupervisors are not configured
+    sleep(20);
   }
 
 
-  sleep(20);
 
 
   // Send a SOAP message to PixelTKFECSupervisor to configure
