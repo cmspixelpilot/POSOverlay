@@ -545,6 +545,7 @@ void PixelDACSettings::writeXML(pos::PixelConfigKey key, int version, std::strin
 //=============================================================================================
 void PixelDACSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
 					     PixelNameTranslation* trans, PixelDetectorConfig* detconfig, bool HVon) const{
+  std::cout << "PixelDACSettings::generateConfiguration HVon=" << int(HVon) << " for " << dacsettings_.size() << " rocs including " << dacsettings_[0].getROCName() << std::endl;
 
   bool bufferData=true; 
 

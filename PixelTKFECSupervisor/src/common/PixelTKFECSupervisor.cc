@@ -1194,6 +1194,7 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
     PixelGlobalDelay25* newGlobalDelay25=0;
     PixelConfigInterface::get(newGlobalDelay25, "pixel/globaldelay25/", *newGlobalKey);
     if (newGlobalDelay25==0) XCEPT_RAISE(xdaq::exception::Exception,"The globalDelay25 object is null!");
+    std::cout << "newGlobalDelay25 = " << newGlobalDelay25->getDelay(0);
     
     enumDeviceType modeType = PHILIPS ;
     //loop over portcards
