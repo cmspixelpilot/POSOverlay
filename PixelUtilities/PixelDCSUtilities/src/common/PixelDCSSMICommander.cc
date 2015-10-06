@@ -42,11 +42,12 @@ std::string PixelDCSSMICommander::getStateOfFSM(const std::string& fsmNodeName,
 
   xoap::MessageReference psxRequest = MakeSOAPMessageReference_fsmGetState(fsmNodeName, fsmNodeDomain, fsmNodeOwner);
 
+  std::cout << "<PixelDCSSMICommander::getStateOfFSM>:" << std::endl;
   std::cout << "sending SOAP message to " << psxDescriptor_->getContextDescriptor()->getURL() << std::endl;
-  //  std::cout <<" Request : ------------------------------------ "<< std::endl;
-  //  psxRequest->writeTo(std::cout);
-  //  std::cout << std::endl;
-  //  std::cout <<" ---------------------------------------------- "<< std::endl;
+  std::cout <<" Request : ------------------------------------ "<< std::endl;
+  psxRequest->writeTo(std::cout);
+  std::cout << std::endl;
+  std::cout <<" ---------------------------------------------- "<< std::endl;
   xoap::MessageReference psxResponse;
   
   bool posted=false;
@@ -60,13 +61,14 @@ std::string PixelDCSSMICommander::getStateOfFSM(const std::string& fsmNodeName,
       ::sleep(3);
     }
   }
-  //  std::cout <<" Response : ----------------------------------- "<< std::endl;
-  //  psxResponse->writeTo(std::cout);
-  //  std::cout << std::endl;
-  //  std::cout <<" ---------------------------------------------- "<< std::endl;
+  std::cout <<" Response : ----------------------------------- "<< std::endl;
+  psxResponse->writeTo(std::cout);
+  std::cout << std::endl;
+  std::cout <<" ---------------------------------------------- "<< std::endl;
 
   xoap::SOAPEnvelope responseEnvelope = psxResponse->getEnvelope();
   xoap::SOAPBody responseBody = responseEnvelope.getBody();
+  
   if ( !responseBody.hasFault() ) {
     xoap::SOAPName commandElement = responseEnvelope.createName("getStateResponse");
     std::vector<xoap::SOAPElement> bodyElements = responseBody.getChildElements(commandElement);
@@ -76,7 +78,8 @@ std::string PixelDCSSMICommander::getStateOfFSM(const std::string& fsmNodeName,
       return fsmState;
     }
   } else {
-    XCEPT_RAISE (xdaq::exception::Exception, "Failed to query State of FSM");
+    std::string fail = "Failed to query State of FSM: " + responseBody.getFault().getFaultString();
+    XCEPT_RAISE (xdaq::exception::Exception, fail);
   }
 
 //--- program flow should never come here...
@@ -91,13 +94,17 @@ std::pair<std::string, std::string> PixelDCSSMICommander::connectToFSM(const std
 //    return value of function is a std::pair<std::string, std::string>(connectionStatus, connectionId)
 //    (if connection has been established successfully)
 
-//  std::cout << "<PixelDCSSMICommander::connectToFSM>:" << std::endl;
+  std::cout << "<PixelDCSSMICommander::connectToFSM>:" << std::endl;
   std::cout << "sending SOAP message to " << psxDescriptor_->getContextDescriptor()->getURL() << std::endl;
 
   xoap::MessageReference psxRequest = MakeSOAPMessageReference_fsmConnect(fsmNodeName, fsmNodeDomain, fsmNodeOwner);
   
   xoap::MessageReference psxResponse;
-  
+  std::cout <<" Request : ------------------------------------ "<< std::endl;
+  psxRequest->writeTo(std::cout);
+  std::cout << std::endl;
+  std::cout <<" ---------------------------------------------- "<< std::endl;
+
   try {
     psxResponse = app_->getApplicationContext()->postSOAP(psxRequest, *app_->getApplicationDescriptor(), *psxDescriptor_);
   }
@@ -109,6 +116,10 @@ std::pair<std::string, std::string> PixelDCSSMICommander::connectToFSM(const std
     XCEPT_RETHROW(xdaq::exception::Exception, "Failed to post SOAP to PSX server!",e);
   }
   
+  std::cout <<" Response : ----------------------------------- "<< std::endl;
+  psxResponse->writeTo(std::cout);
+  std::cout << std::endl;
+  std::cout <<" ---------------------------------------------- "<< std::endl;
 
   xoap::SOAPEnvelope responseEnvelope = psxResponse->getEnvelope();
   xoap::SOAPBody responseBody = responseEnvelope.getBody();
@@ -140,6 +151,7 @@ void PixelDCSSMICommander::takeOwnershipOfFSM(const std::string& fsmNodeName,
 {
 //--- request PSX server to take ownership of the PVSS FSM node 
 //    given as function argument
+  std::cout << "<PixelDCSSMICommander::takeOwnershipOfFSM>:" << std::endl;
 
   xoap::MessageReference psxRequest = MakeSOAPMessageReference_fsmTakeOwnership(fsmNodeName, fsmNodeOwner, fsmNodeExclusiveFlag);
   
@@ -157,6 +169,7 @@ void PixelDCSSMICommander::sendCommandToFSM(const std::string& fsmNodeName,
 //--- send command given as function argument
 //    to FSM node
 
+  std::cout << "<PixelDCSSMICommander::sendCommandToFSM>:" << std::endl;
   xoap::MessageReference psxRequest = MakeSOAPMessageReference_fsmSendCommand(fsmNodeName, fsmNodeOwner, fsmCommand);
 
   try {
@@ -172,6 +185,7 @@ void PixelDCSSMICommander::releaseOwnershipOfFSM(const std::string& fsmNodeName,
 //--- request PSX server to release ownership of PVSS FSM node 
 //    given as function argument
 
+  std::cout << "<PixelDCSSMICommander::releaseOwnershipOfFSM>:" << std::endl;
   xoap::MessageReference psxRequest = MakeSOAPMessageReference_fsmReleaseOwnership(fsmNodeName, fsmNodeOwner);
 
   try {
@@ -186,6 +200,7 @@ std::string PixelDCSSMICommander::disconnectFromFSM(const std::string& psxConnec
 //--- request PSX server to disconnect from PVSS FSM hierarchy;
 //    return value of function is a std::string connectionStatus
   
+  std::cout << "<PixelDCSSMICommander::disconnectFromFSM>:" << std::endl;
   xoap::MessageReference psxRequest = MakeSOAPMessageReference_fsmDisconnect(psxConnectionId);
 
   try {
