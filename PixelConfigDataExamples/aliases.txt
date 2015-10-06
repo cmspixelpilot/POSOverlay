@@ -68,7 +68,7 @@ Physics_p47ns     200   detconfig  Golden2  lowvoltagemap  Default  nametranslat
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
-PixelAlive     135   ;
+PixelAlive     201   ;
 PixelAliveBy3     90   ;
 PixelAlive5x5     44   ;
 PixelAliveForThreshMin     49   ;
