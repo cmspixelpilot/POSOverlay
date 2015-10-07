@@ -493,6 +493,10 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   *out<<"</tr>";
   *out<<"</table>";
 
+  *out <<"<hr/>"<<std::endl;
+  *out << "<h2>DCS-FSM interaction</h2> "<<std::endl;
+  *out << "<input type=\"submit\" name=\"Command\" id=\"DumpPowerMap\" value=\"DumpPowerMap\"/>";
+
 //=========================================== PIA Reset (only VME Mode Considered)
 	*out <<"<hr/>"<<std::endl;
 	*out <<"<h2>Pia Reset</h2>"<<std::endl;
@@ -650,6 +654,12 @@ void PixelTKFECSupervisor::XgiHandler (xgi::Input *in, xgi::Output *out) throw (
     xoap::MessageReference msg = MakeSOAPMessageReference("PIAReset", parametersXgi);
     xoap::MessageReference reply = PIAReset(msg);
     if (Receive(reply)!="PIAResetDone") cout<<"PIAReset command could not be executed!"<<endl;
+  }
+  else if (Command=="DumpPowerMap") {
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<2; ++j)
+	for (int k=0; k<2; ++k)
+	  std::cout << "LV: i=" << i << " j=" << j << " k=" << k << "  -> " << powerMap_.getVoltage(i,j,k) << std::endl;
   }
 
   this->Default(in, out);

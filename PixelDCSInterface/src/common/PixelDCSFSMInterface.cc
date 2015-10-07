@@ -154,8 +154,8 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
 //--- bind SOAP call-back functions
 //    to PVSS FSM state transitions
   xoap::bind(this, &PixelDCSFSMInterface::getPartitionState_Power, "fsmStateRequest", XDAQ_NS_URI);//PSX_SMI_NS_URI);
-  xoap::bind(this, &PixelDCSFSMInterface::mynotify, "notify", PSX_SMI_NS_URI);
-  //xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_Power, "notify", PSX_SMI_NS_URI);
+  //xoap::bind(this, &PixelDCSFSMInterface::mynotify, "notify", PSX_SMI_NS_URI);
+  xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_Power, "notify", PSX_SMI_NS_URI);
   //  xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_ReadoutChips, "fsmStateNotification", XDAQ_NS_URI);
 
 //--- initialize parameters 
@@ -1340,20 +1340,21 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       string nodenameA4603= "CMS_TRACKER";
       string nodenameA4602=nodenameA4603;
       if (rocname.substr(0,4) == "Pilt") {
-	if (rocname.substr(5,8) == "BmI") {
+	if (rocname.substr(5,3) == "BmI") {
 	  nodenameA4603 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1";
 	  nodenameA4602 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann";
 	}
-	else if (rocname.substr(5,8) == "BmO") {
+	else if (rocname.substr(5,3) == "BmO") {
 	  nodenameA4603 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC";
 	  nodenameA4602 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann";
 	}
 	else {
-	  diagService_->reportError("Error reading ROC list for pilot ROC="+rocname, DIAGFATAL);
+	  diagService_->reportError("Error reading ROC list for pilot ROC="+rocname + "--" +rocname.substr(5,8), DIAGFATAL);
 	  assert(0);
 	}
       }
       else  {
+	assert(0);
 	string powergroup="";
 	if (partition.find("FPix")!=string::npos ) { //fpix
 	  string disc = rocname.substr(5,6); //eg BpI_D1
@@ -1954,10 +1955,10 @@ void PixelDCSFSMInterface::updateSupervisors(string overrideA4602,string overrid
 	  xoap::MessageReference soapRequest = composeFSMStateNotification_asynchronous(*fsmPartition, currentSummarizedState);
 	  //currentSummarizedState = "LV_ON";//over here
 	  
-//           std::cout << " Request : ------------------------------------ "<< std::endl;
-//           soapRequest->writeTo(std::cout);
-//           std::cout << std::endl;
-//           std::cout << " ---------------------------------------------- "<< std::endl;
+           std::cout << " updateSupervisors() Request : ------------------------------------ "<< std::endl;
+           soapRequest->writeTo(std::cout);
+           std::cout << std::endl;
+           std::cout << " ---------------------------------------------- "<< std::endl;
 	  
 	  xdaq::ApplicationDescriptor* xdaqDescriptor = 0;
 	  try {
@@ -2130,6 +2131,8 @@ void PixelDCSFSMInterface::decodePartitionState_Power(xoap::MessageReference soa
       std::cout << "A4603 summarized state: " << fsmPartition.getSummarizedStateA4603() << std::endl;
     }
     else {
+      std::cout << "BAD NODE" << std::endl;
+#if 0
       //--- check which partitions depend 
       //    on the state of the given FSM node 
       for ( std::list<PixelDCSFSMPartition>::iterator fsmPartition = fsmPartitionList_.begin();
@@ -2173,6 +2176,7 @@ void PixelDCSFSMInterface::decodePartitionState_Power(xoap::MessageReference soa
 	determineSummarizedStateA4602(*fsmPartition);
 	determineSummarizedStateA4603(*fsmPartition);
       }
+#endif
     }
   }
 }
