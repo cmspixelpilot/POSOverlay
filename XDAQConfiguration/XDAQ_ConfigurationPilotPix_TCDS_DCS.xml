@@ -173,8 +173,7 @@
   
   <!-- ###################################################################################### -->
   <!-- PSX SERVICE-->
-  <!-- P5 PSX server: 9923 is pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
-  <xc:Context id="8" url="http://cmspsx.cms:9923">
+  <xc:Context id="8" url="http://pc-c2e11-26-01.cms:9924">
     <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
   </xc:Context>
 
