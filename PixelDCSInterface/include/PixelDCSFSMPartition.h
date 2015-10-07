@@ -33,6 +33,8 @@ class PixelDCSFSMPartition
 {
  public:
   PixelDCSFSMPartition(const std::string& fsmPartitionName,
+		       const std::string& fsmPartitionTopName,
+		       const std::string& fsmPartitionTopDomain,
 		       const std::list<std::pair<std::string, PixelDCSFSMNodeA4602> >& fsmNodeListA4602,
 		       const std::list<std::pair<std::string, PixelDCSFSMNodeA4603> >& fsmNodeListA4603,
 		       const std::list<PixelDCSSOAPConnection>& soapConnections);
@@ -65,6 +67,9 @@ class PixelDCSFSMPartition
   unsigned int getNumNodesA4603(const std::string& xdaqState) const { return numNodesMapA4603_[xdaqState]; }
   unsigned int getNumNodesIgnoredA4603() const { return numNodesIgnoredA4603_;}    
 
+  const std::string& getTopName() const { return topname_; }
+  const std::string& getTopDomain() const { return topdomain_; }
+
  protected:
   template <class T> void setNodeState(std::map<std::string, T*>& fsmNodeMap, std::map<std::string, unsigned int>& numNodesMap,
 				       const std::string& nodeName, const std::string& pvssStateName);// throw (xdaq::exception::Exception);
@@ -75,6 +80,8 @@ class PixelDCSFSMPartition
   template <class T> std::list<const T*> getNodeList(const std::map<std::string, T*>& fsmNodeMap) const;
  
   std::string name_; // name of TTC partition
+  std::string topname_;
+  std::string topdomain_;
 
   std::list<PixelDCSSOAPConnection> soapConnections_; // list of SOAP connections to be notified whenever (summarized) state of partition changes
 

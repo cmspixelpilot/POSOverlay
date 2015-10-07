@@ -72,6 +72,7 @@ class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander, pub
   xoap::MessageReference FSMStateRequest(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
 
   xoap::MessageReference getPartitionState_Power(xoap::MessageReference soapRequest) throw (xoap::exception::Exception);
+  xoap::MessageReference mynotify(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   xoap::MessageReference updatePartitionState_Power(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   xoap::MessageReference updatePartitionState_ReadoutChips(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   
@@ -139,7 +140,7 @@ class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander, pub
 //--- temporary information needed for execution of connectToFSM member-function within work-loop
 //    (signature of member-function registered for work-loop execution does not allow to pass function arguments 
 //     other then the work-loop in which the member-function is executed)
-  std::map<std::string, std::list<const PixelDCSFSMNode*> > workloopData_;
+  std::map<std::string, std::pair<std::string, std::string> > workloopData_;
   std::map<std::string, std::string> workloopStatus_;
   
  private:

@@ -154,8 +154,9 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
 //--- bind SOAP call-back functions
 //    to PVSS FSM state transitions
   xoap::bind(this, &PixelDCSFSMInterface::getPartitionState_Power, "fsmStateRequest", XDAQ_NS_URI);//PSX_SMI_NS_URI);
-  xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_Power, "notify", PSX_SMI_NS_URI);
-  xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_ReadoutChips, "fsmStateNotification", XDAQ_NS_URI);
+  xoap::bind(this, &PixelDCSFSMInterface::mynotify, "notify", PSX_SMI_NS_URI);
+  //xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_Power, "notify", PSX_SMI_NS_URI);
+  //  xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_ReadoutChips, "fsmStateNotification", XDAQ_NS_URI);
 
 //--- initialize parameters 
 //    defined by environment variables
@@ -187,8 +188,8 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
   readyToConnect_=false;
   readyToConfigure_=false;
 
-  xdaq::ApplicationDescriptor* pvssDescriptor = getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("psx", 0);
-  pvssCommander_ = new PixelDCSPVSSCommander(this, pvssDescriptor);
+  //xdaq::ApplicationDescriptor* pvssDescriptor = getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("psx", 0);
+  pvssCommander_ = 0; //new PixelDCSPVSSCommander(this, pvssDescriptor);
 
   xdaq::ApplicationDescriptor* smiDescriptor = getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("psx", 0);
   smiCommander_ = new PixelDCSSMICommander(this, smiDescriptor);
@@ -317,6 +318,8 @@ void PixelDCSFSMInterface::loadConfigFile() //throw (xdaq::exception::Exception)
 //--- initialize list of PVSS FSM nodes 
 //    associated to given TTC partition
 	    std::string fsmPartitionName = xoap::getNodeAttribute(configNode, "name");
+	    std::string fsmPartitionTopName = xoap::getNodeAttribute(configNode, "topname");
+	    std::string fsmPartitionTopDomain = xoap::getNodeAttribute(configNode, "topdomain");
 
 	    std::list<std::pair<std::string, PixelDCSFSMNodeA4602> > fsmNodeListA4602;
 	    std::list<std::pair<std::string, PixelDCSFSMNodeA4603> > fsmNodeListA4603;
@@ -426,7 +429,7 @@ void PixelDCSFSMInterface::loadConfigFile() //throw (xdaq::exception::Exception)
 		    soapConnection != soapConnections.end(); ++soapConnection ) {
 		soapConnection->writeTo(std::cout);
 	      }
-	      fsmPartitionList_.push_back(PixelDCSFSMPartition(fsmPartitionName, fsmNodeListA4602, fsmNodeListA4603, soapConnections));
+	      fsmPartitionList_.push_back(PixelDCSFSMPartition(fsmPartitionName, fsmPartitionTopName, fsmPartitionTopDomain, fsmNodeListA4602, fsmNodeListA4603, soapConnections));
 	    } else {
 	      if ( numFSMNodes == 0 ){
 		XCEPT_RAISE (xdaq::exception::Exception, "No FSM Nodes associated to Partition");
@@ -450,6 +453,7 @@ void PixelDCSFSMInterface::loadConfigFile() //throw (xdaq::exception::Exception)
     XCEPT_RETHROW(xdaq::exception::Exception, "Failed to parse config File. " + std::string(e.what()), e);
   }
 
+  assert(fsmPartitionList_.size() == 1);
   std::cout << " finished parsing config file." << std::endl;
   configFileLoaded_ = TRUE;
 }
@@ -501,7 +505,7 @@ void PixelDCSFSMInterface::Default(xgi::Input* in, xgi::Output* out) throw (xgi:
 //--- add Javascript code for AJAX functionality
 //    (automatic update of webpage whenever state of PVSS FSM node changes)
   std::string urlAjaxHandler = "/" + getApplicationDescriptor()->getURN() + "/AjaxHandler";
-  std::cout << "urlAjaxHandler = " << urlAjaxHandler << std::endl;
+  //std::cout << "urlAjaxHandler = " << urlAjaxHandler << std::endl;
 
   PixelAJAXCommander::printJavascriptHeader(*out);
  
@@ -561,6 +565,11 @@ void PixelDCSFSMInterface::Default(xgi::Input* in, xgi::Output* out) throw (xgi:
     *out << "</form>" << std::endl;
     *out<<"<hr/>"<< std::endl;
   }
+
+  *out << "<form name=\"input2\" method=\"get\" action=\"" << url << "\" enctype=\"multipart/form-data\">";
+  *out << "<input type=\"submit\" name=\"Command\" id=\"Play\" value=\"Play\"/>";
+  *out << "<input type=\"submit\" name=\"Command\" id=\"Play2\" value=\"Play2\"/>";
+  *out << "</form>" << std::endl;
 
 //--- render Finite State Machine GUI
 //    (only neccessary in case PixelDCSFSMInterface has not yet been initialized)
@@ -897,8 +906,137 @@ void PixelDCSFSMInterface::XgiHandler(xgi::Input* in, xgi::Output* out) throw (x
     //a better implementation would be to wait here for a flag that configuration has finished (!)
     updateSupervisors(xdaqState_LV_ON,xdaqState_LV_ON);
   }
+  else if ( command=="Play" ) {
+    std::cout << " HI IN PLAY" << std::endl;
+    for ( std::list<PixelDCSFSMPartition>::iterator fsmPartition = fsmPartitionList_.begin(); fsmPartition != fsmPartitionList_.end(); ++fsmPartition ) {
+      fsmPartition->writeTo(std::cout);
 
+      const std::list<PixelDCSSOAPConnection>& soapConnections = fsmPartition->getSOAPConnections();
+      for ( std::list<PixelDCSSOAPConnection>::const_iterator soapConnection = soapConnections.begin(); soapConnection != soapConnections.end(); ++soapConnection ) {
+	//const std::string& soapConnectionName = soapConnection->getName();
+	//const std::string& soapConnectionType = soapConnection->getType();
+	//unsigned int soapConnectionInstance = soapConnection->getInstance();
 
+	//	if ( supervisorName == soapConnectionName && supervisorType == soapConnectionType && supervisorInstance == soapConnectionInstance ) {
+	if (1) {
+
+	  //--- query states of all A4602 power supply boards
+	  std::list<const PixelDCSFSMNodeA4602*> fsmNodeListA4602 = fsmPartition->getNodeListA4602();
+	  for ( std::list<const PixelDCSFSMNodeA4602*>::const_iterator fsmNodeA4602 = fsmNodeListA4602.begin();
+		fsmNodeA4602 != fsmNodeListA4602.end(); ++fsmNodeA4602 ) {
+	    const std::string& fsmNodeNameA4602 = (*fsmNodeA4602)->getName();
+	    const std::string& fsmNodeDomainA4602 = (*fsmNodeA4602)->getDomain();
+
+	    std::string pvssStateNameA4602 = smiCommander_->getStateOfFSM(fsmNodeNameA4602, fsmNodeDomainA4602, fsmNodeOwner);
+	    std::cout << "JMT fsmNodeNameA4602 " << fsmNodeNameA4602 << " fsmNodeDomainA4602 " << fsmNodeDomainA4602 << " fsmNodeOwner " << fsmNodeOwner << " pvssStateNameA4602 " << pvssStateNameA4602 << std::endl;
+	    //fsmPartition->setNodeStateA4602(fsmNodeNameA4602, pvssStateNameA4602);
+	  }
+
+	  //--- query states of all A4603 power supply boards ()
+	  std::list<const PixelDCSFSMNodeA4603*> fsmNodeListA4603 = fsmPartition->getNodeListA4603();
+	  for ( std::list<const PixelDCSFSMNodeA4603*>::const_iterator fsmNodeA4603 = fsmNodeListA4603.begin();
+		fsmNodeA4603 != fsmNodeListA4603.end(); ++fsmNodeA4603 ) {
+	    const std::string& fsmNodeNameA4603 = (*fsmNodeA4603)->getName();
+	    const std::string& fsmNodeDomainA4603 = (*fsmNodeA4603)->getDomain();
+	    
+	    std::string pvssStateNameA4603 = smiCommander_->getStateOfFSM(fsmNodeNameA4603, fsmNodeDomainA4603, fsmNodeOwner);
+	    std::cout << "JMT fsmNodeNameA4603 " << fsmNodeNameA4603 << " fsmNodeDomainA4603 " << fsmNodeDomainA4603 << " fsmNodeOwner " << fsmNodeOwner << " pvssStateNameA4603 " << pvssStateNameA4603 << std::endl;
+	    //fsmPartition->setNodeStateA4603(fsmNodeNameA4603, pvssStateNameA4603);
+	  }
+	}
+      }
+    }
+
+    std::cout << " bazinga:\n";
+    std::string ret = smiCommander_->getStateOfFSM("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1", "Pixel_Pilot_Blade", "PixelDCSFSMInterface");
+    std::cout << "  ret:\n" << ret << std::endl;
+  }
+  else if ( command=="Play2" ) {
+    //std::string to_try = "CMS_TRACKER:PixelPilotBladeTop";
+    //std::string to_try = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade";
+    //std::string to_try = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI";
+    //std::string to_try = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC";
+    //std::string to_try = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann";
+
+    static int which = 0; //-1;
+    //++which;
+    if (which <= 4) {
+    std::vector<std::string> to_trys;
+    to_trys.push_back("PixelPilotBladeTop");
+    to_trys.push_back("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann");
+    to_trys.push_back("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1");
+    to_trys.push_back("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC");
+    to_trys.push_back("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann");
+    to_trys.push_back("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC");
+    std::string to_try = to_trys[which];
+    
+    std::cout << "\n\n\n";
+    std::cout << "TRYING " << to_try << "\n";
+    xoap::MessageReference msg = xoap::createMessage(); 
+    try {
+
+      xoap::SOAPEnvelope env = msg->getEnvelope();
+      xoap::SOAPBody body = env.getBody();
+      xoap::SOAPName cmdName = env.createName("connect","smi",PSX_SMI_NS_URI);
+      xoap::SOAPBodyElement bodyElem = body.addBodyElement(cmdName);
+
+      xoap::SOAPName urlAttribute = env.createName("url","","");
+      bodyElem.addAttribute(urlAttribute, this->getApplicationContext()->getContextDescriptor()->getURL());
+      xoap::SOAPName actionAttribute = env.createName("action","","");
+      bodyElem.addAttribute(actionAttribute, this->getApplicationDescriptor()->getURN());
+
+      xoap::SOAPName objectAttribute = env.createName("object","","");
+      bodyElem.addAttribute(objectAttribute, to_try);
+
+      xoap::SOAPName contextAttribute = env.createName("context","","");
+      bodyElem.addAttribute(contextAttribute, "none");
+                        
+      xoap::SOAPName ownerAttribute = env.createName("owner","","");
+      bodyElem.addAttribute(ownerAttribute, "JMTTest");
+
+      xoap::SOAPName domainAttribute = env.createName("domain", "", "");
+      //bodyElem.addAttribute(domainAttribute, "Pixel_Pilot_Blade");
+      bodyElem.addAttribute(domainAttribute, "PixelPilotBladeTop");
+
+    } catch(xoap::exception::Exception& xe) {
+      std::cout << ":EXCEPTION:\n";
+      std::cout << xcept::stdformat_exception_history(xe) << std::endl;
+    } 
+
+    std::cout << "Play2: request:\n";
+    msg->writeTo(std::cout);
+    std::cout << std::endl;
+
+    try {
+
+      //xdaq::ApplicationDescriptor * d = getApplicationContext()->getDefaultZone()->getApplicationDescriptor("smi", 0);
+      xdaq::ApplicationDescriptor * d = getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("psx", 0);
+      xoap::MessageReference reply = getApplicationContext()->postSOAP(msg, *this->getApplicationDescriptor(), *d);
+      std::cout << "Play2: reply:\n";
+      reply->writeTo(std::cout);
+      std::cout << std::endl;
+
+      xoap::SOAPEnvelope replyEnv = reply->getEnvelope();
+      xoap::SOAPBody replyBody = replyEnv.getBody();
+      if (replyBody.hasFault())
+	{
+	  xoap::SOAPFault f = replyBody.getFault();
+	  std::cout << "Failed to connect: ";
+	  std::cout << f.getFaultString() << std::endl;
+	}
+
+      else
+	{
+	}
+    } catch (xdaq::exception::Exception& e) {
+      std::cout << ":EXCEPTION2:\n";
+      std::cout << xcept::stdformat_exception_history(e) << std::endl;           
+
+    } 
+
+    std::cout << "\n\n\n";
+  }
+  }
   this->Default(in, out);
 }
 
@@ -1201,12 +1339,12 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     ///FIXME make this translation not so hardcoded?
       string nodenameA4603= "CMS_TRACKER";
       string nodenameA4602=nodenameA4603;
-      if (partition.substr(0,4) == "Pilt") {
-	if (partition.substr(5,8) == "BmI") {
+      if (rocname.substr(0,4) == "Pilt") {
+	if (rocname.substr(5,8) == "BmI") {
 	  nodenameA4603 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1";
 	  nodenameA4602 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann";
 	}
-	else if (partition.substr(5,8) == "BmO") {
+	else if (rocname.substr(5,8) == "BmO") {
 	  nodenameA4603 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC";
 	  nodenameA4602 = "CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann";
 	}
@@ -1259,8 +1397,7 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       }
 
   } //loop over rocs
-  
-  
+
   //DEBUG
   //   map<std::string, bool>::const_iterator i_nodeIsUsedA4602;
   //   for (i_nodeIsUsedA4602 = nodeIsUsedA4602.begin() ; i_nodeIsUsedA4602 != nodeIsUsedA4602.end(); ++i_nodeIsUsedA4602) 
@@ -1374,7 +1511,7 @@ xoap::MessageReference PixelDCSFSMInterface::Connect(xoap::MessageReference soap
 //--- create a new work-loop
 //    if not already active
     std::string workloopName = std::string("PixelDCSFSMInterface_workloop") + std::string("_") + std::string(fsmPartition->getName());
-
+    std::cout << "Workloop name " << workloopName << std::endl;
     lock_->take();
     bool workloopIsActive = !(workloopStatus_[workloopName] == "" || workloopStatus_[workloopName] == "inactive");
     lock_->give();
@@ -1394,10 +1531,10 @@ xoap::MessageReference PixelDCSFSMInterface::Connect(xoap::MessageReference soap
 //--- register
 //    (signature of member-function registered for work-loop execution does not allow to pass function arguments 
 //     other then the work-loop in which the member-function is executed)
-    std::list<const PixelDCSFSMNode*> fsmNodeList = getNodeList(*fsmPartition);
+    std::pair<std::string, std::string> fsmTopNode = std::make_pair(fsmPartition->getTopName(), fsmPartition->getTopDomain());
 
     lock_->take();
-    workloopData_[workloop->getName()] = fsmNodeList;
+    workloopData_[workloop->getName()] = fsmTopNode;
     workloopStatus_[workloop->getName()] = "active";
     lock_->give();
 
@@ -1488,17 +1625,16 @@ bool PixelDCSFSMInterface::connectToFSM_workloop(toolbox::task::WorkLoop* worklo
     return TRUE;
   }
 
-  const std::list<const PixelDCSFSMNode*> fsmNodeList = workloopData_[workloopName];
+  const std::pair<std::string, std::string>& fsmTopNode = workloopData_[workloopName];
 
   workloopStatus_[workloopName] = "active";
 
   bool allNodesConnected = true;
   std::string fsmNodeName_connectToFSM = "";
   std::string fsmNodeDomain_connectToFSM = "";
-  for ( std::list<const PixelDCSFSMNode*>::const_iterator fsmNode = fsmNodeList.begin();
-	fsmNode != fsmNodeList.end(); ++fsmNode ) {
-    const std::string& fsmNodeName = (*fsmNode)->getName();
-    const std::string& fsmNodeDomain = (*fsmNode)->getDomain();
+  {
+    const std::string& fsmNodeName = fsmTopNode.first;
+    const std::string& fsmNodeDomain = fsmTopNode.second;
     
     if ( psxConnectionStatus_[fsmNodeName] == "connected" ) {
 
@@ -1507,7 +1643,7 @@ bool PixelDCSFSMInterface::connectToFSM_workloop(toolbox::task::WorkLoop* worklo
 //    (otherwise the SOAP communication will be blocked after the first "connect" request,
 //     as the PSX server is waiting for a reply to its "notify" message,
 //     while the PixelDCSFSMInterface tries to send the second "connect" request)
-      if ( (*fsmNode)->getState() == xdaqState_UNDEFINED ) workloopStatus_[workloopName] = "waiting for notify";
+      //if ( (*fsmNode)->getState() == xdaqState_UNDEFINED ) workloopStatus_[workloopName] = "waiting for notify";  // JMTBAD but this is never re-set in notify?
     } else {
       fsmNodeName_connectToFSM = fsmNodeName;
       fsmNodeDomain_connectToFSM = fsmNodeDomain;
@@ -1593,6 +1729,7 @@ void PixelDCSFSMInterface::connectToFSM(const std::string& fsmNodeName,
   debugTimer.start();
 
   std::cout<<"[PixelDCSFSMInterface::connectToFSM] Trying to establish connection to PSX server"<<std::endl; //jmt debug
+  std::cout << " connectToFSM nodename " << fsmNodeName << " fsmNodeDomain " << fsmNodeDomain << " workloopName " << workloopName << std::endl;
   try {
     //don't want this line inside the lock_, because it can take a long time if PSX is slow
     std::pair<std::string, std::string> psxResponse = smiCommander_->connectToFSM(fsmNodeName, fsmNodeDomain, fsmNodeOwner);
@@ -1629,6 +1766,7 @@ void PixelDCSFSMInterface::disconnectFromFSM(const std::string& fsmNodeName) thr
 
 //--- do not attempt to connect to PSX server
 //    if already disconnected
+  std::cout << " disconnectFromFSM !!! " << fsmNodeName << std::endl;
   if ( psxConnectionStatus_[fsmNodeName] == "disconnected" ) return;
 
   std::string& psxConnectionId = psxConnectionId_[fsmNodeName];
@@ -1846,6 +1984,24 @@ void PixelDCSFSMInterface::updateSupervisors(string overrideA4602,string overrid
 
 }
 
+xoap::MessageReference PixelDCSFSMInterface::mynotify(xoap::MessageReference soapMessage) throw (xoap::exception::Exception)
+{
+  std::cout << "<mynotify>:" << std::endl; //jmt debug
+  std::cout << "soapMessage:\n";
+  soapMessage->writeTo(std::cout);
+  std::cout << std::endl;
+
+  xoap::MessageReference reply = xoap::createMessage();
+  xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
+  xoap::SOAPName responseName = envelope.createName( "notifyResponse", "smi", PSX_SMI_NS_URI);
+  envelope.getBody().addBodyElement ( responseName );
+  std::cout << "reply:\n";
+  reply->writeTo(std::cout);
+  std::cout << std::endl;
+  return reply;     
+}
+
+
 xoap::MessageReference PixelDCSFSMInterface::updatePartitionState_Power(xoap::MessageReference soapMessage) throw (xoap::exception::Exception)
 {
 //--- handle state changes of CAEN A4602 and A4603 power supplies;
@@ -1854,6 +2010,9 @@ xoap::MessageReference PixelDCSFSMInterface::updatePartitionState_Power(xoap::Me
 
 //too much verbosity
   std::cout << "<PixelDCSFSMInterface::updatePartitionState_Power>:" << std::endl; //jmt debug
+  std::cout << "soapMessage:\n";
+  soapMessage->writeTo(std::cout);
+  std::cout << std::endl;
 
   //  std::cout << " Notification : ------------------------------------ "<< std::endl;
 //    soapMessage->writeTo(std::cout);
@@ -1894,62 +2053,126 @@ void PixelDCSFSMInterface::decodePartitionState_Power(xoap::MessageReference soa
   xoap::SOAPName command = envelope.createName(tagName);
   xoap::SOAPName objectAttribute = envelope.createName("object");
 
-//--- find within body 
-//    "getStateResponse" or "notify" command
+  //--- find within body 
+  //    "getStateResponse" or "notify" command
   std::vector< xoap::SOAPElement > bodyElements = body.getChildElements(command);          	  
   for ( std::vector< xoap::SOAPElement >::iterator bodyElement = bodyElements.begin();
 	bodyElement != bodyElements.end(); ++bodyElement ) {
 
-//--- unpack FSM node name and state,
-//    together with transaction identifier and context information
+    //--- unpack FSM node name and state,
+    //    together with transaction identifier and context information
     std::string fsmNodeName = bodyElement->getAttributeValue(objectAttribute).data();
     std::string fsmNodeState = bodyElement->getValue().data();
     //fsmNodeState = "LV_ON_REDUCED";//over here
     //fsmNodeState = "LV_ON";//over here
     //http://vmepc-s2b18-07-01.cms:1976/urn:xdaq-application:lid=120/XgiHandler?Command=ManualOverrideHVON => set the power state 
 
-//--- check which partitions depend 
-//    on the state of the given FSM node 
-    for ( std::list<PixelDCSFSMPartition>::iterator fsmPartition = fsmPartitionList_.begin();
-	  fsmPartition != fsmPartitionList_.end(); ++fsmPartition ) {
+    std::cout << "JMT ok, here comes some bs: fsmNodeName = " << fsmNodeName << " ; fsmNodeState = " << fsmNodeState << std::endl;
 
-//--- check states of A4602 type power supply boards
-      std::list<const PixelDCSFSMNodeA4602*> fsmNodeListA4602 = fsmPartition->getNodeListA4602();
-      for ( std::list<const PixelDCSFSMNodeA4602*>::const_iterator fsmNode = fsmNodeListA4602.begin();
-	    fsmNode != fsmNodeListA4602.end(); ++fsmNode ) {
-	if ( (*fsmNode)->getName() == fsmNodeName ) { // partition does depend on state of FSM node
-	  fsmPartition->setNodeStateA4602(fsmNodeName, fsmNodeState);
-	    
-	  std::cout << "Number of FSM nodes of type A4602 ("<<fsmPartition->getName()<<"):" << std::endl; 
-	  std::cout << " in \"LV_ON\" = " << fsmPartition->getNumNodesA4602(xdaqState_LV_ON) << std::endl;
-	  std::cout << " in \"LV_OFF\" = " << fsmPartition->getNumNodesA4602(xdaqState_LV_OFF) << std::endl;
-	  std::cout << " in \"UNDEFINED\" = " << fsmPartition->getNumNodesA4602(xdaqState_UNDEFINED) << std::endl;
-	  std::cout << " being ignored due to detconfig = "<<fsmPartition->getNumNodesIgnoredA4602()<<std::endl;
-	}
+    if (fsmNodeName == "PixelPilotBladeTop") {
+      PixelDCSFSMPartition& fsmPartition = fsmPartitionList_.front();
+      if (fsmNodeState == "ON") {
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann", "ON");
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann", "ON");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1", "ON");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC", "ON");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC", "ON");
+      }
+      else if (fsmNodeState == "STANDBY") {
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann", "ON");
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann", "ON");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1", "ON_LV");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC", "ON_LV");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC", "ON_LV");
+      }
+      else if (fsmNodeState == "HVMIXED" || fsmNodeState == "LVMIXED") {
+	std::cout << "*******************\n***************\nHVMIXED or LVMIXED, dunno which to set on and off, setting ON_LV on everything\n***************\n*******************" << std::endl;
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann", "ON");
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann", "ON");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1", "ON_LV");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC", "ON_LV");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC", "ON_LV");
+      }
+      else if (fsmNodeState == "OFF_EMERG" || fsmNodeState == "OFF" || fsmNodeState == "LOCK") {
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann", "OFF");
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann", "OFF");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1", "OFF");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC", "OFF");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC", "OFF");
+      }
+      else {
+	std::cout << "*******************\n***************\n no idea how to handle this, setting OFF on everything\n***************\n*******************" << std::endl;
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann", "OFF");
+	fsmPartition.setNodeStateA4602("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann", "OFF");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1", "OFF");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC", "OFF");
+	fsmPartition.setNodeStateA4603("CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC", "OFF");
       }
 
-//--- check states of A4603 type power supply boards ()
-      std::list<const PixelDCSFSMNodeA4603*> fsmNodeListA4603 = fsmPartition->getNodeListA4603();
-      for ( std::list<const PixelDCSFSMNodeA4603*>::const_iterator fsmNode = fsmNodeListA4603.begin();
-	    fsmNode != fsmNodeListA4603.end(); ++fsmNode ) {
-	if ( (*fsmNode)->getName() == fsmNodeName ) { // partition does depend on state of FSM node
-	  fsmPartition->setNodeStateA4603(fsmNodeName, fsmNodeState);
+      std::cout << "Number of FSM nodes of type A4602 ("<<fsmPartition.getName()<<"):" << std::endl; 
+      std::cout << " in \"LV_ON\" = " << fsmPartition.getNumNodesA4602(xdaqState_LV_ON) << std::endl;
+      std::cout << " in \"LV_OFF\" = " << fsmPartition.getNumNodesA4602(xdaqState_LV_OFF) << std::endl;
+      std::cout << " in \"UNDEFINED\" = " << fsmPartition.getNumNodesA4602(xdaqState_UNDEFINED) << std::endl;
+      std::cout << " being ignored due to detconfig = "<<fsmPartition.getNumNodesIgnoredA4602()<<std::endl;
+
+      std::cout << "Number of FSM nodes of type A4603 ("<<fsmPartition.getName()<<"):" << std::endl; 
+      std::cout << " in \"HV_ON\" = " << fsmPartition.getNumNodesA4603(xdaqState_HV_ON) << std::endl;
+      std::cout << " in \"LV_ON\" = " << fsmPartition.getNumNodesA4603(xdaqState_LV_ON) << std::endl;
+      std::cout << " in \"LV_ON_REDUCED\" = " << fsmPartition.getNumNodesA4603(xdaqState_LV_ON_REDUCED) << std::endl;
+      std::cout << " in \"LV_OFF\" = " << fsmPartition.getNumNodesA4603(xdaqState_LV_OFF) << std::endl;
+      std::cout << " in \"UNDEFINED\" = " << fsmPartition.getNumNodesA4603(xdaqState_UNDEFINED) << std::endl;
+      std::cout << " being ignored due to detconfig = "<<fsmPartition.getNumNodesIgnoredA4603()<<std::endl;
+
+      determineSummarizedStateA4602(fsmPartition);
+      determineSummarizedStateA4603(fsmPartition);
+
+      std::cout << "A4602 summarized state: " << fsmPartition.getSummarizedStateA4602() << std::endl;
+      std::cout << "A4603 summarized state: " << fsmPartition.getSummarizedStateA4603() << std::endl;
+    }
+    else {
+      //--- check which partitions depend 
+      //    on the state of the given FSM node 
+      for ( std::list<PixelDCSFSMPartition>::iterator fsmPartition = fsmPartitionList_.begin();
+	    fsmPartition != fsmPartitionList_.end(); ++fsmPartition ) {
+
+	//--- check states of A4602 type power supply boards
+	std::list<const PixelDCSFSMNodeA4602*> fsmNodeListA4602 = fsmPartition->getNodeListA4602();
+	for ( std::list<const PixelDCSFSMNodeA4602*>::const_iterator fsmNode = fsmNodeListA4602.begin();
+	      fsmNode != fsmNodeListA4602.end(); ++fsmNode ) {
+	  if ( (*fsmNode)->getName() == fsmNodeName ) { // partition does depend on state of FSM node
+	    fsmPartition->setNodeStateA4602(fsmNodeName, fsmNodeState);
 	    
-	  std::cout << "Number of FSM nodes of type A4603 ("<<fsmPartition->getName()<<"):" << std::endl; 
-	  std::cout << " in \"HV_ON\" = " << fsmPartition->getNumNodesA4603(xdaqState_HV_ON) << std::endl;
-	  std::cout << " in \"LV_ON\" = " << fsmPartition->getNumNodesA4603(xdaqState_LV_ON) << std::endl;
-	  std::cout << " in \"LV_ON_REDUCED\" = " << fsmPartition->getNumNodesA4603(xdaqState_LV_ON_REDUCED) << std::endl;
-	  std::cout << " in \"LV_OFF\" = " << fsmPartition->getNumNodesA4603(xdaqState_LV_OFF) << std::endl;
-	  std::cout << " in \"UNDEFINED\" = " << fsmPartition->getNumNodesA4603(xdaqState_UNDEFINED) << std::endl;
-	  std::cout << " being ignored due to detconfig = "<<fsmPartition->getNumNodesIgnoredA4603()<<std::endl;
+	    std::cout << "Number of FSM nodes of type A4602 ("<<fsmPartition->getName()<<"):" << std::endl; 
+	    std::cout << " in \"LV_ON\" = " << fsmPartition->getNumNodesA4602(xdaqState_LV_ON) << std::endl;
+	    std::cout << " in \"LV_OFF\" = " << fsmPartition->getNumNodesA4602(xdaqState_LV_OFF) << std::endl;
+	    std::cout << " in \"UNDEFINED\" = " << fsmPartition->getNumNodesA4602(xdaqState_UNDEFINED) << std::endl;
+	    std::cout << " being ignored due to detconfig = "<<fsmPartition->getNumNodesIgnoredA4602()<<std::endl;
+	  }
 	}
+
+	//--- check states of A4603 type power supply boards ()
+	std::list<const PixelDCSFSMNodeA4603*> fsmNodeListA4603 = fsmPartition->getNodeListA4603();
+	for ( std::list<const PixelDCSFSMNodeA4603*>::const_iterator fsmNode = fsmNodeListA4603.begin();
+	      fsmNode != fsmNodeListA4603.end(); ++fsmNode ) {
+	  if ( (*fsmNode)->getName() == fsmNodeName ) { // partition does depend on state of FSM node
+	    fsmPartition->setNodeStateA4603(fsmNodeName, fsmNodeState);
+	    
+	    std::cout << "Number of FSM nodes of type A4603 ("<<fsmPartition->getName()<<"):" << std::endl; 
+	    std::cout << " in \"HV_ON\" = " << fsmPartition->getNumNodesA4603(xdaqState_HV_ON) << std::endl;
+	    std::cout << " in \"LV_ON\" = " << fsmPartition->getNumNodesA4603(xdaqState_LV_ON) << std::endl;
+	    std::cout << " in \"LV_ON_REDUCED\" = " << fsmPartition->getNumNodesA4603(xdaqState_LV_ON_REDUCED) << std::endl;
+	    std::cout << " in \"LV_OFF\" = " << fsmPartition->getNumNodesA4603(xdaqState_LV_OFF) << std::endl;
+	    std::cout << " in \"UNDEFINED\" = " << fsmPartition->getNumNodesA4603(xdaqState_UNDEFINED) << std::endl;
+	    std::cout << " being ignored due to detconfig = "<<fsmPartition->getNumNodesIgnoredA4603()<<std::endl;
+	  }
+	}
+
+
+	//--- update summarized states of A4602 and A4603 power supply boards
+	//    associated to partition
+	determineSummarizedStateA4602(*fsmPartition);
+	determineSummarizedStateA4603(*fsmPartition);
       }
-
-
-//--- update summarized states of A4602 and A4603 power supply boards
-//    associated to partition
-      determineSummarizedStateA4602(*fsmPartition);
-      determineSummarizedStateA4603(*fsmPartition);
     }
   }
 }
@@ -2050,10 +2273,10 @@ xoap::MessageReference PixelDCSFSMInterface::composeFSMStateNotification_asynchr
   //std::string currentSummarizedState_false = "LV_ON";//over here
   //stateElement.addTextNode(currentSummarizedState_false);//over here
 
-//   std::cout << " Notification : ------------------------------------ "<< std::endl;
-//   message->writeTo(std::cout);
-//   std::cout << std::endl;
-//   std::cout << " ---------------------------------------------- "<< std::endl;
+   std::cout << " Notification : ------------------------------------ "<< std::endl;
+   message->writeTo(std::cout);
+   std::cout << std::endl;
+   std::cout << " ---------------------------------------------- "<< std::endl;
 
   return message;
 }
@@ -2064,10 +2287,17 @@ xoap::MessageReference PixelDCSFSMInterface::composeFSMStateNotification_asynchr
 
 xoap::MessageReference PixelDCSFSMInterface::updatePartitionState_ReadoutChips(xoap::MessageReference soapMessage) throw (xoap::exception::Exception)
 {
+  std::cout << "<PixelDCSFSMInterface::updatePartitionState_ReadoutChips>:" << std::endl;
+  std::cout << "DISABLED" << std::endl;
+  assert(0);
+
 //--- handle state changes of Read-out Chip initialization status;
 //    SOAP message sent from PixelFECSupervisor
 
   std::cout << "<PixelDCSFSMInterface::updatePartitionState_ReadoutChips>:" << std::endl;
+  std::cout << "soapMessage:\n";
+  soapMessage->writeTo(std::cout);
+  std::cout << std::endl;
 
   std::cout << " Notification : ------------------------------------ "<< std::endl;
   soapMessage->writeTo(std::cout);

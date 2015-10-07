@@ -1456,7 +1456,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     
       for (iportcard=portcards.begin();iportcard!=portcards.end();iportcard++) {
       
-	std::string powerCoordinate=iportcard->substr(0, 8);
+	std::string powerCoordinate= "Pilt_BmI"; //Only one partition for pilot because of the bs connect we have to do //iportcard->substr(0, 8);
 	//      std::cout<<"PixelTKFECSupervisor::stateConfiguring - Portcard "<<*iportcard<<" has power coordinate "<<powerCoordinate<<std::endl;
 	BiVoltage power=powerMap_.getVoltage(powerCoordinate, std::cout);
 	
