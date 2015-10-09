@@ -1,7 +1,7 @@
 ConfigurationAliases
-Physics     129   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Physics  fecconfig  Default  dac  Default  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
+Physics     212 ;
 PhysicsEmulator     136   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Emulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
-PhysicsNoSlink     202   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Noslink  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
+PhysicsNoSlink     209 ;
 PhysicsEmulatorNoSlink     138   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Noslinkemulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
 Physics_m14ns     139   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Physics  fecconfig  Default  dac  WBC169  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  p11ns  ;
 Physics_m13ns     140   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Physics  fecconfig  Default  dac  WBC169  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  p12ns  ;
@@ -68,7 +68,7 @@ Physics_p47ns     200   detconfig  Golden2  lowvoltagemap  Default  nametranslat
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
-PixelAlive     201   ;
+PixelAlive     210   ;
 PixelAliveBy3     90   ;
 PixelAlive5x5     44   ;
 PixelAliveForThreshMin     49   ;
