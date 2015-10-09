@@ -88,6 +88,8 @@ namespace pos{
     unsigned char TBMBAutoReset_;
     unsigned char TBMANoTokenPass_;
     unsigned char TBMBNoTokenPass_;
+    unsigned char TBMADisablePKAMCounter_;
+    unsigned char TBMBDisablePKAMCounter_;
     unsigned char TBMAPKAMCount_;
     unsigned char TBMBPKAMCount_;
     unsigned char TBMPLLDelay_;

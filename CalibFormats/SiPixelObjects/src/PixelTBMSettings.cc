@@ -156,6 +156,18 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 	in >> tag;
 	//std::cout << "Tag="<<tag<<std::endl;
+	assert(tag=="TBMADisablePKAMCounter:");
+	in >> tmpint;
+	TBMADisablePKAMCounter_=tmpint;
+
+	in >> tag;
+	//std::cout << "Tag="<<tag<<std::endl;
+	assert(tag=="TBMBDisablePKAMCounter:");
+	in >> tmpint;
+	TBMBDisablePKAMCounter_=tmpint;
+
+	in >> tag;
+	//std::cout << "Tag="<<tag<<std::endl;
 	assert(tag=="TBMAPKAMCount:");
 	in >> tmpint;
 	TBMAPKAMCount_=tmpint;
@@ -221,6 +233,8 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 	in >> TBMBAutoReset_;
 	in >> TBMANoTokenPass_;
 	in >> TBMBNoTokenPass_;
+	in >> TBMADisablePKAMCounter_;
+	in >> TBMBDisablePKAMCounter_;
 	in >> TBMAPKAMCount_;
 	in >> TBMBPKAMCount_;
 	in >> TBMPLLDelay_;
@@ -242,6 +256,8 @@ void PixelTBMSettings::setTBMGenericValue(std::string what, int value)
  else if( what == "TBMBAutoReset" ) {TBMBAutoReset_ = (unsigned char)value;}
  else if( what == "TBMANoTokenPass" ) {TBMANoTokenPass_ = (unsigned char)value;}
  else if( what == "TBMBNoTokenPass" ) {TBMBNoTokenPass_ = (unsigned char)value;}
+ else if( what == "TBMADisablePKAMCounter" ) {TBMADisablePKAMCounter_ = (unsigned char)value;}
+ else if( what == "TBMBDisablePKAMCounter" ) {TBMBDisablePKAMCounter_ = (unsigned char)value;}
  else if( what == "TBMAPKAMCount" ) {TBMAPKAMCount_ = (unsigned char)value;}
  else if( what == "TBMBPKAMCount" ) {TBMBPKAMCount_ = (unsigned char)value;}
  else if( what == "TBMPLLDelay" ) {TBMPLLDelay_ = (unsigned char)value;}
@@ -265,6 +281,8 @@ void PixelTBMSettings::writeBinary(std::string filename) const {
     out <<TBMBAutoReset_;
     out <<TBMANoTokenPass_;
     out <<TBMBNoTokenPass_;
+    out <<TBMADisablePKAMCounter_;
+    out <<TBMBDisablePKAMCounter_;
     out <<TBMAPKAMCount_;
     out <<TBMBPKAMCount_;
     out <<TBMPLLDelay_;
@@ -288,6 +306,8 @@ void PixelTBMSettings::writeASCII(std::string dir) const {
     out << "TBMBAutoReset: "<<(int)TBMBAutoReset_<<std::endl;
     out << "TBMANoTokenPass: "<<(int)TBMANoTokenPass_<<std::endl;
     out << "TBMBNoTokenPass: "<<(int)TBMBNoTokenPass_<<std::endl;
+    out << "TBMADisablePKAMCounter: "<<(int)TBMADisablePKAMCounter_<<std::endl;
+    out << "TBMBDisablePKAMCounter: "<<(int)TBMBDisablePKAMCounter_<<std::endl;
     out << "TBMAPKAMCount: "<<(int)TBMAPKAMCount_<<std::endl;
     out << "TBMBPKAMCount: "<<(int)TBMBPKAMCount_<<std::endl;
     out << "TBMPLLDelay: "<<(int)TBMPLLDelay_<<std::endl;
@@ -324,6 +344,8 @@ void PixelTBMSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
     if (!TBMBAutoReset_) base0_B |= 0x80;
     if (TBMANoTokenPass_) base0_A |= 0x40;
     if (TBMBNoTokenPass_) base0_B |= 0x40;
+    if (TBMADisablePKAMCounter_) base0_A |= 0x1;
+    if (TBMBDisablePKAMCounter_) base0_B |= 0x1;
       
     if (doResets) pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 2, 0x14, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel,  hubaddress, 4, 0, base0_A, 0);
@@ -348,6 +370,8 @@ std::ostream& pos::operator<<(std::ostream& s, const PixelTBMSettings& tbm){
     s << "TBMBAutoReset: "<<tbm.TBMBAutoReset_<<std::endl;
     s << "TBMANoTokenPass: "<<tbm.TBMANoTokenPass_<<std::endl;
     s << "TBMBNoTokenPass: "<<tbm.TBMBNoTokenPass_<<std::endl;
+    s << "TBMADisablePKAMCounter: "<<tbm.TBMADisablePKAMCounter_<<std::endl;
+    s << "TBMBDisablePKAMCounter: "<<tbm.TBMBDisablePKAMCounter_<<std::endl;
     s << "TBMAPKAMCount: "<<tbm.TBMAPKAMCount_<<std::endl;
     s << "TBMBPKAMCount: "<<tbm.TBMBPKAMCount_<<std::endl;
     s << "TBMPLLDelay: "<<tbm.TBMPLLDelay_<<std::endl;
