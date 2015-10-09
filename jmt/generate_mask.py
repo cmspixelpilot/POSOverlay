@@ -1,6 +1,12 @@
 from JMTTools import dec
 from JMTROOTTools import *
 
+detconfig = {
+    'Pilt_BmI_D3_BLD2_PNL1_PLQ1_ROC4':   'noInit',
+    'Pilt_BmI_D3_BLD3_PNL2_PLQ1_ROC0':   'noInit',
+    'Pilt_BmO_D3_BLD11_PNL2_PLQ1_ROC13': 'noInit',
+    }
+
 nametranslation = {
 1:  ('Pilt_BmO_D3_BLD11_PNL1_PLQ1', 0),
 2:  ('Pilt_BmO_D3_BLD11_PNL1_PLQ1', 8),
@@ -228,6 +234,41 @@ s = [x.strip() for x in '''
 '''.split('\n') if x.strip()]
 to_mask = [[int(x) for x in line.split()[::2]] for line in s]
 
+s = [x.strip() for x in '''
+999964 27_4_23_12
+999977 26_4_23_154
+999981 10_1_7_145
+130 3_2_24_73
+170 33_0_23_73
+181 33_0_16_95
+251 33_0_0_102
+329 33_0_16_63
+359 26_4_19_154
+375 33_0_21_91
+407 33_0_8_50
+591 33_0_5_110
+684 25_4_10_5
+1061 33_0_5_90
+1130 33_0_14_85
+1305 9_6_21_130
+1336 33_0_2_97
+1496 33_0_13_85
+1868 33_0_7_84
+1946 25_4_10_17
+1997 33_0_8_26
+2181 33_0_11_96
+2319 33_0_4_79
+376 31_2_20_109
+377 9_6_21_134
+471 27_6_4_69
+519 28_3_15_69
+'''.split('\n') if x.strip()]
+to_mask = []
+for line in s:
+    a,b = line.split(' ')
+    line = [a] + b.split('_')
+    to_mask.append([int(x) for x in line])
+
 hs = {}
 def hist(roc):
     if hs.has_key(roc):
@@ -243,13 +284,14 @@ def y():
         this_col, this_row = dec(dc, pxl)
         yield count, channel, rocn, dc, pxl, this_roc, this_col, this_row
 
-for count, channel, rocn, dc, pxl, this_roc, this_col, this_row in y():
-    hist(this_roc).Fill(this_col, this_row, float(count))
-c = ROOT.TCanvas('c', '', 600, 600)
-for hn, h in hs.items():
-    h.Draw('colz')
-    c.SaveAs(hn + '.png')
-    
+if 0:
+    for count, channel, rocn, dc, pxl, this_roc, this_col, this_row in y():
+        hist(this_roc).Fill(this_col, this_row, float(count))
+    c = ROOT.TCanvas('c', '', 600, 600)
+    for hn, h in hs.items():
+        h.Draw('colz')
+        c.SaveAs(hn + '.png')
+
 def mask(roc_, col_, row_):
     for count, channel, rocn, dc, pxl, roc, col, row in y():
         if count >= 100 and roc_ == roc and col_ == col and row_ == row:
@@ -264,13 +306,18 @@ for hc in 'OI':
             f = open('ROC_Masks_module_Pilt_Bm%(hc)s_D3_BLD%(bld)i_PNL%(pnl)i.dat' % locals(), 'wt')
             for roc in xrange(16):
                 roc_s = 'Pilt_Bm%(hc)s_D3_BLD%(bld)i_PNL%(pnl)i_PLQ1_ROC%(roc)i' % locals()
+                roc_off = 'noInit' in detconfig.get(roc_s, '')
                 print roc_s
                 cols = []
                 for colnum in xrange(52):
                     col = []
-                    for row in xrange(80):
-                        col.append(mask(roc_s, colnum, row))
-                    col = 'col%02i:   %s' % (colnum, ''.join(col))
+                    if roc_off:
+                        col = '0'*80
+                    else:
+                        for row in xrange(80):
+                            col.append(mask(roc_s, colnum, row))
+                        col = ''.join(col)
+                    col = 'col%02i:   %s' % (colnum, col)
                     cols.append(col)
                 cols = '\n'.join(cols)
                 f.write('ROC: %(roc_s)s\n%(cols)s\n' % locals())
