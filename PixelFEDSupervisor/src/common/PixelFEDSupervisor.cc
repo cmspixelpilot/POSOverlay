@@ -2334,7 +2334,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   const bool readErrorFifo = true;
   bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
   const bool readBaselineCorr = false;
-  const bool readLastDACFifo  = false;
+  const bool readLastDACFifo  = true;
   const bool readFifoStatusAndLFF = true;
   const bool useSEURecovery = false; // Enable SEU recovery mechanism
   const bool timing = false;        // print output from Pixel Timers on each exit from the loop
@@ -2933,7 +2933,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 #ifdef READ_LASTDAC
       //if(readLastDACFifo && newEvent ) { 
       if(readLastDACFifo) {
-	if(newEvent && (countLoops%1000)==0 ) {  // readout only 1/1000 events 
+	if(newEvent && (countLoops%1)==0 ) {  // readout only 1/1000 events 
 	
 	  uint32_t buffer[1024];
 	  unsigned int numWords = iFED->drainTemperatureFifo(buffer);
