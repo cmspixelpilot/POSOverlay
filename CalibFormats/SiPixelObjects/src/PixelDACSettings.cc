@@ -560,6 +560,9 @@ void PixelDACSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
     dacsettings_[i].getDACs(dacs);
 
     PixelHdwAddress theROC=*(trans->getHdwAddress(dacsettings_[i].getROCName()));
+    //std::cout << "generateConfiguration for " << dacsettings_[i].getROCName() << ":\n";
+    //for (int jmt = 0; jmt < dacs.size(); ++jmt)
+    //  std::cout << jmt << ": " << dacs[jmt] << "\n";
 
     //Need to set readout speed (40MHz) and Vcal range (0-1800 mV) and enable the chip
 
@@ -634,6 +637,7 @@ void PixelDACSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
     // Now program (again) the temperature register to make sure it is the last one
     // and appears in the LastDAC
     if(readTemperatures) { 
+      assert(0);
       //     std::cout<<"ROC="<<dacsettings_[i].getROCName()<<" ; VcThr set to "<<dacs[11]
       //       << " ROC control reg to be set to: " <<  dacs[28] <<" LastDAC=Temp"<<std::endl;
       if( (theROC.mfec()==1) && (theROC.mfecchannel()==1) &&  (theROC.hubaddress()==0) && 
@@ -714,6 +718,7 @@ void PixelDACSettings::setVcthrDisable(PixelFECConfigInterface* pixelFEC, PixelN
     // Now program (again) the temperature register to make sure it is the last one
     // and appears in the LastDAC
     if(readTemperatures) {
+      assert(0);
       //int temperatureReg = dacs[26];  // value from DB
       pixelFEC->progdac(theROC.mfec(),
 			theROC.mfecchannel(),
@@ -788,6 +793,7 @@ void PixelDACSettings::setVcthrEnable(PixelFECConfigInterface* pixelFEC, PixelNa
       // Now program (again) the temperature register to make sure it is the last one
       // and appears in the LastDAC
       if(readTemperatures) {
+      assert(0);
 	//int temperatureReg = dacs[26];  // value from DB
 	pixelFEC->progdac(theROC.mfec(),
 			  theROC.mfecchannel(),
