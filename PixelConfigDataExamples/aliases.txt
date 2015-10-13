@@ -2,6 +2,7 @@ ConfigurationAliases
 Physics     225 ;
 PhysicsEmulator     136   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Emulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
 PhysicsNoSlink     224 ;
+PhysicsNoSlinkAllMasked     226 ;
 PhysicsEmulatorNoSlink     138   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Noslinkemulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
 Physics_m14ns     139   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Physics  fecconfig  Default  dac  WBC169  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  p11ns  ;
 Physics_m13ns     140   detconfig  Golden2  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Physics  fecconfig  Default  dac  WBC169  mask  OldHotPixels  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  p12ns  ;
@@ -118,6 +119,7 @@ lowvoltagemap  0 Default ;
 mask  0 Default ;
 mask  1 OldHotPixels ;
 mask  6 NewHotPixels ;
+mask  7 AllOff ;
 trim  11 Default ;
 trim  0 TrimOff ;
 trim  1 TrimOn ;
