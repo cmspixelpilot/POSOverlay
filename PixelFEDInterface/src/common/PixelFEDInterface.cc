@@ -968,6 +968,7 @@ int PixelFEDInterface::reset(void) {
   wdcnt=drainTemperatureFifo(buffer);
   wdcnt=drainTTSFifo(buffer);
   wdcnt=drainFifo1(buffer);
+  for(int i=1;i<9;i+=6)drainDigTransFifo(i,buffer);
   for(int i=1;i<9;i++)wdcnt=drainDataFifo2(i,buffer);
   wdcnt=drainDataFifo3(buffer);
   return 0;
