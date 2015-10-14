@@ -270,6 +270,8 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     HAL::VMEAddressTable *addressTablePtr_;
 
     std::map<unsigned short, FILE*> dataFile_;
+    std::map<unsigned short, FILE*> dataFileT_;
+    std::map<unsigned short, FILE*> dataFileS_;
     std::map<unsigned short, FILE*> errorFile_;
     std::map<unsigned short, FILE*> ttsFile_;
 
