@@ -475,7 +475,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
 
   std::string vmeBaseAddress_string=cgi.getElement("FEDBaseAddress")->getValue();
   unsigned long vmeBaseAddress=atoi(vmeBaseAddress_string.c_str());
-  unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, vmeBaseAddress);
+  //unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, vmeBaseAddress);
   PixelFEDInterface* iFED=FEDInterface_[vmeBaseAddress];
   PixelFEDCard fedCard=iFED->getPixelFEDCard();
 
@@ -1339,6 +1339,8 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
       //      cout<<"fedStuckInBusy for fed "<<fednumber<<" set to "<< fedStuckInBusy_[fednumber]<<endl; //JMT very verbose debug info
 
       dataFile_[fednumber]=fopen((outputDir_+"/PhysicsDataFED_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
+      dataFileT_[fednumber]=fopen((outputDir_+"/TransFifo_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
+      dataFileS_[fednumber]=fopen((outputDir_+"/ScopeFifo_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
       errorFile_[fednumber]=fopen((outputDir_+"/ErrorDataFED_"+itoa(fednumber)+"_"+runNumber_+".err").c_str(), "wb");
       setbuf(errorFile_[fednumber],NULL);  //disable buffering
       ttsFile_[fednumber]=fopen((outputDir_+"/TTSDataFED_"+itoa(fednumber)+"_"+runNumber_+".tts").c_str(), "wb");
@@ -1422,6 +1424,8 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
 	unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
 	diagService_->reportError("About to close files for fednumber="+stringF(fednumber), DIAGDEBUG);
 	fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
+	fclose(dataFileT_[fednumber]);    dataFileT_[fednumber]=0;
+	fclose(dataFileS_[fednumber]);    dataFileS_[fednumber]=0;
 	fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1440,6 +1444,8 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
       for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
+        fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
+        fclose(dataFileS_[fednumber]);     dataFileS_[fednumber]=0;
         fclose(errorFile_[fednumber]);    errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);      ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1573,6 +1579,8 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
 	diagService_->reportError("About to close output file for FED#"+stringF(fednumber), DIAGDEBUG);
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
+        fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
+        fclose(dataFileS_[fednumber]);     dataFileS_[fednumber]=0;
         fclose(errorFile_[fednumber]);    errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);      ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1590,6 +1598,8 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
       for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
         fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
+        fclose(dataFileT_[fednumber]);    dataFileT_[fednumber]=0;
+        fclose(dataFileS_[fednumber]);    dataFileS_[fednumber]=0;
         fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1684,6 +1694,12 @@ xoap::MessageReference PixelFEDSupervisor::Recover(xoap::MessageReference msg) {
     unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
     if ( dataFile_.find(fednumber) != dataFile_.end() ) {
       if (dataFile_[fednumber] != 0)    fclose(dataFile_[fednumber]);
+    }
+    if ( dataFileT_.find(fednumber) != dataFileT_.end() ) {
+      if (dataFileT_[fednumber] != 0)    fclose(dataFileT_[fednumber]);
+    }
+    if ( dataFileS_.find(fednumber) != dataFileS_.end() ) {
+      if (dataFileS_[fednumber] != 0)    fclose(dataFileS_[fednumber]);
     }
     if ( errorFile_.find(fednumber) != errorFile_.end() ) {
       if (errorFile_[fednumber] != 0)   fclose(errorFile_[fednumber]);
@@ -2749,6 +2765,30 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	if(iFED->isNewEvent(1)) {//this checks for zeros - 0=New event, spy fifo not ready ready to be read
 	  iFED->enableSpyMemory(0);
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
+#if 0
+//	    const int MaxChans = 37;    
+//	    uint32_t bufferFifo1[MaxChans][1024];
+//	    int statusFifo1[MaxChans] = {0};
+//	    for (int ch = 1; ch <= 36; ++ch)
+//	      statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
+
+	    const int MaxChips = 8;
+	    uint32_t bufferT[MaxChips][4096];
+	    uint32_t bufferS[MaxChips][2048];
+	    int statusS[MaxChips] = {0};
+	    for (int chip = 1; chip <= 7; chip += 2) {
+	      if (chip == 1 || chip == 7) {
+		iFED->drainDigTransFifo(chip, bufferT[chip]);
+		fwrite(bufferT[chip], sizeof(uint32_t), 4096, dataFileT_[fednumber]);
+	      }
+	      statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
+	      if (statusS[chip] > 0) {
+		fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
+		fwrite(bufferS[chip], sizeof(uint32_t), statusS[chip], dataFileS_[fednumber]);
+	      }
+	    }
+#endif
+
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
 	    FIFO3Decoder decode3(buffer64);
@@ -2933,7 +2973,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 #ifdef READ_LASTDAC
       //if(readLastDACFifo && newEvent ) { 
       if(readLastDACFifo) {
-	if(newEvent && (countLoops%1)==0 ) {  // readout only 1/1000 events 
+	if(newEvent && (countLoops%100)==0 ) {  // readout only 1/100 events 
 	
 	  uint32_t buffer[1024];
 	  unsigned int numWords = iFED->drainTemperatureFifo(buffer);
