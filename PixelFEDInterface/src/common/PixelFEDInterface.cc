@@ -1130,7 +1130,13 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   
   int nlock[4] = {0};
 
-  const int Npoll = 128;
+  const int Npoll = 24;
+
+  std::vector<int> phases[19];
+  double means[19] = {0.};
+  double rmses[19] = {0.};
+  for (int j = 1; j <= 18; ++j)
+    phases[j].assign(Npoll, 0);
 
 #ifdef USE_HAL // Use HAL
   
@@ -1142,15 +1148,27 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
     vmeDevicePtr->read("TopDauCard_UpStatus",&d);
     const bool islocked = (d>>24)&0x1;
     if (islocked) ++nlock[0];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    int a = phases[1][i] = (d)&0xff;
+    int b = phases[2][i] = (d>>8)&0xff;
+    int c = phases[3][i] = (d>>16)&0xff;
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
+    means[1] += a;
+    means[2] += b;
+    means[3] += c;
   }
-  
+
   if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
   for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("TopDauCard_DownStatus",&d);
     const bool islocked = (d>>24)&0x1;
     if (islocked) ++nlock[1];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    int a = phases[4][i] = (d)&0xff;
+    int b = phases[5][i] = (d>>8)&0xff;
+    int c = phases[6][i] = (d>>16)&0xff;
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
+    means[4] += a;
+    means[5] += b;
+    means[6] += c;
   }
   
   if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
@@ -1158,7 +1176,13 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
     vmeDevicePtr->read("BottomDauCard_UpStatus",&d);
     const bool islocked = (d>>24)&0x1;
     if (islocked) ++nlock[2];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    int a = phases[13][i] = (d)&0xff;
+    int b = phases[14][i] = (d>>8)&0xff;
+    int c = phases[15][i] = (d>>16)&0xff;
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
+    means[13] += a;
+    means[14] += b;
+    means[15] += c;
   }
   
   if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
@@ -1166,7 +1190,13 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
     vmeDevicePtr->read("BottomDauCard_DnStatus",&d);
     const bool islocked = (d>>24)&0x1;
     if (islocked) ++nlock[3];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    int a = phases[16][i] = (d)&0xff;
+    int b = phases[17][i] = (d>>8)&0xff;
+    int c = phases[18][i] = (d>>16)&0xff;
+    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
+    means[16] += a;
+    means[17] += b;
+    means[18] += c;
   }
   
 #else // Use direct CAEN
@@ -1232,7 +1262,20 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   }
   
 #endif // Use HAL  
+
   printf("FED locks: %i %i %i %i\n", nlock[0], nlock[1], nlock[2], nlock[3]);
+  printf("phase stats:\n");
+  for (int j = 1; j <= 18; ++j) {
+    if ((j >= 7 && j <= 12) || j == 18)
+      continue;
+    means[j] /= Npoll;
+    for (int k = 0; k < Npoll; ++k)
+      rmses[j] += pow(phases[j][k] - means[j], 2);
+    rmses[j] /= (Npoll - 1);
+    rmses[j] = sqrt(rmses[j]);
+    printf("ch %2i/%2i: mean %4.1f rms %6.4f\n", j*2-1, j*2, means[j], rmses[j]);
+  }
+
   fflush(stdout);
 }
 
