@@ -1123,9 +1123,6 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
     DauCards_lastStatusPoll = t;
   }
 
-  uint32_t CHa_CHb_mux = 0x80000000;
-  uint32_t dataTop = CHa_CHb_mux + 0x2546; 
-  uint32_t dataBot = CHa_CHb_mux + 0x2343; 
   uint32_t d, i;
   
   int nlock[4] = {0};
@@ -1138,130 +1135,49 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   for (int j = 1; j <= 18; ++j)
     phases[j].assign(Npoll, 0);
 
-#ifdef USE_HAL // Use HAL
-  
-  vmeDevicePtr->write("TopDauCard_com",dataTop);
-  vmeDevicePtr->write("BottomDauCard_com",dataBot);
-
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("TopDauCard_UpStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[0];
-    int a = phases[1][i] = (d)&0xff;
-    int b = phases[2][i] = (d>>8)&0xff;
-    int c = phases[3][i] = (d>>16)&0xff;
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
-    means[1] += a;
-    means[2] += b;
-    means[3] += c;
+#ifdef USE_HAL
+  printf("\n\n\nPIGGYstatus NORTHup    CH#1 / 2  CH#3 / 4  CH#5 / 6  \n\n") ;
+  for(i=0;i<128;i++)  {
+    vmeDevicePtr->read("LAD_N", &d, 0x158000);
+    if (i<8) {
+      printf("                       ");printf("%c %1d",118-(d&0x8),d&0x7);
+      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
+      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
+    }
   }
 
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("TopDauCard_DownStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[1];
-    int a = phases[4][i] = (d)&0xff;
-    int b = phases[5][i] = (d>>8)&0xff;
-    int c = phases[6][i] = (d>>16)&0xff;
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
-    means[4] += a;
-    means[5] += b;
-    means[6] += c;
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("BottomDauCard_UpStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[2];
-    int a = phases[13][i] = (d)&0xff;
-    int b = phases[14][i] = (d>>8)&0xff;
-    int c = phases[15][i] = (d>>16)&0xff;
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
-    means[13] += a;
-    means[14] += b;
-    means[15] += c;
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("BottomDauCard_DnStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[3];
-    int a = phases[16][i] = (d)&0xff;
-    int b = phases[17][i] = (d>>8)&0xff;
-    int c = phases[18][i] = (d>>16)&0xff;
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", a, b, c, (d>>24)&0x1);
-    means[16] += a;
-    means[17] += b;
-    means[18] += c;
-  }
-  
-#else // Use direct CAEN
-  
-  ret = CAENVME_WriteCycle(BHandle,TopDauCard_com,&dataTop,am,dw);
-  if(ret != cvSuccess) {  // Error
-    cout<<"Error in write "<<hex<<ret<<" "<<dataTop<<dec<<endl;
-    analyzeError(ret); 
-  }
-  
-  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_com,&dataBot,am,dw);
-  if(ret != cvSuccess) {  // Error
-    cout<<"Error in write "<<hex<<ret<<" "<<dataBot<<dec<<endl;
-    analyzeError(ret); 
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,TopDauCard_UpStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+  printf("\n\n\nPIGGYstatus NORTHdown  CH#7 / 8  CH#9 /10  CH#11/12    \n\n");
+  for(i=0;i<128;i++)  {
+    vmeDevicePtr->read("LAD_N", &d, 0x178000);
+    if (i<8) {
+      printf("                       ") ;printf("%c %1d",118-(d&0x8),d&0x7);
+      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
+      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[0];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,TopDauCard_DownStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+
+  printf("\n\n\nPIGGYstatus SOUTHup    CH#25/26  CH#27/28  CH#29/30      \n\n") ;
+  for(i=0;i<128;i++)  {
+    vmeDevicePtr->read("LAD_S", &d, 0x158000);
+    if (i<8) {
+      printf("                       ") ;printf("%c %1d",118-(d&0x8),d&0x7);
+      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
+      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[1];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_UpStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+
+  printf("\n\n\nPIGGYstatus SOUTHdown  CH#31/32  CH#33/34  CH#35/36      \n\n") ;
+  for(i=0;i<128;i++)  {
+    vmeDevicePtr->read("LAD_S", &d, 0x178000);
+    if (i<8) {
+      printf("                       ") ;printf("%c %1d",118-(d&0x8),d&0x7);
+      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
+      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[2];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
   }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_DnStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
-    }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[3];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
-  }
-  
-#endif // Use HAL  
+#else
+  assert(0);
+#endif
 
   printf("FED locks: %i %i %i %i\n", nlock[0], nlock[1], nlock[2], nlock[3]);
   printf("phase stats:\n");
