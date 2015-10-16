@@ -1,8 +1,8 @@
 ConfigurationAliases
-Physics     234 ;
+Physics     225 ;
 PhysicsEmulator     136   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Emulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
-PhysicsNoSlink     241 ;
-PhysicsNoSlinkTriggerPlay     229 ;
+PhysicsNoSlink     224 ;
+PhysicsNoSlinkTriggerPlay     242 ;
 PhysicsNoSlinkAllMasked     226 ;
 PhysicsNoSlinkAllCCR2     227 ;
 PhysicsNoSlinkAllMaskedNoPKAM     228 ;
