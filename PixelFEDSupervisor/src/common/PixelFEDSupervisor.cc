@@ -2355,7 +2355,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   const bool useSEURecovery = false; // Enable SEU recovery mechanism
   const bool timing = false;        // print output from Pixel Timers on each exit from the loop
   const bool localPrint = false; 
-
+  
   //::sleep(1); return true; //disable physics workloop
 
   PixelTimer wlTimer;
@@ -2750,6 +2750,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       }
       statusTimer.stop();
 
+      iFED->readDigFEDStatus(false, false);
 
       // Drain DataFIFO 3 and write to file
       //if(readSpyFifo3 && newEvent  && spyNextFED && !spiedFED ) {
@@ -2765,29 +2766,49 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	if(iFED->isNewEvent(1)) {//this checks for zeros - 0=New event, spy fifo not ready ready to be read
 	  iFED->enableSpyMemory(0);
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
-#if 0
-//	    const int MaxChans = 37;    
-//	    uint32_t bufferFifo1[MaxChans][1024];
-//	    int statusFifo1[MaxChans] = {0};
-//	    for (int ch = 1; ch <= 36; ++ch)
-//	      statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
 
-	    const int MaxChips = 8;
-	    uint32_t bufferT[MaxChips][4096];
-	    uint32_t bufferS[MaxChips][2048];
-	    int statusS[MaxChips] = {0};
-	    for (int chip = 1; chip <= 7; chip += 2) {
-	      if (chip == 1 || chip == 7) {
-		iFED->drainDigTransFifo(chip, bufferT[chip]);
-		fwrite(bufferT[chip], sizeof(uint32_t), 4096, dataFileT_[fednumber]);
+	    if (countLoops % 10 == 0) {
+#if 0
+	      static int ncalls = 0;
+	      static unsigned long first_us;
+	      ++ncalls;
+	      if (ncalls == 1) {
+		timeval first_time;
+		gettimeofday(&first_time, 0);
+		first_us = 1e6*first_time.tv_sec + first_time.tv_usec;
 	      }
-	      statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
-	      if (statusS[chip] > 0) {
-		fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
-		fwrite(bufferS[chip], sizeof(uint32_t), statusS[chip], dataFileS_[fednumber]);
+	      if (ncalls && ncalls % 10 == 0) {
+		timeval this_time;
+		gettimeofday(&this_time, 0);
+		unsigned long this_us = 1e6*this_time.tv_sec + this_time.tv_usec;
+		cout << ncalls << " wholeEvent reads in " << (this_us - first_us)/1e6 << endl;
 	      }
-	    }
 #endif
+	      //	    const int MaxChans = 37;    
+	      //	    uint32_t bufferFifo1[MaxChans][1024];
+	      //	    int statusFifo1[MaxChans] = {0};
+	      //	    for (int ch = 1; ch <= 36; ++ch)
+	      //	      statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
+	      //#if 0
+
+	      const int MaxChips = 8;
+	      uint32_t bufferT[MaxChips][1024];
+	      uint32_t bufferS[MaxChips][2048];
+	      int statusS[MaxChips] = {0};
+	      for (int chip = 1; chip <= 7; chip += 2) {
+		if (chip == 1 || chip == 7) {
+		  iFED->drainDigTransFifo(chip, bufferT[chip]);
+		  fwrite(bufferT[chip], sizeof(uint32_t), 1024, dataFileT_[fednumber]);
+		}
+		statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
+		if (statusS[chip] > 0) {
+		  fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
+		  fwrite(bufferS[chip], sizeof(uint32_t), statusS[chip], dataFileS_[fednumber]);
+		}
+	      }
+
+	      //#endif
+	    }
 
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
