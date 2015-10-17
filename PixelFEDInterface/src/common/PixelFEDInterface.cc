@@ -1125,10 +1125,10 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
 
   uint32_t d, i;
   
-  int nlock[4] = {0};
 
   const int Npoll = 24;
 
+  int lock[19] = {0};
   std::vector<int> phases[19];
   double means[19] = {0.};
   double rmses[19] = {0.};
@@ -1136,60 +1136,111 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
     phases[j].assign(Npoll, 0);
 
 #ifdef USE_HAL
-  printf("\n\n\nPIGGYstatus NORTHup    CH#1 / 2  CH#3 / 4  CH#5 / 6  \n\n") ;
-  for(i=0;i<128;i++)  {
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHup    CH#1 / 2  CH#3 / 4  CH#5 / 6  \n\n") ;
+  for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_N", &d, 0x158000);
-    if (i<8) {
-      printf("                       ");printf("%c %1d",118-(d&0x8),d&0x7);
-      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
-      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
+
+    int a = phases[1][i] = d&0x7;
+    int b = phases[2][i] = (d>>8)&0x7;
+    int c = phases[3][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
+    means[1] += a;
+    means[2] += b;
+    means[3] += c;
+    if (va == 'v') ++lock[1];
+    if (vb == 'v') ++lock[2];
+    if (vc == 'v') ++lock[3];
   }
 
-  printf("\n\n\nPIGGYstatus NORTHdown  CH#7 / 8  CH#9 /10  CH#11/12    \n\n");
-  for(i=0;i<128;i++)  {
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown  CH#7 / 8  CH#9 /10  CH#11/12    \n\n");
+  for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_N", &d, 0x178000);
-    if (i<8) {
-      printf("                       ") ;printf("%c %1d",118-(d&0x8),d&0x7);
-      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
-      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
+
+    int a = phases[4][i] = d&0x7;
+    int b = phases[5][i] = (d>>8)&0x7;
+    int c = phases[6][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
+    means[4] += a;
+    means[5] += b;
+    means[6] += c;
+    if (va == 'v') ++lock[4];
+    if (vb == 'v') ++lock[5];
+    if (vc == 'v') ++lock[6];
   }
 
-  printf("\n\n\nPIGGYstatus SOUTHup    CH#25/26  CH#27/28  CH#29/30      \n\n") ;
-  for(i=0;i<128;i++)  {
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup    CH#25/26  CH#27/28  CH#29/30      \n\n") ;
+  for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_S", &d, 0x158000);
-    if (i<8) {
-      printf("                       ") ;printf("%c %1d",118-(d&0x8),d&0x7);
-      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
-      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
+
+    int a = phases[13][i] = d&0x7;
+    int b = phases[14][i] = (d>>8)&0x7;
+    int c = phases[15][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
+    means[13] += a;
+    means[14] += b;
+    means[15] += c;
+    if (va == 'v') ++lock[13];
+    if (vb == 'v') ++lock[14];
+    if (vc == 'v') ++lock[15];
   }
 
-  printf("\n\n\nPIGGYstatus SOUTHdown  CH#31/32  CH#33/34  CH#35/36      \n\n") ;
-  for(i=0;i<128;i++)  {
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown  CH#31/32  CH#33/34  CH#35/36      \n\n") ;
+  for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_S", &d, 0x178000);
-    if (i<8) {
-      printf("                       ") ;printf("%c %1d",118-(d&0x8),d&0x7);
-      printf("        ");printf("%c %1d",118-((d>>8)&0x8),(d>>8)&0x7);
-      printf("        ");printf("%c %1d",118-((d>>16)&0x8),(d>>16)&0x7); printf("\n");
+
+    int a = phases[16][i] = d&0x7;
+    int b = phases[17][i] = (d>>8)&0x7;
+    int c = phases[18][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
+    means[16] += a;
+    means[17] += b;
+    means[18] += c;
+    if (va == 'v') ++lock[16];
+    if (vb == 'v') ++lock[17];
+    if (vc == 'v') ++lock[18];
   }
 #else
   assert(0);
 #endif
 
-  printf("FED locks: %i %i %i %i\n", nlock[0], nlock[1], nlock[2], nlock[3]);
-  printf("phase stats:\n");
+  printf("FEDID:%i phase stats:\n", pixelFEDCard.fedNumber);
   for (int j = 1; j <= 18; ++j) {
-    if ((j >= 7 && j <= 12) || j == 18)
+    if (j == 3 || (j >= 6 && j <= 12) || j == 15 || j == 18)
       continue;
     means[j] /= Npoll;
     for (int k = 0; k < Npoll; ++k)
       rmses[j] += pow(phases[j][k] - means[j], 2);
     rmses[j] /= (Npoll - 1);
     rmses[j] = sqrt(rmses[j]);
-    printf("ch %2i/%2i: mean %4.1f rms %6.4f\n", j*2-1, j*2, means[j], rmses[j]);
+    printf("ch %2i/%2i: #locks: %2i/%2i  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], Npoll, means[j], rmses[j]);
   }
 
   fflush(stdout);
