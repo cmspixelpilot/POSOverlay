@@ -137,8 +137,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
 
     const int MaxChips = 8;
-    uint32_t bufferT[MaxChips][2048];
-    uint32_t bufferS[MaxChips][2048];
+    uint32_t bufferT[MaxChips][256];
+    uint32_t bufferS[MaxChips][256];
     uint64_t buffer3[2048];
     uint32_t bufferErr[36*1024];
     int statusS[MaxChips] = {0};
@@ -356,7 +356,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	  int trans_found = 0;
 	  uint32_t pattern = 0;
 	  uint32_t* data  = bufferT[chip];
-	  uint32_t* datae = data + 1023;
+	  uint32_t* datae = data + 255;
 	  std::cout << "-----------------------------------------\n";
 	  std::cout << "Contents of transparent FIFO for chip = " << chip << std::endl;
 	  std::cout << "-----------------------------------------\n";
@@ -577,7 +577,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	      data += 4;
 	    }
 	    if (same)
-	      std::cout << "1024 repetitions of " << std::hex << pattern << std::dec << std::endl;
+	      std::cout << "256 repetitions of " << std::hex << pattern << std::dec << std::endl;
 	    else {
 	      uint8_t* data8 = (uint8_t*)bufferT[chip];
 	      std::cout << "rw | ";

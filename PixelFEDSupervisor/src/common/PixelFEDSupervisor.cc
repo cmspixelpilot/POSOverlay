@@ -2792,13 +2792,13 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	      //#if 0
 
 	      const int MaxChips = 8;
-	      uint32_t bufferT[MaxChips][1024];
-	      uint32_t bufferS[MaxChips][2048];
+	      uint32_t bufferT[MaxChips][256];
+	      uint32_t bufferS[MaxChips][256];
 	      int statusS[MaxChips] = {0};
 	      for (int chip = 1; chip <= 7; chip += 2) {
 		if (chip == 1 || chip == 7) {
 		  iFED->drainDigTransFifo(chip, bufferT[chip]);
-		  fwrite(bufferT[chip], sizeof(uint32_t), 1024, dataFileT_[fednumber]);
+		  fwrite(bufferT[chip], sizeof(uint32_t), 256, dataFileT_[fednumber]);
 		}
 		statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
 		if (statusS[chip] > 0) {

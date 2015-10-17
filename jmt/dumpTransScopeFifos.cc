@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
   assert(ftrans && fscope);
 
   const int MaxChips = 8;
-  uint32_t bufferT[MaxChips][1024];
-  uint32_t bufferS[MaxChips][2048];
+  uint32_t bufferT[MaxChips][256];
+  uint32_t bufferS[MaxChips][256];
   int statusS[MaxChips] = {0};
 
   DigTransDecoder* decodeT[MaxChips] = {0};
@@ -70,8 +70,9 @@ int main(int argc, char** argv) {
   while (1) {
     for (int chip = 1; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7)
-	fread(bufferT[chip], sizeof(uint32_t), 1024, ftrans);
+	fread(bufferT[chip], sizeof(uint32_t), 256, ftrans);
       fread(&statusS[chip], sizeof(int), 1, fscope);
+      assert(statusS[chip] <= 256);
       if (statusS[chip] > 0)
 	fread(bufferS[chip], sizeof(uint32_t), statusS[chip], fscope);
     }
