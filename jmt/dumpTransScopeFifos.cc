@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 	int trans_found = 0;
 	uint32_t pattern = 0;
 	uint32_t* data  = bufferT[chip];
-	uint32_t* datae = data + 1023;
+	uint32_t* datae = data + 255;
 	cout << "-----------------------------------------\n";
 	cout << "Contents of transparent FIFO for chip = " << chip << endl;
 	cout << "-----------------------------------------\n";
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 	    for (int j = 0; j < 2; ++j) {
 	      for (int i = 15; i >= 0; --i) {
 		char bit = (ab[j] & (1 << i)) ? '1' : '0';
-		bits[!j].push_back(bit);
+		bits[j].push_back(bit);
 		cout << bit;
 		if (i % 4 == 0) cout << " ";
 	      }
@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
 	  cout << "then " << nend << " 0xFFFFFFFF" << endl;
 
 	  for (int j = 0; j < 2; ++j) {
-	    cout << "tbm " << j << ":\n";
+	    cout << "tbm " << j << ": " << (j == 0 ? "A = 16 MSB" : "B = 16 LSB") << "\n";
 	    const int nbits = bits[j].size();
 	    if (nbits < 12)
 	      cout << "not enough bits\n";
@@ -277,41 +277,43 @@ int main(int argc, char** argv) {
 		cout << markers[k] << "\n";
 	      cout << endl;
 
-	      bool in = false;
-	      int nroc = 0;
-	      marker_t first_marker = markers[0];
-	      vector<int> nrocs;
-	      if (first_marker.type == 8 || first_marker.type == 7)
-		in = true;
-	      printf("markers: ");
-	      for (size_t k = 0; k < markers.size(); ++k) {
-		const marker_t& m = markers[k];
-		printf("%i ", m.type);
-		if (m.type == 7) {
-		  if (in)
-		    ++nroc;
-		  else
-		    --nroc;
-		}
-		else if (m.type == 12) {
-		  in = false;
-		  nrocs.push_back(nroc);
-		  nroc = 0;
-		}
-		else if (m.type == 8) {
+	      if (markers.size()) {
+		bool in = false;
+		int nroc = 0;
+		marker_t first_marker = markers[0];
+		vector<int> nrocs;
+		if (first_marker.type == 8 || first_marker.type == 7)
 		  in = true;
-		  nrocs.push_back(nroc);
-		  nroc = 0;
+		printf("markers: ");
+		for (size_t k = 0; k < markers.size(); ++k) {
+		  const marker_t& m = markers[k];
+		  printf("%i ", m.type);
+		  if (m.type == 7) {
+		    if (in)
+		      ++nroc;
+		    else
+		      --nroc;
+		  }
+		  else if (m.type == 12) {
+		    in = false;
+		    nrocs.push_back(nroc);
+		    nroc = 0;
+		  }
+		  else if (m.type == 8) {
+		    in = true;
+		    nrocs.push_back(nroc);
+		    nroc = 0;
+		  }
 		}
+		printf("\nseq: ");
+		for (size_t k = 0; k < nrocs.size(); ++k)
+		  printf("%i ", nrocs[k]);
+		printf("\n");
 	      }
-	      printf("\nseq: ");
-	      for (size_t k = 0; k < nrocs.size(); ++k)
-		printf("%i ", nrocs[k]);
-	      printf("\n");
 	    }
 	  }
 	  
-
+#if 0
 	  cout << "try to align with headers:\n";
 	  const int nroccands = 8;
 	  for (int j = 0; j < 2; ++j) {
@@ -482,10 +484,13 @@ int main(int argc, char** argv) {
 	      cout << endl;
 	    }
 	  }
+#endif
 	}
 
+#if 0
 	cout << "DigTransDecoder thinks:\n";
 	decodeT[chip]->printToStream(cout);
+#endif
       }
 
       cout << "----------------------------------" << endl;
@@ -508,8 +513,10 @@ int main(int argc, char** argv) {
 	}
 	cout << "\n----------------------------------" << endl;
       }
+#if 0
       cout << "DigScopeDecoder thinks:\n";
       decodeS[chip]->printToStream(cout);
+#endif
     }
 
     bool end_trans = feof(ftrans);
