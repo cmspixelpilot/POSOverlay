@@ -84,6 +84,8 @@ namespace pos{
     PixelROCName rocid_;
     PixelModuleName moduleId_ ;
 
+    unsigned char TBMABase0_;
+    unsigned char TBMBBase0_;
     unsigned char TBMAAutoReset_;
     unsigned char TBMBAutoReset_;
     unsigned char TBMANoTokenPass_;

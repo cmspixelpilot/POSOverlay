@@ -132,6 +132,18 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 	in >> tag;
 	//std::cout << "Tag="<<tag<<std::endl;
+	assert(tag=="TBMABase0:");
+	in >> tmpint;
+	TBMABase0_=tmpint;
+
+	in >> tag;
+	//std::cout << "Tag="<<tag<<std::endl;
+	assert(tag=="TBMBBase0:");
+	in >> tmpint;
+	TBMBBase0_=tmpint;
+
+	in >> tag;
+	//std::cout << "Tag="<<tag<<std::endl;
 	assert(tag=="TBMAAutoReset:");
 	in >> tmpint;
 	TBMAAutoReset_=tmpint;
@@ -229,6 +241,8 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 	rocid_=tmp;
 
+	in >> TBMABase0_;
+	in >> TBMBBase0_;
 	in >> TBMAAutoReset_;
 	in >> TBMBAutoReset_;
 	in >> TBMANoTokenPass_;
@@ -252,7 +266,9 @@ PixelTBMSettings::PixelTBMSettings(std::string filename):
 
 void PixelTBMSettings::setTBMGenericValue(std::string what, int value) 
 {
- if     ( what == "TBMAAutoReset" ) {TBMAAutoReset_ = (unsigned char)value;}
+ if     ( what == "TBMABase0" ) {TBMABase0_ = (unsigned char)value;}
+ else if( what == "TBMBBase0" ) {TBMBBase0_ = (unsigned char)value;}
+ else if( what == "TBMAAutoReset" ) {TBMAAutoReset_ = (unsigned char)value;}
  else if( what == "TBMBAutoReset" ) {TBMBAutoReset_ = (unsigned char)value;}
  else if( what == "TBMANoTokenPass" ) {TBMANoTokenPass_ = (unsigned char)value;}
  else if( what == "TBMBNoTokenPass" ) {TBMBNoTokenPass_ = (unsigned char)value;}
@@ -277,6 +293,8 @@ void PixelTBMSettings::writeBinary(std::string filename) const {
     out << (char)rocid_.rocname().size();
     out.write(rocid_.rocname().c_str(),rocid_.rocname().size());
 
+    out <<TBMABase0_;
+    out <<TBMBBase0_;
     out <<TBMAAutoReset_;
     out <<TBMBAutoReset_;
     out <<TBMANoTokenPass_;
@@ -302,6 +320,8 @@ void PixelTBMSettings::writeASCII(std::string dir) const {
 
     out << rocid_.rocname() << std::endl;
 
+    out << "TBMABase0: "<<(int)TBMABase0_<<std::endl;
+    out << "TBMBBase0: "<<(int)TBMBBase0_<<std::endl;
     out << "TBMAAutoReset: "<<(int)TBMAAutoReset_<<std::endl;
     out << "TBMBAutoReset: "<<(int)TBMBAutoReset_<<std::endl;
     out << "TBMANoTokenPass: "<<(int)TBMANoTokenPass_<<std::endl;
@@ -339,14 +359,14 @@ void PixelTBMSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
 
     //pixelFEC->synccontrolregister(mfec);
 
-    unsigned int base0_A = 0, base0_B = 0;
+    unsigned int base0_A = TBMABase0_, base0_B = TBMBBase0_;
     if (!TBMAAutoReset_) base0_A |= 0x80;
     if (!TBMBAutoReset_) base0_B |= 0x80;
     if (TBMANoTokenPass_) base0_A |= 0x40;
     if (TBMBNoTokenPass_) base0_B |= 0x40;
     if (TBMADisablePKAMCounter_) base0_A |= 0x1;
     if (TBMBDisablePKAMCounter_) base0_B |= 0x1;
-      
+    
     if (doResets) pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 2, 0x14, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel,  hubaddress, 4, 0, base0_A, 0);
     pixelFEC->tbmcmd(mfec, mfecchannel, tbmchannel, hubaddress, 4, 4, TBMAPKAMCount_, 0);
@@ -366,6 +386,8 @@ void PixelTBMSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
 std::ostream& pos::operator<<(std::ostream& s, const PixelTBMSettings& tbm){
 
     s << "Module: "<<tbm.rocid_.rocname() <<std::endl; 
+    s << "TBMABase0: "<<tbm.TBMABase0_<<std::endl;
+    s << "TBMBBase0: "<<tbm.TBMBBase0_<<std::endl;
     s << "TBMAAutoReset: "<<tbm.TBMAAutoReset_<<std::endl;
     s << "TBMBAutoReset: "<<tbm.TBMBAutoReset_<<std::endl;
     s << "TBMANoTokenPass: "<<tbm.TBMANoTokenPass_<<std::endl;
