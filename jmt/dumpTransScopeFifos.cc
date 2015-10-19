@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
   uint32_t bufferS[MaxChips][256];
   int statusS[MaxChips] = {0};
 
+#if 0
   DigTransDecoder* decodeT[MaxChips] = {0};
   DigScopeDecoder* decodeS[MaxChips] = {0};
   for (int chip = 1; chip <= 7; chip += 2) {
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
       decodeT[chip] = new DigTransDecoder(bufferT[chip]);
     decodeS[chip] = new DigScopeDecoder(bufferS[chip], statusS[chip]);
   }
+#endif
 
   int nevents = 0;
   int nok[MaxChips][2] = {{0}};
@@ -85,7 +87,7 @@ int main(int argc, char** argv) {
 
     ++nevents;
 
-    for (int chip = 1; chip <= 7; chip += 2) {
+    for (int chip = 5; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7) {
 	int trans_found = 0;
 	uint32_t pattern = 0;
@@ -130,7 +132,7 @@ int main(int argc, char** argv) {
 	    for (int j = 0; j < 2; ++j) {
 	      for (int i = 15; i >= 0; --i) {
 		char bit = (ab[j] & (1 << i)) ? '1' : '0';
-		bits[j].push_back(bit);
+		bits[!j].push_back(bit);
 		cout << bit;
 		if (i % 4 == 0) cout << " ";
 	      }
@@ -151,7 +153,7 @@ int main(int argc, char** argv) {
 	  cout << "then " << nend << " 0xFFFFFFFF" << endl;
 
 	  for (int j = 0; j < 2; ++j) {
-	    cout << "tbm " << j << ": " << (j == 0 ? "A = 16 MSB" : "B = 16 LSB") << "\n";
+	    cout << "tbm " << j << ": " << (j == 0 ? "A = 16 LSB" : "B = 16 MSB") << "\n";
 	    const int nbits = bits[j].size();
 	    if (nbits < 12)
 	      cout << "not enough bits\n";
@@ -553,10 +555,11 @@ int main(int argc, char** argv) {
     for (int j = 0; j < 2; ++j)
       printf("chip %i tbm %i  #ok: %i  #tbm head: %i  #tbm trail: %i  #roc head: %i\n", chip, j, nok[chip][j], num_tbmhead[chip][j], num_tbmtrail[chip][j], num_rochead[chip][j]);
 
-  
+#if 0
   for (int chip = 1; chip <= 7; chip += 2) {
     if (chip == 1 || chip == 7)
       delete decodeT[chip];
     delete decodeS[chip];
   }
+#endif
 }
