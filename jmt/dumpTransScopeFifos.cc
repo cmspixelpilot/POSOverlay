@@ -67,6 +67,12 @@ int main(int argc, char** argv) {
     decodeS[chip] = new DigScopeDecoder(bufferS[chip], statusS[chip]);
   }
 
+  int nevents = 0;
+  int nok[MaxChips][2] = {{0}};
+  int num_tbmhead[MaxChips][2] = {{0}};
+  int num_rochead[MaxChips][2] = {{0}};
+  int num_tbmtrail[MaxChips][2] = {{0}};
+
   while (1) {
     for (int chip = 1; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7)
@@ -77,7 +83,9 @@ int main(int argc, char** argv) {
 	fread(bufferS[chip], sizeof(uint32_t), statusS[chip], fscope);
     }
 
-    for (int chip = 1; chip <= 7; chip += 6) {
+    ++nevents;
+
+    for (int chip = 1; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7) {
 	int trans_found = 0;
 	uint32_t pattern = 0;
@@ -252,19 +260,24 @@ int main(int argc, char** argv) {
 		}
 	      }
 
+	      const int ntbmh = tbmhead.size();
+	      const int ntbmt = tbmtrail.size();
+	      const int nroch = rochead.size();
+
 	      sort(tbmhead.begin(), tbmhead.end(), sort_by_count());
 	      sort(tbmtrail.begin(), tbmtrail.end(), sort_by_count());
 	      sort(rochead.begin(), rochead.end(), sort_by_count());
+
 	      cout << "tbm headers:\n";
-	      for (size_t k = 0; k < tbmhead.size(); ++k)
+	      for (size_t k = 0; k < ntbmh; ++k)
 		cout << tbmhead[k] << "\n";
 	      cout << endl;
 	      cout << "tbm trailers:\n";
-	      for (size_t k = 0; k < tbmtrail.size(); ++k)
+	      for (size_t k = 0; k < ntbmt; ++k)
 		cout << tbmtrail[k] << "\n";
 	      cout << endl;
 	      cout << "roc headers:\n";
-	      for (size_t k = 0; k < rochead.size(); ++k)
+	      for (size_t k = 0; k < nroch; ++k)
 		cout << rochead[k] << "\n";
 	      cout << endl;
 	      vector<marker_t> markers;
@@ -276,6 +289,14 @@ int main(int argc, char** argv) {
 	      for (size_t k = 0; k < markers.size(); ++k)
 		cout << markers[k] << "\n";
 	      cout << endl;
+
+	      const bool ok = ntbmt != 0  && ntbmt == ntbmh && nroch/ntbmt == 8;
+	      if (ok) ++nok[chip][j];
+	      if (chip == 7 && !ok)
+		printf("HELLO ntbmh %i ntbmt %i nroch %i\n", ntbmh, ntbmt, nroch);
+	      num_tbmhead[chip][j] += ntbmh;
+	      num_rochead[chip][j] += nroch;
+	      num_tbmtrail[chip][j] += ntbmt;
 
 	      if (markers.size()) {
 		bool in = false;
@@ -527,6 +548,12 @@ int main(int argc, char** argv) {
     }
   }
 
+  printf("nevents: %i\n", nevents);
+  for (int chip = 1; chip <= 7; chip += 6)
+    for (int j = 0; j < 2; ++j)
+      printf("chip %i tbm %i  #ok: %i  #tbm head: %i  #tbm trail: %i  #roc head: %i\n", chip, j, nok[chip][j], num_tbmhead[chip][j], num_tbmtrail[chip][j], num_rochead[chip][j]);
+
+  
   for (int chip = 1; chip <= 7; chip += 2) {
     if (chip == 1 || chip == 7)
       delete decodeT[chip];
