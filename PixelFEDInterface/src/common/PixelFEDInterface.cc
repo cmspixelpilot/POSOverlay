@@ -2783,7 +2783,7 @@ int PixelFEDInterface::drainDataFifo2(const int chip, uint32_t *data) {
   //wordCount = drainFifo2("LAD_N",offset,data); // call the generic routine
 
   // Chanege to block read at some point
-  const uint32_t length = 1024; //spyFifo2Length; // size of SPY-FIFO2 in bytes, is it 128? 
+  const uint32_t length = 4096; //spyFifo2Length; // size of SPY-FIFO2 in bytes, is it 128? 
   char * buffer = (char *) data;
   vmeDevicePtr->readBlock(item,length,buffer,HAL::HAL_NO_INCREMENT,offset);
   //find the wordCount?
