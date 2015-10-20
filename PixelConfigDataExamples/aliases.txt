@@ -1,5 +1,6 @@
 ConfigurationAliases
-hmm 273 ;
+hmmno26 279 ;
+hmmno25 280 ;
 hmm1khz 268 ;
 hmm44khz 269 ;
 Physics     225 ;
