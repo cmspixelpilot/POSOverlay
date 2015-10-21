@@ -2784,6 +2784,13 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 		cout << ncalls << " wholeEvent reads in " << (this_us - first_us)/1e6 << endl;
 	      }
 #endif
+	      // disable triggers while we read
+	      const uint32_t ctrlreg_orig = iFED->getPixelFEDCard().Ccntrl;
+	      if (ctrlreg_orig & 0x10) {
+		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig & 0xffffffef;
+		iFED->loadControlRegister();
+	      }
+
 	      //	    const int MaxChans = 37;    
 	      //	    uint32_t bufferFifo1[MaxChans][1024];
 	      //	    int statusFifo1[MaxChans] = {0};
@@ -2808,6 +2815,11 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 		  fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
 		  fwrite(bufferS[chip], sizeof(uint8_t), statusS[chip], dataFileS_[fednumber]);
 		}
+	      }
+
+	      if (ctrlreg_orig & 0x10) {
+		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig;
+		iFED->loadControlRegister();
 	      }
 
 	      //#endif
