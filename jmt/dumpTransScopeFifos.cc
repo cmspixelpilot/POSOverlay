@@ -11,23 +11,39 @@
 using namespace std;
 
 struct marker_t {
-  marker_t(int a, int c, int t) : at(a), count(c), type(t), d0(0), d1(0), d0_valid(false), d1_valid(false) {}
+  marker_t(int a, int c, int t) : at(a), count(c), type(t), d0(0), d1(0), d2(0), d3(0), d0_valid(false), d1_valid(false), d2_valid(false), d3_valid(false) {}
   int at;
   int count;
   int type;
   unsigned char d0;
   unsigned char d1;
+  unsigned char d2;
+  unsigned char d3;
   bool d0_valid;
   bool d1_valid;
+  bool d2_valid;
+  bool d3_valid;
 };
 
 ostream& operator<<(ostream& o, const marker_t& m) {
   o << setw(2) << m.type << " (" << setw(5) << m.at << ":" << setw(2) << m.count;
-  if (m.d0_valid)
-    o << " d0: " << hex << setw(2) << unsigned(m.d0) << dec;
-  if (m.d1_valid)
-    o << " d1: " << hex << setw(2) << unsigned(m.d1) << dec;
+  if (m.d0_valid) o << " d0: " << hex << setw(2) << unsigned(m.d0) << dec;
+  if (m.d1_valid) o << " d1: " << hex << setw(2) << unsigned(m.d1) << dec;
+  if (m.d2_valid) o << " d2: " << hex << setw(2) << unsigned(m.d2) << dec;
+  if (m.d3_valid) o << " d3: " << hex << setw(2) << unsigned(m.d3) << dec;
   o << ")";
+  if (m.type == 7 && m.d1_valid && m.d2_valid && m.d3_valid) {
+    const int dcol = (m.d1 & 0xfc) >> 2;
+    const int pxl = ((m.d1 & 1) << 7) | ((m.d2 & 0xe0) >> 1);
+    const int hit = ((m.d2&1)<<7) | ((m.d3&0xe0)>>1) | (m.d3&0xf);
+    //cout << " (dc: " << setw(2) << dcol << " pxl: " << setw(3) << pxl << " hit " << setw(3) << hit << ")";
+  }
+  if (m.type == 12 && m.d0_valid && m.d1_valid) {
+    if (m.d0 & 0x80) cout << " NTP ";
+    if (m.d1 & 0x40) cout << " PKAM ";
+    if (m.d1 & 0x1f) cout << " STACK ";
+  }
+  return o;
 }
 
 struct sort_by_count {
@@ -49,14 +65,14 @@ struct sort_by_at {
 
 int main(int argc, char** argv) {
   assert(argc >= 4);
-  const int maxNumHitsPerROC = atoi(argv[1]); //tempCalibObject->maxNumHitsPerROC()
+  //const int maxNumHitsPerROC = atoi(argv[1]); //tempCalibObject->maxNumHitsPerROC()
   FILE* ftrans = fopen(argv[2], "rb");
   FILE* fscope = fopen(argv[3], "rb");
   assert(ftrans && fscope);
 
   const int MaxChips = 8;
   uint32_t bufferT[MaxChips][256];
-  uint32_t bufferS[MaxChips][256];
+  uint8_t bufferS[MaxChips][1024];
   int statusS[MaxChips] = {0};
 
 #if 0
@@ -80,9 +96,9 @@ int main(int argc, char** argv) {
       if (chip == 1 || chip == 7)
 	fread(bufferT[chip], sizeof(uint32_t), 256, ftrans);
       fread(&statusS[chip], sizeof(int), 1, fscope);
-      assert(statusS[chip] <= 256);
+      assert(statusS[chip] <= 1024);
       if (statusS[chip] > 0)
-	fread(bufferS[chip], sizeof(uint32_t), statusS[chip], fscope);
+	fread(bufferS[chip], sizeof(uint8_t), statusS[chip], fscope);
     }
 
     ++nevents;
@@ -90,7 +106,7 @@ int main(int argc, char** argv) {
     for (int chip = 5; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7) {
 	int trans_found = 0;
-	uint32_t pattern = 0;
+	//uint32_t pattern = 0;
 	uint32_t* data  = bufferT[chip];
 	uint32_t* datae = data + 255;
 	cout << "-----------------------------------------\n";
@@ -140,15 +156,15 @@ int main(int argc, char** argv) {
 	    }
 	    cout << endl;
 	    ++data;
-	    int nrun = 0;
-	    while (*data == 0xFFFFFFFF && data != datae + 1) {
-	      for (int i = 15; i >=0; --i) {
-		bits[0].push_back('1');
-		bits[1].push_back('1');
-	      }
-	      ++nrun, ++data;
-	    }
-	    if (nrun) cout << "then a " << nrun << " run of 0xFFFFFFFF, then" << endl;
+	    //int nrun = 0;
+	    //while (*data == 0xFFFFFFFF && data != datae + 1) {
+	    //  for (int i = 15; i >=0; --i) {
+	    //	bits[0].push_back('1');
+	    //	bits[1].push_back('1');
+	    //  }
+	    //  ++nrun, ++data;
+	    //}
+	    //if (nrun) cout << "then a " << nrun << " run of 0xFFFFFFFF, then" << endl;
 	  }
 	  cout << "then " << nend << " 0xFFFFFFFF" << endl;
 
@@ -249,37 +265,65 @@ int main(int argc, char** argv) {
 		  int(bits[j][i+ 9] == '0');
 		if (count == 10) {
 		  marker_t r(i, count, 7);
-		  if (nbits >= i+12+12) {
+		  if (nbits >= i+10+2) {
 		    unsigned char d = 0;
-		    for (int k = 12+10; k < 12+12; ++k) {
+		    for (int k = 10; k < 10+2; ++k) {
 		      d <<= 1;
 		      d |= bits[j][i+k] - '0';
 		    }
 		    r.d0 = d;
 		    r.d0_valid = true;
 		  }
+		  if (nbits >= i+10+10) {
+		    unsigned char d = 0;
+		    for (int k = 10+2; k < 10+10; ++k) {
+		      d <<= 1;
+		      d |= bits[j][i+k] - '0';
+		    }
+		    r.d1 = d;
+		    r.d1_valid = true;
+		  }
+		  if (nbits >= i+10+18) {
+		    unsigned char d = 0;
+		    for (int k = 10+10; k < 10+18; ++k) {
+		      d <<= 1;
+		      d |= bits[j][i+k] - '0';
+		    }
+		    r.d2 = d;
+		    r.d2_valid = true;
+		  }
+		  if (nbits >= i+10+26) {
+		    unsigned char d = 0;
+		    for (int k = 10+18; k < 10+26; ++k) {
+		      d <<= 1;
+		      d |= bits[j][i+k] - '0';
+		    }
+		    r.d3 = d;
+		    r.d3_valid = true;
+		  }
+
 		  rochead.push_back(r);
 		}
 	      }
 
-	      const int ntbmh = tbmhead.size();
-	      const int ntbmt = tbmtrail.size();
-	      const int nroch = rochead.size();
+	      const int ntbmh = int(tbmhead.size());
+	      const int ntbmt = int(tbmtrail.size());
+	      const int nroch = int(rochead.size());
 
 	      sort(tbmhead.begin(), tbmhead.end(), sort_by_count());
 	      sort(tbmtrail.begin(), tbmtrail.end(), sort_by_count());
 	      sort(rochead.begin(), rochead.end(), sort_by_count());
 
 	      cout << "tbm headers:\n";
-	      for (size_t k = 0; k < ntbmh; ++k)
+	      for (int k = 0; k < ntbmh; ++k)
 		cout << tbmhead[k] << "\n";
 	      cout << endl;
 	      cout << "tbm trailers:\n";
-	      for (size_t k = 0; k < ntbmt; ++k)
+	      for (int k = 0; k < ntbmt; ++k)
 		cout << tbmtrail[k] << "\n";
 	      cout << endl;
 	      cout << "roc headers:\n";
-	      for (size_t k = 0; k < nroch; ++k)
+	      for (int k = 0; k < nroch; ++k)
 		cout << rochead[k] << "\n";
 	      cout << endl;
 	      vector<marker_t> markers;
@@ -294,7 +338,7 @@ int main(int argc, char** argv) {
 
 	      const bool ok = ntbmt != 0  && ntbmt == ntbmh && nroch/ntbmt == 8;
 	      if (ok) ++nok[chip][j];
-	      if (chip == 7 && !ok)
+	      if (chip == 7 && j == 0 && !ok)
 		printf("HELLO ntbmh %i ntbmt %i nroch %i\n", ntbmh, ntbmt, nroch);
 	      num_tbmhead[chip][j] += ntbmh;
 	      num_rochead[chip][j] += nroch;
@@ -523,16 +567,66 @@ int main(int argc, char** argv) {
 	cout << "Contents of Scope FIFO for chip = " << chip << "(statusS = " << statusS[chip] << ")" <<endl;
 	cout << "----------------------------------" << endl;
 	for (int i = 0; i <= statusS[chip]; ++i) {
-	  uint32_t d = bufferS[chip][i];
-	  uint32_t dh = d & 0xf0;
-	  if (dh == 0x70 || dh == 0x10 || dh == 0xc0)
-	    cout << "\n";
+	  uint8_t d = bufferS[chip][i];
+	  //printf("%i %08x\n", i, d);
+	  uint8_t dh = d & 0xf0;
 	  if (d > 0xFF)
-	    cout << "\nweird word: " << hex << d << "\n";
+	    cout << "\nweird word: " << hex << int(d) << "\n";
 	  else 
-	    cout << setw(2) << hex << d << dec << " ";
-	  if ((dh >> 4) >= 1 && (dh >> 4) <= 5)
-	    cout << " hello!\n";
+	    cout << setw(2) << hex << int(d) << dec << " ";
+	  if (dh == 0x70)
+	    cout << "\n";
+
+	  if (i >= 3 && dh == 0xb0 &&
+	      (bufferS[chip][i-1] & 0xf0) == 0xa0 &&
+	      (bufferS[chip][i-2] & 0xf0) == 0x90 &&
+	      (bufferS[chip][i-3] & 0xf0) == 0x80) {
+	    const int ev = ((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf);
+	    const int da = ((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf);
+	    cout << "| ev: " << setw(3) << ev << " data: " << hex << da << dec << " = ";
+	    for (int k = 7; k >= 0; --k) { cout << (da&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    cout << "\n";
+	  }
+	  else if (i >= 3 && dh == 0xf0 &&
+	      (bufferS[chip][i-1] & 0xf0) == 0xe0 &&
+	      (bufferS[chip][i-2] & 0xf0) == 0xd0 &&
+	      (bufferS[chip][i-3] & 0xf0) == 0xc0) {
+	    const int da0 = ((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf);
+	    const int da1 = ((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf);
+	    cout << "| d0: " << setw(2) << hex << da0 << dec << " = ";
+	    for (int k = 7; k >= 0; --k) { cout << (da0&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    if (da0 & 0x80) cout << " NTP ";
+	    if (da1 & 0x40) cout << " PKAM ";
+	    if (da1 & 0x1f) cout << " STACK ";
+	    cout << " d1: " << hex << da1 << dec << " = ";
+	    for (int k = 7; k >= 0; --k) { cout << (da1&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    cout << "\n";
+	  }
+	  else if (i >= 5 && dh == 0x60 &&
+	      (bufferS[chip][i-1] & 0xf0) == 0x50 &&
+	      (bufferS[chip][i-2] & 0xf0) == 0x40 &&
+	      (bufferS[chip][i-3] & 0xf0) == 0x30 &&
+	      (bufferS[chip][i-4] & 0xf0) == 0x20 &&
+	      (bufferS[chip][i-5] & 0xf0) == 0x10) {
+ 	    const int a = int(((bufferS[chip][i-5] & 0xf) << 4) | (bufferS[chip][i-4] & 0xf));
+ 	    const int b = int(((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf));
+ 	    const int c = int(((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf));
+	    const int dcol = a >> 2;
+	    const int pxl = ((a&3) << 7) | (b >> 1);
+	    const int hit = ((b&1)<<7) | ((c&0xe0)>>1) | (c&0xf);
+	    cout << "| ";
+	    cout << hex << setw(2) << a << " " << dec;
+	    cout << hex << setw(2) << b << " " << dec;
+	    cout << hex << setw(2) << c << " " << dec;
+	    cout << " | ";
+	    for (int k = 7; k >= 0; --k) { cout << (a&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    for (int k = 7; k >= 0; --k) { cout << (b&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    for (int k = 7; k >= 0; --k) { cout << (c&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    cout << "| dc: " << setw(2) << dcol << " pxl: " << setw(3) << pxl << " hit " << setw(3) << hit << "\n";
+	  }
+
+	  //if ((dh >> 4) >= 1 && (dh >> 4) <= 6)
+	  //  cout << " hello!\n";
 	}
 	cout << "\n----------------------------------" << endl;
       }
