@@ -2786,7 +2786,9 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 #endif
 	      // disable triggers while we read
 	      const uint32_t ctrlreg_orig = iFED->getPixelFEDCard().Ccntrl;
+	      const int printlevel_orig = iFED->get_Printlevel();
 	      if (ctrlreg_orig & 0x10) {
+		iFED->set_Printlevel_silent(0);
 		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig & 0xffffffef;
 		iFED->loadControlRegister();
 	      }
@@ -2820,6 +2822,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	      if (ctrlreg_orig & 0x10) {
 		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig;
 		iFED->loadControlRegister();
+		iFED->set_Printlevel_silent(printlevel_orig);
 	      }
 
 	      //#endif

@@ -5585,6 +5585,9 @@ void PixelFEDInterface::set_Printlevel(int level)
 {Printlevel=level;
 cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"Setting Print level ="<<Printlevel<<endl;}
 
+void PixelFEDInterface::set_Printlevel_silent(int level)
+{Printlevel=level;}
+
 ////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_TTslevels(void)
 {
