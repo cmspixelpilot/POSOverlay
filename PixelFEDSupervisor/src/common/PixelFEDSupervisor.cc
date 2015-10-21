@@ -2999,7 +2999,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       if(readLastDACFifo) {
 	if(newEvent && (countLoops%100)==0 ) {  // readout only 1/100 events 
 	
-	  uint32_t buffer[1024];
+	  uint32_t buffer[2048];
 	  unsigned int numWords = iFED->drainTemperatureFifo(buffer);
 	  
 	  //diagService_->reportError("--> numWords = "+stringF(numWords),DIAGINFO);
