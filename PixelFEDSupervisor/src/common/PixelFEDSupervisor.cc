@@ -10,6 +10,7 @@
 
 #define READ_LASTDAC  // Enable the last dac writing
 #define PILOT_FED
+//#define PILOT_TRANSSCOPE
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
@@ -2767,8 +2768,9 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  iFED->enableSpyMemory(0);
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
 
-	    if (countLoops % 10 == 0) {
-#if 0
+#ifdef PILOT_TRANSSCOPE
+	    if (countLoops % 5 == 0) {
+#if 1
 	      static int ncalls = 0;
 	      static unsigned long first_us;
 	      ++ncalls;
@@ -2827,6 +2829,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 
 	      //#endif
 	    }
+#endif //PILOT_TRANSSCOPE
 
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
