@@ -316,7 +316,7 @@ void storeEnbableBits();
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
   bool printIfSlinkHeaderMessedup;
 
-  int DauCards_lastStatusPoll;
+  long long DauCards_lastStatusPoll;
   
 #ifdef USE_HAL  // Access VME with HAL
   const HAL::VMEDevice *const vmeDevicePtr;

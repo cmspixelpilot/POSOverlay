@@ -1001,7 +1001,7 @@ uint32_t PixelFEDInterface::readDigFEDOSDFifo(int channel) {
 }
 
 void PixelFEDInterface::readDigFEDTempFifo(){
-  uint32_t data = 0x80000000;
+  //uint32_t data = 0x80000000;
   uint32_t d, i;
 #ifdef USE_HAL // Use HAL
     
@@ -1117,16 +1117,22 @@ void PixelFEDInterface::readDigFEDTempFifo(){
 
 void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   if (!override_timeout) {
-    const int t = time(0);
-    if (t - DauCards_lastStatusPoll < 5)
+    timeval t;
+    int s = gettimeofday(&t, 0);
+    if (s != 0) {
+      perror("problem w gettimeofday in readDigFEDStatus");
       return;
-    DauCards_lastStatusPoll = t;
+    }
+    long long tt = t.tv_sec*1000000 + t.tv_usec;
+    if (tt - DauCards_lastStatusPoll < 12000000) // 24 * 0.5 sec
+      return;
+    DauCards_lastStatusPoll = tt;
   }
 
-  uint32_t d, i;
-  
-
-  const int Npoll = 24;
+  uint32_t d;
+  size_t i;
+  const size_t Npoll = 48;
+  const size_t Nkeep = 24;
 
   int lock[19] = {0};
   std::vector<int> phases[19];
@@ -1139,6 +1145,8 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   if (verbose) printf("\n\n\nPIGGYstatus NORTHup    CH#1 / 2  CH#3 / 4  CH#5 / 6  \n\n") ;
   for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_N", &d, 0x158000);
+    if (i >= Nkeep)
+      continue;
 
     int a = phases[1][i] = d&0x7;
     int b = phases[2][i] = (d>>8)&0x7;
@@ -1162,6 +1170,8 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   if (verbose) printf("\n\n\nPIGGYstatus NORTHdown  CH#7 / 8  CH#9 /10  CH#11/12    \n\n");
   for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_N", &d, 0x178000);
+    if (i >= Nkeep)
+      continue;
 
     int a = phases[4][i] = d&0x7;
     int b = phases[5][i] = (d>>8)&0x7;
@@ -1185,6 +1195,8 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   if (verbose) printf("\n\n\nPIGGYstatus SOUTHup    CH#25/26  CH#27/28  CH#29/30      \n\n") ;
   for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_S", &d, 0x158000);
+    if (i >= Nkeep)
+      continue;
 
     int a = phases[13][i] = d&0x7;
     int b = phases[14][i] = (d>>8)&0x7;
@@ -1208,6 +1220,8 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown  CH#31/32  CH#33/34  CH#35/36      \n\n") ;
   for(i=0;i<Npoll;i++)  {
     vmeDevicePtr->read("LAD_S", &d, 0x178000);
+    if (i >= Nkeep)
+      continue;
 
     int a = phases[16][i] = d&0x7;
     int b = phases[17][i] = (d>>8)&0x7;
@@ -1240,7 +1254,7 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
       rmses[j] += pow(phases[j][k] - means[j], 2);
     rmses[j] /= (Npoll - 1);
     rmses[j] = sqrt(rmses[j]);
-    printf("ch %2i/%2i: #locks: %2i/%2i  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], Npoll, means[j], rmses[j]);
+    printf("ch %2i/%2i: #locks: %2i/%2i  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], Nkeep, means[j], rmses[j]);
   }
 
   fflush(stdout);
