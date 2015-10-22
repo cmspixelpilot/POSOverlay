@@ -1,5 +1,5 @@
 ConfigurationAliases
-hmm  291 ;
+hmm  295 ;
 Physics     225 ;
 PhysicsEmulator     136   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Emulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
 PhysicsNoSlink     224 ;
@@ -136,9 +136,10 @@ tkfecconfig  0 Default ;
 ttcciconfig  0 Default ;
 ttcciconfig  6 iCILocal ;
 ttcciconfig  7 iCIGlobal ;
-ttcciconfig  8 local44khzClose ;
+ttcciconfig  8 local44khz4Close ;
 ttcciconfig  9 local1khzSingle ;
 ttcciconfig  10 local1hzSingle ;
+ttcciconfig  15 local2khz2Close ;
 ltcconfig  0 Default ;
 calib  32 VcThrCalDel ;
 calib  34 TBMDelay ;
