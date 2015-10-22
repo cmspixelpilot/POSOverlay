@@ -2,11 +2,15 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#ifdef DO_DECODE
 #include "PixelUtilities/PixelFEDDataTools/include/DigScopeDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/DigTransDecoder.h"
+#endif
 
 using namespace std;
 
@@ -33,9 +37,9 @@ ostream& operator<<(ostream& o, const marker_t& m) {
   if (m.d3_valid) o << " d3: " << hex << setw(2) << unsigned(m.d3) << dec;
   o << ")";
   if (m.type == 7 && m.d1_valid && m.d2_valid && m.d3_valid) {
-    const int dcol = (m.d1 & 0xfc) >> 2;
-    const int pxl = ((m.d1 & 1) << 7) | ((m.d2 & 0xe0) >> 1);
-    const int hit = ((m.d2&1)<<7) | ((m.d3&0xe0)>>1) | (m.d3&0xf);
+    //const int dcol = (m.d1 & 0xfc) >> 2;
+    //const int pxl = ((m.d1 & 1) << 7) | ((m.d2 & 0xe0) >> 1);
+    //const int hit = ((m.d2&1)<<7) | ((m.d3&0xe0)>>1) | (m.d3&0xf);
     //cout << " (dc: " << setw(2) << dcol << " pxl: " << setw(3) << pxl << " hit " << setw(3) << hit << ")";
   }
   if (m.type == 12 && m.d0_valid && m.d1_valid) {
@@ -64,10 +68,9 @@ struct sort_by_at {
 };
 
 int main(int argc, char** argv) {
-  assert(argc >= 4);
-  //const int maxNumHitsPerROC = atoi(argv[1]); //tempCalibObject->maxNumHitsPerROC()
-  FILE* ftrans = fopen(argv[2], "rb");
-  FILE* fscope = fopen(argv[3], "rb");
+  assert(argc >= 3);
+  FILE* ftrans = fopen(argv[1], "rb");
+  FILE* fscope = fopen(argv[2], "rb");
   assert(ftrans && fscope);
 
   const int MaxChips = 8;
@@ -75,7 +78,7 @@ int main(int argc, char** argv) {
   uint8_t bufferS[MaxChips][1024];
   int statusS[MaxChips] = {0};
 
-#if 0
+#ifdef DO_DECODE
   DigTransDecoder* decodeT[MaxChips] = {0};
   DigScopeDecoder* decodeS[MaxChips] = {0};
   for (int chip = 1; chip <= 7; chip += 2) {
@@ -377,184 +380,35 @@ int main(int argc, char** argv) {
 		  printf("%i ", nrocs[k]);
 		printf("\n");
 	      }
-	    }
-	  }
-	  
-#if 0
-	  cout << "try to align with headers:\n";
-	  const int nroccands = 8;
-	  for (int j = 0; j < 2; ++j) {
-	    cout << "tbm " << j << ":\n";
-	    int besttbmhead = -1;
-	    int besttbmheadcount = -1;
-	    int besttbmtrail = -1;
-	    int besttbmtrailcount = -1;
-	    vector<int> bestroc(nroccands, -1);
-	    vector<int> bestroccount(nroccands, -1);
-	    vector<int> bestrocalign(nroccands, -1);
-	    int count = -1;
-	    const int nbits = bits[j].size();
-	    if (nbits < 12)
-	      cout << "not enough bits\n";
-	    else {
-	      for (int i = 0; i < nbits - 12; ++i) {
-		count = 
-		  int(bits[j][i   ] == '0') +
-		  int(bits[j][i+ 1] == '1') +
-		  int(bits[j][i+ 2] == '1') +
-		  int(bits[j][i+ 3] == '1') +
-		  int(bits[j][i+ 4] == '1') +
-		  int(bits[j][i+ 5] == '1') +
-		  int(bits[j][i+ 6] == '1') +
-		  int(bits[j][i+ 7] == '1') +
-		  int(bits[j][i+ 8] == '1') +
-		  int(bits[j][i+ 9] == '1') +
-		  int(bits[j][i+10] == '0') +
-		  int(bits[j][i+11] == '0');
-		if (count > besttbmheadcount) {
-		  besttbmheadcount = count;
-		  besttbmhead = i;
-		}
 
-		count = 
-		  int(bits[j][i   ] == '0') +
-		  int(bits[j][i+ 1] == '1') +
-		  int(bits[j][i+ 2] == '1') +
-		  int(bits[j][i+ 3] == '1') +
-		  int(bits[j][i+ 4] == '1') +
-		  int(bits[j][i+ 5] == '1') +
-		  int(bits[j][i+ 6] == '1') +
-		  int(bits[j][i+ 7] == '1') +
-		  int(bits[j][i+ 8] == '1') +
-		  int(bits[j][i+ 9] == '1') +
-		  int(bits[j][i+10] == '1') +
-		  int(bits[j][i+11] == '0');
-		if (count > besttbmtrailcount) {
-		  besttbmtrailcount = count;
-		  besttbmtrail = i;
-		}
+	      for (int k = 0; k < ntbmt; ++k) {
+		const marker_t& t = tbmtrail[k];
+		if (t.d1 & 0x40) {
+		  marker_t rh(0, 0, 0);
+		  for (int kk = 0; kk < nroch; ++kk) {
+		    const marker_t& r = rochead[kk];
+		    if (r.at < t.at && r.at > rh.at)
+		      rh = r;
+		  }
 
-		count = 
-		  int(bits[j][i   ] == '0') +
-		  int(bits[j][i+ 1] == '1') +
-		  int(bits[j][i+ 2] == '1') +
-		  int(bits[j][i+ 3] == '1') +
-		  int(bits[j][i+ 4] == '1') +
-		  int(bits[j][i+ 5] == '1') +
-		  int(bits[j][i+ 6] == '1') +
-		  int(bits[j][i+ 7] == '1') +
-		  int(bits[j][i+ 8] == '1') +
-		  int(bits[j][i+ 9] == '0');
-		const int align = (i - (besttbmhead + 12 + 16)) % 12;
-		if (align == 0) {
-		  for (int k = 0; k < nroccands; ++k) {
-		    if (count > bestroccount[k]) {
-		      int tmpcount = bestroccount[k];
-		      int tmp = bestroc[k];
-		      bestroccount[k] = count;
-		      bestroc[k] = i;
-		      for (int l = nroccands-1; l > k+1; --l) {
-			bestroccount[l] = bestroccount[l-1];
-			bestroc[l] = bestroc[l-1];
-		      }
-		      if (k < nroccands-1) {
-			bestroccount[k+1] = tmpcount;
-			bestroc[k+1] = tmp;
-		      }
-		      break;
+		  int streak = 0, streak_at = 0;
+		  for (int i = rh.at + 12; i < t.at; ++i) {
+		    if (bits[j][i] == '1')
+		      ++streak;
+		    else {
+		      streak = 0;
+		      streak_at = i;
 		    }
 		  }
+		  printf("pkam 1s streak between %i and %i: %i starting at %i (%i from end of roc header)\n", rh.at+12, t.at, streak, streak_at, streak_at - (rh.at+12));
 		}
 	      }
 
-	      cout << "best match of tbm header  at " << setw(4) << nbeg*16 + besttbmhead  << " with count " << besttbmheadcount << "\n";
-	      cout << "best match of tbm trailer at " << setw(4) << nbeg*16 + besttbmtrail << " with count " << besttbmtrailcount << "\n";
-	      if ((besttbmtrail - (besttbmhead + 12 + 16)) % 12 != 0)
-		cout << "  ^ tbm trailer misaligned wrt tbm header!\n";
-	      cout << "matches of roc headers:\n";
-	      int bestroccountsum = 0;
-	      for (int k = 0; k < nroccands; ++k) {
-		cout << "  at " << setw(4) << nbeg*16 + bestroc[k] << " with count " << bestroccount[k] << "\n";
-		if (k < 8) {
-		  bestroccountsum += bestroccount[k];
-		  if ((bestroc[k] - (besttbmhead + 12 + 16)) % 12 != 0)
-		    cout << "    ^ roc header misaligned wrt tbm header!\n";
-		}
-	      }
-
-	      //		  vector<pair<int, int> > roccands;
-	      //		  for (int k = 0; k < nroccands; ++k) {
-	      //		    if (bestroccount[k] == 10) {
-	      //		      roccands.push_back(make_pair(
-	      //		  }
-		  
-
-	      if (besttbmheadcount != 12 || besttbmtrailcount != 12 || bestroccountsum != 80)
-		cout << "problem with headers or trailers!\n";
-
-	      cout << "print, aligning only with tbm header, and guessing where roc headers and hit bits should be based on " << maxNumHitsPerROC << " hits / roc in calib\n";
-	      cout << "throw away: ";
-	      for (int i = 0; i < besttbmhead; ++i) {
-		cout << bits[j][i];
-		if (i % 4 == 3) cout << " ";
-	      }
-	      cout << "\n";
-
-	      cout << "tbm header: ";
-	      for (int i = besttbmhead; i < besttbmhead+12; ++i) {
-		cout << bits[j][i];
-	      }
-	      cout << "  payload: ";
-	      for (int i = besttbmhead+12; i < besttbmhead+12+2*8; ++i) {
-		cout << bits[j][i];
-		const int id = i-(besttbmhead+12);
-		if (id == 7 || id == 9) cout << " ";
-	      }
-	      cout << "\n";
-
-	      const int nhitsperroc = maxNumHitsPerROC;
-	      const int nbitsperroc = 12 + 3*8*nhitsperroc;
-	      for (int k = 0; k < 8; ++k) {
-		const int ib = besttbmhead+12+2*8 + nbitsperroc*k;
-		const int ic = besttbmhead+12+2*8 + nbitsperroc*k + 12;
-		const int ie = besttbmhead+12+2*8 + nbitsperroc*(k+1);
-		cout << "roc " << k << " header: ";
-		for (int i = ib; i < ic; ++i) {
-		  cout << bits[j][i];
-		  if ((i-ib) == 9) cout << " ";
-		}
-		cout << "\nhits:\n";
-		for (int i = ic; i < ie; ++i) {
-		  cout << bits[j][i];
-		  const int id = (i - ic) % 24;
-		  if (id == 5 || id == 14 || id == 18 || id == 19) cout << " ";
-		  else if (id == 23) cout << "\n";
-		}
-	      }
-
-	      cout << "tbm trailer: ";
-	      {
-		const int ib = besttbmhead+12+2*8 + nbitsperroc*8;
-		const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
-		for (int i = ib; i < ie; ++i)
-		  cout << bits[j][i];
-	      }
-	      cout << "  payload: ";
-	      {
-		const int ib = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
-		const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12 + 16;
-		for (int i = ib; i < ie; ++i) {
-		  cout << bits[j][i];
-		  if ((i-ib) % 4 == 3) cout << " ";
-		}
-	      }
-	      cout << endl;
 	    }
 	  }
-#endif
 	}
 
-#if 0
+#ifdef DO_DECODE
 	cout << "DigTransDecoder thinks:\n";
 	decodeT[chip]->printToStream(cout);
 #endif
@@ -630,7 +484,7 @@ int main(int argc, char** argv) {
 	}
 	cout << "\n----------------------------------" << endl;
       }
-#if 0
+#ifdef DO_DECODE
       cout << "DigScopeDecoder thinks:\n";
       decodeS[chip]->printToStream(cout);
 #endif
@@ -649,7 +503,7 @@ int main(int argc, char** argv) {
     for (int j = 0; j < 2; ++j)
       printf("chip %i tbm %i  #ok: %i  #tbm head: %i  #tbm trail: %i  #roc head: %i\n", chip, j, nok[chip][j], num_tbmhead[chip][j], num_tbmtrail[chip][j], num_rochead[chip][j]);
 
-#if 0
+#ifdef DO_DECODE
   for (int chip = 1; chip <= 7; chip += 2) {
     if (chip == 1 || chip == 7)
       delete decodeT[chip];
