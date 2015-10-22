@@ -16,6 +16,8 @@ f = ROOT.TFile(in_fn)
 
 dirs = [
     'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL1/Pilt_BmI_D3_BLD2_PNL1_PLQ1',
+    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD5/Pilt_BmI_D3_BLD5_PNL1/Pilt_BmI_D3_BLD5_PNL1_PLQ1',
+    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD5/Pilt_BmI_D3_BLD5_PNL2/Pilt_BmI_D3_BLD5_PNL2_PLQ1',
     ]
 
 by_ntrigs = []

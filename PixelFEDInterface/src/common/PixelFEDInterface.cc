@@ -6198,3 +6198,23 @@ void PixelFEDInterface::sendResets() {
   vmeDevicePtr->write("CLRES",data);
   usleep(10);
 }
+
+uint32_t PixelFEDInterface::testReg(uint32_t data) {
+  uint32_t ret = 0;
+  uint32_t d;
+  const char* regs[5] = {
+    "TestReg",
+    "NWrRdTestReg",
+    "NCWrRdTestReg",
+    "SCWrRdTestReg",
+    "SWrRdTestReg"
+  };
+  for (int i = 0; i < 5; ++i) {
+    vmeDevicePtr->write(regs[i], data);
+    usleep(10000);
+    vmeDevicePtr->read(regs[i], &d);
+    usleep(10000);
+    ret |= int(data == d) << i;
+  }
+  return ret;
+}

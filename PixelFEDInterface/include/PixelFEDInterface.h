@@ -52,6 +52,7 @@ class PixelFEDInterface {
 
 #endif // USE_HAL
 
+  uint32_t testReg(uint32_t data);
 
   // These do not use VME access
   int configFile(string fileName); // readin the DB parameters
