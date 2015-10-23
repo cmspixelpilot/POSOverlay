@@ -593,8 +593,8 @@ void PixelDACSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
     const bool kmeKLUDGE=false;
     if(kmeKLUDGE) //enable one pixel per ROC for calibration (all the time!)
       {
-	unsigned int col=0;
-	//for(unsigned int col=0;col<52;col+=50) //try 0, 50
+	//unsigned int col=0;
+	for(unsigned int col=0;col<51;col+=1) //try 0, 50
 	  {
 	    pixelFEC->calpix(theROC.mfec(),
 			     theROC.mfecchannel(),
