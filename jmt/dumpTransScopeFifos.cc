@@ -418,6 +418,7 @@ int main(int argc, char** argv) {
       if (statusS[chip] < 0)
 	cout << "Scope FIFO for chip = " << chip << " status = " << statusS[chip] << endl;
       else {
+	std::vector<uint8_t> events;
 	cout << "Contents of Scope FIFO for chip = " << chip << "(statusS = " << statusS[chip] << ")" <<endl;
 	cout << "----------------------------------" << endl;
 	for (int i = 0; i <= statusS[chip]; ++i) {
@@ -436,6 +437,7 @@ int main(int argc, char** argv) {
 	      (bufferS[chip][i-2] & 0xf0) == 0x90 &&
 	      (bufferS[chip][i-3] & 0xf0) == 0x80) {
 	    const int ev = ((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf);
+	    events.push_back(ev);
 	    const int da = ((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf);
 	    cout << "| ev: " << setw(3) << ev << " data: " << hex << da << dec << " = ";
 	    for (int k = 7; k >= 0; --k) { cout << (da&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
@@ -482,6 +484,9 @@ int main(int argc, char** argv) {
 	  //if ((dh >> 4) >= 1 && (dh >> 4) <= 6)
 	  //  cout << " hello!\n";
 	}
+	cout << "events seen: ";
+	for (size_t k = 0; k < events.size(); ++k)
+	  cout << hex << setw(2) << int(events[k]) << dec << " ";
 	cout << "\n----------------------------------" << endl;
       }
 #ifdef DO_DECODE
