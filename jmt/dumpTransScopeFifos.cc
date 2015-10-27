@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
 
     ++nevents;
 
-    for (int chip = 5; chip <= 7; chip += 2) {
+    for (int chip = 1; chip <= 7; chip += 2) {
       if (chip == 1 || chip == 7) {
 	int trans_found = 0;
 	//uint32_t pattern = 0;
