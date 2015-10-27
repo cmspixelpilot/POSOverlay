@@ -5444,3 +5444,20 @@ portcardmap   0
 ttcciconfig   7
 ltcconfig   0
 tkfecconfig   0
+
+key 312
+detconfig   10
+lowvoltagemap   0
+nametranslation   0
+fedconfig   0
+fecconfig   0
+fedcard   19
+dac   45
+mask   6
+trim   11
+tbm   1
+portcard   0
+portcardmap   0
+ttcciconfig   7
+ltcconfig   0
+tkfecconfig   0
