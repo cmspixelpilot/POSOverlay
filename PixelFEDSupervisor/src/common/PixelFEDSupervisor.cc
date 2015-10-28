@@ -2769,8 +2769,8 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
 
 #ifdef PILOT_TRANSSCOPE
-	    if (countLoops % 5 == 0) {
-#if 1
+	    if (countLoops % 10 == 0) {
+#if 0
 	      static int ncalls = 0;
 	      static unsigned long first_us;
 	      ++ncalls;
