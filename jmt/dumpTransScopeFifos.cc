@@ -73,6 +73,8 @@ int main(int argc, char** argv) {
   FILE* fscope = fopen(argv[2], "rb");
   assert(ftrans && fscope);
 
+  const bool interp_scope = false;
+
   const int MaxChips = 8;
   uint32_t bufferT[MaxChips][256];
   uint8_t bufferS[MaxChips][1024];
@@ -96,8 +98,11 @@ int main(int argc, char** argv) {
 
   while (1) {
     for (int chip = 1; chip <= 7; chip += 2) {
-      if (chip == 1 || chip == 7)
-	fread(bufferT[chip], sizeof(uint32_t), 256, ftrans);
+      if (chip == 1 || chip == 7) {
+	const size_t n = fread(bufferT[chip], sizeof(uint32_t), 256, ftrans);
+	if (n == 0)
+	  goto done;
+      }
       fread(&statusS[chip], sizeof(int), 1, fscope);
       assert(statusS[chip] <= 1024);
       if (statusS[chip] > 0)
@@ -106,8 +111,8 @@ int main(int argc, char** argv) {
 
     ++nevents;
 
-    for (int chip = 1; chip <= 7; chip += 2) {
-      if (chip == 1 || chip == 7) {
+    for (int chip = 1; chip <= 1; chip += 2) {
+      if (0) { //chip == 1 || chip == 7) {
 	int trans_found = 0;
 	//uint32_t pattern = 0;
 	uint32_t* data  = bufferT[chip];
@@ -421,15 +426,39 @@ int main(int argc, char** argv) {
 	std::vector<uint8_t> events;
 	cout << "Contents of Scope FIFO for chip = " << chip << "(statusS = " << statusS[chip] << ")" <<endl;
 	cout << "----------------------------------" << endl;
-	for (int i = 0; i <= statusS[chip]; ++i) {
-	  uint8_t d = bufferS[chip][i];
-	  //printf("%i %08x\n", i, d);
-	  uint8_t dh = d & 0xf0;
-	  if (d > 0xFF)
-	    cout << "\nweird word: " << hex << int(d) << "\n";
-	  else 
-	    cout << setw(2) << hex << int(d) << dec << " ";
-	  if (dh == 0x70)
+	bool weird = false;
+	bool weird_first = false;
+	for (int i = 0; i < statusS[chip]; ++i) {
+	  const uint8_t d = bufferS[chip][i];
+	  const uint8_t dh = d & 0xf0;
+	  const uint8_t last_dh = i > 0 ? (bufferS[chip][i-1] & 0xf0) : 0;
+
+	  cout << setw(2) << hex << int(d) << dec << " ";
+
+	  if ((i == 0 && dh != 0x80 && statusS[chip] != 1023) ||
+	      (last_dh == 0x80 && dh != 0x90) ||
+	      (last_dh == 0x90 && dh != 0xa0) ||
+	      (last_dh == 0xa0 && dh != 0xb0) ||
+	      (last_dh == 0xb0 && dh != 0x70 && dh != 0xc0) ||
+	      (last_dh == 0x70 && dh != 0x70 && dh != 0x10 && dh != 0xc0) ||
+	      (last_dh == 0x10 && dh != 0x20) ||
+	      (last_dh == 0x20 && dh != 0x30) ||
+	      (last_dh == 0x30 && dh != 0x40) ||
+	      (last_dh == 0x40 && dh != 0x50) ||
+	      (last_dh == 0x50 && dh != 0x60) ||
+	      (last_dh == 0x60 && dh != 0x10 && dh != 0x70 && dh != 0xc0) ||
+	      (last_dh == 0xc0 && dh != 0xd0) ||
+	      (last_dh == 0xd0 && dh != 0xe0) ||
+	      (last_dh == 0xe0 && dh != 0xf0) ||
+	      (last_dh == 0xf0 && dh != 0x0 && dh != 0x80)) {
+	    //printf("weird! (last_dh 0x%02x dh 0x%02x) ", last_dh, dh);
+	    printf("WW ");
+	    weird = true;
+	    if (i == 0)
+	      weird_first = true;
+	  }
+
+	  if (dh == 0x70 || dh == 0xb0 || dh == 0xf0 || dh == 0x60)
 	    cout << "\n";
 
 	  if (i >= 3 && dh == 0xb0 &&
@@ -439,52 +468,68 @@ int main(int argc, char** argv) {
 	    const int ev = ((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf);
 	    events.push_back(ev);
 	    const int da = ((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf);
-	    cout << "| ev: " << setw(3) << ev << " data: " << hex << da << dec << " = ";
-	    for (int k = 7; k >= 0; --k) { cout << (da&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
-	    cout << "\n";
+	    if (interp_scope) {
+	      cout << "| ev: " << setw(3) << ev << " data: " << hex << da << dec << " = ";
+	      for (int k = 7; k >= 0; --k) { cout << (da&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	      cout << "\n";
+	    }
 	  }
 	  else if (i >= 3 && dh == 0xf0 &&
-	      (bufferS[chip][i-1] & 0xf0) == 0xe0 &&
-	      (bufferS[chip][i-2] & 0xf0) == 0xd0 &&
-	      (bufferS[chip][i-3] & 0xf0) == 0xc0) {
+		   (bufferS[chip][i-1] & 0xf0) == 0xe0 &&
+		   (bufferS[chip][i-2] & 0xf0) == 0xd0 &&
+		   (bufferS[chip][i-3] & 0xf0) == 0xc0) {
 	    const int da0 = ((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf);
 	    const int da1 = ((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf);
-	    cout << "| d0: " << setw(2) << hex << da0 << dec << " = ";
-	    for (int k = 7; k >= 0; --k) { cout << (da0&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    if (interp_scope) {
+	      cout << "| d0: " << setw(2) << hex << da0 << dec << " = ";
+	      for (int k = 7; k >= 0; --k) { cout << (da0&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	    }
 	    if (da0 & 0x80) cout << " NTP ";
 	    if (da1 & 0x40) cout << " PKAM ";
 	    if (da1 & 0x1f) cout << " STACK ";
-	    cout << " d1: " << hex << da1 << dec << " = ";
-	    for (int k = 7; k >= 0; --k) { cout << (da1&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
-	    cout << "\n";
+	    if (interp_scope) {
+	      cout << " d1: " << hex << da1 << dec << " = ";
+	      for (int k = 7; k >= 0; --k) { cout << (da1&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	      cout << "\n";
+	    }
 	  }
 	  else if (i >= 5 && dh == 0x60 &&
-	      (bufferS[chip][i-1] & 0xf0) == 0x50 &&
-	      (bufferS[chip][i-2] & 0xf0) == 0x40 &&
-	      (bufferS[chip][i-3] & 0xf0) == 0x30 &&
-	      (bufferS[chip][i-4] & 0xf0) == 0x20 &&
-	      (bufferS[chip][i-5] & 0xf0) == 0x10) {
- 	    const int a = int(((bufferS[chip][i-5] & 0xf) << 4) | (bufferS[chip][i-4] & 0xf));
- 	    const int b = int(((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf));
- 	    const int c = int(((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf));
+		   (bufferS[chip][i-1] & 0xf0) == 0x50 &&
+		   (bufferS[chip][i-2] & 0xf0) == 0x40 &&
+		   (bufferS[chip][i-3] & 0xf0) == 0x30 &&
+		   (bufferS[chip][i-4] & 0xf0) == 0x20 &&
+		   (bufferS[chip][i-5] & 0xf0) == 0x10) {
+	    const int a = int(((bufferS[chip][i-5] & 0xf) << 4) | (bufferS[chip][i-4] & 0xf));
+	    const int b = int(((bufferS[chip][i-3] & 0xf) << 4) | (bufferS[chip][i-2] & 0xf));
+	    const int c = int(((bufferS[chip][i-1] & 0xf) << 4) | (bufferS[chip][i]   & 0xf));
 	    const int dcol = a >> 2;
 	    const int pxl = ((a&3) << 7) | (b >> 1);
 	    const int hit = ((b&1)<<7) | ((c&0xe0)>>1) | (c&0xf);
-	    cout << "| ";
-	    cout << hex << setw(2) << a << " " << dec;
-	    cout << hex << setw(2) << b << " " << dec;
-	    cout << hex << setw(2) << c << " " << dec;
-	    cout << " | ";
-	    for (int k = 7; k >= 0; --k) { cout << (a&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
-	    for (int k = 7; k >= 0; --k) { cout << (b&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
-	    for (int k = 7; k >= 0; --k) { cout << (c&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
-	    cout << "| dc: " << setw(2) << dcol << " pxl: " << setw(3) << pxl << " hit " << setw(3) << hit << "\n";
+	    if (interp_scope) {
+	      cout << "| ";
+	      cout << hex << setw(2) << a << " " << dec;
+	      cout << hex << setw(2) << b << " " << dec;
+	      cout << hex << setw(2) << c << " " << dec;
+	      cout << " | ";
+	      for (int k = 7; k >= 0; --k) { cout << (a&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	      for (int k = 7; k >= 0; --k) { cout << (b&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	      for (int k = 7; k >= 0; --k) { cout << (c&(1<<k) ? 1 : 0); if (k == 4 || k == 0) cout << " "; }
+	      cout << "| dc: " << setw(2) << dcol << " pxl: " << setw(3) << pxl << " hit " << setw(3) << hit << "\n";
+	    }
 	  }
-
-	  //if ((dh >> 4) >= 1 && (dh >> 4) <= 6)
-	  //  cout << " hello!\n";
 	}
-	cout << "events seen: ";
+
+	if (weird) {
+	  if (statusS[chip] < 1023) {
+	    if (!weird_first)
+	      printf("weird non-full event not at first\n");
+	    else
+	      printf("weird non-full event\n");
+	  }
+	  else
+	    printf("weird full event\n");
+	}
+	cout << "\nevents seen: ";
 	for (size_t k = 0; k < events.size(); ++k)
 	  cout << hex << setw(2) << int(events[k]) << dec << " ";
 	cout << "\n----------------------------------" << endl;
@@ -503,6 +548,7 @@ int main(int argc, char** argv) {
     }
   }
 
+ done:
   printf("nevents: %i\n", nevents);
   for (int chip = 1; chip <= 7; chip += 6)
     for (int j = 0; j < 2; ++j)
