@@ -10,7 +10,7 @@
 
 #define READ_LASTDAC  // Enable the last dac writing
 #define PILOT_FED
-//#define PILOT_TRANSSCOPE
+#define PILOT_TRANSSCOPE
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
@@ -2645,6 +2645,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //North FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_N",&data,0x5c000);
            statusFile <<"North fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("NWrRdCntrReg", &data);
+           statusFile <<"N  skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+1 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_N",&data,0x7c000);
            statusFile <<"N  fifo I level ch  1: "<<dec<<(data&0x3ff)<<"/  2: "<<dec<<((data&0xffc00)>>10)<<"/  3: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_N",&data,0xdc000);
@@ -2655,6 +2659,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //North Center FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_NC",&data,0x5c000);
            statusFile <<"North Center fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("NCWrRdCntrReg", &data);
+           statusFile <<"NC skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+10 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_NC",&data,0x7c000);
            statusFile <<"NC  fifo I level ch  10: "<<dec<<(data&0x3ff)<<"/  11: "<<dec<<((data&0xffc00)>>10)<<"/  12: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_NC",&data,0xdc000);
@@ -2665,6 +2673,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //South Center FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_SC",&data,0x5c000);
            statusFile <<"South Center fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("SCWrRdCntrReg", &data);
+           statusFile <<"SC  skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+19 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_SC",&data,0x7c000);
            statusFile <<"SC  fifo I level ch  19: "<<dec<<(data&0x3ff)<<"/  20: "<<dec<<((data&0xffc00)>>10)<<"/  21: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_SC",&data,0xdc000);
@@ -2675,6 +2687,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //South FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_S",&data,0x5c000);
            statusFile <<"South fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("SWrRdCntrReg", &data);
+           statusFile <<"S  skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+28 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_S",&data,0x7c000);
            statusFile <<"S  fifo I level ch  28: "<<dec<<(data&0x3ff)<<"/  29: "<<dec<<((data&0xffc00)>>10)<<"/  30: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_S",&data,0xdc000);
@@ -2794,6 +2810,8 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig & 0xffffffef;
 		iFED->loadControlRegister();
 	      }
+
+	      usleep(1000);
 
 	      //	    const int MaxChans = 37;    
 	      //	    uint32_t bufferFifo1[MaxChans][1024];
