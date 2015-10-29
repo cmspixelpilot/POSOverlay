@@ -10,7 +10,7 @@
 
 #define READ_LASTDAC  // Enable the last dac writing
 #define PILOT_FED
-#define PILOT_TRANSSCOPE
+//#define PILOT_TRANSSCOPE
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
