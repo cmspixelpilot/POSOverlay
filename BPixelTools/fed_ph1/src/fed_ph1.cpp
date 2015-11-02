@@ -117,7 +117,8 @@ void analyzeError(CVErrorCodes ret)
 	}
 }
 
-ofstream file("output.txt");
+ofstream file_PU("output_piggy_up.txt");
+ofstream file_PD("output_piggy_down.txt");
 
 int main(int argc, void *argv[])
 {
@@ -746,23 +747,24 @@ start:
 			// VMEout(0x3,LAD_SC+0x1a0000,4,0x1ff);
 			// VMEout( 0x3,LAD_S+0x1a0000,4,0x1ff);
 
-			// only ch 33-34 on S piggy enabled
+			// only ch 33-34 on S piggy enabled; ch 11
+// 			VMEout(0x3, LAD_N + 0x1a0000, 4, 0x1ff);
+// 			VMEout(0x3, LAD_NC + 0x1a0000, 4, 0x1ff);
+// 			VMEout(0x3, LAD_SC + 0x1a0000, 4, 0x1ff);
+// 			VMEout(0x3, LAD_S + 0x1a0000, 4, 0x19f);
+
+			// South Piggy all chs enabled
+// 			VMEout(0x3, LAD_N + 0x1a0000, 4, 0x1ff);
+// 			VMEout(0x3, LAD_NC + 0x1a0000, 4, 0x1ff);
+// 			VMEout(0x3, LAD_SC + 0x1a0000, 4, 0x03f);
+// 			VMEout(0x3, LAD_S + 0x1a0000, 4, 0x186);
+
+			// South Piggy ch #11 enabled
 			VMEout(0x3, LAD_N + 0x1a0000, 4, 0x1ff);
 			VMEout(0x3, LAD_NC + 0x1a0000, 4, 0x1ff);
 			VMEout(0x3, LAD_SC + 0x1a0000, 4, 0x1ff);
-			VMEout(0x3, LAD_S + 0x1a0000, 4, 0x19f);
-
-			// South Piggy all chs enabled
-			// VMEout( 0x3,LAD_N+0x1a0000,4,0x1ff);
-			// VMEout(0x3,LAD_NC+0x1a0000,4,0x1ff);
-			// VMEout(0x3,LAD_SC+0x1a0000,4,0x03f);
-			// VMEout( 0x3,LAD_S+0x1a0000,4,0x186);
-
-			// South Piggy ch #11 enabled
-			// VMEout( 0x3,LAD_N+0x1a0000,4,0x1ff);
-			// VMEout(0x3,LAD_NC+0x1a0000,4,0x1ff);
-			// VMEout(0x3,LAD_SC+0x1a0000,4,0x1ff);
-			// VMEout(0x3,LAD_S+0x1a0000,4,0x19f); // ch#11 enabled
+// 			VMEout(0x3, LAD_S + 0x1a0000, 4, 0x19f); // ch#11 enabled
+            VMEout(0x3, LAD_S + 0x1a0000, 4, 0x186); // all chs.
 
 			// Both North and South Piggy enabled
 			// VMEout( 0x3,LAD_N+0x1a0000,4,0x000);
@@ -788,12 +790,12 @@ start:
 
 			VMEout(0x3, LAD_N + 0x1c0000, 4,
 				   0x700); // For Up Piggy mode register bit [11..8] = 5 (0 for
-						   // ch28, 1 for ch29, 2 for ch30, 3 for ch3a, 4 for
+						   // ch28, 1 for ch29, 2 for ch30, 3 for ch31, 4 for
 						   // ch32, 5 for ch33, 6 for ch34, 7 for ch35, 8 for
 						   // ch36)
 			VMEout(0x3, LAD_S + 0x1c0000, 4,
-				   0x500); // For Down Piggy  mode register bit [11..8] = 5 (0
-						   // for ch28, 1 for ch29, 2 for ch30, 3 for ch3a, 4
+				   0x300); // For Down Piggy  mode register bit [11..8] = 5 (0
+						   // for ch28, 1 for ch29, 2 for ch30, 3 for ch31, 4
 						   // for ch32, 5 for ch33, 6 for ch34, 7 for ch35, 8
 						   // for ch36)
 
@@ -802,7 +804,7 @@ start:
 										  // 5-fiber#12, 4-fiber#11, 3-fiber#10,
 										  // 2-fiber#9, 1-fiber# 8, 0-fiber#7
 			VMEout(0x3, LAD_S + 0x1a8000, 4,
-				   CHa_CHb_mux + 0x2304); // ch selection for transparent mode:
+				   CHa_CHb_mux + 0x2303); // ch selection for transparent mode:
 										  // 5-fiber#12, 4-fiber#11, 3-fiber#10,
 										  // 2-fiber#9, 1-fiber# 8, 0-fiber#7
 
@@ -989,7 +991,8 @@ start:
 
 			printf("\n\n|||||CH|RO|DC|PXL|PH| S-Link |CH|RO|DC|PXL|PH|||||\n");
 
-			for (i = 1; i < 183; i++) { // 110
+            const int nr_of_lines = 183;
+			for (i = 1; i < nr_of_lines; i++) { // 110
 
 				printf("%3d:  %2d %2d %2d %3d %2x       ", i,
 					   (D_up[i] >> 26) & 0x3f, (D_up[i] >> 21) & 0x1f,
@@ -1011,7 +1014,8 @@ start:
 				// if((i%100000)==0) printf("%d\n",i);
 				//}
 			}
-			for (i = 1; i < 83; i++) { // 110
+			
+			for (i = 1; i < nr_of_lines; i++) { // 110
 
 				if (((D_up[i] >> 21) & 0x1f) > 27)
 					cout << dec << DecodeError(D_up[i]) << dec << " data 0x"
@@ -1055,27 +1059,28 @@ start:
 					BinDisplay(d & 0xffff, 16, 0, 0);
 					printf("\n");
 
-					file << hex << ((d >> 16) & 0xffff) << " " << hex
+                    // Printing to a file:
+					file_PU << hex << ((d >> 16) & 0xffff) << " " << hex
 						 << (d & 0xffff) << "   ";
+                    
 					int Bits(16);
 					int i1;
 					unsigned long mask;
-
 					mask = 1 << (Bits - 1);
 					for (i1 = 0; i1 < Bits; i1++) {
 						if ((((d >> 16) & 0xffff) << i1) & mask)
-							file << "1";
+							file_PU << "1";
 						else
-							file << "0";
+							file_PU << "0";
 					}
-					file << "    ";
+					file_PU << "    ";
 					for (i1 = 0; i1 < Bits; i1++) {
 						if (((d & 0xffff) << i1) & mask)
-							file << "1";
+							file_PU << "1";
 						else
-							file << "0";
+							file_PU << "0";
 					}
-					file << endl;
+					file_PU << endl;
 				}
 			}
 
@@ -1088,11 +1093,35 @@ start:
 					BinDisplay((d >> 16) & 0xffff, 16, 0, 0);
 					printf("    ");
 					BinDisplay(d & 0xffff, 16, 0, 0);
-					printf("\n");
+                    printf("\n");
+                    
+                    // Printing to a file:
+					file_PD << hex << ((d >> 16) & 0xffff) << " " << hex
+						 << (d & 0xffff) << "   ";
+                    
+					int Bits(16);
+					int i1;
+					unsigned long mask;
+					mask = 1 << (Bits - 1);
+					for (i1 = 0; i1 < Bits; i1++) {
+						if ((((d >> 16) & 0xffff) << i1) & mask)
+							file_PD << "1";
+						else
+							file_PD << "0";
+					}
+					file_PD << "    ";
+					for (i1 = 0; i1 < Bits; i1++) {
+						if (((d & 0xffff) << i1) & mask)
+							file_PD << "1";
+						else
+							file_PD << "0";
+					}
+					file_PD << endl;
 				}
 			}
 
-			file.close();
+			file_PU.close();
+            file_PD.close();
 			cout << "scaler" << caendat << endl;
 			cout << "scaler after trigger" << caendat1 << endl;
 
@@ -1333,27 +1362,28 @@ start:
 							BinDisplay(d & 0xffff, 16, 0, 0);
 							printf("\n");
 
-							file << hex << ((d >> 16) & 0xffff) << " " << hex
+                            // Printing to a file:
+							file_PU << hex << ((d >> 16) & 0xffff) << " " << hex
 								 << (d & 0xffff) << "   ";
+                            
 							int Bits(16);
 							int i1;
 							unsigned long mask;
-
 							mask = 1 << (Bits - 1);
 							for (i1 = 0; i1 < Bits; i1++) {
 								if ((((d >> 16) & 0xffff) << i1) & mask)
-									file << "1";
+									file_PU << "1";
 								else
-									file << "0";
+									file_PU << "0";
 							}
-							file << "    ";
+							file_PU << "    ";
 							for (i1 = 0; i1 < Bits; i1++) {
 								if (((d & 0xffff) << i1) & mask)
-									file << "1";
+									file_PU << "1";
 								else
-									file << "0";
+									file_PU << "0";
 							}
-							file << endl;
+							file_PU << endl;
 						}
 					}
 					printf("\nPIGGYdown\n");
@@ -1366,6 +1396,29 @@ start:
 							printf("    ");
 							BinDisplay(d & 0xffff, 16, 0, 0);
 							printf("\n");
+
+                            // Printing to a file:
+							file_PD << hex << ((d >> 16) & 0xffff) << " " << hex
+								 << (d & 0xffff) << "   ";
+                            
+							int Bits(16);
+							int i1;
+							unsigned long mask;
+							mask = 1 << (Bits - 1);
+							for (i1 = 0; i1 < Bits; i1++) {
+								if ((((d >> 16) & 0xffff) << i1) & mask)
+									file_PD << "1";
+								else
+									file_PD << "0";
+							}
+							file_PD << "    ";
+							for (i1 = 0; i1 < Bits; i1++) {
+								if (((d & 0xffff) << i1) & mask)
+									file_PD << "1";
+								else
+									file_PD << "0";
+							}
+							file_PD << endl;
 						}
 					}
 
