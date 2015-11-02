@@ -39,12 +39,12 @@ bool PixelPowerMap4603::pwCoordinate(std::string coord, unsigned int &fb, unsign
 {
   bool worked=true;
 
-  if (coord[0]=='F') {
+  if (coord[0]=='F' || coord[0] == 'P') {
     fb=0;
   } else if (coord[0]=='B') {
     fb=1;
   } else {
-    ostr<<"PixelPowerMap4603::setTriVoltage - First letter of "<<coord<<" neither F nor B!"<<std::endl;
+    ostr<<"PixelPowerMap4603::setTriVoltage - First letter of "<<coord<<" neither F nor P nor B!"<<std::endl;
     worked=false;
   }
 

@@ -64,16 +64,18 @@
 ["cms_trk_dcs_1:CAEN/CMS_TRACKER_SY1527_5/branchController05/easyCrate4/easyBoard09/channel003 CMS_TRACKER/PixelEndCap/Pixel_Pilot_Blade/Pixel_Pilot_Blade_BmO/Pixel_Pilot_Blade_BmO_DCDC/channel003"]
 -->
 
- <fsm:partition name="FPix_BmI">
-  <fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann" domain="Pixel_Pilot_Blade"/>
-  <fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelEndCap:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann" domain="Pixel_Pilot_Blade"/>
-  <fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1" domain="Pixel_Pilot_Blade">
+
+ <fsm:partition name="Pilt_BmI" topname="PixelPilotBladeTop" topdomain="PixelPilotBladeTop"> 
+   <!-- name is Pilt_BmI so it fits in the powerMap_ scheme in (TK)FECSupervisor, but for pilot it has both BmI and BmO -->
+  <fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:ControlPowerChann" domain="Pixel_Pilot_Blade"/>
+  <fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_ROG1" domain="Pixel_Pilot_Blade">
    <fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_1:CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate3\easyBoard08.pixelSequence.configured"/>
   </fsm:node>
-  <fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC" domain="Pixel_Pilot_Blade">
+  <fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmI:Pixel_Pilot_Blade_BmI_DCDC" domain="Pixel_Pilot_Blade">
    <fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_1:CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard08.pixelSequence.configured"/>
   </fsm:node>
-  <fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelEndCap:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC" domain="Pixel_Pilot_Blade">
+  <fsm:node type="FwCaenChannelCtrl" name="CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:ControlPowerChann" domain="Pixel_Pilot_Blade"/>
+  <fsm:node type="TkPowerGroup" name="CMS_TRACKER:PixelPilotBladeTop:Pixel_Pilot_Blade:Pixel_Pilot_Blade_BmO:Pixel_Pilot_Blade_BmO_DCDC" domain="Pixel_Pilot_Blade">
    <fsm:status fsmType="CMS_Pixel_XDAQ_InitializationStatus" dpName="cms_trk_dcs_1:CAEN\CMS_TRACKER_SY1527_5\branchController05\easyCrate4\easyBoard09.pixelSequence.configured"/>
   </fsm:node>
   <fsm:connection name="PixelTKFECSupervisor" type="TrkFEC" instance="1"/>

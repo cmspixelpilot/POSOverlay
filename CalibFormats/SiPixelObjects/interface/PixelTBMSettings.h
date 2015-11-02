@@ -84,8 +84,14 @@ namespace pos{
     PixelROCName rocid_;
     PixelModuleName moduleId_ ;
 
+    unsigned char TBMABase0_;
+    unsigned char TBMBBase0_;
     unsigned char TBMAAutoReset_;
     unsigned char TBMBAutoReset_;
+    unsigned char TBMANoTokenPass_;
+    unsigned char TBMBNoTokenPass_;
+    unsigned char TBMADisablePKAMCounter_;
+    unsigned char TBMBDisablePKAMCounter_;
     unsigned char TBMAPKAMCount_;
     unsigned char TBMBPKAMCount_;
     unsigned char TBMPLLDelay_;

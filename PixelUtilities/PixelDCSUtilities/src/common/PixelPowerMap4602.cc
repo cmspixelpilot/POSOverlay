@@ -10,9 +10,9 @@
 
 PixelPowerMap4602::PixelPowerMap4602()
 {
-  for (unsigned int i=0; i<1; ++i) {
-    for (unsigned int j=0; j<1; ++j) {
-      for (unsigned int k=0; k<1; ++k) {
+  for (unsigned int i=0; i<2; ++i) {
+    for (unsigned int j=0; j<2; ++j) {
+      for (unsigned int k=0; k<2; ++k) {
 	a4602_[i][j][k]=LV_UNDEFINED;
       }
     }
@@ -23,12 +23,12 @@ bool PixelPowerMap4602::pwCoordinate(std::string coord, unsigned int &fb, unsign
 {
   bool worked=true;
 
-  if (coord[0]=='F') {
+  if (coord[0]=='F' || coord[0] == 'P') {
     fb=0;
   } else if (coord[0]=='B') {
     fb=1;
   } else {
-    ostr<<"PixelPowerMap4602::setBiVoltage - First letter of "<<coord<<" neither F nor B!"<<std::endl;
+    ostr<<"PixelPowerMap4602::setBiVoltage - First letter of "<<coord<<" neither F nor P nor B!"<<std::endl;
     worked=false;
   }
 

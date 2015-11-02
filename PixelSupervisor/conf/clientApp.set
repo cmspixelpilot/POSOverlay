@@ -14,7 +14,7 @@
 UseDefaultAppender			FALSE
 
 ## messages of criticity at least equal to XXX (here INFO) must be routed to the LOG4C+ appender
-DefaultAppenderLogLevel 	INFO
+DefaultAppenderLogLevel 	TRACE
 
 ## --------------------------------
 ## base class appender settings

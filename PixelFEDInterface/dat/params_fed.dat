@@ -1,41 +1,41 @@
 FED Base address                         :0x3c000000
 FEDID Number                             :0x28
-Number of ROCs Chnl 1:16
-Number of ROCs Chnl 2:16
-Number of ROCs Chnl 3:16
-Number of ROCs Chnl 4:16
-Number of ROCs Chnl 5:16
-Number of ROCs Chnl 6:16
-Number of ROCs Chnl 7:16
-Number of ROCs Chnl 8:16
-Number of ROCs Chnl 9:16
-Number of ROCs Chnl 10:16
-Number of ROCs Chnl 11:16
-Number of ROCs Chnl 12:16
-Number of ROCs Chnl 13:16
-Number of ROCs Chnl 14:16
-Number of ROCs Chnl 15:16
-Number of ROCs Chnl 16:16
-Number of ROCs Chnl 17:16
-Number of ROCs Chnl 18:16
-Number of ROCs Chnl 19:16
-Number of ROCs Chnl 20:16
-Number of ROCs Chnl 21:16
-Number of ROCs Chnl 22:16
-Number of ROCs Chnl 23:16
-Number of ROCs Chnl 24:16
-Number of ROCs Chnl 25:16
-Number of ROCs Chnl 26:16
-Number of ROCs Chnl 27:16
-Number of ROCs Chnl 28:16
-Number of ROCs Chnl 29:16
-Number of ROCs Chnl 30:16
-Number of ROCs Chnl 31:16
-Number of ROCs Chnl 32:16
-Number of ROCs Chnl 33:16
-Number of ROCs Chnl 34:16
-Number of ROCs Chnl 35:16
-Number of ROCs Chnl 36:16
+Number of ROCs Chnl 1:8
+Number of ROCs Chnl 2:8
+Number of ROCs Chnl 3:8
+Number of ROCs Chnl 4:8
+Number of ROCs Chnl 5:8
+Number of ROCs Chnl 6:8
+Number of ROCs Chnl 7:8
+Number of ROCs Chnl 8:8
+Number of ROCs Chnl 9:8
+Number of ROCs Chnl 10:8
+Number of ROCs Chnl 11:8
+Number of ROCs Chnl 12:8
+Number of ROCs Chnl 13:8
+Number of ROCs Chnl 14:8
+Number of ROCs Chnl 15:8
+Number of ROCs Chnl 16:8
+Number of ROCs Chnl 17:8
+Number of ROCs Chnl 18:8
+Number of ROCs Chnl 19:8
+Number of ROCs Chnl 20:8
+Number of ROCs Chnl 21:8
+Number of ROCs Chnl 22:8
+Number of ROCs Chnl 23:8
+Number of ROCs Chnl 24:8
+Number of ROCs Chnl 25:8
+Number of ROCs Chnl 26:8
+Number of ROCs Chnl 27:8
+Number of ROCs Chnl 28:8
+Number of ROCs Chnl 29:8
+Number of ROCs Chnl 30:8
+Number of ROCs Chnl 31:8
+Number of ROCs Chnl 32:8
+Number of ROCs Chnl 33:8
+Number of ROCs Chnl 34:8
+Number of ROCs Chnl 35:8
+Number of ROCs Chnl 36:8
 Optical reciever 1  Capacitor Adjust(0-3):0
 Optical reciever 2  Capacitor Adjust(0-3):0
 Optical reciever 3  Capacitor Adjust(0-3):0
@@ -274,46 +274,6 @@ ROC7 level 1 Channel  1 :400
 ROC7 level 2 Channel  1 :500
 ROC7 level 3 Channel  1 :600
 ROC7 level 4 Channel  1 :700
-ROC8 level 0 Channel  1 :270
-ROC8 level 1 Channel  1 :400
-ROC8 level 2 Channel  1 :500
-ROC8 level 3 Channel  1 :600
-ROC8 level 4 Channel  1 :700
-ROC9 level 0 Channel  1 :270
-ROC9 level 1 Channel  1 :400
-ROC9 level 2 Channel  1 :500
-ROC9 level 3 Channel  1 :600
-ROC9 level 4 Channel  1 :700
-ROC10 level 0 Channel  1 :270
-ROC10 level 1 Channel  1 :400
-ROC10 level 2 Channel  1 :500
-ROC10 level 3 Channel  1 :600
-ROC10 level 4 Channel  1 :700
-ROC11 level 0 Channel  1 :270
-ROC11 level 1 Channel  1 :400
-ROC11 level 2 Channel  1 :500
-ROC11 level 3 Channel  1 :600
-ROC11 level 4 Channel  1 :700
-ROC12 level 0 Channel  1 :270
-ROC12 level 1 Channel  1 :400
-ROC12 level 2 Channel  1 :500
-ROC12 level 3 Channel  1 :600
-ROC12 level 4 Channel  1 :700
-ROC13 level 0 Channel  1 :270
-ROC13 level 1 Channel  1 :400
-ROC13 level 2 Channel  1 :500
-ROC13 level 3 Channel  1 :600
-ROC13 level 4 Channel  1 :700
-ROC14 level 0 Channel  1 :270
-ROC14 level 1 Channel  1 :400
-ROC14 level 2 Channel  1 :500
-ROC14 level 3 Channel  1 :600
-ROC14 level 4 Channel  1 :700
-ROC15 level 0 Channel  1 :270
-ROC15 level 1 Channel  1 :400
-ROC15 level 2 Channel  1 :500
-ROC15 level 3 Channel  1 :600
-ROC15 level 4 Channel  1 :700
 TRLR level 0 Channel 1:270
 TRLR level 1 Channel 1:400
 TRLR level 2 Channel 1:500
@@ -364,46 +324,6 @@ ROC7 level 1 Channel  2 :400
 ROC7 level 2 Channel  2 :500
 ROC7 level 3 Channel  2 :600
 ROC7 level 4 Channel  2 :700
-ROC8 level 0 Channel  2 :270
-ROC8 level 1 Channel  2 :400
-ROC8 level 2 Channel  2 :500
-ROC8 level 3 Channel  2 :600
-ROC8 level 4 Channel  2 :700
-ROC9 level 0 Channel  2 :270
-ROC9 level 1 Channel  2 :400
-ROC9 level 2 Channel  2 :500
-ROC9 level 3 Channel  2 :600
-ROC9 level 4 Channel  2 :700
-ROC10 level 0 Channel  2 :270
-ROC10 level 1 Channel  2 :400
-ROC10 level 2 Channel  2 :500
-ROC10 level 3 Channel  2 :600
-ROC10 level 4 Channel  2 :700
-ROC11 level 0 Channel  2 :270
-ROC11 level 1 Channel  2 :400
-ROC11 level 2 Channel  2 :500
-ROC11 level 3 Channel  2 :600
-ROC11 level 4 Channel  2 :700
-ROC12 level 0 Channel  2 :270
-ROC12 level 1 Channel  2 :400
-ROC12 level 2 Channel  2 :500
-ROC12 level 3 Channel  2 :600
-ROC12 level 4 Channel  2 :700
-ROC13 level 0 Channel  2 :270
-ROC13 level 1 Channel  2 :400
-ROC13 level 2 Channel  2 :500
-ROC13 level 3 Channel  2 :600
-ROC13 level 4 Channel  2 :700
-ROC14 level 0 Channel  2 :270
-ROC14 level 1 Channel  2 :400
-ROC14 level 2 Channel  2 :500
-ROC14 level 3 Channel  2 :600
-ROC14 level 4 Channel  2 :700
-ROC15 level 0 Channel  2 :270
-ROC15 level 1 Channel  2 :400
-ROC15 level 2 Channel  2 :500
-ROC15 level 3 Channel  2 :600
-ROC15 level 4 Channel  2 :700
 TRLR level 0 Channel 2:270
 TRLR level 1 Channel 2:400
 TRLR level 2 Channel 2:500
@@ -454,46 +374,6 @@ ROC7 level 1 Channel  3 :400
 ROC7 level 2 Channel  3 :500
 ROC7 level 3 Channel  3 :600
 ROC7 level 4 Channel  3 :700
-ROC8 level 0 Channel  3 :270
-ROC8 level 1 Channel  3 :400
-ROC8 level 2 Channel  3 :500
-ROC8 level 3 Channel  3 :600
-ROC8 level 4 Channel  3 :700
-ROC9 level 0 Channel  3 :270
-ROC9 level 1 Channel  3 :400
-ROC9 level 2 Channel  3 :500
-ROC9 level 3 Channel  3 :600
-ROC9 level 4 Channel  3 :700
-ROC10 level 0 Channel  3 :270
-ROC10 level 1 Channel  3 :400
-ROC10 level 2 Channel  3 :500
-ROC10 level 3 Channel  3 :600
-ROC10 level 4 Channel  3 :700
-ROC11 level 0 Channel  3 :270
-ROC11 level 1 Channel  3 :400
-ROC11 level 2 Channel  3 :500
-ROC11 level 3 Channel  3 :600
-ROC11 level 4 Channel  3 :700
-ROC12 level 0 Channel  3 :270
-ROC12 level 1 Channel  3 :400
-ROC12 level 2 Channel  3 :500
-ROC12 level 3 Channel  3 :600
-ROC12 level 4 Channel  3 :700
-ROC13 level 0 Channel  3 :270
-ROC13 level 1 Channel  3 :400
-ROC13 level 2 Channel  3 :500
-ROC13 level 3 Channel  3 :600
-ROC13 level 4 Channel  3 :700
-ROC14 level 0 Channel  3 :270
-ROC14 level 1 Channel  3 :400
-ROC14 level 2 Channel  3 :500
-ROC14 level 3 Channel  3 :600
-ROC14 level 4 Channel  3 :700
-ROC15 level 0 Channel  3 :270
-ROC15 level 1 Channel  3 :400
-ROC15 level 2 Channel  3 :500
-ROC15 level 3 Channel  3 :600
-ROC15 level 4 Channel  3 :700
 TRLR level 0 Channel 3:270
 TRLR level 1 Channel 3:400
 TRLR level 2 Channel 3:500
@@ -544,46 +424,6 @@ ROC7 level 1 Channel  4 :400
 ROC7 level 2 Channel  4 :500
 ROC7 level 3 Channel  4 :600
 ROC7 level 4 Channel  4 :700
-ROC8 level 0 Channel  4 :270
-ROC8 level 1 Channel  4 :400
-ROC8 level 2 Channel  4 :500
-ROC8 level 3 Channel  4 :600
-ROC8 level 4 Channel  4 :700
-ROC9 level 0 Channel  4 :270
-ROC9 level 1 Channel  4 :400
-ROC9 level 2 Channel  4 :500
-ROC9 level 3 Channel  4 :600
-ROC9 level 4 Channel  4 :700
-ROC10 level 0 Channel  4 :270
-ROC10 level 1 Channel  4 :400
-ROC10 level 2 Channel  4 :500
-ROC10 level 3 Channel  4 :600
-ROC10 level 4 Channel  4 :700
-ROC11 level 0 Channel  4 :270
-ROC11 level 1 Channel  4 :400
-ROC11 level 2 Channel  4 :500
-ROC11 level 3 Channel  4 :600
-ROC11 level 4 Channel  4 :700
-ROC12 level 0 Channel  4 :270
-ROC12 level 1 Channel  4 :400
-ROC12 level 2 Channel  4 :500
-ROC12 level 3 Channel  4 :600
-ROC12 level 4 Channel  4 :700
-ROC13 level 0 Channel  4 :270
-ROC13 level 1 Channel  4 :400
-ROC13 level 2 Channel  4 :500
-ROC13 level 3 Channel  4 :600
-ROC13 level 4 Channel  4 :700
-ROC14 level 0 Channel  4 :270
-ROC14 level 1 Channel  4 :400
-ROC14 level 2 Channel  4 :500
-ROC14 level 3 Channel  4 :600
-ROC14 level 4 Channel  4 :700
-ROC15 level 0 Channel  4 :270
-ROC15 level 1 Channel  4 :400
-ROC15 level 2 Channel  4 :500
-ROC15 level 3 Channel  4 :600
-ROC15 level 4 Channel  4 :700
 TRLR level 0 Channel 4:270
 TRLR level 1 Channel 4:400
 TRLR level 2 Channel 4:500
@@ -634,46 +474,6 @@ ROC7 level 1 Channel  5 :400
 ROC7 level 2 Channel  5 :500
 ROC7 level 3 Channel  5 :600
 ROC7 level 4 Channel  5 :700
-ROC8 level 0 Channel  5 :270
-ROC8 level 1 Channel  5 :400
-ROC8 level 2 Channel  5 :500
-ROC8 level 3 Channel  5 :600
-ROC8 level 4 Channel  5 :700
-ROC9 level 0 Channel  5 :270
-ROC9 level 1 Channel  5 :400
-ROC9 level 2 Channel  5 :500
-ROC9 level 3 Channel  5 :600
-ROC9 level 4 Channel  5 :700
-ROC10 level 0 Channel  5 :270
-ROC10 level 1 Channel  5 :400
-ROC10 level 2 Channel  5 :500
-ROC10 level 3 Channel  5 :600
-ROC10 level 4 Channel  5 :700
-ROC11 level 0 Channel  5 :270
-ROC11 level 1 Channel  5 :400
-ROC11 level 2 Channel  5 :500
-ROC11 level 3 Channel  5 :600
-ROC11 level 4 Channel  5 :700
-ROC12 level 0 Channel  5 :270
-ROC12 level 1 Channel  5 :400
-ROC12 level 2 Channel  5 :500
-ROC12 level 3 Channel  5 :600
-ROC12 level 4 Channel  5 :700
-ROC13 level 0 Channel  5 :270
-ROC13 level 1 Channel  5 :400
-ROC13 level 2 Channel  5 :500
-ROC13 level 3 Channel  5 :600
-ROC13 level 4 Channel  5 :700
-ROC14 level 0 Channel  5 :270
-ROC14 level 1 Channel  5 :400
-ROC14 level 2 Channel  5 :500
-ROC14 level 3 Channel  5 :600
-ROC14 level 4 Channel  5 :700
-ROC15 level 0 Channel  5 :270
-ROC15 level 1 Channel  5 :400
-ROC15 level 2 Channel  5 :500
-ROC15 level 3 Channel  5 :600
-ROC15 level 4 Channel  5 :700
 TRLR level 0 Channel 5:270
 TRLR level 1 Channel 5:400
 TRLR level 2 Channel 5:500
@@ -724,46 +524,6 @@ ROC7 level 1 Channel  6 :400
 ROC7 level 2 Channel  6 :500
 ROC7 level 3 Channel  6 :600
 ROC7 level 4 Channel  6 :700
-ROC8 level 0 Channel  6 :270
-ROC8 level 1 Channel  6 :400
-ROC8 level 2 Channel  6 :500
-ROC8 level 3 Channel  6 :600
-ROC8 level 4 Channel  6 :700
-ROC9 level 0 Channel  6 :270
-ROC9 level 1 Channel  6 :400
-ROC9 level 2 Channel  6 :500
-ROC9 level 3 Channel  6 :600
-ROC9 level 4 Channel  6 :700
-ROC10 level 0 Channel  6 :270
-ROC10 level 1 Channel  6 :400
-ROC10 level 2 Channel  6 :500
-ROC10 level 3 Channel  6 :600
-ROC10 level 4 Channel  6 :700
-ROC11 level 0 Channel  6 :270
-ROC11 level 1 Channel  6 :400
-ROC11 level 2 Channel  6 :500
-ROC11 level 3 Channel  6 :600
-ROC11 level 4 Channel  6 :700
-ROC12 level 0 Channel  6 :270
-ROC12 level 1 Channel  6 :400
-ROC12 level 2 Channel  6 :500
-ROC12 level 3 Channel  6 :600
-ROC12 level 4 Channel  6 :700
-ROC13 level 0 Channel  6 :270
-ROC13 level 1 Channel  6 :400
-ROC13 level 2 Channel  6 :500
-ROC13 level 3 Channel  6 :600
-ROC13 level 4 Channel  6 :700
-ROC14 level 0 Channel  6 :270
-ROC14 level 1 Channel  6 :400
-ROC14 level 2 Channel  6 :500
-ROC14 level 3 Channel  6 :600
-ROC14 level 4 Channel  6 :700
-ROC15 level 0 Channel  6 :270
-ROC15 level 1 Channel  6 :400
-ROC15 level 2 Channel  6 :500
-ROC15 level 3 Channel  6 :600
-ROC15 level 4 Channel  6 :700
 TRLR level 0 Channel 6:270
 TRLR level 1 Channel 6:400
 TRLR level 2 Channel 6:500
@@ -814,46 +574,6 @@ ROC7 level 1 Channel  7 :400
 ROC7 level 2 Channel  7 :500
 ROC7 level 3 Channel  7 :600
 ROC7 level 4 Channel  7 :700
-ROC8 level 0 Channel  7 :270
-ROC8 level 1 Channel  7 :400
-ROC8 level 2 Channel  7 :500
-ROC8 level 3 Channel  7 :600
-ROC8 level 4 Channel  7 :700
-ROC9 level 0 Channel  7 :270
-ROC9 level 1 Channel  7 :400
-ROC9 level 2 Channel  7 :500
-ROC9 level 3 Channel  7 :600
-ROC9 level 4 Channel  7 :700
-ROC10 level 0 Channel  7 :270
-ROC10 level 1 Channel  7 :400
-ROC10 level 2 Channel  7 :500
-ROC10 level 3 Channel  7 :600
-ROC10 level 4 Channel  7 :700
-ROC11 level 0 Channel  7 :270
-ROC11 level 1 Channel  7 :400
-ROC11 level 2 Channel  7 :500
-ROC11 level 3 Channel  7 :600
-ROC11 level 4 Channel  7 :700
-ROC12 level 0 Channel  7 :270
-ROC12 level 1 Channel  7 :400
-ROC12 level 2 Channel  7 :500
-ROC12 level 3 Channel  7 :600
-ROC12 level 4 Channel  7 :700
-ROC13 level 0 Channel  7 :270
-ROC13 level 1 Channel  7 :400
-ROC13 level 2 Channel  7 :500
-ROC13 level 3 Channel  7 :600
-ROC13 level 4 Channel  7 :700
-ROC14 level 0 Channel  7 :270
-ROC14 level 1 Channel  7 :400
-ROC14 level 2 Channel  7 :500
-ROC14 level 3 Channel  7 :600
-ROC14 level 4 Channel  7 :700
-ROC15 level 0 Channel  7 :270
-ROC15 level 1 Channel  7 :400
-ROC15 level 2 Channel  7 :500
-ROC15 level 3 Channel  7 :600
-ROC15 level 4 Channel  7 :700
 TRLR level 0 Channel 7:270
 TRLR level 1 Channel 7:400
 TRLR level 2 Channel 7:500
@@ -904,46 +624,6 @@ ROC7 level 1 Channel  8 :400
 ROC7 level 2 Channel  8 :500
 ROC7 level 3 Channel  8 :600
 ROC7 level 4 Channel  8 :700
-ROC8 level 0 Channel  8 :270
-ROC8 level 1 Channel  8 :400
-ROC8 level 2 Channel  8 :500
-ROC8 level 3 Channel  8 :600
-ROC8 level 4 Channel  8 :700
-ROC9 level 0 Channel  8 :270
-ROC9 level 1 Channel  8 :400
-ROC9 level 2 Channel  8 :500
-ROC9 level 3 Channel  8 :600
-ROC9 level 4 Channel  8 :700
-ROC10 level 0 Channel  8 :270
-ROC10 level 1 Channel  8 :400
-ROC10 level 2 Channel  8 :500
-ROC10 level 3 Channel  8 :600
-ROC10 level 4 Channel  8 :700
-ROC11 level 0 Channel  8 :270
-ROC11 level 1 Channel  8 :400
-ROC11 level 2 Channel  8 :500
-ROC11 level 3 Channel  8 :600
-ROC11 level 4 Channel  8 :700
-ROC12 level 0 Channel  8 :270
-ROC12 level 1 Channel  8 :400
-ROC12 level 2 Channel  8 :500
-ROC12 level 3 Channel  8 :600
-ROC12 level 4 Channel  8 :700
-ROC13 level 0 Channel  8 :270
-ROC13 level 1 Channel  8 :400
-ROC13 level 2 Channel  8 :500
-ROC13 level 3 Channel  8 :600
-ROC13 level 4 Channel  8 :700
-ROC14 level 0 Channel  8 :270
-ROC14 level 1 Channel  8 :400
-ROC14 level 2 Channel  8 :500
-ROC14 level 3 Channel  8 :600
-ROC14 level 4 Channel  8 :700
-ROC15 level 0 Channel  8 :270
-ROC15 level 1 Channel  8 :400
-ROC15 level 2 Channel  8 :500
-ROC15 level 3 Channel  8 :600
-ROC15 level 4 Channel  8 :700
 TRLR level 0 Channel 8:270
 TRLR level 1 Channel 8:400
 TRLR level 2 Channel 8:500
@@ -994,46 +674,6 @@ ROC7 level 1 Channel  9 :400
 ROC7 level 2 Channel  9 :500
 ROC7 level 3 Channel  9 :600
 ROC7 level 4 Channel  9 :700
-ROC8 level 0 Channel  9 :270
-ROC8 level 1 Channel  9 :400
-ROC8 level 2 Channel  9 :500
-ROC8 level 3 Channel  9 :600
-ROC8 level 4 Channel  9 :700
-ROC9 level 0 Channel  9 :270
-ROC9 level 1 Channel  9 :400
-ROC9 level 2 Channel  9 :500
-ROC9 level 3 Channel  9 :600
-ROC9 level 4 Channel  9 :700
-ROC10 level 0 Channel  9 :270
-ROC10 level 1 Channel  9 :400
-ROC10 level 2 Channel  9 :500
-ROC10 level 3 Channel  9 :600
-ROC10 level 4 Channel  9 :700
-ROC11 level 0 Channel  9 :270
-ROC11 level 1 Channel  9 :400
-ROC11 level 2 Channel  9 :500
-ROC11 level 3 Channel  9 :600
-ROC11 level 4 Channel  9 :700
-ROC12 level 0 Channel  9 :270
-ROC12 level 1 Channel  9 :400
-ROC12 level 2 Channel  9 :500
-ROC12 level 3 Channel  9 :600
-ROC12 level 4 Channel  9 :700
-ROC13 level 0 Channel  9 :270
-ROC13 level 1 Channel  9 :400
-ROC13 level 2 Channel  9 :500
-ROC13 level 3 Channel  9 :600
-ROC13 level 4 Channel  9 :700
-ROC14 level 0 Channel  9 :270
-ROC14 level 1 Channel  9 :400
-ROC14 level 2 Channel  9 :500
-ROC14 level 3 Channel  9 :600
-ROC14 level 4 Channel  9 :700
-ROC15 level 0 Channel  9 :270
-ROC15 level 1 Channel  9 :400
-ROC15 level 2 Channel  9 :500
-ROC15 level 3 Channel  9 :600
-ROC15 level 4 Channel  9 :700
 TRLR level 0 Channel 9:270
 TRLR level 1 Channel 9:400
 TRLR level 2 Channel 9:500
@@ -1084,46 +724,6 @@ ROC7 level 1 Channel  10 :400
 ROC7 level 2 Channel  10 :500
 ROC7 level 3 Channel  10 :600
 ROC7 level 4 Channel  10 :700
-ROC8 level 0 Channel  10 :270
-ROC8 level 1 Channel  10 :400
-ROC8 level 2 Channel  10 :500
-ROC8 level 3 Channel  10 :600
-ROC8 level 4 Channel  10 :700
-ROC9 level 0 Channel  10 :270
-ROC9 level 1 Channel  10 :400
-ROC9 level 2 Channel  10 :500
-ROC9 level 3 Channel  10 :600
-ROC9 level 4 Channel  10 :700
-ROC10 level 0 Channel  10 :270
-ROC10 level 1 Channel  10 :400
-ROC10 level 2 Channel  10 :500
-ROC10 level 3 Channel  10 :600
-ROC10 level 4 Channel  10 :700
-ROC11 level 0 Channel  10 :270
-ROC11 level 1 Channel  10 :400
-ROC11 level 2 Channel  10 :500
-ROC11 level 3 Channel  10 :600
-ROC11 level 4 Channel  10 :700
-ROC12 level 0 Channel  10 :270
-ROC12 level 1 Channel  10 :400
-ROC12 level 2 Channel  10 :500
-ROC12 level 3 Channel  10 :600
-ROC12 level 4 Channel  10 :700
-ROC13 level 0 Channel  10 :270
-ROC13 level 1 Channel  10 :400
-ROC13 level 2 Channel  10 :500
-ROC13 level 3 Channel  10 :600
-ROC13 level 4 Channel  10 :700
-ROC14 level 0 Channel  10 :270
-ROC14 level 1 Channel  10 :400
-ROC14 level 2 Channel  10 :500
-ROC14 level 3 Channel  10 :600
-ROC14 level 4 Channel  10 :700
-ROC15 level 0 Channel  10 :270
-ROC15 level 1 Channel  10 :400
-ROC15 level 2 Channel  10 :500
-ROC15 level 3 Channel  10 :600
-ROC15 level 4 Channel  10 :700
 TRLR level 0 Channel 10:270
 TRLR level 1 Channel 10:400
 TRLR level 2 Channel 10:500
@@ -1174,46 +774,6 @@ ROC7 level 1 Channel  11 :400
 ROC7 level 2 Channel  11 :500
 ROC7 level 3 Channel  11 :600
 ROC7 level 4 Channel  11 :700
-ROC8 level 0 Channel  11 :270
-ROC8 level 1 Channel  11 :400
-ROC8 level 2 Channel  11 :500
-ROC8 level 3 Channel  11 :600
-ROC8 level 4 Channel  11 :700
-ROC9 level 0 Channel  11 :270
-ROC9 level 1 Channel  11 :400
-ROC9 level 2 Channel  11 :500
-ROC9 level 3 Channel  11 :600
-ROC9 level 4 Channel  11 :700
-ROC10 level 0 Channel  11 :270
-ROC10 level 1 Channel  11 :400
-ROC10 level 2 Channel  11 :500
-ROC10 level 3 Channel  11 :600
-ROC10 level 4 Channel  11 :700
-ROC11 level 0 Channel  11 :270
-ROC11 level 1 Channel  11 :400
-ROC11 level 2 Channel  11 :500
-ROC11 level 3 Channel  11 :600
-ROC11 level 4 Channel  11 :700
-ROC12 level 0 Channel  11 :270
-ROC12 level 1 Channel  11 :400
-ROC12 level 2 Channel  11 :500
-ROC12 level 3 Channel  11 :600
-ROC12 level 4 Channel  11 :700
-ROC13 level 0 Channel  11 :270
-ROC13 level 1 Channel  11 :400
-ROC13 level 2 Channel  11 :500
-ROC13 level 3 Channel  11 :600
-ROC13 level 4 Channel  11 :700
-ROC14 level 0 Channel  11 :270
-ROC14 level 1 Channel  11 :400
-ROC14 level 2 Channel  11 :500
-ROC14 level 3 Channel  11 :600
-ROC14 level 4 Channel  11 :700
-ROC15 level 0 Channel  11 :270
-ROC15 level 1 Channel  11 :400
-ROC15 level 2 Channel  11 :500
-ROC15 level 3 Channel  11 :600
-ROC15 level 4 Channel  11 :700
 TRLR level 0 Channel 11:270
 TRLR level 1 Channel 11:400
 TRLR level 2 Channel 11:500
@@ -1264,46 +824,6 @@ ROC7 level 1 Channel  12 :400
 ROC7 level 2 Channel  12 :500
 ROC7 level 3 Channel  12 :600
 ROC7 level 4 Channel  12 :700
-ROC8 level 0 Channel  12 :270
-ROC8 level 1 Channel  12 :400
-ROC8 level 2 Channel  12 :500
-ROC8 level 3 Channel  12 :600
-ROC8 level 4 Channel  12 :700
-ROC9 level 0 Channel  12 :270
-ROC9 level 1 Channel  12 :400
-ROC9 level 2 Channel  12 :500
-ROC9 level 3 Channel  12 :600
-ROC9 level 4 Channel  12 :700
-ROC10 level 0 Channel  12 :270
-ROC10 level 1 Channel  12 :400
-ROC10 level 2 Channel  12 :500
-ROC10 level 3 Channel  12 :600
-ROC10 level 4 Channel  12 :700
-ROC11 level 0 Channel  12 :270
-ROC11 level 1 Channel  12 :400
-ROC11 level 2 Channel  12 :500
-ROC11 level 3 Channel  12 :600
-ROC11 level 4 Channel  12 :700
-ROC12 level 0 Channel  12 :270
-ROC12 level 1 Channel  12 :400
-ROC12 level 2 Channel  12 :500
-ROC12 level 3 Channel  12 :600
-ROC12 level 4 Channel  12 :700
-ROC13 level 0 Channel  12 :270
-ROC13 level 1 Channel  12 :400
-ROC13 level 2 Channel  12 :500
-ROC13 level 3 Channel  12 :600
-ROC13 level 4 Channel  12 :700
-ROC14 level 0 Channel  12 :270
-ROC14 level 1 Channel  12 :400
-ROC14 level 2 Channel  12 :500
-ROC14 level 3 Channel  12 :600
-ROC14 level 4 Channel  12 :700
-ROC15 level 0 Channel  12 :270
-ROC15 level 1 Channel  12 :400
-ROC15 level 2 Channel  12 :500
-ROC15 level 3 Channel  12 :600
-ROC15 level 4 Channel  12 :700
 TRLR level 0 Channel 12:270
 TRLR level 1 Channel 12:400
 TRLR level 2 Channel 12:500
@@ -1354,46 +874,6 @@ ROC7 level 1 Channel  13 :400
 ROC7 level 2 Channel  13 :500
 ROC7 level 3 Channel  13 :600
 ROC7 level 4 Channel  13 :700
-ROC8 level 0 Channel  13 :270
-ROC8 level 1 Channel  13 :400
-ROC8 level 2 Channel  13 :500
-ROC8 level 3 Channel  13 :600
-ROC8 level 4 Channel  13 :700
-ROC9 level 0 Channel  13 :270
-ROC9 level 1 Channel  13 :400
-ROC9 level 2 Channel  13 :500
-ROC9 level 3 Channel  13 :600
-ROC9 level 4 Channel  13 :700
-ROC10 level 0 Channel  13 :270
-ROC10 level 1 Channel  13 :400
-ROC10 level 2 Channel  13 :500
-ROC10 level 3 Channel  13 :600
-ROC10 level 4 Channel  13 :700
-ROC11 level 0 Channel  13 :270
-ROC11 level 1 Channel  13 :400
-ROC11 level 2 Channel  13 :500
-ROC11 level 3 Channel  13 :600
-ROC11 level 4 Channel  13 :700
-ROC12 level 0 Channel  13 :270
-ROC12 level 1 Channel  13 :400
-ROC12 level 2 Channel  13 :500
-ROC12 level 3 Channel  13 :600
-ROC12 level 4 Channel  13 :700
-ROC13 level 0 Channel  13 :270
-ROC13 level 1 Channel  13 :400
-ROC13 level 2 Channel  13 :500
-ROC13 level 3 Channel  13 :600
-ROC13 level 4 Channel  13 :700
-ROC14 level 0 Channel  13 :270
-ROC14 level 1 Channel  13 :400
-ROC14 level 2 Channel  13 :500
-ROC14 level 3 Channel  13 :600
-ROC14 level 4 Channel  13 :700
-ROC15 level 0 Channel  13 :270
-ROC15 level 1 Channel  13 :400
-ROC15 level 2 Channel  13 :500
-ROC15 level 3 Channel  13 :600
-ROC15 level 4 Channel  13 :700
 TRLR level 0 Channel 13:270
 TRLR level 1 Channel 13:400
 TRLR level 2 Channel 13:500
@@ -1444,46 +924,6 @@ ROC7 level 1 Channel  14 :400
 ROC7 level 2 Channel  14 :500
 ROC7 level 3 Channel  14 :600
 ROC7 level 4 Channel  14 :700
-ROC8 level 0 Channel  14 :270
-ROC8 level 1 Channel  14 :400
-ROC8 level 2 Channel  14 :500
-ROC8 level 3 Channel  14 :600
-ROC8 level 4 Channel  14 :700
-ROC9 level 0 Channel  14 :270
-ROC9 level 1 Channel  14 :400
-ROC9 level 2 Channel  14 :500
-ROC9 level 3 Channel  14 :600
-ROC9 level 4 Channel  14 :700
-ROC10 level 0 Channel  14 :270
-ROC10 level 1 Channel  14 :400
-ROC10 level 2 Channel  14 :500
-ROC10 level 3 Channel  14 :600
-ROC10 level 4 Channel  14 :700
-ROC11 level 0 Channel  14 :270
-ROC11 level 1 Channel  14 :400
-ROC11 level 2 Channel  14 :500
-ROC11 level 3 Channel  14 :600
-ROC11 level 4 Channel  14 :700
-ROC12 level 0 Channel  14 :270
-ROC12 level 1 Channel  14 :400
-ROC12 level 2 Channel  14 :500
-ROC12 level 3 Channel  14 :600
-ROC12 level 4 Channel  14 :700
-ROC13 level 0 Channel  14 :270
-ROC13 level 1 Channel  14 :400
-ROC13 level 2 Channel  14 :500
-ROC13 level 3 Channel  14 :600
-ROC13 level 4 Channel  14 :700
-ROC14 level 0 Channel  14 :270
-ROC14 level 1 Channel  14 :400
-ROC14 level 2 Channel  14 :500
-ROC14 level 3 Channel  14 :600
-ROC14 level 4 Channel  14 :700
-ROC15 level 0 Channel  14 :270
-ROC15 level 1 Channel  14 :400
-ROC15 level 2 Channel  14 :500
-ROC15 level 3 Channel  14 :600
-ROC15 level 4 Channel  14 :700
 TRLR level 0 Channel 14:270
 TRLR level 1 Channel 14:400
 TRLR level 2 Channel 14:500
@@ -1534,46 +974,6 @@ ROC7 level 1 Channel  15 :400
 ROC7 level 2 Channel  15 :500
 ROC7 level 3 Channel  15 :600
 ROC7 level 4 Channel  15 :700
-ROC8 level 0 Channel  15 :270
-ROC8 level 1 Channel  15 :400
-ROC8 level 2 Channel  15 :500
-ROC8 level 3 Channel  15 :600
-ROC8 level 4 Channel  15 :700
-ROC9 level 0 Channel  15 :270
-ROC9 level 1 Channel  15 :400
-ROC9 level 2 Channel  15 :500
-ROC9 level 3 Channel  15 :600
-ROC9 level 4 Channel  15 :700
-ROC10 level 0 Channel  15 :270
-ROC10 level 1 Channel  15 :400
-ROC10 level 2 Channel  15 :500
-ROC10 level 3 Channel  15 :600
-ROC10 level 4 Channel  15 :700
-ROC11 level 0 Channel  15 :270
-ROC11 level 1 Channel  15 :400
-ROC11 level 2 Channel  15 :500
-ROC11 level 3 Channel  15 :600
-ROC11 level 4 Channel  15 :700
-ROC12 level 0 Channel  15 :270
-ROC12 level 1 Channel  15 :400
-ROC12 level 2 Channel  15 :500
-ROC12 level 3 Channel  15 :600
-ROC12 level 4 Channel  15 :700
-ROC13 level 0 Channel  15 :270
-ROC13 level 1 Channel  15 :400
-ROC13 level 2 Channel  15 :500
-ROC13 level 3 Channel  15 :600
-ROC13 level 4 Channel  15 :700
-ROC14 level 0 Channel  15 :270
-ROC14 level 1 Channel  15 :400
-ROC14 level 2 Channel  15 :500
-ROC14 level 3 Channel  15 :600
-ROC14 level 4 Channel  15 :700
-ROC15 level 0 Channel  15 :270
-ROC15 level 1 Channel  15 :400
-ROC15 level 2 Channel  15 :500
-ROC15 level 3 Channel  15 :600
-ROC15 level 4 Channel  15 :700
 TRLR level 0 Channel 15:270
 TRLR level 1 Channel 15:400
 TRLR level 2 Channel 15:500
@@ -1624,46 +1024,6 @@ ROC7 level 1 Channel  16 :400
 ROC7 level 2 Channel  16 :500
 ROC7 level 3 Channel  16 :600
 ROC7 level 4 Channel  16 :700
-ROC8 level 0 Channel  16 :270
-ROC8 level 1 Channel  16 :400
-ROC8 level 2 Channel  16 :500
-ROC8 level 3 Channel  16 :600
-ROC8 level 4 Channel  16 :700
-ROC9 level 0 Channel  16 :270
-ROC9 level 1 Channel  16 :400
-ROC9 level 2 Channel  16 :500
-ROC9 level 3 Channel  16 :600
-ROC9 level 4 Channel  16 :700
-ROC10 level 0 Channel  16 :270
-ROC10 level 1 Channel  16 :400
-ROC10 level 2 Channel  16 :500
-ROC10 level 3 Channel  16 :600
-ROC10 level 4 Channel  16 :700
-ROC11 level 0 Channel  16 :270
-ROC11 level 1 Channel  16 :400
-ROC11 level 2 Channel  16 :500
-ROC11 level 3 Channel  16 :600
-ROC11 level 4 Channel  16 :700
-ROC12 level 0 Channel  16 :270
-ROC12 level 1 Channel  16 :400
-ROC12 level 2 Channel  16 :500
-ROC12 level 3 Channel  16 :600
-ROC12 level 4 Channel  16 :700
-ROC13 level 0 Channel  16 :270
-ROC13 level 1 Channel  16 :400
-ROC13 level 2 Channel  16 :500
-ROC13 level 3 Channel  16 :600
-ROC13 level 4 Channel  16 :700
-ROC14 level 0 Channel  16 :270
-ROC14 level 1 Channel  16 :400
-ROC14 level 2 Channel  16 :500
-ROC14 level 3 Channel  16 :600
-ROC14 level 4 Channel  16 :700
-ROC15 level 0 Channel  16 :270
-ROC15 level 1 Channel  16 :400
-ROC15 level 2 Channel  16 :500
-ROC15 level 3 Channel  16 :600
-ROC15 level 4 Channel  16 :700
 TRLR level 0 Channel 16:270
 TRLR level 1 Channel 16:400
 TRLR level 2 Channel 16:500
@@ -1714,46 +1074,6 @@ ROC7 level 1 Channel  17 :400
 ROC7 level 2 Channel  17 :500
 ROC7 level 3 Channel  17 :600
 ROC7 level 4 Channel  17 :700
-ROC8 level 0 Channel  17 :270
-ROC8 level 1 Channel  17 :400
-ROC8 level 2 Channel  17 :500
-ROC8 level 3 Channel  17 :600
-ROC8 level 4 Channel  17 :700
-ROC9 level 0 Channel  17 :270
-ROC9 level 1 Channel  17 :400
-ROC9 level 2 Channel  17 :500
-ROC9 level 3 Channel  17 :600
-ROC9 level 4 Channel  17 :700
-ROC10 level 0 Channel  17 :270
-ROC10 level 1 Channel  17 :400
-ROC10 level 2 Channel  17 :500
-ROC10 level 3 Channel  17 :600
-ROC10 level 4 Channel  17 :700
-ROC11 level 0 Channel  17 :270
-ROC11 level 1 Channel  17 :400
-ROC11 level 2 Channel  17 :500
-ROC11 level 3 Channel  17 :600
-ROC11 level 4 Channel  17 :700
-ROC12 level 0 Channel  17 :270
-ROC12 level 1 Channel  17 :400
-ROC12 level 2 Channel  17 :500
-ROC12 level 3 Channel  17 :600
-ROC12 level 4 Channel  17 :700
-ROC13 level 0 Channel  17 :270
-ROC13 level 1 Channel  17 :400
-ROC13 level 2 Channel  17 :500
-ROC13 level 3 Channel  17 :600
-ROC13 level 4 Channel  17 :700
-ROC14 level 0 Channel  17 :270
-ROC14 level 1 Channel  17 :400
-ROC14 level 2 Channel  17 :500
-ROC14 level 3 Channel  17 :600
-ROC14 level 4 Channel  17 :700
-ROC15 level 0 Channel  17 :270
-ROC15 level 1 Channel  17 :400
-ROC15 level 2 Channel  17 :500
-ROC15 level 3 Channel  17 :600
-ROC15 level 4 Channel  17 :700
 TRLR level 0 Channel 17:270
 TRLR level 1 Channel 17:400
 TRLR level 2 Channel 17:500
@@ -1804,46 +1124,6 @@ ROC7 level 1 Channel  18 :400
 ROC7 level 2 Channel  18 :500
 ROC7 level 3 Channel  18 :600
 ROC7 level 4 Channel  18 :700
-ROC8 level 0 Channel  18 :270
-ROC8 level 1 Channel  18 :400
-ROC8 level 2 Channel  18 :500
-ROC8 level 3 Channel  18 :600
-ROC8 level 4 Channel  18 :700
-ROC9 level 0 Channel  18 :270
-ROC9 level 1 Channel  18 :400
-ROC9 level 2 Channel  18 :500
-ROC9 level 3 Channel  18 :600
-ROC9 level 4 Channel  18 :700
-ROC10 level 0 Channel  18 :270
-ROC10 level 1 Channel  18 :400
-ROC10 level 2 Channel  18 :500
-ROC10 level 3 Channel  18 :600
-ROC10 level 4 Channel  18 :700
-ROC11 level 0 Channel  18 :270
-ROC11 level 1 Channel  18 :400
-ROC11 level 2 Channel  18 :500
-ROC11 level 3 Channel  18 :600
-ROC11 level 4 Channel  18 :700
-ROC12 level 0 Channel  18 :270
-ROC12 level 1 Channel  18 :400
-ROC12 level 2 Channel  18 :500
-ROC12 level 3 Channel  18 :600
-ROC12 level 4 Channel  18 :700
-ROC13 level 0 Channel  18 :270
-ROC13 level 1 Channel  18 :400
-ROC13 level 2 Channel  18 :500
-ROC13 level 3 Channel  18 :600
-ROC13 level 4 Channel  18 :700
-ROC14 level 0 Channel  18 :270
-ROC14 level 1 Channel  18 :400
-ROC14 level 2 Channel  18 :500
-ROC14 level 3 Channel  18 :600
-ROC14 level 4 Channel  18 :700
-ROC15 level 0 Channel  18 :270
-ROC15 level 1 Channel  18 :400
-ROC15 level 2 Channel  18 :500
-ROC15 level 3 Channel  18 :600
-ROC15 level 4 Channel  18 :700
 TRLR level 0 Channel 18:270
 TRLR level 1 Channel 18:400
 TRLR level 2 Channel 18:500
@@ -1894,46 +1174,6 @@ ROC7 level 1 Channel  19 :400
 ROC7 level 2 Channel  19 :500
 ROC7 level 3 Channel  19 :600
 ROC7 level 4 Channel  19 :700
-ROC8 level 0 Channel  19 :270
-ROC8 level 1 Channel  19 :400
-ROC8 level 2 Channel  19 :500
-ROC8 level 3 Channel  19 :600
-ROC8 level 4 Channel  19 :700
-ROC9 level 0 Channel  19 :270
-ROC9 level 1 Channel  19 :400
-ROC9 level 2 Channel  19 :500
-ROC9 level 3 Channel  19 :600
-ROC9 level 4 Channel  19 :700
-ROC10 level 0 Channel  19 :270
-ROC10 level 1 Channel  19 :400
-ROC10 level 2 Channel  19 :500
-ROC10 level 3 Channel  19 :600
-ROC10 level 4 Channel  19 :700
-ROC11 level 0 Channel  19 :270
-ROC11 level 1 Channel  19 :400
-ROC11 level 2 Channel  19 :500
-ROC11 level 3 Channel  19 :600
-ROC11 level 4 Channel  19 :700
-ROC12 level 0 Channel  19 :270
-ROC12 level 1 Channel  19 :400
-ROC12 level 2 Channel  19 :500
-ROC12 level 3 Channel  19 :600
-ROC12 level 4 Channel  19 :700
-ROC13 level 0 Channel  19 :270
-ROC13 level 1 Channel  19 :400
-ROC13 level 2 Channel  19 :500
-ROC13 level 3 Channel  19 :600
-ROC13 level 4 Channel  19 :700
-ROC14 level 0 Channel  19 :270
-ROC14 level 1 Channel  19 :400
-ROC14 level 2 Channel  19 :500
-ROC14 level 3 Channel  19 :600
-ROC14 level 4 Channel  19 :700
-ROC15 level 0 Channel  19 :270
-ROC15 level 1 Channel  19 :400
-ROC15 level 2 Channel  19 :500
-ROC15 level 3 Channel  19 :600
-ROC15 level 4 Channel  19 :700
 TRLR level 0 Channel 19:270
 TRLR level 1 Channel 19:400
 TRLR level 2 Channel 19:500
@@ -1984,46 +1224,6 @@ ROC7 level 1 Channel  20 :400
 ROC7 level 2 Channel  20 :500
 ROC7 level 3 Channel  20 :600
 ROC7 level 4 Channel  20 :700
-ROC8 level 0 Channel  20 :270
-ROC8 level 1 Channel  20 :400
-ROC8 level 2 Channel  20 :500
-ROC8 level 3 Channel  20 :600
-ROC8 level 4 Channel  20 :700
-ROC9 level 0 Channel  20 :270
-ROC9 level 1 Channel  20 :400
-ROC9 level 2 Channel  20 :500
-ROC9 level 3 Channel  20 :600
-ROC9 level 4 Channel  20 :700
-ROC10 level 0 Channel  20 :270
-ROC10 level 1 Channel  20 :400
-ROC10 level 2 Channel  20 :500
-ROC10 level 3 Channel  20 :600
-ROC10 level 4 Channel  20 :700
-ROC11 level 0 Channel  20 :270
-ROC11 level 1 Channel  20 :400
-ROC11 level 2 Channel  20 :500
-ROC11 level 3 Channel  20 :600
-ROC11 level 4 Channel  20 :700
-ROC12 level 0 Channel  20 :270
-ROC12 level 1 Channel  20 :400
-ROC12 level 2 Channel  20 :500
-ROC12 level 3 Channel  20 :600
-ROC12 level 4 Channel  20 :700
-ROC13 level 0 Channel  20 :270
-ROC13 level 1 Channel  20 :400
-ROC13 level 2 Channel  20 :500
-ROC13 level 3 Channel  20 :600
-ROC13 level 4 Channel  20 :700
-ROC14 level 0 Channel  20 :270
-ROC14 level 1 Channel  20 :400
-ROC14 level 2 Channel  20 :500
-ROC14 level 3 Channel  20 :600
-ROC14 level 4 Channel  20 :700
-ROC15 level 0 Channel  20 :270
-ROC15 level 1 Channel  20 :400
-ROC15 level 2 Channel  20 :500
-ROC15 level 3 Channel  20 :600
-ROC15 level 4 Channel  20 :700
 TRLR level 0 Channel 20:270
 TRLR level 1 Channel 20:400
 TRLR level 2 Channel 20:500
@@ -2074,46 +1274,6 @@ ROC7 level 1 Channel  21 :400
 ROC7 level 2 Channel  21 :500
 ROC7 level 3 Channel  21 :600
 ROC7 level 4 Channel  21 :700
-ROC8 level 0 Channel  21 :270
-ROC8 level 1 Channel  21 :400
-ROC8 level 2 Channel  21 :500
-ROC8 level 3 Channel  21 :600
-ROC8 level 4 Channel  21 :700
-ROC9 level 0 Channel  21 :270
-ROC9 level 1 Channel  21 :400
-ROC9 level 2 Channel  21 :500
-ROC9 level 3 Channel  21 :600
-ROC9 level 4 Channel  21 :700
-ROC10 level 0 Channel  21 :270
-ROC10 level 1 Channel  21 :400
-ROC10 level 2 Channel  21 :500
-ROC10 level 3 Channel  21 :600
-ROC10 level 4 Channel  21 :700
-ROC11 level 0 Channel  21 :270
-ROC11 level 1 Channel  21 :400
-ROC11 level 2 Channel  21 :500
-ROC11 level 3 Channel  21 :600
-ROC11 level 4 Channel  21 :700
-ROC12 level 0 Channel  21 :270
-ROC12 level 1 Channel  21 :400
-ROC12 level 2 Channel  21 :500
-ROC12 level 3 Channel  21 :600
-ROC12 level 4 Channel  21 :700
-ROC13 level 0 Channel  21 :270
-ROC13 level 1 Channel  21 :400
-ROC13 level 2 Channel  21 :500
-ROC13 level 3 Channel  21 :600
-ROC13 level 4 Channel  21 :700
-ROC14 level 0 Channel  21 :270
-ROC14 level 1 Channel  21 :400
-ROC14 level 2 Channel  21 :500
-ROC14 level 3 Channel  21 :600
-ROC14 level 4 Channel  21 :700
-ROC15 level 0 Channel  21 :270
-ROC15 level 1 Channel  21 :400
-ROC15 level 2 Channel  21 :500
-ROC15 level 3 Channel  21 :600
-ROC15 level 4 Channel  21 :700
 TRLR level 0 Channel 21:270
 TRLR level 1 Channel 21:400
 TRLR level 2 Channel 21:500
@@ -2164,46 +1324,6 @@ ROC7 level 1 Channel  22 :400
 ROC7 level 2 Channel  22 :500
 ROC7 level 3 Channel  22 :600
 ROC7 level 4 Channel  22 :700
-ROC8 level 0 Channel  22 :270
-ROC8 level 1 Channel  22 :400
-ROC8 level 2 Channel  22 :500
-ROC8 level 3 Channel  22 :600
-ROC8 level 4 Channel  22 :700
-ROC9 level 0 Channel  22 :270
-ROC9 level 1 Channel  22 :400
-ROC9 level 2 Channel  22 :500
-ROC9 level 3 Channel  22 :600
-ROC9 level 4 Channel  22 :700
-ROC10 level 0 Channel  22 :270
-ROC10 level 1 Channel  22 :400
-ROC10 level 2 Channel  22 :500
-ROC10 level 3 Channel  22 :600
-ROC10 level 4 Channel  22 :700
-ROC11 level 0 Channel  22 :270
-ROC11 level 1 Channel  22 :400
-ROC11 level 2 Channel  22 :500
-ROC11 level 3 Channel  22 :600
-ROC11 level 4 Channel  22 :700
-ROC12 level 0 Channel  22 :270
-ROC12 level 1 Channel  22 :400
-ROC12 level 2 Channel  22 :500
-ROC12 level 3 Channel  22 :600
-ROC12 level 4 Channel  22 :700
-ROC13 level 0 Channel  22 :270
-ROC13 level 1 Channel  22 :400
-ROC13 level 2 Channel  22 :500
-ROC13 level 3 Channel  22 :600
-ROC13 level 4 Channel  22 :700
-ROC14 level 0 Channel  22 :270
-ROC14 level 1 Channel  22 :400
-ROC14 level 2 Channel  22 :500
-ROC14 level 3 Channel  22 :600
-ROC14 level 4 Channel  22 :700
-ROC15 level 0 Channel  22 :270
-ROC15 level 1 Channel  22 :400
-ROC15 level 2 Channel  22 :500
-ROC15 level 3 Channel  22 :600
-ROC15 level 4 Channel  22 :700
 TRLR level 0 Channel 22:270
 TRLR level 1 Channel 22:400
 TRLR level 2 Channel 22:500
@@ -2254,46 +1374,6 @@ ROC7 level 1 Channel  23 :400
 ROC7 level 2 Channel  23 :500
 ROC7 level 3 Channel  23 :600
 ROC7 level 4 Channel  23 :700
-ROC8 level 0 Channel  23 :270
-ROC8 level 1 Channel  23 :400
-ROC8 level 2 Channel  23 :500
-ROC8 level 3 Channel  23 :600
-ROC8 level 4 Channel  23 :700
-ROC9 level 0 Channel  23 :270
-ROC9 level 1 Channel  23 :400
-ROC9 level 2 Channel  23 :500
-ROC9 level 3 Channel  23 :600
-ROC9 level 4 Channel  23 :700
-ROC10 level 0 Channel  23 :270
-ROC10 level 1 Channel  23 :400
-ROC10 level 2 Channel  23 :500
-ROC10 level 3 Channel  23 :600
-ROC10 level 4 Channel  23 :700
-ROC11 level 0 Channel  23 :270
-ROC11 level 1 Channel  23 :400
-ROC11 level 2 Channel  23 :500
-ROC11 level 3 Channel  23 :600
-ROC11 level 4 Channel  23 :700
-ROC12 level 0 Channel  23 :270
-ROC12 level 1 Channel  23 :400
-ROC12 level 2 Channel  23 :500
-ROC12 level 3 Channel  23 :600
-ROC12 level 4 Channel  23 :700
-ROC13 level 0 Channel  23 :270
-ROC13 level 1 Channel  23 :400
-ROC13 level 2 Channel  23 :500
-ROC13 level 3 Channel  23 :600
-ROC13 level 4 Channel  23 :700
-ROC14 level 0 Channel  23 :270
-ROC14 level 1 Channel  23 :400
-ROC14 level 2 Channel  23 :500
-ROC14 level 3 Channel  23 :600
-ROC14 level 4 Channel  23 :700
-ROC15 level 0 Channel  23 :270
-ROC15 level 1 Channel  23 :400
-ROC15 level 2 Channel  23 :500
-ROC15 level 3 Channel  23 :600
-ROC15 level 4 Channel  23 :700
 TRLR level 0 Channel 23:270
 TRLR level 1 Channel 23:400
 TRLR level 2 Channel 23:500
@@ -2344,46 +1424,6 @@ ROC7 level 1 Channel  24 :400
 ROC7 level 2 Channel  24 :500
 ROC7 level 3 Channel  24 :600
 ROC7 level 4 Channel  24 :700
-ROC8 level 0 Channel  24 :270
-ROC8 level 1 Channel  24 :400
-ROC8 level 2 Channel  24 :500
-ROC8 level 3 Channel  24 :600
-ROC8 level 4 Channel  24 :700
-ROC9 level 0 Channel  24 :270
-ROC9 level 1 Channel  24 :400
-ROC9 level 2 Channel  24 :500
-ROC9 level 3 Channel  24 :600
-ROC9 level 4 Channel  24 :700
-ROC10 level 0 Channel  24 :270
-ROC10 level 1 Channel  24 :400
-ROC10 level 2 Channel  24 :500
-ROC10 level 3 Channel  24 :600
-ROC10 level 4 Channel  24 :700
-ROC11 level 0 Channel  24 :270
-ROC11 level 1 Channel  24 :400
-ROC11 level 2 Channel  24 :500
-ROC11 level 3 Channel  24 :600
-ROC11 level 4 Channel  24 :700
-ROC12 level 0 Channel  24 :270
-ROC12 level 1 Channel  24 :400
-ROC12 level 2 Channel  24 :500
-ROC12 level 3 Channel  24 :600
-ROC12 level 4 Channel  24 :700
-ROC13 level 0 Channel  24 :270
-ROC13 level 1 Channel  24 :400
-ROC13 level 2 Channel  24 :500
-ROC13 level 3 Channel  24 :600
-ROC13 level 4 Channel  24 :700
-ROC14 level 0 Channel  24 :270
-ROC14 level 1 Channel  24 :400
-ROC14 level 2 Channel  24 :500
-ROC14 level 3 Channel  24 :600
-ROC14 level 4 Channel  24 :700
-ROC15 level 0 Channel  24 :270
-ROC15 level 1 Channel  24 :400
-ROC15 level 2 Channel  24 :500
-ROC15 level 3 Channel  24 :600
-ROC15 level 4 Channel  24 :700
 TRLR level 0 Channel 24:270
 TRLR level 1 Channel 24:400
 TRLR level 2 Channel 24:500
@@ -2434,46 +1474,6 @@ ROC7 level 1 Channel  25 :400
 ROC7 level 2 Channel  25 :500
 ROC7 level 3 Channel  25 :600
 ROC7 level 4 Channel  25 :700
-ROC8 level 0 Channel  25 :270
-ROC8 level 1 Channel  25 :400
-ROC8 level 2 Channel  25 :500
-ROC8 level 3 Channel  25 :600
-ROC8 level 4 Channel  25 :700
-ROC9 level 0 Channel  25 :270
-ROC9 level 1 Channel  25 :400
-ROC9 level 2 Channel  25 :500
-ROC9 level 3 Channel  25 :600
-ROC9 level 4 Channel  25 :700
-ROC10 level 0 Channel  25 :270
-ROC10 level 1 Channel  25 :400
-ROC10 level 2 Channel  25 :500
-ROC10 level 3 Channel  25 :600
-ROC10 level 4 Channel  25 :700
-ROC11 level 0 Channel  25 :270
-ROC11 level 1 Channel  25 :400
-ROC11 level 2 Channel  25 :500
-ROC11 level 3 Channel  25 :600
-ROC11 level 4 Channel  25 :700
-ROC12 level 0 Channel  25 :270
-ROC12 level 1 Channel  25 :400
-ROC12 level 2 Channel  25 :500
-ROC12 level 3 Channel  25 :600
-ROC12 level 4 Channel  25 :700
-ROC13 level 0 Channel  25 :270
-ROC13 level 1 Channel  25 :400
-ROC13 level 2 Channel  25 :500
-ROC13 level 3 Channel  25 :600
-ROC13 level 4 Channel  25 :700
-ROC14 level 0 Channel  25 :270
-ROC14 level 1 Channel  25 :400
-ROC14 level 2 Channel  25 :500
-ROC14 level 3 Channel  25 :600
-ROC14 level 4 Channel  25 :700
-ROC15 level 0 Channel  25 :270
-ROC15 level 1 Channel  25 :400
-ROC15 level 2 Channel  25 :500
-ROC15 level 3 Channel  25 :600
-ROC15 level 4 Channel  25 :700
 TRLR level 0 Channel 25:270
 TRLR level 1 Channel 25:400
 TRLR level 2 Channel 25:500
@@ -2524,46 +1524,6 @@ ROC7 level 1 Channel  26 :400
 ROC7 level 2 Channel  26 :500
 ROC7 level 3 Channel  26 :600
 ROC7 level 4 Channel  26 :700
-ROC8 level 0 Channel  26 :270
-ROC8 level 1 Channel  26 :400
-ROC8 level 2 Channel  26 :500
-ROC8 level 3 Channel  26 :600
-ROC8 level 4 Channel  26 :700
-ROC9 level 0 Channel  26 :270
-ROC9 level 1 Channel  26 :400
-ROC9 level 2 Channel  26 :500
-ROC9 level 3 Channel  26 :600
-ROC9 level 4 Channel  26 :700
-ROC10 level 0 Channel  26 :270
-ROC10 level 1 Channel  26 :400
-ROC10 level 2 Channel  26 :500
-ROC10 level 3 Channel  26 :600
-ROC10 level 4 Channel  26 :700
-ROC11 level 0 Channel  26 :270
-ROC11 level 1 Channel  26 :400
-ROC11 level 2 Channel  26 :500
-ROC11 level 3 Channel  26 :600
-ROC11 level 4 Channel  26 :700
-ROC12 level 0 Channel  26 :270
-ROC12 level 1 Channel  26 :400
-ROC12 level 2 Channel  26 :500
-ROC12 level 3 Channel  26 :600
-ROC12 level 4 Channel  26 :700
-ROC13 level 0 Channel  26 :270
-ROC13 level 1 Channel  26 :400
-ROC13 level 2 Channel  26 :500
-ROC13 level 3 Channel  26 :600
-ROC13 level 4 Channel  26 :700
-ROC14 level 0 Channel  26 :270
-ROC14 level 1 Channel  26 :400
-ROC14 level 2 Channel  26 :500
-ROC14 level 3 Channel  26 :600
-ROC14 level 4 Channel  26 :700
-ROC15 level 0 Channel  26 :270
-ROC15 level 1 Channel  26 :400
-ROC15 level 2 Channel  26 :500
-ROC15 level 3 Channel  26 :600
-ROC15 level 4 Channel  26 :700
 TRLR level 0 Channel 26:270
 TRLR level 1 Channel 26:400
 TRLR level 2 Channel 26:500
@@ -2614,46 +1574,6 @@ ROC7 level 1 Channel  27 :400
 ROC7 level 2 Channel  27 :500
 ROC7 level 3 Channel  27 :600
 ROC7 level 4 Channel  27 :700
-ROC8 level 0 Channel  27 :270
-ROC8 level 1 Channel  27 :400
-ROC8 level 2 Channel  27 :500
-ROC8 level 3 Channel  27 :600
-ROC8 level 4 Channel  27 :700
-ROC9 level 0 Channel  27 :270
-ROC9 level 1 Channel  27 :400
-ROC9 level 2 Channel  27 :500
-ROC9 level 3 Channel  27 :600
-ROC9 level 4 Channel  27 :700
-ROC10 level 0 Channel  27 :270
-ROC10 level 1 Channel  27 :400
-ROC10 level 2 Channel  27 :500
-ROC10 level 3 Channel  27 :600
-ROC10 level 4 Channel  27 :700
-ROC11 level 0 Channel  27 :270
-ROC11 level 1 Channel  27 :400
-ROC11 level 2 Channel  27 :500
-ROC11 level 3 Channel  27 :600
-ROC11 level 4 Channel  27 :700
-ROC12 level 0 Channel  27 :270
-ROC12 level 1 Channel  27 :400
-ROC12 level 2 Channel  27 :500
-ROC12 level 3 Channel  27 :600
-ROC12 level 4 Channel  27 :700
-ROC13 level 0 Channel  27 :270
-ROC13 level 1 Channel  27 :400
-ROC13 level 2 Channel  27 :500
-ROC13 level 3 Channel  27 :600
-ROC13 level 4 Channel  27 :700
-ROC14 level 0 Channel  27 :270
-ROC14 level 1 Channel  27 :400
-ROC14 level 2 Channel  27 :500
-ROC14 level 3 Channel  27 :600
-ROC14 level 4 Channel  27 :700
-ROC15 level 0 Channel  27 :270
-ROC15 level 1 Channel  27 :400
-ROC15 level 2 Channel  27 :500
-ROC15 level 3 Channel  27 :600
-ROC15 level 4 Channel  27 :700
 TRLR level 0 Channel 27:270
 TRLR level 1 Channel 27:400
 TRLR level 2 Channel 27:500
@@ -2704,46 +1624,6 @@ ROC7 level 1 Channel  28 :400
 ROC7 level 2 Channel  28 :500
 ROC7 level 3 Channel  28 :600
 ROC7 level 4 Channel  28 :700
-ROC8 level 0 Channel  28 :270
-ROC8 level 1 Channel  28 :400
-ROC8 level 2 Channel  28 :500
-ROC8 level 3 Channel  28 :600
-ROC8 level 4 Channel  28 :700
-ROC9 level 0 Channel  28 :270
-ROC9 level 1 Channel  28 :400
-ROC9 level 2 Channel  28 :500
-ROC9 level 3 Channel  28 :600
-ROC9 level 4 Channel  28 :700
-ROC10 level 0 Channel  28 :270
-ROC10 level 1 Channel  28 :400
-ROC10 level 2 Channel  28 :500
-ROC10 level 3 Channel  28 :600
-ROC10 level 4 Channel  28 :700
-ROC11 level 0 Channel  28 :270
-ROC11 level 1 Channel  28 :400
-ROC11 level 2 Channel  28 :500
-ROC11 level 3 Channel  28 :600
-ROC11 level 4 Channel  28 :700
-ROC12 level 0 Channel  28 :270
-ROC12 level 1 Channel  28 :400
-ROC12 level 2 Channel  28 :500
-ROC12 level 3 Channel  28 :600
-ROC12 level 4 Channel  28 :700
-ROC13 level 0 Channel  28 :270
-ROC13 level 1 Channel  28 :400
-ROC13 level 2 Channel  28 :500
-ROC13 level 3 Channel  28 :600
-ROC13 level 4 Channel  28 :700
-ROC14 level 0 Channel  28 :270
-ROC14 level 1 Channel  28 :400
-ROC14 level 2 Channel  28 :500
-ROC14 level 3 Channel  28 :600
-ROC14 level 4 Channel  28 :700
-ROC15 level 0 Channel  28 :270
-ROC15 level 1 Channel  28 :400
-ROC15 level 2 Channel  28 :500
-ROC15 level 3 Channel  28 :600
-ROC15 level 4 Channel  28 :700
 TRLR level 0 Channel 28:270
 TRLR level 1 Channel 28:400
 TRLR level 2 Channel 28:500
@@ -2794,46 +1674,6 @@ ROC7 level 1 Channel  29 :400
 ROC7 level 2 Channel  29 :500
 ROC7 level 3 Channel  29 :600
 ROC7 level 4 Channel  29 :700
-ROC8 level 0 Channel  29 :270
-ROC8 level 1 Channel  29 :400
-ROC8 level 2 Channel  29 :500
-ROC8 level 3 Channel  29 :600
-ROC8 level 4 Channel  29 :700
-ROC9 level 0 Channel  29 :270
-ROC9 level 1 Channel  29 :400
-ROC9 level 2 Channel  29 :500
-ROC9 level 3 Channel  29 :600
-ROC9 level 4 Channel  29 :700
-ROC10 level 0 Channel  29 :270
-ROC10 level 1 Channel  29 :400
-ROC10 level 2 Channel  29 :500
-ROC10 level 3 Channel  29 :600
-ROC10 level 4 Channel  29 :700
-ROC11 level 0 Channel  29 :270
-ROC11 level 1 Channel  29 :400
-ROC11 level 2 Channel  29 :500
-ROC11 level 3 Channel  29 :600
-ROC11 level 4 Channel  29 :700
-ROC12 level 0 Channel  29 :270
-ROC12 level 1 Channel  29 :400
-ROC12 level 2 Channel  29 :500
-ROC12 level 3 Channel  29 :600
-ROC12 level 4 Channel  29 :700
-ROC13 level 0 Channel  29 :270
-ROC13 level 1 Channel  29 :400
-ROC13 level 2 Channel  29 :500
-ROC13 level 3 Channel  29 :600
-ROC13 level 4 Channel  29 :700
-ROC14 level 0 Channel  29 :270
-ROC14 level 1 Channel  29 :400
-ROC14 level 2 Channel  29 :500
-ROC14 level 3 Channel  29 :600
-ROC14 level 4 Channel  29 :700
-ROC15 level 0 Channel  29 :270
-ROC15 level 1 Channel  29 :400
-ROC15 level 2 Channel  29 :500
-ROC15 level 3 Channel  29 :600
-ROC15 level 4 Channel  29 :700
 TRLR level 0 Channel 29:270
 TRLR level 1 Channel 29:400
 TRLR level 2 Channel 29:500
@@ -2884,46 +1724,6 @@ ROC7 level 1 Channel  30 :400
 ROC7 level 2 Channel  30 :500
 ROC7 level 3 Channel  30 :600
 ROC7 level 4 Channel  30 :700
-ROC8 level 0 Channel  30 :270
-ROC8 level 1 Channel  30 :400
-ROC8 level 2 Channel  30 :500
-ROC8 level 3 Channel  30 :600
-ROC8 level 4 Channel  30 :700
-ROC9 level 0 Channel  30 :270
-ROC9 level 1 Channel  30 :400
-ROC9 level 2 Channel  30 :500
-ROC9 level 3 Channel  30 :600
-ROC9 level 4 Channel  30 :700
-ROC10 level 0 Channel  30 :270
-ROC10 level 1 Channel  30 :400
-ROC10 level 2 Channel  30 :500
-ROC10 level 3 Channel  30 :600
-ROC10 level 4 Channel  30 :700
-ROC11 level 0 Channel  30 :270
-ROC11 level 1 Channel  30 :400
-ROC11 level 2 Channel  30 :500
-ROC11 level 3 Channel  30 :600
-ROC11 level 4 Channel  30 :700
-ROC12 level 0 Channel  30 :270
-ROC12 level 1 Channel  30 :400
-ROC12 level 2 Channel  30 :500
-ROC12 level 3 Channel  30 :600
-ROC12 level 4 Channel  30 :700
-ROC13 level 0 Channel  30 :270
-ROC13 level 1 Channel  30 :400
-ROC13 level 2 Channel  30 :500
-ROC13 level 3 Channel  30 :600
-ROC13 level 4 Channel  30 :700
-ROC14 level 0 Channel  30 :270
-ROC14 level 1 Channel  30 :400
-ROC14 level 2 Channel  30 :500
-ROC14 level 3 Channel  30 :600
-ROC14 level 4 Channel  30 :700
-ROC15 level 0 Channel  30 :270
-ROC15 level 1 Channel  30 :400
-ROC15 level 2 Channel  30 :500
-ROC15 level 3 Channel  30 :600
-ROC15 level 4 Channel  30 :700
 TRLR level 0 Channel 30:270
 TRLR level 1 Channel 30:400
 TRLR level 2 Channel 30:500
@@ -2974,46 +1774,6 @@ ROC7 level 1 Channel  31 :400
 ROC7 level 2 Channel  31 :500
 ROC7 level 3 Channel  31 :600
 ROC7 level 4 Channel  31 :700
-ROC8 level 0 Channel  31 :270
-ROC8 level 1 Channel  31 :400
-ROC8 level 2 Channel  31 :500
-ROC8 level 3 Channel  31 :600
-ROC8 level 4 Channel  31 :700
-ROC9 level 0 Channel  31 :270
-ROC9 level 1 Channel  31 :400
-ROC9 level 2 Channel  31 :500
-ROC9 level 3 Channel  31 :600
-ROC9 level 4 Channel  31 :700
-ROC10 level 0 Channel  31 :270
-ROC10 level 1 Channel  31 :400
-ROC10 level 2 Channel  31 :500
-ROC10 level 3 Channel  31 :600
-ROC10 level 4 Channel  31 :700
-ROC11 level 0 Channel  31 :270
-ROC11 level 1 Channel  31 :400
-ROC11 level 2 Channel  31 :500
-ROC11 level 3 Channel  31 :600
-ROC11 level 4 Channel  31 :700
-ROC12 level 0 Channel  31 :270
-ROC12 level 1 Channel  31 :400
-ROC12 level 2 Channel  31 :500
-ROC12 level 3 Channel  31 :600
-ROC12 level 4 Channel  31 :700
-ROC13 level 0 Channel  31 :270
-ROC13 level 1 Channel  31 :400
-ROC13 level 2 Channel  31 :500
-ROC13 level 3 Channel  31 :600
-ROC13 level 4 Channel  31 :700
-ROC14 level 0 Channel  31 :270
-ROC14 level 1 Channel  31 :400
-ROC14 level 2 Channel  31 :500
-ROC14 level 3 Channel  31 :600
-ROC14 level 4 Channel  31 :700
-ROC15 level 0 Channel  31 :270
-ROC15 level 1 Channel  31 :400
-ROC15 level 2 Channel  31 :500
-ROC15 level 3 Channel  31 :600
-ROC15 level 4 Channel  31 :700
 TRLR level 0 Channel 31:270
 TRLR level 1 Channel 31:400
 TRLR level 2 Channel 31:500
@@ -3064,46 +1824,6 @@ ROC7 level 1 Channel  32 :400
 ROC7 level 2 Channel  32 :500
 ROC7 level 3 Channel  32 :600
 ROC7 level 4 Channel  32 :700
-ROC8 level 0 Channel  32 :270
-ROC8 level 1 Channel  32 :400
-ROC8 level 2 Channel  32 :500
-ROC8 level 3 Channel  32 :600
-ROC8 level 4 Channel  32 :700
-ROC9 level 0 Channel  32 :270
-ROC9 level 1 Channel  32 :400
-ROC9 level 2 Channel  32 :500
-ROC9 level 3 Channel  32 :600
-ROC9 level 4 Channel  32 :700
-ROC10 level 0 Channel  32 :270
-ROC10 level 1 Channel  32 :400
-ROC10 level 2 Channel  32 :500
-ROC10 level 3 Channel  32 :600
-ROC10 level 4 Channel  32 :700
-ROC11 level 0 Channel  32 :270
-ROC11 level 1 Channel  32 :400
-ROC11 level 2 Channel  32 :500
-ROC11 level 3 Channel  32 :600
-ROC11 level 4 Channel  32 :700
-ROC12 level 0 Channel  32 :270
-ROC12 level 1 Channel  32 :400
-ROC12 level 2 Channel  32 :500
-ROC12 level 3 Channel  32 :600
-ROC12 level 4 Channel  32 :700
-ROC13 level 0 Channel  32 :270
-ROC13 level 1 Channel  32 :400
-ROC13 level 2 Channel  32 :500
-ROC13 level 3 Channel  32 :600
-ROC13 level 4 Channel  32 :700
-ROC14 level 0 Channel  32 :270
-ROC14 level 1 Channel  32 :400
-ROC14 level 2 Channel  32 :500
-ROC14 level 3 Channel  32 :600
-ROC14 level 4 Channel  32 :700
-ROC15 level 0 Channel  32 :270
-ROC15 level 1 Channel  32 :400
-ROC15 level 2 Channel  32 :500
-ROC15 level 3 Channel  32 :600
-ROC15 level 4 Channel  32 :700
 TRLR level 0 Channel 32:270
 TRLR level 1 Channel 32:400
 TRLR level 2 Channel 32:500
@@ -3154,46 +1874,6 @@ ROC7 level 1 Channel  33 :400
 ROC7 level 2 Channel  33 :500
 ROC7 level 3 Channel  33 :600
 ROC7 level 4 Channel  33 :700
-ROC8 level 0 Channel  33 :270
-ROC8 level 1 Channel  33 :400
-ROC8 level 2 Channel  33 :500
-ROC8 level 3 Channel  33 :600
-ROC8 level 4 Channel  33 :700
-ROC9 level 0 Channel  33 :270
-ROC9 level 1 Channel  33 :400
-ROC9 level 2 Channel  33 :500
-ROC9 level 3 Channel  33 :600
-ROC9 level 4 Channel  33 :700
-ROC10 level 0 Channel  33 :270
-ROC10 level 1 Channel  33 :400
-ROC10 level 2 Channel  33 :500
-ROC10 level 3 Channel  33 :600
-ROC10 level 4 Channel  33 :700
-ROC11 level 0 Channel  33 :270
-ROC11 level 1 Channel  33 :400
-ROC11 level 2 Channel  33 :500
-ROC11 level 3 Channel  33 :600
-ROC11 level 4 Channel  33 :700
-ROC12 level 0 Channel  33 :270
-ROC12 level 1 Channel  33 :400
-ROC12 level 2 Channel  33 :500
-ROC12 level 3 Channel  33 :600
-ROC12 level 4 Channel  33 :700
-ROC13 level 0 Channel  33 :270
-ROC13 level 1 Channel  33 :400
-ROC13 level 2 Channel  33 :500
-ROC13 level 3 Channel  33 :600
-ROC13 level 4 Channel  33 :700
-ROC14 level 0 Channel  33 :270
-ROC14 level 1 Channel  33 :400
-ROC14 level 2 Channel  33 :500
-ROC14 level 3 Channel  33 :600
-ROC14 level 4 Channel  33 :700
-ROC15 level 0 Channel  33 :270
-ROC15 level 1 Channel  33 :400
-ROC15 level 2 Channel  33 :500
-ROC15 level 3 Channel  33 :600
-ROC15 level 4 Channel  33 :700
 TRLR level 0 Channel 33:270
 TRLR level 1 Channel 33:400
 TRLR level 2 Channel 33:500
@@ -3244,46 +1924,6 @@ ROC7 level 1 Channel  34 :400
 ROC7 level 2 Channel  34 :500
 ROC7 level 3 Channel  34 :600
 ROC7 level 4 Channel  34 :700
-ROC8 level 0 Channel  34 :270
-ROC8 level 1 Channel  34 :400
-ROC8 level 2 Channel  34 :500
-ROC8 level 3 Channel  34 :600
-ROC8 level 4 Channel  34 :700
-ROC9 level 0 Channel  34 :270
-ROC9 level 1 Channel  34 :400
-ROC9 level 2 Channel  34 :500
-ROC9 level 3 Channel  34 :600
-ROC9 level 4 Channel  34 :700
-ROC10 level 0 Channel  34 :270
-ROC10 level 1 Channel  34 :400
-ROC10 level 2 Channel  34 :500
-ROC10 level 3 Channel  34 :600
-ROC10 level 4 Channel  34 :700
-ROC11 level 0 Channel  34 :270
-ROC11 level 1 Channel  34 :400
-ROC11 level 2 Channel  34 :500
-ROC11 level 3 Channel  34 :600
-ROC11 level 4 Channel  34 :700
-ROC12 level 0 Channel  34 :270
-ROC12 level 1 Channel  34 :400
-ROC12 level 2 Channel  34 :500
-ROC12 level 3 Channel  34 :600
-ROC12 level 4 Channel  34 :700
-ROC13 level 0 Channel  34 :270
-ROC13 level 1 Channel  34 :400
-ROC13 level 2 Channel  34 :500
-ROC13 level 3 Channel  34 :600
-ROC13 level 4 Channel  34 :700
-ROC14 level 0 Channel  34 :270
-ROC14 level 1 Channel  34 :400
-ROC14 level 2 Channel  34 :500
-ROC14 level 3 Channel  34 :600
-ROC14 level 4 Channel  34 :700
-ROC15 level 0 Channel  34 :270
-ROC15 level 1 Channel  34 :400
-ROC15 level 2 Channel  34 :500
-ROC15 level 3 Channel  34 :600
-ROC15 level 4 Channel  34 :700
 TRLR level 0 Channel 34:270
 TRLR level 1 Channel 34:400
 TRLR level 2 Channel 34:500
@@ -3334,46 +1974,6 @@ ROC7 level 1 Channel  35 :400
 ROC7 level 2 Channel  35 :500
 ROC7 level 3 Channel  35 :600
 ROC7 level 4 Channel  35 :700
-ROC8 level 0 Channel  35 :270
-ROC8 level 1 Channel  35 :400
-ROC8 level 2 Channel  35 :500
-ROC8 level 3 Channel  35 :600
-ROC8 level 4 Channel  35 :700
-ROC9 level 0 Channel  35 :270
-ROC9 level 1 Channel  35 :400
-ROC9 level 2 Channel  35 :500
-ROC9 level 3 Channel  35 :600
-ROC9 level 4 Channel  35 :700
-ROC10 level 0 Channel  35 :270
-ROC10 level 1 Channel  35 :400
-ROC10 level 2 Channel  35 :500
-ROC10 level 3 Channel  35 :600
-ROC10 level 4 Channel  35 :700
-ROC11 level 0 Channel  35 :270
-ROC11 level 1 Channel  35 :400
-ROC11 level 2 Channel  35 :500
-ROC11 level 3 Channel  35 :600
-ROC11 level 4 Channel  35 :700
-ROC12 level 0 Channel  35 :270
-ROC12 level 1 Channel  35 :400
-ROC12 level 2 Channel  35 :500
-ROC12 level 3 Channel  35 :600
-ROC12 level 4 Channel  35 :700
-ROC13 level 0 Channel  35 :270
-ROC13 level 1 Channel  35 :400
-ROC13 level 2 Channel  35 :500
-ROC13 level 3 Channel  35 :600
-ROC13 level 4 Channel  35 :700
-ROC14 level 0 Channel  35 :270
-ROC14 level 1 Channel  35 :400
-ROC14 level 2 Channel  35 :500
-ROC14 level 3 Channel  35 :600
-ROC14 level 4 Channel  35 :700
-ROC15 level 0 Channel  35 :270
-ROC15 level 1 Channel  35 :400
-ROC15 level 2 Channel  35 :500
-ROC15 level 3 Channel  35 :600
-ROC15 level 4 Channel  35 :700
 TRLR level 0 Channel 35:270
 TRLR level 1 Channel 35:400
 TRLR level 2 Channel 35:500
@@ -3424,57 +2024,17 @@ ROC7 level 1 Channel  36 :400
 ROC7 level 2 Channel  36 :500
 ROC7 level 3 Channel  36 :600
 ROC7 level 4 Channel  36 :700
-ROC8 level 0 Channel  36 :270
-ROC8 level 1 Channel  36 :400
-ROC8 level 2 Channel  36 :500
-ROC8 level 3 Channel  36 :600
-ROC8 level 4 Channel  36 :700
-ROC9 level 0 Channel  36 :270
-ROC9 level 1 Channel  36 :400
-ROC9 level 2 Channel  36 :500
-ROC9 level 3 Channel  36 :600
-ROC9 level 4 Channel  36 :700
-ROC10 level 0 Channel  36 :270
-ROC10 level 1 Channel  36 :400
-ROC10 level 2 Channel  36 :500
-ROC10 level 3 Channel  36 :600
-ROC10 level 4 Channel  36 :700
-ROC11 level 0 Channel  36 :270
-ROC11 level 1 Channel  36 :400
-ROC11 level 2 Channel  36 :500
-ROC11 level 3 Channel  36 :600
-ROC11 level 4 Channel  36 :700
-ROC12 level 0 Channel  36 :270
-ROC12 level 1 Channel  36 :400
-ROC12 level 2 Channel  36 :500
-ROC12 level 3 Channel  36 :600
-ROC12 level 4 Channel  36 :700
-ROC13 level 0 Channel  36 :270
-ROC13 level 1 Channel  36 :400
-ROC13 level 2 Channel  36 :500
-ROC13 level 3 Channel  36 :600
-ROC13 level 4 Channel  36 :700
-ROC14 level 0 Channel  36 :270
-ROC14 level 1 Channel  36 :400
-ROC14 level 2 Channel  36 :500
-ROC14 level 3 Channel  36 :600
-ROC14 level 4 Channel  36 :700
-ROC15 level 0 Channel  36 :270
-ROC15 level 1 Channel  36 :400
-ROC15 level 2 Channel  36 :500
-ROC15 level 3 Channel  36 :600
-ROC15 level 4 Channel  36 :700
 TRLR level 0 Channel 36:270
 TRLR level 1 Channel 36:400
 TRLR level 2 Channel 36:500
 TRLR level 3 Channel 36:600
 TRLR level 4 Channel 36:700
-Channel Enbable bits chnls 1-9  (on = 0):0x0
-Channel Enbable bits chnls 10-18(on = 0):0x0
-Channel Enbable bits chnls 19-27(on = 0):0x0
-Channel Enbable bits chnls 28-36(on = 0):0x0
+Channel Enbable bits chnls 1-9  (on = 0):0x1ff
+Channel Enbable bits chnls 10-18(on = 0):0x1ff
+Channel Enbable bits chnls 19-27(on = 0):0x1ff
+Channel Enbable bits chnls 28-36(on = 0):0x1ff
 TTCrx Coarse Delay Register 2:0
-TTCrc      ClkDes2 Register 3:0x9b
+TTCrc      ClkDes2 Register 3:0x13
 TTCrc Fine Dlay ClkDes2 Reg 1:5
 Center Chip Control Reg:0x0
 Initial Slink DAQ mode:0
@@ -3494,6 +2054,10 @@ Private 8 bit word chnls 1-9  :0xb1
 Private 8 bit word chnls 10-18:0xb2
 Private 8 bit word chnls 19-27:0xb3
 Private 8 bit word chnls 28-36:0xb4
+N  Scope channel(0-8):6
+NC Scope channel(0-8):0
+SC Scope channel(0-8):6
+S  Scope channel(0-8):4
 Special Random testDAC mode (on = 0x1, off=0x0):0x0
 Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:64
 Number of Consecutive (max 1023) Empty events till TTs ERR set:64
@@ -3509,10 +2073,10 @@ N fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 NC fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 SC fifo-1 hit limit (max 1023 (hard) 900 (soft):192
 S fifo-1 hit limit (max 1023 (hard) 900 (soft):192
-Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:0
-Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:0
-Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:0
-Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:0
+N  testreg:0x2303
+NC testreg:0x80000000
+SC testreg:0x0
+S  testreg:0x80002303
 Set BUSYWHENBEHIND by this many triggers with timeouts:8
 D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):0x1
 Limit for fifo-2 almost full (point for the TTS flag):0x1c00

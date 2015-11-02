@@ -71,6 +71,19 @@
 #include "PixelCalibrations/include/PixelTKFECDelay25Calibration.h"
 
 PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string& calibName, const PixelSupervisorConfiguration* pixSupConfPtr, SOAPCommander* soapCmdrPtr,PixelDCSSOAPCommander* dcsSoapCommanderPtr, PixelDCSPVSSCommander* pvssCommanderPtr) const{
+  if (calibName=="EmulatedPhysics"||
+      calibName=="FEDBaselineWithTestDACs"||
+      calibName=="FEDBaselineWithPixels"||
+      calibName=="FEDBaselineWithPixelsNew"||
+      calibName=="FEDAddressLevelWithPixels"||
+      calibName=="FEDAddressLevelWithTestDACs"||
+      calibName=="AOHBias"||
+      calibName=="AOHAndFEDChannelMappingTest"||
+      calibName=="AOHGain"||
+      calibName=="TBMUB"||
+      calibName=="ROCUBEqualization"||
+      calibName=="ClockPhaseCalibration")
+    assert(0);
 
   if (calibName=="EmulatedPhysics") {
     return new PixelEmulatedPhysics(*pixSupConfPtr,soapCmdrPtr);
@@ -196,6 +209,19 @@ PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string&
 PixelFEDCalibrationBase* PixelCalibrationFactory::getFEDCalibration(const std::string& calibName,
 								    const PixelFEDSupervisorConfiguration* pixFEDSupConfPtr, 
 								    SOAPCommander* soapCmdrPtr) const{
+  if (calibName=="EmulatedPhysics"||
+      calibName=="FEDBaselineWithTestDACs"||
+      calibName=="FEDBaselineWithPixels"||
+      calibName=="FEDBaselineWithPixelsNew"||
+      calibName=="FEDAddressLevelWithPixels"||
+      calibName=="FEDAddressLevelWithTestDACs"||
+      calibName=="AOHBias"||
+      calibName=="AOHAndFEDChannelMappingTest"||
+      calibName=="AOHGain"||
+      calibName=="TBMUB"||
+      calibName=="ROCUBEqualization"||
+      calibName=="ClockPhaseCalibration")
+    assert(0);
 
   if (calibName=="EmulatedPhysics") {
     return new PixelFEDEmulatedPhysics(*pixFEDSupConfPtr, soapCmdrPtr);

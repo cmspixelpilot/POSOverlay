@@ -1939,7 +1939,9 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
 
   if (fsm_.getStateName(fsm_.getCurrentState())!="TTSTestMode") {
 
-    TCDSSessionID_=toolbox::toString("#%d",rand());
+    // TCDSSessionID_=toolbox::toString("#%d",rand());
+    // TCDS session ID fixed to string for now, above solution is better and should be used again later
+    TCDSSessionID_="PixelTCDS";
     diagService_->reportError("Created new TCDS session ID: "+TCDSSessionID_, DIAGINFO);
     *console_<<"Created new TCDS session ID: " + TCDSSessionID_<<std::endl;
     std::cout <<"Created new TCDS session ID: " + TCDSSessionID_<<std::endl;
@@ -2472,11 +2474,11 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
 
       PixelDCSSOAPCommander dcsSoapCommander(this);
 
-//      if (psxServers_.size()!=1) {
-//	diagService_->reportError("PixelSupervisor::stateRunning psxServers_.size()="+stringF(psxServers_.size())+"\n"+"Expect to have exactly one psxServer in configuration.",DIAGFATAL);
-//      //::abort();
-//      }
-//      PixelDCSPVSSCommander pvssCommander(this, psxServers_.begin()->second);
+      if (psxServers_.size()!=1) {
+	diagService_->reportError("PixelSupervisor::stateRunning psxServers_.size()="+stringF(psxServers_.size())+"\n"+"Expect to have exactly one psxServer in configuration.",DIAGFATAL);
+      //::abort();
+      }
+      PixelDCSPVSSCommander pvssCommander(this, psxServers_.begin()->second);
 
       PixelCalibrationFactory calibMaker;
 
@@ -2484,7 +2486,7 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
 						   pixSupConfPtr,
 						   soapCmdrPtr,
 						   &dcsSoapCommander,
-						   0 //&pvssCommander
+						   &pvssCommander
 						   );
 
       if (theCalibAlgorithm_==0){
@@ -3305,8 +3307,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       diagService_->reportError("[PixelSupervisor::stateConfiguring] no LTCSupervisors exist...",DIAGFATAL);
     }
     proceed = false; // do not continue with other supervisors before LTCSupervisors are not configured
+    sleep(20);
   }
-
 
 
 

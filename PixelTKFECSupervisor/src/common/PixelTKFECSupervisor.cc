@@ -493,6 +493,10 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   *out<<"</tr>";
   *out<<"</table>";
 
+  *out <<"<hr/>"<<std::endl;
+  *out << "<h2>DCS-FSM interaction</h2> "<<std::endl;
+  *out << "<input type=\"submit\" name=\"Command\" id=\"DumpPowerMap\" value=\"DumpPowerMap\"/>";
+
 //=========================================== PIA Reset (only VME Mode Considered)
 	*out <<"<hr/>"<<std::endl;
 	*out <<"<h2>Pia Reset</h2>"<<std::endl;
@@ -650,6 +654,12 @@ void PixelTKFECSupervisor::XgiHandler (xgi::Input *in, xgi::Output *out) throw (
     xoap::MessageReference msg = MakeSOAPMessageReference("PIAReset", parametersXgi);
     xoap::MessageReference reply = PIAReset(msg);
     if (Receive(reply)!="PIAResetDone") cout<<"PIAReset command could not be executed!"<<endl;
+  }
+  else if (Command=="DumpPowerMap") {
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<2; ++j)
+	for (int k=0; k<2; ++k)
+	  std::cout << "LV: i=" << i << " j=" << j << " k=" << k << "  -> " << powerMap_.getVoltage(i,j,k) << std::endl;
   }
 
   this->Default(in, out);
@@ -1194,6 +1204,7 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
     PixelGlobalDelay25* newGlobalDelay25=0;
     PixelConfigInterface::get(newGlobalDelay25, "pixel/globaldelay25/", *newGlobalKey);
     if (newGlobalDelay25==0) XCEPT_RAISE(xdaq::exception::Exception,"The globalDelay25 object is null!");
+    std::cout << "newGlobalDelay25 = " << newGlobalDelay25->getDelay(0);
     
     enumDeviceType modeType = PHILIPS ;
     //loop over portcards
@@ -1455,7 +1466,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     
       for (iportcard=portcards.begin();iportcard!=portcards.end();iportcard++) {
       
-	std::string powerCoordinate=iportcard->substr(0, 8);
+	std::string powerCoordinate= "Pilt_BmI"; //Only one partition for pilot because of the bs connect we have to do //iportcard->substr(0, 8);
 	//      std::cout<<"PixelTKFECSupervisor::stateConfiguring - Portcard "<<*iportcard<<" has power coordinate "<<powerCoordinate<<std::endl;
 	BiVoltage power=powerMap_.getVoltage(powerCoordinate, std::cout);
 	

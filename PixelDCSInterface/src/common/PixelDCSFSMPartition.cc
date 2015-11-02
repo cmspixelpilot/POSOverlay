@@ -21,10 +21,14 @@
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSFSMDeviceDefinition.h"
 
 PixelDCSFSMPartition::PixelDCSFSMPartition(const std::string& fsmPartitionName,
+					   const std::string& fsmPartitionTopName,
+					   const std::string& fsmPartitionTopDomain,
 					   const std::list<std::pair<std::string, PixelDCSFSMNodeA4602> >& fsmNodeListA4602,
 					   const std::list<std::pair<std::string, PixelDCSFSMNodeA4603> >& fsmNodeListA4603,
 					   const std::list<PixelDCSSOAPConnection>& soapConnections)
-  : name_(fsmPartitionName)
+  : name_(fsmPartitionName),
+    topname_(fsmPartitionTopName),
+    topdomain_(fsmPartitionTopDomain)
 {
   for ( std::list<std::pair<std::string, PixelDCSFSMNodeA4602> >::const_iterator fsmNode = fsmNodeListA4602.begin();
 	fsmNode != fsmNodeListA4602.end(); ++fsmNode ) {
@@ -71,7 +75,9 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const PixelDCSFSMPartition& fsmPartit
 //          (as it results in the PixelDCSFSMNode objects to be deleted)
 //
   name_ = fsmPartition.name_;
-	
+  topname_ = fsmPartition.topname_;
+  topdomain_ = fsmPartition.topdomain_;
+
   for ( std::map<std::string, PixelDCSFSMNodeA4602*>::const_iterator fsmNode = fsmPartition.fsmNodeMapA4602_.begin();
 	fsmNode != fsmPartition.fsmNodeMapA4602_.end(); ++fsmNode ) {
     fsmNodeMapA4602_[fsmNode->first] = new PixelDCSFSMNodeA4602(*fsmNode->second);
@@ -102,6 +108,7 @@ PixelDCSFSMPartition::PixelDCSFSMPartition(const PixelDCSFSMPartition& fsmPartit
 
 PixelDCSFSMPartition::~PixelDCSFSMPartition()
 {
+
   for ( std::map<std::string, PixelDCSFSMNodeA4602*>::const_iterator fsmNode = fsmNodeMapA4602_.begin();
 	fsmNode != fsmNodeMapA4602_.end(); ++fsmNode ) {
     delete fsmNode->second;

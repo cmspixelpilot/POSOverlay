@@ -9,6 +9,8 @@
 // Move ResetFED before workloop start. d.dk. 7/14
 
 #define READ_LASTDAC  // Enable the last dac writing
+#define PILOT_FED
+//#define PILOT_TRANSSCOPE
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
@@ -474,7 +476,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
 
   std::string vmeBaseAddress_string=cgi.getElement("FEDBaseAddress")->getValue();
   unsigned long vmeBaseAddress=atoi(vmeBaseAddress_string.c_str());
-  unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, vmeBaseAddress);
+  //unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, vmeBaseAddress);
   PixelFEDInterface* iFED=FEDInterface_[vmeBaseAddress];
   PixelFEDCard fedCard=iFED->getPixelFEDCard();
 
@@ -551,6 +553,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
 
   *out<<"<h1> FED with Base Address 0x"<<std::hex<<vmeBaseAddress<<std::dec<<"</h1>"<<std::endl<<std::endl;
 
+#ifndef PILOT_FED
   // GUI for FED Channel Offset DACs and Optical Receiver Input Offsets
   *out<<"<form name=\"input\" method=\"get\" action=\""<<url+"/LowLevelXgiHandler"<<"\" enctype=\"multipart/form-data\">"<<std::endl;
   *out<<"<table border=1>"<<std::endl;
@@ -578,7 +581,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   *out<<"<input type=\"Submit\" name=\"Command\" value=\"SetChannelOffsets\">"<<std::endl;
   *out<<"<input type=\"hidden\" name=\"FEDBaseAddress\" value=\""<<vmeBaseAddress_string<<"\"/>"<<endl;
   *out<<"</form>"<<std::endl<<std::endl;
-
+#endif
 
   // GUI for the FED Control and Mode Registers
   unsigned int cReg=fedCard.Ccntrl;
@@ -765,6 +768,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   *out<<"<input type=\"hidden\" name=\"FEDBaseAddress\" value=\""<<vmeBaseAddress_string<<"\"/>"<<endl;
   *out<<"</form>"<<endl;
 
+#ifndef PILOT_FED
   // Baseline Release, Set and Hold
   *out<<"<table width=100% border=1>"<<endl;
   *out<<"<tr>"<<endl;
@@ -800,6 +804,7 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   HTML2XGI(out, htmlbase_+"/SetPhasesDelays.htm");
   *out<<"<input type=\"hidden\" name=\"FEDBaseAddress\" value=\""<<vmeBaseAddress_string<<"\"/>"<<endl;
   *out<<"</form>"<<endl;
+#endif
 
   // Reload Firmware and Reset FED
   *out<<"<form name=\"input\" method=\"get\" action=\""<<url+"/LowLevelXgiHandler"<<"\" enctype=\"multipart/form-data\">";
@@ -913,7 +918,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
   std::string vmeBaseAddress_string=cgi.getElement("FEDBaseAddress")->getValue();
   
   if (Command=="SetChannelOffsets") {
-
+assert(0);
     Attribute_Vector parametersXgi(channelsPerFED+opticalReceiversPerFED+1);
       
     for (unsigned int ichannel=0;ichannel<channelsPerFED;++ichannel){
@@ -1052,7 +1057,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
 
   }  else if (Command=="BaselineRelease") {
-
+assert(0);
     Attribute_Vector parametersXgi(2);
     parametersXgi[0].name_="VMEBaseAddress";parametersXgi[0].value_=vmeBaseAddress_string;
     parametersXgi[1].name_="FEDChannel"; parametersXgi[1].value_="*";
@@ -1064,7 +1069,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
  
   } else if (Command=="BaselineSet") {
-    
+assert(0);    
     Attribute_Vector parametersXgi(5);
     parametersXgi[0].name_="VMEBaseAddress"; parametersXgi[0].value_=vmeBaseAddress_string;
     parametersXgi[1].name_="Nbaseln"; parametersXgi[1].value_=cgi.getElement("Nbaseln")->getValue();
@@ -1079,7 +1084,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
 
   } else if (Command=="BaselineHold") {
-
+assert(0);
     Attribute_Vector parametersXgi(2);
     parametersXgi[0].name_="VMEBaseAddress";parametersXgi[0].value_=vmeBaseAddress_string;
     parametersXgi[1].name_="FEDChannel"; parametersXgi[1].value_="*";
@@ -1124,7 +1129,7 @@ void PixelFEDSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) t
     }
 
   } else if (Command=="SetPhasesDelays") {
-       
+       assert(0);
     Attribute_Vector parametersXgi(4);
     parametersXgi[0].name_="Channel";	parametersXgi[0].value_=cgi.getElement("Channel")->getValue();
     parametersXgi[1].name_="Phase";		parametersXgi[1].value_=cgi.getElement("Phase")->getValue();
@@ -1335,6 +1340,8 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
       //      cout<<"fedStuckInBusy for fed "<<fednumber<<" set to "<< fedStuckInBusy_[fednumber]<<endl; //JMT very verbose debug info
 
       dataFile_[fednumber]=fopen((outputDir_+"/PhysicsDataFED_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
+      dataFileT_[fednumber]=fopen((outputDir_+"/TransFifo_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
+      dataFileS_[fednumber]=fopen((outputDir_+"/ScopeFifo_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
       errorFile_[fednumber]=fopen((outputDir_+"/ErrorDataFED_"+itoa(fednumber)+"_"+runNumber_+".err").c_str(), "wb");
       setbuf(errorFile_[fednumber],NULL);  //disable buffering
       ttsFile_[fednumber]=fopen((outputDir_+"/TTSDataFED_"+itoa(fednumber)+"_"+runNumber_+".tts").c_str(), "wb");
@@ -1418,6 +1425,8 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
 	unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
 	diagService_->reportError("About to close files for fednumber="+stringF(fednumber), DIAGDEBUG);
 	fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
+	fclose(dataFileT_[fednumber]);    dataFileT_[fednumber]=0;
+	fclose(dataFileS_[fednumber]);    dataFileS_[fednumber]=0;
 	fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1436,6 +1445,8 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
       for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
+        fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
+        fclose(dataFileS_[fednumber]);     dataFileS_[fednumber]=0;
         fclose(errorFile_[fednumber]);    errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);      ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1569,6 +1580,8 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
 	diagService_->reportError("About to close output file for FED#"+stringF(fednumber), DIAGDEBUG);
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
+        fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
+        fclose(dataFileS_[fednumber]);     dataFileS_[fednumber]=0;
         fclose(errorFile_[fednumber]);    errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);      ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1586,6 +1599,8 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
       for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
         fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
+        fclose(dataFileT_[fednumber]);    dataFileT_[fednumber]=0;
+        fclose(dataFileS_[fednumber]);    dataFileS_[fednumber]=0;
         fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1680,6 +1695,12 @@ xoap::MessageReference PixelFEDSupervisor::Recover(xoap::MessageReference msg) {
     unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
     if ( dataFile_.find(fednumber) != dataFile_.end() ) {
       if (dataFile_[fednumber] != 0)    fclose(dataFile_[fednumber]);
+    }
+    if ( dataFileT_.find(fednumber) != dataFileT_.end() ) {
+      if (dataFileT_[fednumber] != 0)    fclose(dataFileT_[fednumber]);
+    }
+    if ( dataFileS_.find(fednumber) != dataFileS_.end() ) {
+      if (dataFileS_[fednumber] != 0)    fclose(dataFileS_[fednumber]);
     }
     if ( errorFile_.find(fednumber) != errorFile_.end() ) {
       if (errorFile_[fednumber] != 0)   fclose(errorFile_[fednumber]);
@@ -2212,6 +2233,7 @@ bool PixelFEDSupervisor::job_Configure ()
 
 xoap::MessageReference PixelFEDSupervisor::MakeSOAPMessageReference_readLastDACFIFO(const char* tagName)
 {
+assert(0);
   xoap::MessageReference message = xoap::createMessage();
   xoap::SOAPEnvelope envelope = message->getSOAPPart().getEnvelope();
   xoap::SOAPName commandName = envelope.createName(tagName, "xdaq", XDAQ_NS_URI);
@@ -2272,6 +2294,7 @@ xoap::MessageReference PixelFEDSupervisor::MakeSOAPMessageReference_readLastDACF
 
 bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_SOAP(toolbox::task::WorkLoop *w1) 
 {
+assert(0);
   std::ostringstream diagMessage;
   diagMessage << "<PixelFEDSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::ReadLastDACFIFO_workloop_SOAP>:";
   diagService_->reportError(diagMessage.str(), DIAGINFO);
@@ -2292,6 +2315,7 @@ bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_SOAP(toolbox::task::WorkLoop *
 // Send Last DAC (temperature) readings to Pixel DCS System by I2O
 bool PixelFEDSupervisor::ReadLastDACFIFO_workloop_I2O(toolbox::task::WorkLoop *w1) 
 {
+assert(0);
   std::ostringstream diagMessage;
   diagMessage << "<PixelFEDSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::ReadLastDACFIFO_workloop_I20>:";
   diagService_->reportError(diagMessage.str(), DIAGINFO);
@@ -2327,16 +2351,18 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   const bool readErrorFifo = true;
   bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
   const bool readBaselineCorr = false;
-  const bool readLastDACFifo  = false;
+  const bool readLastDACFifo  = true;
   const bool readFifoStatusAndLFF = true;
   const bool useSEURecovery = false; // Enable SEU recovery mechanism
-  const bool timing = true;        // print output from Pixel Timers on each exit from the loop
-  const bool localPrint = true; 
-
+  const bool timing = false;        // print output from Pixel Timers on each exit from the loop
+  const bool localPrint = false; 
+  
   //::sleep(1); return true; //disable physics workloop
 
   PixelTimer wlTimer;
   wlTimer.start();
+
+  int hitsseen = 0;
 
   // Skip if there are no active feds in this fed
   if( vmeBaseAddressAndFEDNumberAndChannels_.size() == 0 ) return true;
@@ -2547,7 +2573,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	statusTimerHW.stop();
 	LFFbit = LFFbit&0x40000000;  // get the LFF bit (latched at a trigger)
 	if (localPrint) cout << "LFFbit = " << std::hex << LFFbit << std::dec << std::endl;
-	if(LFFbit!=0) diagService_->reportError("FEDID:"+stringF(fednumber)+" LFF status 0x"+htoa(LFFbit)+" for event "+stringF(newEventNumber), DIAGINFO); 
+	if(LFFbit!=0 && !(iFED->getPixelFEDCard().modeRegister & 0x8)) diagService_->reportError("FEDID:"+stringF(fednumber)+" LFF status 0x"+htoa(LFFbit)+" for event "+stringF(newEventNumber), DIAGINFO); 
 	// accumulate statistics in map of moments
 	LFFbit = LFFbit>>30;
 	lffMap[fednumber].push_back(LFFbit);
@@ -2595,6 +2621,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  statusFile <<"Time: "<<timeOfDay.toString("%c", timeOfDay.tz());
 
 	  statusFile << " FED="<<fednumber<< " LFF status=" <<100*lffMap[fednumber].mean() <<"% (Since last printout)" << std::endl;
+	  statusFile << "hits seen: " << hitsseen << std::endl;
 	  statusFile << "FIFO I Almost Full: N(1-9)="<<100*fifoStatusMap[fednumber][0].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][2].mean() 
 		     << "% SC(19-27)=" <<100*fifoStatusMap[fednumber][4].mean() << "% S(27-36)=" <<100*fifoStatusMap[fednumber][6].mean() << "%" << std::endl;
 	  statusFile << "FIFO II Nearly Full: N(1-9)="<<100*fifoStatusMap[fednumber][1].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][3].mean() 
@@ -2618,6 +2645,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //North FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_N",&data,0x5c000);
            statusFile <<"North fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("NWrRdCntrReg", &data);
+           statusFile <<"N  skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+1 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_N",&data,0x7c000);
            statusFile <<"N  fifo I level ch  1: "<<dec<<(data&0x3ff)<<"/  2: "<<dec<<((data&0xffc00)>>10)<<"/  3: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_N",&data,0xdc000);
@@ -2628,6 +2659,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //North Center FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_NC",&data,0x5c000);
            statusFile <<"North Center fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("NCWrRdCntrReg", &data);
+           statusFile <<"NC skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+10 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_NC",&data,0x7c000);
            statusFile <<"NC  fifo I level ch  10: "<<dec<<(data&0x3ff)<<"/  11: "<<dec<<((data&0xffc00)>>10)<<"/  12: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_NC",&data,0xdc000);
@@ -2638,6 +2673,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //South Center FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_SC",&data,0x5c000);
            statusFile <<"South Center fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("SCWrRdCntrReg", &data);
+           statusFile <<"SC  skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+19 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_SC",&data,0x7c000);
            statusFile <<"SC  fifo I level ch  19: "<<dec<<(data&0x3ff)<<"/  20: "<<dec<<((data&0xffc00)>>10)<<"/  21: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_SC",&data,0xdc000);
@@ -2648,6 +2687,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
            //South FPGA 
            VMEPtr_[vmeBaseAddress]->read("LAD_S",&data,0x5c000);
            statusFile <<"South fifo II level Up: "<<dec<<(data&0x1fff)<<" Dn: "<<dec<<((data&0x3ffe000)>>13)<<std::endl;
+	   VMEPtr_[vmeBaseAddress]->read("SWrRdCntrReg", &data);
+           statusFile <<"S  skipped channels: "<<dec;
+	   for (int jj = 0; jj < 9; ++jj) if (data & (1 << jj)) statusFile << jj+28 << " ";
+	   statusFile <<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_S",&data,0x7c000);
            statusFile <<"S  fifo I level ch  28: "<<dec<<(data&0x3ff)<<"/  29: "<<dec<<((data&0xffc00)>>10)<<"/  30: "<<dec<<((data&0x3ff00000)>>20)<<std::endl;
            VMEPtr_[vmeBaseAddress]->read("LAD_S",&data,0xdc000);
@@ -2724,6 +2767,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       }
       statusTimer.stop();
 
+      iFED->readDigFEDStatus(false, false);
 
       // Drain DataFIFO 3 and write to file
       //if(readSpyFifo3 && newEvent  && spyNextFED && !spiedFED ) {
@@ -2739,10 +2783,77 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	if(iFED->isNewEvent(1)) {//this checks for zeros - 0=New event, spy fifo not ready ready to be read
 	  iFED->enableSpyMemory(0);
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
+
+#ifdef PILOT_TRANSSCOPE
+	    if (countLoops % 10 == 0) {
+#if 0
+	      static int ncalls = 0;
+	      static unsigned long first_us;
+	      ++ncalls;
+	      if (ncalls == 1) {
+		timeval first_time;
+		gettimeofday(&first_time, 0);
+		first_us = 1e6*first_time.tv_sec + first_time.tv_usec;
+	      }
+	      if (ncalls && ncalls % 10 == 0) {
+		timeval this_time;
+		gettimeofday(&this_time, 0);
+		unsigned long this_us = 1e6*this_time.tv_sec + this_time.tv_usec;
+		cout << ncalls << " wholeEvent reads in " << (this_us - first_us)/1e6 << endl;
+	      }
+#endif
+	      // disable triggers while we read
+	      const uint32_t ctrlreg_orig = iFED->getPixelFEDCard().Ccntrl;
+	      const int printlevel_orig = iFED->get_Printlevel();
+	      if (ctrlreg_orig & 0x10) {
+		iFED->set_Printlevel_silent(0);
+		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig & 0xffffffef;
+		iFED->loadControlRegister();
+	      }
+
+	      usleep(1000);
+
+	      //	    const int MaxChans = 37;    
+	      //	    uint32_t bufferFifo1[MaxChans][1024];
+	      //	    int statusFifo1[MaxChans] = {0};
+	      //	    for (int ch = 1; ch <= 36; ++ch)
+	      //	      statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
+	      //#if 0
+
+	      const int MaxChips = 8;
+	      uint32_t bufferT[MaxChips][256];
+	      uint8_t bufferS[MaxChips][1024];
+	      int statusS[MaxChips] = {0};
+	      for (int chip = 1; chip <= 7; chip += 2) {
+		if (chip == 1 || chip == 7) {
+		  iFED->drainDigTransFifo(chip, bufferT[chip]);
+		  fwrite(bufferT[chip], sizeof(uint32_t), 256, dataFileT_[fednumber]);
+		}
+		uint32_t bufferS_temp[1024] = {0};
+		statusS[chip] = iFED->drainDataFifo2(chip, bufferS_temp);
+		if (statusS[chip] > 0) {
+		  for (int jj = 0; jj < 1024; ++jj)
+		    bufferS[chip][jj] = bufferS_temp[jj] & 0xff;
+		  fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
+		  fwrite(bufferS[chip], sizeof(uint8_t), statusS[chip], dataFileS_[fednumber]);
+		}
+	      }
+
+	      if (ctrlreg_orig & 0x10) {
+		iFED->getPixelFEDCard().Ccntrl = ctrlreg_orig;
+		iFED->loadControlRegister();
+		iFED->set_Printlevel_silent(printlevel_orig);
+	      }
+
+	      //#endif
+	    }
+#endif //PILOT_TRANSSCOPE
+
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
+	    FIFO3Decoder decode3(buffer64);
+	    hitsseen += decode3.nhits();
 	    if(localPrint) { cout<<" fifo3 length "<<dataLength<<endl;
-	      FIFO3Decoder decode3(buffer64);
 	      if (dataLength) {
 		for (int i = 0; i <= dataLength; ++i)
 		  std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer64[i]>>32) << " " << std::setw(8) << (buffer64[i] & 0xFFFFFFFF) << std::dec << std::endl;
@@ -2897,7 +3008,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       ttsTimer.stop();
 
 
-
+#ifndef PILOT_FED
       // Readout the baseline correction (Do this every time workloop is called)
       // loops over all FEDs
       blTimer.start();
@@ -2916,14 +3027,15 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	}
       } // if readBaselineCorr	
       blTimer.stop();
+#endif
 
       // Read the LastDAC FIFO
 #ifdef READ_LASTDAC
       //if(readLastDACFifo && newEvent ) { 
       if(readLastDACFifo) {
-	if(newEvent && (countLoops%1000)==0 ) {  // readout only 1/1000 events 
+	if(newEvent && (countLoops%100)==0 ) {  // readout only 1/100 events 
 	
-	  uint32_t buffer[1024];
+	  uint32_t buffer[2048];
 	  unsigned int numWords = iFED->drainTemperatureFifo(buffer);
 	  
 	  //diagService_->reportError("--> numWords = "+stringF(numWords),DIAGINFO);
@@ -3026,6 +3138,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadLastDACFIFO (xoap::MessageReferen
 }
 
 xoap::MessageReference PixelFEDSupervisor::SetChannelOffsets (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(channelsPerFED+opticalReceiversPerFED+1);
   for (unsigned int ichannel=0;ichannel<channelsPerFED;++ichannel) parameters.at(ichannel).name_="ChannelOffsetDAC"+itoa(ichannel);
   for (unsigned int iopto=0;iopto<opticalReceiversPerFED;++iopto) parameters.at(channelsPerFED+iopto).name_="OpticalReceiverInput"+itoa(iopto);
@@ -3075,7 +3188,7 @@ xoap::MessageReference PixelFEDSupervisor::ResetFEDs (xoap::MessageReference msg
 }
 
 xoap::MessageReference PixelFEDSupervisor::FillTestDAC (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-
+assert(0);
   std::string reply="FillTestDACDone";
 
   if (theCalibObject_==0) {
@@ -3140,6 +3253,7 @@ xoap::MessageReference PixelFEDSupervisor::VMETrigger (xoap::MessageReference ms
 }
 
 xoap::MessageReference PixelFEDSupervisor::BaselineRelease (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(2);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="FEDChannel";
@@ -3164,6 +3278,7 @@ xoap::MessageReference PixelFEDSupervisor::BaselineRelease (xoap::MessageReferen
 }
 
 xoap::MessageReference PixelFEDSupervisor::BaselineSet (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(5);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="Nbaseln";
@@ -3183,6 +3298,7 @@ xoap::MessageReference PixelFEDSupervisor::BaselineSet (xoap::MessageReference m
 }
 
 xoap::MessageReference PixelFEDSupervisor::BaselineHold (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   Attribute_Vector parameters(2);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="FEDChannel";
@@ -3208,6 +3324,7 @@ xoap::MessageReference PixelFEDSupervisor::BaselineHold (xoap::MessageReference 
 
 xoap::MessageReference PixelFEDSupervisor::BaselineMonitor (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
   Attribute_Vector parameters(3);
   parameters[0].name_="VMEBaseAddress";
   parameters[1].name_="ShipTo";
@@ -3641,7 +3758,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadFIFO (xoap::MessageReference msg)
 	int status=iFED->spySlink64(buffer64);
 	
 	if (status>=0 && fileopen_[vmeBaseAddress]==true) {
-	  if (iFED->get_Printlevel()&2) {
+	  if (iFED->get_Printlevel()&4) {
 	    std::cout << "Contents of Spy FIFO 3 for fedid " << iFED->getPixelFEDCard().fedNumber<<std::endl;
 	    std::cout <<"----------------------"<<std::endl;
 	    for (int i=0; i<=status;++i)
@@ -3661,7 +3778,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadFIFO (xoap::MessageReference msg)
 	  }
 	  fwrite(buffer64, sizeof(uint64_t), status, fout_[vmeBaseAddress]);
 	}
-	if (status < 0 && iFED->get_Printlevel()&2)
+	if (status < 0 && iFED->get_Printlevel()&4)
 	  std::cout << "Spy FIFO3 for fedid " << iFED->getPixelFEDCard().fedNumber << " status is  " << status <<std::endl;
 
 	if (parameters[6].value_=="Last" && fileopen_[vmeBaseAddress]==true) {
@@ -3744,7 +3861,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadErrorFIFO (xoap::MessageReference
 
       if (errCount>=0 && errBufferOpen_[vmeBaseAddress]==true) {
 	//diagService_->reportError("Errors(s) from FED at VME "+ stringF(vmeBaseAddress),DIAGERROR);
-	if (iFED->get_Printlevel()&2) {
+	if (iFED->get_Printlevel()&4) {
 	  ErrorFIFODecoder decodedErrorFIFO(errBuffer, errCount); // Suppress disabled channels later
 	  decodedErrorFIFO.printToStream(std::cout);
 	}
@@ -3862,6 +3979,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
       diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading error FIFO failed!",DIAGERROR);
     }
 
+#ifndef PILOT_FED
     Attribute_Vector parameters(3);
     parameters[0].name_="VMEBaseAddress";
     parameters[1].name_="ShipTo";
@@ -3874,6 +3992,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
       cout << reply_string << " after BaselineMonitor" << endl;
       diagService_->reportError("PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading baseline correction failed!",DIAGERROR);
     }
+#endif
   }
 
   
@@ -3886,6 +4005,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDataAndErrorFIFO (xoap::MessageRe
 
 xoap::MessageReference PixelFEDSupervisor::SetADC1V2VEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
 	Attribute_Vector inputParameters(1);
 	inputParameters[0].name_ ="ADCRange";
 	Receive(msg, inputParameters);
@@ -3916,6 +4036,7 @@ xoap::MessageReference PixelFEDSupervisor::SetADC1V2VEnMass (xoap::MessageRefere
 
 xoap::MessageReference PixelFEDSupervisor::SetADC1V2VOneChannel (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
 	Attribute_Vector inputParameters(3);
 	inputParameters[0].name_ ="ADCRange";
 	inputParameters[1].name_ ="VMEBaseAddress";
@@ -3945,6 +4066,7 @@ xoap::MessageReference PixelFEDSupervisor::SetADC1V2VOneChannel (xoap::MessageRe
 
 xoap::MessageReference PixelFEDSupervisor::SetFEDOffsetsEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+assert(0);
 	Attribute_Vector inputParameters(2);
 	inputParameters[0].name_ ="FEDReceiverInputOffset";
 	inputParameters[1].name_ ="FEDChannelOffset";
@@ -4181,6 +4303,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadDigFEDOSDFifo(xoap::MessageRefere
 }
 
 xoap::MessageReference PixelFEDSupervisor::SetPhasesDelays (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+assert(0);
   xoap::MessageReference reply=MakeSOAPMessageReference("SetPhasesDelaysDone");
   Attribute_Vector parametersReceived(4);
   
@@ -4367,25 +4490,26 @@ void PixelFEDSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
     std::string reciveMsg = Receive(this->SetScopeChannels(soapMsg));
   }
   else if(action=="SetADC1V2VEnMass"){
-
+assert(0);
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetADC1V2VEnMass", attrib);
     
     std::string reciveMsg = Receive(this->SetADC1V2VEnMass(soapMsg));
   }
   else if(action=="SetFEDOffsetsEnMass"){
+assert(0);
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("SetFEDOffsetsEnMass", attrib);
     
     std::string reciveMsg = Receive(this->SetFEDOffsetsEnMass(soapMsg));
 
   }
   else if(action=="BaselineRelease"){
-    
+assert(0);    
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("BaselineRelease", attrib);
     
     std::string reciveMsg = Receive(this->BaselineRelease(soapMsg));
   }
   else if(action=="BaselineHold"){
-
+assert(0);
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("BaselineHold", attrib);
     
     std::string reciveMsg = Receive(this->BaselineHold(soapMsg));

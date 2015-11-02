@@ -207,6 +207,7 @@ class PixelFEDInterface {
   uint32_t getFifoStatus(void);
   void dump_FifoStatus(uint32_t fword);
   void set_Printlevel(int level);//0=critical only, 1=all error,2& =info, 4&param file info
+  void set_Printlevel_silent(int level);
   int get_Printlevel() const { return Printlevel; }
   void set_printIfSlinkHeaderMessedup(bool x) { printIfSlinkHeaderMessedup = x; }
   void set_TTslevels(void);//Sets adjustable TTs consecutive levels for OOS and ERR from Fedcard
@@ -277,6 +278,8 @@ bool checkSEUCounters(int);
 bool runDegraded;
 void storeEnbableBits();
 
+ uint32_t testReg(uint32_t data);
+
  private:
 
   // Private methods
@@ -314,7 +317,7 @@ void storeEnbableBits();
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
   bool printIfSlinkHeaderMessedup;
 
-  int DauCards_lastStatusPoll;
+  long long DauCards_lastStatusPoll;
   
 #ifdef USE_HAL  // Access VME with HAL
   const HAL::VMEDevice *const vmeDevicePtr;

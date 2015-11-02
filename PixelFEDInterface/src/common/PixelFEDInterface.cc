@@ -23,6 +23,8 @@ namespace {
   //const bool PRINT = true;
 }
 
+#define PILOT_FED
+
 #ifdef USE_HAL // Access VME with HAL
 
 //// Constructor //////////////////////////////////////////////////
@@ -200,7 +202,8 @@ extern void analyzeError(CVErrorCodes ret); // Wills VME error analyzer.
 ////////////////////////////////////////////////////////////////////////////
 // Read the configuration parameters from file
 int PixelFEDInterface::configFile(string fileName) {
-  printf("IN CONFIGFILE\n");
+  assert(0);
+
   int i;
   int DEBUG=0;
   int ijx,ijy;
@@ -820,9 +823,10 @@ int PixelFEDInterface::reset(void) {
   uint32_t data = 0x0; // data for reseta 
 
   cout<<" In reset() "<<endl;
+#ifndef PILOT_FED
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
   BaselineCorr_off();
-
+#endif
   // Reset TTCrx (to reset the event and bx counters)
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Check / Reset TTCrx"<<endl;
 
@@ -882,13 +886,13 @@ int PixelFEDInterface::reset(void) {
   usleep(10);
   
   // Make Sure to execute for pilotFED only!!!!
-  bool pilotFED = true;
-  if ( pilotFED ){
+#ifdef PILOT_FED
     cout << " pilotFED resets  "  << endl;
     resetDigFEDpll();
     usleep(200000);
     resetDigFEDreg();
-  }
+    usleep(200000);
+#endif
   
   // Reset LRES
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting LRES"<<endl;
@@ -964,6 +968,7 @@ int PixelFEDInterface::reset(void) {
   wdcnt=drainTemperatureFifo(buffer);
   wdcnt=drainTTSFifo(buffer);
   wdcnt=drainFifo1(buffer);
+  for(int i=1;i<9;i+=6)drainDigTransFifo(i,buffer);
   for(int i=1;i<9;i++)wdcnt=drainDataFifo2(i,buffer);
   wdcnt=drainDataFifo3(buffer);
   return 0;
@@ -996,7 +1001,7 @@ uint32_t PixelFEDInterface::readDigFEDOSDFifo(int channel) {
 }
 
 void PixelFEDInterface::readDigFEDTempFifo(){
-  uint32_t data = 0x80000000;
+  //uint32_t data = 0x80000000;
   uint32_t d, i;
 #ifdef USE_HAL // Use HAL
     
@@ -1112,122 +1117,146 @@ void PixelFEDInterface::readDigFEDTempFifo(){
 
 void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   if (!override_timeout) {
-    const int t = time(0);
-    if (t - DauCards_lastStatusPoll < 5)
+    timeval t;
+    int s = gettimeofday(&t, 0);
+    if (s != 0) {
+      perror("problem w gettimeofday in readDigFEDStatus");
       return;
-    DauCards_lastStatusPoll = t;
+    }
+    long long tt = t.tv_sec*1000000 + t.tv_usec;
+    if (tt - DauCards_lastStatusPoll < 12000000) // 24 * 0.5 sec
+      return;
+    DauCards_lastStatusPoll = tt;
   }
 
-  uint32_t CHa_CHb_mux = 0x80000000;
-  uint32_t dataTop = CHa_CHb_mux + 0x2546; 
-  uint32_t dataBot = CHa_CHb_mux + 0x2343; 
-  uint32_t d, i;
-  
-  int nlock[4] = {0};
+  uint32_t d;
+  size_t i;
+  const size_t Npoll = 48;
+  const size_t Nkeep = 24;
 
-  const int Npoll = 128;
+  int lock[19] = {0};
+  std::vector<int> phases[19];
+  double means[19] = {0.};
+  double rmses[19] = {0.};
+  for (int j = 1; j <= 18; ++j)
+    phases[j].assign(Npoll, 0);
 
-#ifdef USE_HAL // Use HAL
-  
-  vmeDevicePtr->write("TopDauCard_com",dataTop);
-  vmeDevicePtr->write("BottomDauCard_com",dataBot);
+#ifdef USE_HAL
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHup    CH#1 / 2  CH#3 / 4  CH#5 / 6  \n\n") ;
+  for(i=0;i<Npoll;i++)  {
+    vmeDevicePtr->read("LAD_N", &d, 0x158000);
+    if (i >= Nkeep)
+      continue;
 
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("TopDauCard_UpStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[0];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("TopDauCard_DownStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[1];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("BottomDauCard_UpStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[2];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    vmeDevicePtr->read("BottomDauCard_DnStatus",&d);
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[3];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
-  }
-  
-#else // Use direct CAEN
-  
-  ret = CAENVME_WriteCycle(BHandle,TopDauCard_com,&dataTop,am,dw);
-  if(ret != cvSuccess) {  // Error
-    cout<<"Error in write "<<hex<<ret<<" "<<dataTop<<dec<<endl;
-    analyzeError(ret); 
-  }
-  
-  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_com,&dataBot,am,dw);
-  if(ret != cvSuccess) {  // Error
-    cout<<"Error in write "<<hex<<ret<<" "<<dataBot<<dec<<endl;
-    analyzeError(ret); 
-  }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHup     CH#1 / 2     CH#3 / 4     CH#5 / 6   locked400 \n\n");
-  for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,TopDauCard_UpStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+    int a = phases[1][i] = d&0x7;
+    int b = phases[2][i] = (d>>8)&0x7;
+    int c = phases[3][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[0];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    means[1] += a;
+    means[2] += b;
+    means[3] += c;
+    if (va == 'v') ++lock[1];
+    if (vb == 'v') ++lock[2];
+    if (vc == 'v') ++lock[3];
   }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown     CH#7 / 8     CH#9 /10     CH#11/12   locked400 \n\n");
+
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown  CH#7 / 8  CH#9 /10  CH#11/12    \n\n");
   for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,TopDauCard_DownStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+    vmeDevicePtr->read("LAD_N", &d, 0x178000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[4][i] = d&0x7;
+    int b = phases[5][i] = (d>>8)&0x7;
+    int c = phases[6][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[1];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    means[4] += a;
+    means[5] += b;
+    means[6] += c;
+    if (va == 'v') ++lock[4];
+    if (vb == 'v') ++lock[5];
+    if (vc == 'v') ++lock[6];
   }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup     CH#25/26     CH#27/28     CH#29/30     locked400 \n\n");
+
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup    CH#25/26  CH#27/28  CH#29/30      \n\n") ;
   for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_UpStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+    vmeDevicePtr->read("LAD_S", &d, 0x158000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[13][i] = d&0x7;
+    int b = phases[14][i] = (d>>8)&0x7;
+    int c = phases[15][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[2];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    means[13] += a;
+    means[14] += b;
+    means[15] += c;
+    if (va == 'v') ++lock[13];
+    if (vb == 'v') ++lock[14];
+    if (vc == 'v') ++lock[15];
   }
-  
-  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown   CH#31/32     CH#33/34     CH#35/36     locked400 \n\n");
+
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown  CH#31/32  CH#33/34  CH#35/36      \n\n") ;
   for(i=0;i<Npoll;i++)  {
-    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_DnStatus,&d,am,dw);
-    if(ret != cvSuccess) {
-      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
-      analyzeError(ret);   
+    vmeDevicePtr->read("LAD_S", &d, 0x178000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[16][i] = d&0x7;
+    int b = phases[17][i] = (d>>8)&0x7;
+    int c = phases[18][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
     }
-    const bool islocked = (d>>24)&0x1;
-    if (islocked) ++nlock[3];
-    if (verbose) printf("                               %2x         %2x          %2x         %1d\n", (d)&0xff, (d>>8)&0xff, (d>>16)&0xff, (d>>24)&0x1);
+    means[16] += a;
+    means[17] += b;
+    means[18] += c;
+    if (va == 'v') ++lock[16];
+    if (vb == 'v') ++lock[17];
+    if (vc == 'v') ++lock[18];
   }
-  
-#endif // Use HAL  
-  printf("FED locks: %i %i %i %i\n", nlock[0], nlock[1], nlock[2], nlock[3]);
+#else
+  assert(0);
+#endif
+
+  printf("FEDID:%i phase stats:\n", pixelFEDCard.fedNumber);
+  for (int j = 1; j <= 18; ++j) {
+    if (j == 3 || (j >= 6 && j <= 12) || j == 15 || j == 18)
+      continue;
+    means[j] /= Npoll;
+    for (int k = 0; k < Npoll; ++k)
+      rmses[j] += pow(phases[j][k] - means[j], 2);
+    rmses[j] /= (Npoll - 1);
+    rmses[j] = sqrt(rmses[j]);
+    printf("ch %2i/%2i: #locks: %2i/%2i  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], Nkeep, means[j], rmses[j]);
+  }
+
   fflush(stdout);
 }
 
@@ -1305,14 +1334,12 @@ void PixelFEDInterface::loadFPGADigFED(){
   vmeDevicePtr->write("nCONFIG", data );
   usleep(1000000); //10ms in example programs, extra time now for clock
 
-  
-  // Make Sure to execute for pilotFED only!!!!
-  bool pilotFED = true;
-  if ( pilotFED ) {
+#ifdef PILOT_FED  
     cout << " pilotFED load fpga  "<< endl;
     loadFPGADigFED();
-  }
-  
+#endif
+
+#ifndef PILOT_FED
 //new sequence for v4
 // load test constants
 // setup for VME trigger and testDAC
@@ -1337,14 +1364,17 @@ dac0[255]=0;//make sure any leftover testDAC setting is 0
 int mlength=256;//overkill-currently shuts off setDAC after stop bit
 fillDACRegisterLength(dac0,dac0,dac0,mlength);
 usleep(100);
+#endif
 
 resetSlink();
 setModeRegister(0x1);
 
 generateVMETrigger();
 
+#ifndef PILOT_FED
 uint32_t fbufr[1024];
 drainFifo1(fbufr);
+#endif
 
 data=0x80000000;
  vmeDevicePtr->write("LRES",data);
@@ -1373,7 +1403,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
   }
 #endif // USE_HAL
 
-  usleep(20);
+  usleep(80);
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds );
@@ -1383,7 +1413,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
   // I2C PAYLOAD
   ds =  Register_Nr;
@@ -1395,7 +1425,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_LOAD"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
   i2c_addr=7*2; 
   i2c_nbytes=1;
@@ -1409,9 +1439,9 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_ADDR_RW"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
-  usleep(300);
+  //usleep(300);
   
   //Check Status
 #ifdef USE_HAL // Use HAL
@@ -1422,7 +1452,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in read TTCRX_I2C_REG_READ"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret);   }
 #endif // USE_HAL
-  usleep(20);//
+  usleep(80);//
   
   //Report Status 
   if((d&0xff)==1)printf("ERROR: BUS BUSY !! \n");
@@ -1440,7 +1470,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);
+  usleep(80);
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1450,7 +1480,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
     cout<<" Error in write TTCRX_I2C_RES"<<hex<<ret<<" "<<ds<<dec<<endl;
     analyzeError(ret); }
 #endif // USE_HAL
-  usleep(20);
+  usleep(80);
     
   /////////////////////////////  I2C READ  //////////////////////////////////
  
@@ -1465,7 +1495,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       cout<<"Error in write TTCRX_I2C_ADDR_RW"<<hex<<ret<<" "<<ds<<dec<<endl;
       analyzeError(ret); }
 #endif // USE_HAL
-    usleep(20);//
+    usleep(80);//
     //Check Status
 #ifdef USE_HAL // Use HAL
     vmeDevicePtr->read("I2C_RD_STAT",&d);
@@ -1475,7 +1505,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       cout<<"Error in read TTCRX_I2C_RD_STAT"<<hex<<ret<<" "<<ds<<dec<<endl;
       analyzeError(ret);   }
 #endif // USE_HAL
-    usleep(20);//
+    usleep(80);//
     //Report Status 
     if((d&0xff)==1)printf("ERROR: BUS BUSY !! \n");
     if((d&0xff)==2)printf("ERROR: I2C_ADDR NOT ACKNOWLEDGED !! \n");
@@ -1490,7 +1520,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_READ( int Register_Nr)  {
       analyzeError(ret);   }
 #endif // USE_HAL
     
-    usleep(20);//
+    usleep(80);//
     return(d&0xff);
 }
 ////////////////////////////////////////////////////////////////////////////////// 
@@ -1640,6 +1670,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 // Read the file with the FED setup parameters.
 // Download these parameters to the FED. 
 int PixelFEDInterface::setupFromDB(string fileName) {
+  assert(0);
   int status = 0;
   cout<<" read setup parameters from file "<<fileName<<endl;
   status = configFile(fileName);
@@ -1675,25 +1706,30 @@ int PixelFEDInterface::setup(void) {
 
   loadFedIDRegister();
 
+#ifndef PILOT_FED
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Optical reciever parameters"<<endl;
   set_opto_params();
 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Clock Phases"<<endl;
   setPhases();  // Set all phases from DB
+#endif
 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Number of Rocs for each Channel"<<endl;
   set_chnl_nrocs();  // Set #Rocs from DB
- 
+
+#ifndef PILOT_FED 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting black, ultra-black Thresholds"<<endl;
   set_blk_ublk_thold();
      
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ROC, Header, Trailer level thresholds"<<endl;
   set_data_levels();
-                                                                                
+#endif
+
   // This is controls if a channel is on or off
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Turning on all all channels for Normal Running"<<endl;
   set_chnls_onoff(); //transfer control now handled by VME-trigger
- 
+
+#ifndef PILOT_FED 
   //Offset DAC V2:
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting the Offset DACs"<<endl;
   set_offset_dacs();
@@ -1701,31 +1737,34 @@ int PixelFEDInterface::setup(void) {
   //ADC Gain Registers
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ADC GAIN values"<<endl;
   set_adc_1v2v();
+#endif
 
   //make sure testDAC is not sending extra data
   stop_testDAC();//This also loads Control and Mode registers in the central chip!
 
+#ifndef PILOT_FED
   //Baseline Restoration Registers
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
   set_BaselineCorr();
-  
+#endif
+
   //TTs levels for warning and busy
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Values for TTs Warn and Busy Levels"<<endl;
   set_TTslevels();
 
-  //TTs levels for warning and busy
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Almost Full Values for fifo-1 and fifo-3"<<endl;
   set_Fifolevels();
-  
+
+#ifndef PILOT_FED  
   //Baseline Restoration Registers
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
   set_BaselineCorr();
-  
+#endif
+
   //FED Master Delay
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.FedTTCDelay<<" Setting FED Master Delay"<<endl;
   set_FEDTTCDelay();
 
-  
   //Hit Limits
   if(Printlevel&2) 
   {cout<<"FEDID:"<<pixelFEDCard.N_hitlimit<<"N Hit Limit"<<endl;
@@ -1789,6 +1828,7 @@ int PixelFEDInterface::setup(void) {
 // Test DAC is 256 words long.
 void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const dac2,
 					const int *const dac3) const {
+assert(0);
   uint32_t TestData[256];
 
   // Compose DACs
@@ -1834,6 +1874,7 @@ void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Fill the DAC test array and load it
 void PixelFEDInterface::fillDACRegister() const {
+assert(0);
   const uint32_t V_OFFSET=100; // 100; 
   const uint32_t UB =50;
   //const uint32_t B = 300;
@@ -1896,6 +1937,7 @@ void PixelFEDInterface::fillDACRegister() const {
 void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R, 
 					vector <uint32_t> pulseTrain_G, 
 					vector <uint32_t> pulseTrain_B) const {
+assert(0);
   uint32_t compositePulseTrain[256];
   
   for (int i=0;i<256;++i) {
@@ -1928,6 +1970,7 @@ void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R,
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::fillDACRegister2(void) const {
+assert(0);
   //const uint32_t V_OFFSET=100; // 100;
   //const uint32_t UB =50;
   //const uint32_t B = 300;
@@ -2044,7 +2087,7 @@ void PixelFEDInterface::fillDACRegisterLength(const int *const dac1, const int *
 // Read FIFOs
 /////////////////////////////////////////////////////////////////////////////////
   void PixelFEDInterface::setup_testDAC(int pedestal){//pre-load the testDAC with a pedestal value
-
+assert(0);
 uint32_t value = 0x0e;
 vmeDevicePtr->write("CtrlReg",value);
 
@@ -2111,7 +2154,7 @@ void PixelFEDInterface::drainDigTransFifo(const int chip, uint32_t* data) {
   else
     return;
 
-  vmeDevicePtr->readBlock(chipname, 4096, (char*)data, HAL::HAL_NO_INCREMENT, 0x20000);
+  vmeDevicePtr->readBlock(chipname, 1024, (char*)data, HAL::HAL_NO_INCREMENT, 0x20000);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2199,9 +2242,11 @@ if(((data[960]&0xff)==0xff)&&((data[959]&0xff)!=0xff)){count+=961;} else
 {cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Warning:Transparent buffer Bad or MisAligned! channel ="<<chnl<<endl;
 return 1000;}
 
+#ifndef PILOT_FED
 //cout<<" call fixBBB "<<chnl<<endl; 
 //int newstatus = FixBBB(chnl,data);
  FixBBB(chnl,data);
+#endif
 
   return count;
 }
@@ -3152,6 +3197,7 @@ void PixelFEDInterface::resetSlink() {
 } // end
 ////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_opto_params() {
+assert(0);
   //form opto word from params
   uint32_t data = (pixelFEDCard.opt_cap[0]<<6)+pixelFEDCard.opt_inadj[0]+(pixelFEDCard.opt_ouadj[0]<<4);
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Write OptoRec1Par :"<<hex<<pixelFEDCard.opt_cap[0]<<" "<<pixelFEDCard.opt_ouadj[0]<<" "
@@ -3261,6 +3307,7 @@ void PixelFEDInterface::set_offset_dacs() {
 
 ///////////////////////////////////////////////////////////////////////////
   int PixelFEDInterface::setPhases(const int channel, int delay) {
+assert(0);
     // Select the +- clock phase 
     //uint32_t data = 0; //
 
@@ -3359,6 +3406,7 @@ void PixelFEDInterface::set_offset_dacs() {
   }
 ///////////////////////////////////////////////////////////////////////////////////
 int PixelFEDInterface::setPhases(void) {
+assert(0);
   // Select the +- clock phase 
   set_clock_phases();
   // Select the phase values
@@ -3429,6 +3477,7 @@ else return(-1);
 
 ///////////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_clock_phases() {
+assert(0);
 /* a 9 bit number, 1 bit for each of 9 channels in each of 4 chips
 1=on   means use negative clock edge    
 0=off        use positive clock edge
@@ -3498,7 +3547,7 @@ for now all set to negative clock edge
 //   controlled on the center chip, and we are setting delays
 //   for each input channel 1-36 		    
  void PixelFEDInterface::set_chnl_delays() {
-
+assert(0);
    for(int channel=1;channel<37;channel++) {
 
      //      enable channel(6 bits) delay(4 bits)
@@ -3563,7 +3612,7 @@ void PixelFEDInterface::set_blk_ublk_thold() {
 //////////////////////////////////////////////////////////////////////////////////
 //Load B thresholds to 1000 and 999, UB to 300 for each channel
 void PixelFEDInterface::set_blk_ublk_trans_thold() {
-
+assert(0);
 	//cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"Seeting Black for safe transparent mode"<<endl; 
   for(int chip_nr=0;chip_nr<4;chip_nr++) {
     for(int channel=1;channel<10;channel++) {
@@ -3631,7 +3680,7 @@ void PixelFEDInterface::set_chnl_nrocs() {
 /////////////////////////////////////////////////////////////////////////////
 // Set the address levels for TBM and all ROCs
 void PixelFEDInterface::set_data_levels() {
-
+assert(0);
   for(int chip_nr=0;chip_nr<4;chip_nr++) {  // loop over FPGs
     for(int channel=1;channel<10;channel++) {   // loop over channels
 
@@ -4084,7 +4133,7 @@ void PixelFEDInterface::get_MODE_front() {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 int PixelFEDInterface::get_adc_1v2v(int chnl) {
-  
+  assert(0);
   // bracket logic:
   // (1<<((((chnl%2)+chnl)/2)-1))
   // each bit controls 2 adc channels. E.g.
@@ -4126,7 +4175,7 @@ int PixelFEDInterface::get_adc_1v2v(int chnl) {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 void PixelFEDInterface::set_adc_1v2v(int mode,int chnl) {
-
+assert(0);
 if((chnl<1) | (chnl>36)){
     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of range "<<endl;
     return;}
@@ -4161,7 +4210,7 @@ if(mode==0)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg&(0xf ^ (1<<((((chnl-28)%2+(ch
 // This bits control the range of the ADC
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 void PixelFEDInterface::set_adc_1v2v(int mode) {
-
+assert(0);
   if(mode==1) {  // keep data in fifo1
 
     pixelFEDCard.Nadcg  = 0x3f;
@@ -4190,7 +4239,7 @@ void PixelFEDInterface::set_adc_1v2v(int mode) {
 // This bits control if the data is trasfered from FIFO1 to FIFO2
 // 0 - means data is transfered, 1 - data is not transfered.
 void PixelFEDInterface::set_adc_1v2v() {
-
+assert(0);
   //cout<<" ADC GAIN Set "<<hex<<pixelFEDCard.Nadcg<<" "<<pixelFEDCard.NCadcg
   //    <<" "<<pixelFEDCard.SCadcg<<" "<<pixelFEDCard.Sadcg<<dec<<endl;
 
@@ -4212,7 +4261,7 @@ void PixelFEDInterface::set_adc_1v2v() {
 /////////////////////////////////////////////////////////////////////////
 //This Method turns on the Baseline Adjustment for a whole fed
   void PixelFEDInterface::BaselineCorr_on(){
-
+assert(0);
 //cout<<"PixelFEDInterface::BaselineCorr_on() ENTERED!!!"<<endl;
 
 uint32_t data=(0x1ff<<16)+(pixelFEDCard.Nbaseln&0x3ff);
@@ -4232,7 +4281,7 @@ set_BaselineCorr(4,data);
 /////////////////////////////////////////////////////////////////////////
 //Turn off Baseline correction (whole fed)
   void PixelFEDInterface::BaselineCorr_off(){
-
+assert(0);
 if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" PixelFEDInterface::BaselineCorr_off() ENTERED!!!"<<endl;
 
 uint32_t data=(pixelFEDCard.Nbaseln&0x3ff);
@@ -4256,7 +4305,7 @@ data=0x80000000;
 /////////////////////////////////////////////////////////////////////////
 //get Baseline correction (single channel, but bits are common!)
 uint32_t PixelFEDInterface::get_BaselineCorrVal(int chnl){
-
+assert(0);
 uint32_t data=0xffffffff;
 
 if((chnl>0)&(chnl<10)){
@@ -4286,7 +4335,7 @@ return data;
 /////////////////////////////////////////////////////////////////////////
 //Turn on Baseline correction (single channel)
   void PixelFEDInterface::BaselineCorr_on(int chnl){
-
+assert(0);
 //cout<<"PixelFEDInterface::BaselineCorr_on(int "<<chnl<<") ENTERED!!!"<<endl;
 
 if((chnl>0)&(chnl<10)){
@@ -4318,6 +4367,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of (1-36)range!! Passed ch
 /////////////////////////////////////////////////////////////////////////
 //Turn off Baseline correction (single channel)
   void PixelFEDInterface::BaselineCorr_off(int chnl){
+assert(0);
 //cout<<"PixelFEDInterface::BaselineCorr_off(int "<<chnl<<") ENTERED!!!"<<endl;
 
  if((chnl>0)&(chnl<10)){
@@ -4353,7 +4403,7 @@ uint32_t data=0x80000000;
 /////////////////////////////////////////////////////////////////////////
 //Set the baseline correction value for an FPGA (1-4)  10 bits max!
   void PixelFEDInterface::set_BaselineCorr(int chip,uint32_t value){
-
+assert(0);
 //    cout<<"PixelFEDInterface::set_BaselineCorr(int "<<chip<<", uint32_t 0x"<<hex <<value<< dec << ") ENTERED!!!"<<endl;
 
 
@@ -4377,7 +4427,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Chip must be 1(NORTH),  2(NORTH CENTER
 /////////////////////////////////////////////////////////////////////////
 //Set the baseline corection values from the database
   void PixelFEDInterface::set_BaselineCorr(){
-
+assert(0);
 //cout<<"PixelFEDInterface::set_BaselineCorr() ENTERED!!"<<endl;
 
 uint32_t value = pixelFEDCard.Nbaseln;
@@ -4397,7 +4447,7 @@ value = pixelFEDCard.Sbaseln;
 /////////////////////////////////////////////////////////////////////////////
 //This method dumps the current value of the baseline adjustment
 void PixelFEDInterface::dump_BaselineCorr() {
-
+assert(0);
 //cout<<"PixelFEDInterface::dump_BaselineCorr() ENTERED!!"<<endl;
 
 uint32_t iwrdat;
@@ -4471,6 +4521,7 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Baseline Adjust for Channel "<<dec<<i+
 //This method gets all the current values of the baseline adjustment
 //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
 void PixelFEDInterface::get_BaselineCorr(int * blstat) {
+assert(0);
 uint32_t iwrdat;
 vmeDevicePtr->read("NRdBaseL321",&iwrdat);
 blstat[0]=(iwrdat&0x3ff);
@@ -4533,7 +4584,7 @@ if(blstat[ij]&0x200)blstat[ij]=-1*(((~blstat[ij])&0x1ff)+1);
 //This method gets the current value of the baseline adjustment for a single channel
 //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
 int PixelFEDInterface::get_BaselineCorr(int chnl) {
-
+assert(0);
 uint32_t iwrdat;
 int blstat=0;
 if((chnl==1)|(chnl==2)|(chnl==3)){
@@ -4683,6 +4734,7 @@ int PixelFEDInterface::readBXCounter() {
 // // 20 23 26 29 32 35 <-channel of middle 8 bit counter in word for triplet number
 // // 21 24 27 30 33 36 <-channel of highest 8 bit counter in word for triplet number
  int PixelFEDInterface::selectTripple(const int trip) {
+assert(0);
    uint32_t loctrip;                                                                                                                            
    if((trip<1)||(trip>12)){
      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error: Tripplet request "<<dec<<trip<<" out of bounds, must be 1-12"
@@ -4724,7 +4776,7 @@ int PixelFEDInterface::readBXCounter() {
 //////////////////////////////////////////////////////////////////////
 // Read expects 1st Roc to be #1
  int PixelFEDInterface::drainHisRoc(const int trip,const int Roc, uint32_t *data){
-
+assert(0);
    uint32_t offset = (Roc-1)*4;
    //const uint32_t length = 104; //number of double columns(26) *bytes(4) for block reads - wait for v4!
    uint32_t locdata;  
@@ -4791,6 +4843,7 @@ for(int j=27;j<33;j++){vmeDevicePtr->read("ROCHisMemDn",&locdata);}//DC 27 - 31 
 // // drain all the Double Columns in all rocs  for a particular tripple
 // // 
  int PixelFEDInterface::drainTripple(const int trip, uint32_t *pnt) {
+assert(0);
    int status=0;
    
    if((trip<1)||(trip>12)){
@@ -4913,6 +4966,7 @@ for(int j=0;j<(int)cycles;j++){*pnt=data[j];pnt++;}
 // particular fed
 // 
  int PixelFEDInterface::drainHisMemory(uint32_t *data) {
+assert(0);
    int status=0;
    int count=0;
    for(int trip=1;trip<13;trip++){
@@ -4952,6 +5006,7 @@ int PixelFEDInterface::enableHisMemory(int enable) {
 ////////////////////////////////////////////////////////////////////////////
 // Clear the histogrammming memories
  void PixelFEDInterface::clear_hismem(void) {
+assert(0);
    uint32_t data = 0x1; // Toggle???
    
 #ifdef USE_HAL // Use HAL
@@ -5544,6 +5599,9 @@ void PixelFEDInterface::set_Printlevel(int level)
 {Printlevel=level;
 cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"Setting Print level ="<<Printlevel<<endl;}
 
+void PixelFEDInterface::set_Printlevel_silent(int level)
+{Printlevel=level;}
+
 ////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_TTslevels(void)
 {
@@ -5748,8 +5806,7 @@ data = (pixelFEDCard.S_hitlimit&0x3ff)+(12<<16);
 //
 void PixelFEDInterface::set_ROCskip(void)
 {
-#if 0
-
+#ifndef PILOT_FED
 //Check data words
  if((pixelFEDCard.N_testreg&0x7e0)>0){
 if((pixelFEDCard.N_testreg&0x7e0)>(0x120))
@@ -5785,16 +5842,16 @@ else
 {int chanl=(pixelFEDCard.SC_testreg&0x7e0)>>5;if((pixelFEDCard.SC_testreg&0x1f)>=pixelFEDCard.NRocs[chanl-1])
 {pixelFEDCard.SC_testreg=0;cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" SC BBB skip exceeds #ROCS-1 or = 0, set to 0"<<endl;}}
   } else {pixelFEDCard.SC_testreg=0;}
-#endif
-
+#else
 uint32_t offset = 0x1a8000;
 std::cout << "set_ROCskip " << std::hex << pixelFEDCard.N_testreg << " " << pixelFEDCard.NC_testreg << " " << pixelFEDCard.SC_testreg << " " << pixelFEDCard.S_testreg << std::dec << std::endl;
 vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
 vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
+#endif
 
-#if 0
+#ifndef PILOT_FED
   // test BBB
   // if(pixelFEDCard.N_testreg>0){cout<<" skip BBB ROC "<<hex
   //                                   <<pixelFEDCard.N_testreg
@@ -6204,9 +6261,9 @@ uint32_t PixelFEDInterface::testReg(uint32_t data) {
   uint32_t d;
   const char* regs[5] = {
     "TestReg",
-    "NWrRdTestReg",
-    "NCWrRdTestReg",
-    "SCWrRdTestReg",
+    "NWrRdTestReg", 
+    "NCWrRdTestReg", 
+    "SCWrRdTestReg", 
     "SWrRdTestReg"
   };
   for (int i = 0; i < 5; ++i) {

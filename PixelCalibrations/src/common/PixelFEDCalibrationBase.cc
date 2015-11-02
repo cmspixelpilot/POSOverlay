@@ -45,6 +45,7 @@ xoap::MessageReference PixelFEDCalibrationBase::endCalibration(xoap::MessageRefe
 
 unsigned int PixelFEDCalibrationBase::TransparentDataStart (uint32_t *buffer, int fed, int channel)
 {
+  assert(0);
   const unsigned int max=512;
 
   float B_mean=0, B_stddev=0, B_sum=0, B_squares=0;
@@ -106,6 +107,7 @@ void PixelFEDCalibrationBase::sendResets() {
 
 
 void PixelFEDCalibrationBase::baselinecorr_off(){
+  assert(0);
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
     iFED->second->BaselineCorr_off();
@@ -120,7 +122,7 @@ void PixelFEDCalibrationBase::setSpecialDac(unsigned int mode){
 }
 
 void PixelFEDCalibrationBase::fillTestDAC(xoap::MessageReference fillTestDACmsg){
-
+  assert(0);
   if (theCalibObject_==0) {
 
     std::cout<<"PixelFEDSupervisor::FillTestDAC - theCalibObject_ doesn't exist!"<<std::endl;
@@ -157,6 +159,7 @@ void PixelFEDCalibrationBase::fillTestDAC(xoap::MessageReference fillTestDACmsg)
 }
 
 void PixelFEDCalibrationBase::setBlackUBTrans(){
+  assert(0);
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
     iFED->second->set_blk_ublk_trans_thold();
