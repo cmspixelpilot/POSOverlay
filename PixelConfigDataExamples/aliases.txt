@@ -1,5 +1,5 @@
 ConfigurationAliases
-hmm  330 ;
+hmm  323 ;
 Physics     225 ;
 PhysicsEmulator     136   detconfig  Default  lowvoltagemap  Default  nametranslation  Default  fedconfig  Default  fedcard  Emulator  fecconfig  Default  dac  Default  mask  Default  trim  Default  tbm  Default  portcard  Default  portcardmap  Default  ttcciconfig  iCIGlobal  ltcconfig  Default  tkfecconfig  Default  globaldelay25  Default  ;
 PhysicsNoSlink     224 ;
@@ -78,7 +78,7 @@ PixelAliveBy3     90   ;
 PixelAlive5x5     44   ;
 PixelAliveForThreshMin     49   ;
 PixelAliveForThreshMinAllPixEnabled     50   ;
-SCurve     12   ;
+SCurve     331   ;
 Gain     4   ;
 TBMDelay     33   ;
 Iana     45   ;
