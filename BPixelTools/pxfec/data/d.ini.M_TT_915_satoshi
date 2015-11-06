@@ -43,8 +43,8 @@ roc 0:15
 ReadBack 12
 
 tbm
-setA  0 0x80
-setB  0 0x80
+setA  0 0x00
+setB  0 0x00
 setA  1 0xc0
 setB  1 0xc0
 
