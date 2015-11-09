@@ -52,6 +52,7 @@ class PixelFEDInterface {
 
 #endif // USE_HAL
 
+  uint32_t testReg(uint32_t data);
 
   // These do not use VME access
   int configFile(string fileName); // readin the DB parameters
@@ -276,8 +277,6 @@ void resetEnbableBits();
 bool checkSEUCounters(int);
 bool runDegraded;
 void storeEnbableBits();
-
- uint32_t testReg(uint32_t data);
 
  private:
 

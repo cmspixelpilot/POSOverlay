@@ -162,6 +162,8 @@ int main(int argc, char **argv){
     
     assert(counter<20000);
 
+    cout << counter << endl;
+
     cout << "roc="<<roc << endl;
     
     PixelROCName theRoc(roc);
@@ -200,7 +202,7 @@ int main(int argc, char **argv){
     }
     PixelTrimBase* trims=theTrims[module];
 
-    trimROC.setThrTrim(80.0);
+    trimROC.setThrTrim(34.84);
 
     map<int, map<int, PixelValues> >::const_iterator irow;
     irow=iMap->second.begin();

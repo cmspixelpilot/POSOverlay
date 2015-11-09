@@ -1878,10 +1878,12 @@ end of redundancy ring comment */
 	// JMTBAD this needs to be configurable in software. Loop over
 	// ccu or some other config objects and find out whether we're
 	// supposed to send PIA commands to enable DC-DC. For now just do it
+#if !defined SETUP_TIF
 	if (ringiter->first == 8) {
 	  pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
 	}
-
+#endif
+	
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop
 

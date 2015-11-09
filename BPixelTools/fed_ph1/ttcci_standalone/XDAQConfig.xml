@@ -1,0 +1,25 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+
+<xc:Context id="0" url="http://pixp1daq.cern.ch:1974">
+
+     <xc:Application class="ttc::TTCciControl" id="90" instance="0" network="local" group="daq">
+        <properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
+              <name xsi:type="xsd:string">Board 1</name>
+	      <BusAdapter xsi:type="xsd:string">CAENPCIe</BusAdapter>
+	      <Location xsi:type="xsd:integer">2</Location>
+	      <Configuration xsi:type="xsd:string">[file=/home/cmspixp1/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration_DAQWorkshop.txt]</Configuration> 
+              <group xsi:type="xsd:string">Pixel</group>
+              <system xsi:type="xsd:string">CR</system>
+	      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+	      <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+              <DisableMonitoring xsi:type="xsd:boolean">true</DisableMonitoring>
+	</properties>
+     </xc:Application>
+     <xc:Module>${XDAQ_ROOT}/lib/libttcttcci.so</xc:Module>  
+     <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
+
+</xc:Context>
+
+</xc:Partition>
+
