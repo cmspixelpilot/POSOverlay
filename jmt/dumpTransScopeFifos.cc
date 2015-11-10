@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
     ++nevents;
 
     for (int chip = 1; chip <= 1; chip += 2) {
-      if (0) { //chip == 1 || chip == 7) {
+      if (chip == 1 || chip == 7) {
 	int trans_found = 0;
 	//uint32_t pattern = 0;
 	uint32_t* data  = bufferT[chip];
