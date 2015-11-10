@@ -1923,18 +1923,6 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
 
   try { //sending SOAP
 
-  Supervisors::iterator i_PixelFEDSupervisor;
-  for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
-    std::string reply = Send(i_PixelFEDSupervisor->second, "Halt");
-    if (reply!= "HaltDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be halted.",DIAGERROR);
-      *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be halted."<<std::endl;
-      response="HaltFailed";
-    } else {
-      statePixelFEDSupervisors_[i_PixelFEDSupervisor->first]="Halted";
-    }
-  }
-
   if (fsm_.getStateName(fsm_.getCurrentState())!="TTSTestMode") {
 
     // TCDSSessionID_=toolbox::toString("#%d",rand());
@@ -2006,6 +1994,18 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       }
     }
 
+
+  Supervisors::iterator i_PixelFEDSupervisor;
+  for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
+    std::string reply = Send(i_PixelFEDSupervisor->second, "Halt");
+    if (reply!= "HaltDone") {
+      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be halted.",DIAGERROR);
+      *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be halted."<<std::endl;
+      response="HaltFailed";
+    } else {
+      statePixelFEDSupervisors_[i_PixelFEDSupervisor->first]="Halted";
+    }
+  }
 
 
 
