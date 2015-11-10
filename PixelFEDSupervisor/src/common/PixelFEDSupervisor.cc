@@ -11,6 +11,7 @@
 #define READ_LASTDAC  // Enable the last dac writing
 #define PILOT_FED
 //#define PILOT_TRANSSCOPE
+//#define PILOT_TRANSSCOPE_AT_HALT
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
@@ -1558,7 +1559,11 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
   PixelTimer halttimer;
   halttimer.start();
   diagService_->reportError("--- HALT ---",DIAGINFO);
-  
+
+  printf("SLEEPIGN IN FED HALT\n");
+  sleep(5);
+  printf("done sleeping IN FED HALT\n");
+
   if ( (theCalibObject_==0) || (theCalibObject_->mode()=="EmulatedPhysics") ) {
 
     if (fsm_.getStateName(fsm_.getCurrentState())=="Configured") {
@@ -1578,6 +1583,29 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
       std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
       for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
+#ifdef PILOT_TRANSSCOPE_AT_HALT
+	PixelFEDInterface* iFED = FEDInterface_[i_vmeBaseAddressAndFEDNumberAndChannels->first.first];
+	const int MaxChips = 8;
+	uint32_t bufferT[MaxChips][256];
+	uint8_t bufferS[MaxChips][1024];
+	int statusS[MaxChips] = {0};
+	for (int jk = 0; jk < 10; ++jk) {
+	  for (int chip = 1; chip <= 7; chip += 2) {
+	    if (chip == 1 || chip == 7) {
+	      iFED->drainDigTransFifo(chip, bufferT[chip]);
+	      fwrite(bufferT[chip], sizeof(uint32_t), 256, dataFileT_[fednumber]);
+	    }
+	    uint32_t bufferS_temp[1024] = {0};
+	    statusS[chip] = iFED->drainDataFifo2(chip, bufferS_temp);
+	    if (statusS[chip] > 0) {
+	      for (int jj = 0; jj < 1024; ++jj)
+		bufferS[chip][jj] = bufferS_temp[jj] & 0xff;
+	      fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
+	      fwrite(bufferS[chip], sizeof(uint8_t), statusS[chip], dataFileS_[fednumber]);
+	    }
+	  }
+	}
+#endif
 	diagService_->reportError("About to close output file for FED#"+stringF(fednumber), DIAGDEBUG);
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
         fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
@@ -2555,9 +2583,9 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	statusTimerHW.start();
         unsigned int fstat=iFED->getFifoStatus();
 	statusTimerHW.stop();
-        iFED->dump_FifoStatus(fstat); // Verbose?  This produces output via cout.
+        //iFED->dump_FifoStatus(fstat); // Verbose?  This produces output via cout.
 	fstat=fstat&0x3ff;  
-        if(fstat!=0) diagService_->reportError(" FIFO Status for event number "+stringF(newEventNumber)+" "+htoa(fstat), DIAGINFO);
+        //if(fstat!=0) diagService_->reportError(" FIFO Status for event number "+stringF(newEventNumber)+" "+htoa(fstat), DIAGINFO);
 
 	if(localPrint) cout<<"ReadFifoStatus: stat "<<hex<<fstat<<dec<<endl;
 
