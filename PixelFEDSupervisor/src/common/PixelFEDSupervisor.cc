@@ -11,7 +11,7 @@
 #define READ_LASTDAC  // Enable the last dac writing
 #define PILOT_FED
 //#define PILOT_TRANSSCOPE
-//#define PILOT_TRANSSCOPE_AT_HALT
+#define PILOT_TRANSSCOPE_AT_HALT
 
 #include "PixelFEDSupervisor/include/PixelFEDSupervisor.h"
 
@@ -1343,6 +1343,7 @@ xoap::MessageReference PixelFEDSupervisor::Start (xoap::MessageReference msg) th
       dataFile_[fednumber]=fopen((outputDir_+"/PhysicsDataFED_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
       dataFileT_[fednumber]=fopen((outputDir_+"/TransFifo_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
       dataFileS_[fednumber]=fopen((outputDir_+"/ScopeFifo_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
+      timestampFile_[fednumber]=fopen((outputDir_+"/Timestamp_"+itoa(fednumber)+"_"+runNumber_+".dmp").c_str(), "wb");
       errorFile_[fednumber]=fopen((outputDir_+"/ErrorDataFED_"+itoa(fednumber)+"_"+runNumber_+".err").c_str(), "wb");
       setbuf(errorFile_[fednumber],NULL);  //disable buffering
       ttsFile_[fednumber]=fopen((outputDir_+"/TTSDataFED_"+itoa(fednumber)+"_"+runNumber_+".tts").c_str(), "wb");
@@ -1428,6 +1429,7 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
 	fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
 	fclose(dataFileT_[fednumber]);    dataFileT_[fednumber]=0;
 	fclose(dataFileS_[fednumber]);    dataFileS_[fednumber]=0;
+	fclose(timestampFile_[fednumber]);    timestampFile_[fednumber]=0;
 	fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1448,6 +1450,7 @@ xoap::MessageReference PixelFEDSupervisor::Stop (xoap::MessageReference msg) thr
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
         fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
         fclose(dataFileS_[fednumber]);     dataFileS_[fednumber]=0;
+        fclose(timestampFile_[fednumber]);     timestampFile_[fednumber]=0;
         fclose(errorFile_[fednumber]);    errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);      ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1587,22 +1590,22 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
 	PixelFEDInterface* iFED = FEDInterface_[i_vmeBaseAddressAndFEDNumberAndChannels->first.first];
 	const int MaxChips = 8;
 	uint32_t bufferT[MaxChips][256];
-	uint8_t bufferS[MaxChips][1024];
+	uint32_t bufferS[MaxChips][1024];
+	uint32_t bufferTimestamp[MaxChips][256];
 	int statusS[MaxChips] = {0};
 	for (int jk = 0; jk < 10; ++jk) {
 	  for (int chip = 1; chip <= 7; chip += 2) {
 	    if (chip == 1 || chip == 7) {
 	      iFED->drainDigTransFifo(chip, bufferT[chip]);
 	      fwrite(bufferT[chip], sizeof(uint32_t), 256, dataFileT_[fednumber]);
+	      
+	      iFED->drainTimestamp(chip, bufferTimestamp[chip]);
+	      fwrite(bufferTimestamp[chip], sizeof(uint32_t), 256, timestampFile_[fednumber]);
 	    }
-	    uint32_t bufferS_temp[1024] = {0};
-	    statusS[chip] = iFED->drainDataFifo2(chip, bufferS_temp);
-	    if (statusS[chip] > 0) {
-	      for (int jj = 0; jj < 1024; ++jj)
-		bufferS[chip][jj] = bufferS_temp[jj] & 0xff;
-	      fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
-	      fwrite(bufferS[chip], sizeof(uint8_t), statusS[chip], dataFileS_[fednumber]);
-	    }
+	    statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
+	    fwrite(&statusS[chip], sizeof(int), 1, dataFileS_[fednumber]);
+	    if (statusS[chip] > 0)
+	      fwrite(bufferS[chip], sizeof(uint32_t), statusS[chip], dataFileS_[fednumber]);
 	  }
 	}
 #endif
@@ -1610,6 +1613,7 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
         fclose(dataFile_[fednumber]);     dataFile_[fednumber]=0;
         fclose(dataFileT_[fednumber]);     dataFileT_[fednumber]=0;
         fclose(dataFileS_[fednumber]);     dataFileS_[fednumber]=0;
+        fclose(timestampFile_[fednumber]);     timestampFile_[fednumber]=0;
         fclose(errorFile_[fednumber]);    errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);      ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1629,6 +1633,7 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
         fclose(dataFile_[fednumber]);    dataFile_[fednumber]=0;
         fclose(dataFileT_[fednumber]);    dataFileT_[fednumber]=0;
         fclose(dataFileS_[fednumber]);    dataFileS_[fednumber]=0;
+        fclose(timestampFile_[fednumber]);    timestampFile_[fednumber]=0;
         fclose(errorFile_[fednumber]);   errorFile_[fednumber]=0;
         fclose(ttsFile_[fednumber]);     ttsFile_[fednumber]=0;
 #ifdef READ_LASTDAC
@@ -1729,6 +1734,9 @@ xoap::MessageReference PixelFEDSupervisor::Recover(xoap::MessageReference msg) {
     }
     if ( dataFileS_.find(fednumber) != dataFileS_.end() ) {
       if (dataFileS_[fednumber] != 0)    fclose(dataFileS_[fednumber]);
+    }
+    if ( timestampFile_.find(fednumber) != timestampFile_.end() ) {
+      if (timestampFile_[fednumber] != 0)    fclose(timestampFile_[fednumber]);
     }
     if ( errorFile_.find(fednumber) != errorFile_.end() ) {
       if (errorFile_[fednumber] != 0)   fclose(errorFile_[fednumber]);

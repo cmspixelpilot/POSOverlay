@@ -184,6 +184,7 @@ class PixelFEDInterface {
   int drainDataFifo2(const int chip,uint32_t *data);
   int drainErrorFifo(const int chip,uint32_t *data);
   int drainTemperatureFifo(const int chip, uint32_t *data);
+  void drainTimestamp(const int chip, uint32_t* data);
 
   // Read fifos for all channel (overloded methods)
   int drainFifo1(uint32_t *data); 
