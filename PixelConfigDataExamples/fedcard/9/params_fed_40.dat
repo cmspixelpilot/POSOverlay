@@ -2054,7 +2054,7 @@ Private 8 bit word chnls 1-9  :0xb1
 Private 8 bit word chnls 10-18:0xb2
 Private 8 bit word chnls 19-27:0xb3
 Private 8 bit word chnls 28-36:0xb4
-N  Scope channel(0-8):6
+N  Scope channel(0-8):7
 NC Scope channel(0-8):0
 SC Scope channel(0-8):6
 S  Scope channel(0-8):4
