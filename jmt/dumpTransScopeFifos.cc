@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 
   const int MaxChips = 8;
   uint32_t bufferT[MaxChips][256];
-  uint8_t bufferS[MaxChips][1024];
+  uint32_t bufferS[MaxChips][1024];
   int statusS[MaxChips] = {0};
 
 #ifdef DO_DECODE
@@ -104,9 +104,10 @@ int main(int argc, char** argv) {
 	  goto done;
       }
       fread(&statusS[chip], sizeof(int), 1, fscope);
+      printf("statusS[%i] is %u\n", chip, statusS[chip]);
       assert(statusS[chip] <= 1024);
       if (statusS[chip] > 0)
-	fread(bufferS[chip], sizeof(uint8_t), statusS[chip], fscope);
+	fread(bufferS[chip], sizeof(uint32_t), statusS[chip], fscope);
     }
 
     ++nevents;
@@ -428,12 +429,16 @@ int main(int argc, char** argv) {
 	cout << "----------------------------------" << endl;
 	bool weird = false;
 	bool weird_first = false;
+	uint16_t last_ts = 0;
 	for (int i = 0; i < statusS[chip]; ++i) {
-	  const uint8_t d = bufferS[chip][i];
+	  const uint16_t ts = (bufferS[chip][i] & 0x3ff00) >> 8;
+	  if (ts < last_ts && i > 0)
+	    printf("WTS ");
+	  const uint8_t d = (bufferS[chip][i]) & 0xff;
 	  const uint8_t dh = d & 0xf0;
 	  const uint8_t last_dh = i > 0 ? (bufferS[chip][i-1] & 0xf0) : 0;
 
-	  cout << setw(2) << hex << int(d) << dec << " ";
+	  cout << setw(2) << dec << int(ts) << ":" << hex << int(d) << dec << " ";
 
 	  if ((i == 0 && dh != 0x80 && statusS[chip] != 1023) ||
 	      (last_dh == 0x80 && dh != 0x90) ||
@@ -517,6 +522,8 @@ int main(int argc, char** argv) {
 	      cout << "| dc: " << setw(2) << dcol << " pxl: " << setw(3) << pxl << " hit " << setw(3) << hit << "\n";
 	    }
 	  }
+
+	  last_ts = ts;
 	}
 
 	if (weird) {
