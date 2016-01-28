@@ -4339,6 +4339,10 @@ xoap::MessageReference PixelFEDSupervisor::JMTJunk(xoap::MessageReference msg) t
     done = true;
   }
 
+  //  for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
+  //    iFED->second->reset();
+
+ 
   xoap::MessageReference reply=MakeSOAPMessageReference("JMTJunkDone");
   return reply;
 }

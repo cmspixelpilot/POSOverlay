@@ -9,7 +9,7 @@ OBJECTS=  $(OBJDIR)/PowerSupply.o $(OBJDIR)/PS_Channel.o $(OBJDIR)/PS_CrateMap.o
 
 
 INCLUDES=-I$(CAEN_PS)/include -I$(CAEN_PS)/sources -I$(CAEN_PS)/tinyxml  -I$(SOCKETDIR)/include
-LIBS= -L $(CAENLIB) -lcaenhvwrapper -lncurses -lhscaenet -L$(SOCKETDIR)/lib -lSockets
+LIBS= -L $(CAENLIB) -lcaenhvwrapper -lncurses -lhscaenet -lpthread -ldl -lm -L$(SOCKETDIR)/lib -lSockets
 
 
 

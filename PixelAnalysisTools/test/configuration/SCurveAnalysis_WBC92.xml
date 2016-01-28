@@ -1,0 +1,71 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE PixelAnalysis SYSTEM "../../dtd/PixelAnalysis.dtd">
+<PixelAnalysis>
+  <!--There are 3 types of calibrations available: SCurve,PixelAlive,Gain. -->
+  <Calibration Type="SCurve" />
+  <!-- Set to WBC to analyze or 999 for all WBCs-->
+  <WhichWBC ChooseWBC="92"/>
+  <!--Can only be cout or file. -->
+  <Logger      Type="cout" />
+  <Session     Interactive="yes" />
+  <!-- The 3 configuration files necessary to run the analysis using also environment variables-->
+	<!-- calib.dat,translation.dat,detconfig.dat --> 
+	<!-- altenatively you can provide a DefaultDirectory where the 3 files are stored
+	     but they MUST have the 3 standard names calib.dat,translation.dat,detectconfig.dat
+			 and then run the test providing as a second argument just the run number.--> 
+  <ConfigurationFiles>
+		<DefaultDirectory    Directory="$POS_OUTPUT_DIRS" />
+  </ConfigurationFiles>
+  <RootOutputFile     Directory="Default" FileName="Default" />
+  <!--RootOutputFile     Directory="$BUILD_HOME/pixel/PixelAnalysisTools/test/RootOutputFiles" FileName="Default" /-->
+  <!--Number of events that the user wants to process. -1 means that all data will be processed -->
+  <NumberOfEvents Events="-1"/>
+  <Hardware>
+    <!-- Feds that user wants to analyze dash separated-->
+    <Feds Analyze="40">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+      <Fed Id="40">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="33" To="34"/>
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+    </Feds>
+  </Hardware>  
+  <SCurveCuts>
+    <Fit>
+      <!-- Number of times a fit is attempted before giving up-->
+			<Ntrials            Trials="5"/>
+      <!-- Point where to find the beginning of the SCurve here 10%-->
+      <Startcurve         Value="0.1"/>
+      <!-- Point where to find the end of the SCurve here 90%-->
+      <Endcurve           Value="0.9"/>
+    </Fit>
+    <Flag>
+      <!-- Maximum number of Noisy and Error histogram to be saved-->
+      <SaveHistograms     Max="20000000"/>
+      <!-- This flags the Scurve as noisy based on the rms of the fit. The histogram is saved in the noisy directory-->
+      <NoiseSigma         Min="4"/>
+      <!-- Rocs with a mean sigma on the noise greater than the value are printed out and marked as bad-->
+      <RocNoiseMean       Max="3"/>
+      <!-- Rocs with a mean Threshold greater than the value are printed out and marked as bad-->
+      <RocThresholdMean   Max="130"/>
+      <!-- Rocs with a mean Chisquare greater than the value are printed ou56288: TrimDefaultShort56294: TrimVcThrShort.56300: TrimVtrimShort56303: TrimOnShort56305: TrimOffShortt and marked as bad-->
+      <RocChisquareMean   Max="2"/>
+      <!-- Rocs with a mean Confidence level greater than the value are printed out and marked as bad-->
+      <RocProbabilityMean Min="0.9"/>
+      <!-- Print trim output file for trimming analysis (Yes|No)-->
+      <OutputTrimFile     Write="Yes"/>
+      <!-- Example of good histograms (Yes|No)-->
+      <SaveGoodFits       DoIt="Yes"/>
+    </Flag>
+   </SCurveCuts>
+</PixelAnalysis>

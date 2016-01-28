@@ -1,0 +1,12 @@
+\echo this is d.ini
+sys
+fec  11
+mfec 11 7 -6P
+
+cn -6PL12
+#cn -6PL3
+cn hello
+module 3
+
+roc 0:15
+

@@ -923,7 +923,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 					   std::map<pos::PixelModuleName,pos::PixelTBMSettings*>* tbms,
 					   unsigned int state) const {
 
-  //std::cout << " - - - - - - - - - - nextFECState: " << state << " ; yowza!" << std::endl;
+//  std::cout << " - - - - - - - - - - nextFECState: " << state << " ; yowza!" << std::endl;
 
   std::string mthn = "[PixelCalibConfiguration::nextFECState()]\t\t    " ;
   std::string modeName=parameterValue("ScanMode");
@@ -934,7 +934,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
   if (modeName=="useAllPixel"||modeName=="")  mode=1;
   if (modeName=="default")  mode=2;
 
-  //  cout << "SCANMODE IS " << modeName << " = " << mode << endl;
+//  cout << "SCANMODE IS " << modeName << " = " << mode << endl;
 
   static bool first=true;
 

@@ -1,0 +1,84 @@
+<?xml version='1.0'?>
+<!-- Order of specification will determine the sequence of installation. all modules are loaded prior instantiation of plugins -->
+<xp:Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xp="http://xdaq.web.cern.ch/xdaq/xsd/2005/XMLProfile-10">
+	<!-- Compulsory  Plugins -->
+	<xp:Application class="executive::Application" id="0" group="profile" service="executive" network="local">
+		<properties xmlns="urn:xdaq-application:Executive" xsi:type="soapenc:Struct">
+			<logUrl xsi:type="xsd:string">console</logUrl>
+                	<logLevel xsi:type="xsd:string">INFO</logLevel>
+                </properties>
+	</xp:Application>
+	<xp:Module>${XDAQ_ROOT}/lib/libexecutive.so</xp:Module>
+	
+	<xp:Application class="pt::http::PeerTransportHTTP" id="1" group="profile" network="local">
+		 <properties xmlns="urn:xdaq-application:pt::http::PeerTransportHTTP" xsi:type="soapenc:Struct">
+		 	<documentRoot xsi:type="xsd:string">${XDAQ_DOCUMENT_ROOT}</documentRoot>
+                        <aliasName xsi:type="xsd:string">tmp</aliasName>
+                        <aliasPath xsi:type="xsd:string">/tmp</aliasPath>
+                </properties>
+	</xp:Application>
+	<xp:Module>${XDAQ_ROOT}/lib/libpthttp.so</xp:Module>
+
+	<xp:Application class="pt::fifo::PeerTransportFifo" id="8" group="profile" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/lib/libptfifo.so</xp:Module>
+	
+	<!-- XRelay -->
+	<xp:Application class="xrelay::Application" id="4"  service="xrelay" group="profile" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/lib/libxrelay.so</xp:Module>
+	
+	<!-- HyperDAQ -->
+	<xp:Application class="hyperdaq::Application" id="3" group="profile" service="hyperdaq" network="local"/>
+	<xp:Module>${XDAQ_ROOT}/lib/libhyperdaq.so</xp:Module>	
+  <!-- #### BEGIN TTC-CONFIG-AUTO-GENERATED #### -->
+
+  <xp:Application class="LTCControl" id="30" instance="0" network="local">
+    <properties xmlns="urn:xdaq-application:LTCControl" xsi:type="soapenc:Struct">
+      <name xsi:type="xsd:string">Board 1</name>
+      <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+      <Location xsi:type="xsd:integer">0</Location>
+      <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+      <Configuration xsi:type="xsd:string">[file=/cmsnfshome0/nfshome0/dkotlins/OTHERS/TTCSoftware/config/LTCConfiguration.txt]</Configuration>
+      <ReloadAtEveryConfigure xsi:type="xsd:boolean">false</ReloadAtEveryConfigure>    
+      <BTimeCorrection xsi:type="xsd:unsignedInt">99</BTimeCorrection>
+      <SlinkSrcId xsi:type="xsd:unsignedInt">824</SlinkSrcId>
+    </properties>
+  </xp:Application>
+  
+  
+  <xp:Module>/cmsnfshome0/nfshome0/dkotlins/OTHERS/TTCSoftware/xdaq/libLTCControl.so</xp:Module>
+
+  <xp:Application class="TTCciControl" id="40" instance="0" network="local">
+    <properties xmlns="urn:xdaq-application:TTCciControl" xsi:type="soapenc:Struct">
+      <name xsi:type="xsd:string">Board 1</name>
+      <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+      <Location xsi:type="xsd:integer">-1</Location>
+      <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+      <Configuration xsi:type="xsd:string">[file=/cmsnfshome0/nfshome0/dkotlins/OTHERS/TTCSoftware/config/TTCciConfiguration.txt]</Configuration>
+      <ReloadAtEveryConfigure xsi:type="xsd:boolean">false</ReloadAtEveryConfigure>    
+      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+      <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+    </properties>
+  </xp:Application>
+  
+  
+  <xp:Application class="TTCciControl" id="41" instance="1" network="local">
+    <properties xmlns="urn:xdaq-application:TTCciControl" xsi:type="soapenc:Struct">
+      <name xsi:type="xsd:string">Board 2</name>
+      <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+      <Location xsi:type="xsd:integer">-2</Location>
+      <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+      <Configuration xsi:type="xsd:string">[file=/cmsnfshome0/nfshome0/dkotlins/OTHERS/TTCSoftware/config/TTCciConfiguration.txt]</Configuration>
+      <ReloadAtEveryConfigure xsi:type="xsd:boolean">false</ReloadAtEveryConfigure>    
+      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+      <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+    </properties>
+  </xp:Application>
+  
+  
+  <xp:Module>/cmsnfshome0/nfshome0/dkotlins/OTHERS/TTCSoftware/xdaq/libTTCciControl.so</xp:Module>
+  <!-- #### END TTC-CONFIG-AUTO-GENERATED #### -->
+
+
+
+
+</xp:Profile>
