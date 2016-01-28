@@ -18,36 +18,36 @@ XDAQ_INSTANTIATOR_IMPL(PixelFEDMonitor)
   
 {	
   /* Set up communications with DIAGSYSTEM, mostly cargo cult code */
-  diagService_ = new DiagBagWizard(
-                                   ("ReconfigurationModule") ,
-                                   this->getApplicationLogger(),
-                                   getApplicationDescriptor()->getClassName(),
-                                   getApplicationDescriptor()->getInstance(),
-                                   getApplicationDescriptor()->getLocalId(),
-                                   (xdaq::WebApplication *)this,
-                                   "SYSTEM IS PIXEL",
-                                   "SUBSYSTEM IS FEDMONITOR"
-                                   );
+  // diagService_ = new DiagBagWizard(
+  //                                  ("ReconfigurationModule") ,
+  //                                  this->getApplicationLogger(),
+  //                                  getApplicationDescriptor()->getClassName(),
+  //                                  getApplicationDescriptor()->getInstance(),
+  //                                  getApplicationDescriptor()->getLocalId(),
+  //                                  (xdaq::WebApplication *)this,
+  //                                  "SYSTEM IS PIXEL",
+  //                                  "SUBSYSTEM IS FEDMONITOR"
+  //                                  );
 
-  diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
+  // diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
   
-  xgi::bind(this,&PixelFEDMonitor::configureDiagSystem, "configureDiagSystem");
-  xgi::bind(this,&PixelFEDMonitor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
+  // xgi::bind(this,&PixelFEDMonitor::configureDiagSystem, "configureDiagSystem");
+  // xgi::bind(this,&PixelFEDMonitor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
+  //
+  // xoap::bind(this,&PixelFEDMonitor::freeLclDiagSemaphore, "freeLclDiagSemaphore", XDAQ_NS_URI );
+  // xoap::bind(this,&PixelFEDMonitor::freeGlbDiagSemaphore, "freeGlbDiagSemaphore", XDAQ_NS_URI );
+  // xoap::bind(this,&PixelFEDMonitor::processOnlineDiagRequest, "processOnlineDiagRequest",XDAQ_NS_URI ); 
   
-  xoap::bind(this,&PixelFEDMonitor::freeLclDiagSemaphore, "freeLclDiagSemaphore", XDAQ_NS_URI );
-  xoap::bind(this,&PixelFEDMonitor::freeGlbDiagSemaphore, "freeGlbDiagSemaphore", XDAQ_NS_URI );
-  xoap::bind(this,&PixelFEDMonitor::processOnlineDiagRequest, "processOnlineDiagRequest", XDAQ_NS_URI ); 
-  
-  DIAG_DECLARE_USER_APP
-    std::stringstream timerName;
-  timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
-  timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
-  toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
-  
-  toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
-  toolbox::TimeVal start;
-  start = toolbox::TimeVal::gettimeofday() + interval;
-  timer->schedule( this, start,  0, "" );
+  // DIAG_DECLARE_USER_APP
+  //   std::stringstream timerName;
+  // timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
+  // timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
+  // toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
+  //
+  // toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
+  // toolbox::TimeVal start;
+  // start = toolbox::TimeVal::gettimeofday() + interval;
+  // timer->schedule( this, start,  0, "" );
   
   // Initialize infospace if necessary 
   // FIXME deallocate memory in destructor later! Memory shared with FED Supervisor,
@@ -114,7 +114,7 @@ XDAQ_INSTANTIATOR_IMPL(PixelFEDMonitor)
 void PixelFEDMonitor::timeExpired (toolbox::task::TimerEvent& e)
 {
   /* Used for interfaceing with DIAGSYSTEM, cargo cult code run once */
-  DIAG_EXEC_FSM_INIT_TRANS	
+  // DIAG_EXEC_FSM_INIT_TRANS
 }
 
 /* Activated when the PixelSupervisor reads the web page, this method 
