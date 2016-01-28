@@ -1586,6 +1586,31 @@ xoap::MessageReference PixelFEDSupervisor::Halt (xoap::MessageReference msg) thr
       std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> >::iterator i_vmeBaseAddressAndFEDNumberAndChannels=vmeBaseAddressAndFEDNumberAndChannels_.begin();
       for (;i_vmeBaseAddressAndFEDNumberAndChannels!=vmeBaseAddressAndFEDNumberAndChannels_.end();++i_vmeBaseAddressAndFEDNumberAndChannels) {
         unsigned int fednumber=i_vmeBaseAddressAndFEDNumberAndChannels->first.second;
+
+	unsigned long vmeBaseAddress =
+        i_vmeBaseAddressAndFEDNumberAndChannels->first.first;
+	
+        cout << "FEDSupervisor:Halt" << endl;
+        cout << "vmeBaseAddress: " << vmeBaseAddress << endl;
+
+        uint32_t output = 0;
+        string name = "LAD_N";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_NC";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_SC";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_S";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+	
+
 #ifdef PILOT_TRANSSCOPE_AT_HALT
 	PixelFEDInterface* iFED = FEDInterface_[i_vmeBaseAddressAndFEDNumberAndChannels->first.first];
 	const int MaxChips = 8;
@@ -2071,7 +2096,25 @@ void PixelFEDSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
       // Set up XY mechanism
       iFED->setXY( 8, 500000 );
       iFED->resetXYCount();
-	
+	cout << "FEDSupervisor:Configure" << endl;
+	cout << "vmeBaseAddress: " << vmeBaseAddress << endl;
+
+	uint32_t output = 0;
+	string name = "LAD_N";
+	VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+	cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_NC";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_SC";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_S";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
     }
 	
 
