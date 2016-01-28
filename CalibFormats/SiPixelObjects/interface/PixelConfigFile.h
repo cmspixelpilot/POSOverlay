@@ -28,6 +28,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortCardConfig.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelDCDCConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortcardMap.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDelay25Calib.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
@@ -460,6 +461,11 @@ namespace pos{
 	assert(dir=="portcard");
 	data = (T*) new PixelPortCardConfig(fullpath+"portcard_"+ext+".dat");
 	return;
+      }else if (typeid(data)==typeid(PixelDCDCConfig*)){
+	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelDCDCConfig" << std::endl;
+	assert(dir=="dcdc");
+	data = (T*) new PixelDCDCConfig(fullpath+"dcdc_"+ext+".dat");
+	return;
       }else if (typeid(data)==typeid(PixelPortcardMap*)){
 	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelPortcardMap" << std::endl;
 	assert(dir=="portcardmap");
@@ -576,6 +582,8 @@ namespace pos{
 	fileName = fullpath+"fedconfig.dat";
       }else if (typeid(data)==typeid(PixelPortCardConfig*)){
 	fileName = fullpath+"portcard_"+ext+".dat";
+      }else if (typeid(data)==typeid(PixelDCDCConfig*)){
+	fileName = fullpath+"dcdc_"+ext+".dat";
       }else if (typeid(data)==typeid(PixelPortcardMap*)){
 	fileName = fullpath+"portcardmap.dat";
       }else if (typeid(data)==typeid(PixelDelay25Calib*)){
@@ -776,6 +784,11 @@ namespace pos{
 	//std::cout << __LINE__ << mthn << "Will return PixelPortCardConfig" << std::endl;
 	assert(dir=="portcard");
 	data = (T*) new PixelPortCardConfig(fullpath+"portcard_"+ext+".dat");
+	return;
+      }else if (typeid(data)==typeid(PixelDCDCConfig*)){
+	//std::cout << __LINE__ << mthn << "Will return PixelDCDCConfig" << std::endl;
+	assert(dir=="dcdc");
+	data = (T*) new PixelDCDCConfig(fullpath+"dcdc_"+ext+".dat");
 	return;
       }else if (typeid(data)==typeid(PixelPortcardMap*)){
 	//std::cout << __LINE__ << mthn << "Will return PixelPortcardMap" << std::endl;

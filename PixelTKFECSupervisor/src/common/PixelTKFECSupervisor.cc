@@ -1870,20 +1870,46 @@ end of redundancy ring comment */
 	
       }
 
+#if !defined SETUP_TIF
+      // JMTBAD plz put dcdc object @ TIF
+      // get the dcdc that need to be turned on
+      typedef std::map<std::pair<unsigned int, unsigned int>, string> dcdc_map_t;
+      dcdc_map_t dcdc_map;
+      for (std::map<std::string, PixelPortCardConfig*>::const_iterator iportcard=mapNamePortCard_.begin(); iportcard != mapNamePortCard_.end(); ++iportcard) {
+	const std::string& name = iportcard->first;
+	PixelPortCardConfig* tempPortCard = 0;
+	PixelConfigInterface::get(tempPortCard, "pixel/portcard/" + name, *theGlobalKey_);
+
+	const std::string& TKFECID = tempPortCard->getTKFECID();
+	unsigned int slot = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
+	unsigned int ring = tempPortCard->getringAddress();
+	dcdc_map[std::make_pair(slot,ring)] = name;
+      }
+#endif
+
       //std::cout << "Disable the PIA ports "<< std::endl;        
       //program the CCU (this is to disable PIA resets in order not to have the fire by themselves)
       for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); 
 	   ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
 
-	// JMTBAD this needs to be configurable in software. Loop over
-	// ccu or some other config objects and find out whether we're
-	// supposed to send PIA commands to enable DC-DC. For now just do it
 #if !defined SETUP_TIF
-	if (ringiter->first == 8) {
-	  pixDCDCCommand(slot, ringiter->first, 0x7e, 0x7d, 0x30, true, 2);
+	dcdc_map_t::const_iterator it = dcdc_map.find(std::make_pair(slot, ringiter->first));
+	if (it != dcdc_map.end()) {
+	  const std::string& name = it->second;
+	  printf("JMT pixDCDC slot %i ring %i name %s\n", slot, ringiter->first, name.c_str());
+	  PixelDCDCConfig* dcdc = 0;
+	  PixelConfigInterface::get(dcdc, "pixel/dcdc/" + name, *theGlobalKey_);
+
+	  if (dcdc->getDCDCEnabled())
+	    pixDCDCCommand(slot, ringiter->first,
+			   dcdc->getCCUAddressEnable(),
+			   dcdc->getCCUAddressPgood(),
+			   dcdc->getPIAChannelAddress(),
+			   true,
+			   dcdc->getPortNumber());
 	}
 #endif
-	
+
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop
 
