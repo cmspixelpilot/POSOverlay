@@ -75,7 +75,7 @@ class PixelSQLCommand {
   int loadRow();  
   int loadRow(int rows);  
   void setPrefetch(unsigned int prefetch);
-  void setDataBuffer(int index, char * buffer, int size) ;
+  void setDataBuffer(int index, void * buffer, sb4 size, ub2 *length, sb2 *ind, ub2 *rc) ;
   int getNextAvailableVersion(std::string sequence="default") ;
   void dumpTableInfo() ;
   void fillTnsKocViewDictionary() ;

@@ -4,6 +4,7 @@ $Date: 2012/01/19 16:44:26 $
 $Revision: 1.94 $
 */
 #include "xdaq/exception/Exception.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelConfigKey.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
 #include "PixelConfigDBInterface/include/PixelConfigDBInterface.h"
 #include <iomanip>
