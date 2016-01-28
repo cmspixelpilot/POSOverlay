@@ -17,7 +17,6 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
 
 #define USE_HAL  // to enable HAL use
-#define LINUX
 
 #ifdef USE_HAL // Access VME with HALa
 
