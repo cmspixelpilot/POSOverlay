@@ -225,37 +225,11 @@ void PixelTrimAllPixels::generateConfiguration(PixelFECConfigInterface* pixelFEC
 
     std::vector<unsigned char> trimAndMasks(4160);
 
-    int n=i;
-    // Recover the misligned mask and trim rocs (roc order!). A temporary fix.
-    if( (trimbits_[i].name().roc()) != (pixelMask.getMaskBits(i).name().roc()) ) { // wrong roc
-      std::cout<<" Wrong ROC for masks "<<i<<" "
-	       <<trimbits_[i].name()<<" "<<trimbits_[i].name().roc()<<" "
-	       <<pixelMask.getMaskBits(i).name()<<" "<<pixelMask.getMaskBits(i).name().roc()<<std::endl;
- 
-      for(unsigned int j=0;j<trimbits_.size();j++) {
-	if( pixelMask.getMaskBits(j).name() == trimbits_[i].name() ) {
-	  n=j;
-	  std::cout<<" found right roc "<<pixelMask.getMaskBits(j).name()<<std::endl;
-	  break;
-	}
-	if(j==(trimbits_.size()-1) ) std::cout<<" right roc not found "<<std::endl;
-      }
-    }
+    const PixelROCMaskBits& maskbits=pixelMask.getMaskBits(i);
 
-    //const PixelROCMaskBits& maskbits=pixelMask.getMaskBits(i);
-    const PixelROCMaskBits& maskbits=pixelMask.getMaskBits(n);
-    
     for (unsigned int col=0;col<52;col++){
       for (unsigned int row=0;row<80;row++){
 	unsigned char tmp=trimbits_[i].trim(col,row);
-
-	//if (maskbits.mask(col,row)==0) {
-	//std::cout<<" masked "<<i<<" "
-	//	   <<trimbits_[i].name()<<" "<<trimbits_[i].name().roc()<<" "
-	//	   <<maskbits.name()<<" "<<maskbits.name().roc()<<" "
-	//	   <<col<<" "<<row<<std::endl;
-	//}
-	
 	if (maskbits.mask(col,row)!=0) tmp|=0x80;
 	trimAndMasks[col*80+row]=tmp;
       }
