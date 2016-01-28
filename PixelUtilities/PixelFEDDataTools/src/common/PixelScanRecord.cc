@@ -2,8 +2,9 @@
 
 #include <iomanip>
 #include <algorithm>
+#include <sstream>
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "TCanvas.h"
 #include "TGraphErrors.h"
@@ -407,8 +408,12 @@ void PixelScanRecord::printPlot(std::string filename, int color, std::vector<TPa
 	if ( crossingPointFound_ )
 	{
 		drawLegend = true;
+		std::ostringstream crossingPointString;
+		std::ostringstream crossingYTargetString;
+		crossingPointString << crossingPoint_;
+		crossingYTargetString << crossingYTarget_;
 		TText* thisLine = legend.AddText("Intersection:"); thisLine->SetTextColor(kGreen);
-		       thisLine = legend.AddText(("  ("+stringF(crossingPoint_)+","+stringF(crossingYTarget_)+")").c_str()); thisLine->SetTextColor(kGreen);
+		       thisLine = legend.AddText(("  ("+(crossingPointString).str()+","+(crossingYTargetString).str()+")").c_str()); thisLine->SetTextColor(kGreen);
 		crossingPointXLine = TLine( crossingPoint_, ymin, crossingPoint_, ymax );
 		crossingPointXLine.SetLineColor(kGreen); crossingPointXLine.SetLineStyle(kDashed);
 		crossingPointXLine.Draw();

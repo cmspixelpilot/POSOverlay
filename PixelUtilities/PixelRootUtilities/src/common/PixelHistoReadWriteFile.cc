@@ -6,7 +6,11 @@
 #include <TKey.h>
 #include <TCanvas.h>
 #include <TClass.h>
-
+#include <TTree.h>
+#include <TBranch.h>
+#include <TDirectory.h>
+#include <sstream>
+#include <TCanvas.h>
 
 using namespace std;
 
@@ -37,7 +41,7 @@ void PixelHistoReadWriteFile::read(std::string fileName){
 /////////////////////////////////////////////////////
 void PixelHistoReadWriteFile::open(std::string fileName, string mode){
 	close();
-  file_ = new TFile(fileName.c_str(),mode.c_str());
+        file_ = new TFile(fileName.c_str(),mode.c_str());
 	if(file_ == 0 || !file_->IsOpen()){
 		cout << "[PixelHistoReadWriteFile::open()]\tCouldn't open file: " << fileName << endl;
 	}
@@ -85,39 +89,47 @@ void PixelHistoReadWriteFile::transferToMemory(TDirectory *parentFileDir,TDirect
 
 /////////////////////////////////////////////////////
 void PixelHistoReadWriteFile::transferFromTo(TDirectory *fromDir,TDirectory *toDir){
-	string mthn = "[PixelHistoReadWriteFile::transferFromTo()]\t";
 	bool read = false;
-	if(fromDir->InheritsFrom(TDirectoryFile::Class())){
-		read = true;
-	}
+	if(fromDir->InheritsFrom(TDirectoryFile::Class()))
+   	  read = true;
 //  cout << "[PixelHistoReadWriteFile::transferFromTo()]\tRead? " << read << " From: " << fromDir->IsA()->GetName() << " To --->" << toDir->IsA()->GetName()<< endl;
 	TIter *next;
 	TObject *obj;
-	if(read){
-  	next = new TIter(fromDir->GetListOfKeys());
-	}
-	else{
-		next = new TIter(fromDir->GetList());
-	}
-  while((obj = (*next)())){
-    toDir->cd();
-		if(read){
-			obj = ((TKey*)obj)->ReadObj();
-      if(obj->InheritsFrom(TCanvas::Class())){
-        toDir->Append(obj);
-      }	
-		}
-    if(obj->InheritsFrom(TDirectory::Class())){
+	if(read)
+  	  next = new TIter(fromDir->GetListOfKeys());
+	else
+ 	  next = new TIter(fromDir->GetList());
+	while((obj = (*next)()))
+	{
+	  toDir->cd();
+          string NAME = obj->GetName();
+	  if(read)
+	  {
+	    obj = ((TKey*)obj)->ReadObj();
+ 	    if(obj->InheritsFrom(TCanvas::Class()))
+              toDir->Append(obj);
+          }//if read
+          if(obj->InheritsFrom(TDirectory::Class()))
+          {
 //  	  cout << "[PixelHistoReadWriteFile::transferFromTo()]\tIs folder? " << obj->InheritsFrom(TDirectory::Class()) << " => " << obj->GetName() << endl;
-      TDirectory * fromSubDir = (TDirectory*)obj;
-      TDirectory * toSubDir = toDir->mkdir(obj->GetName(),obj->GetTitle());
-      transferFromTo(fromSubDir,toSubDir);
-    }
-		else{ 
-			if(!read){
-			  obj->Write();
-			}
-		}
+            TDirectory * fromSubDir = (TDirectory*)obj;
+            TDirectory * toSubDir = toDir->mkdir(obj->GetName(),obj->GetTitle());
+            transferFromTo(fromSubDir,toSubDir);
+          }//obj
+  	  else
+   	  {
+	    if(NAME == "SummaryTree")
+	    {
+	      TTree *tree1 = (TTree*)obj->Clone();
+	      int nentries = tree1->GetEntries();
+	      TTree *treeCopy = tree1->CopyTree("","", nentries, 0);
+              treeCopy->Write();
+	    }//if
+            else if(!read)
+	    {
+              obj->Write();
+	    }//else
+	  }//else
 	}
 	delete next;
 }
