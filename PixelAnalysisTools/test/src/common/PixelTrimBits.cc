@@ -202,7 +202,7 @@ int main(int argc, char **argv){
     }
     PixelTrimBase* trims=theTrims[module];
 
-    trimROC.setThrTrim(34.84);
+    trimROC.setThrTrim(80);
 
     map<int, map<int, PixelValues> >::const_iterator irow;
     irow=iMap->second.begin();

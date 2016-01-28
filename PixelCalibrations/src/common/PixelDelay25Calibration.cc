@@ -20,7 +20,7 @@ using namespace std;
 PixelDelay25Calibration::PixelDelay25Calibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
   : PixelCalibrationBase(tempConfiguration, *mySOAPCmdr)
 {
-  cout << "Greetings from the PixelDelay25Calibration copy constructor." <<endl;
+  //  cout << "Greetings from the PixelDelay25Calibration copy constructor." <<endl;
 
 }
 
