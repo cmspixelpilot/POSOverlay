@@ -20,8 +20,8 @@
 
 #include "xdaq/NamespaceURI.h"
 
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigKey.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigFile.h"
@@ -65,7 +65,7 @@ class PixelTKFECSupervisorConfiguration : public PixelSupervisorConfigurationBas
 
   pos::PixelCalibBase *theCalibObject_;
 
-  DiagBagWizard *diagService_;
+  // DiagBagWizard *diagService_;
 
   FecAccess *fecAccess_;
 

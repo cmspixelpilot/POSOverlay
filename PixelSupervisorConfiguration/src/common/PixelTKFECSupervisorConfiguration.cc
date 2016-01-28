@@ -24,7 +24,7 @@ PixelTKFECSupervisorConfiguration::PixelTKFECSupervisorConfiguration(std::string
   theTKFECConfiguration_=0;
   theNameTranslation_=0;
   theFECConfiguration_=0;
-  diagService_=0;
+  // diagService_=0;
   fecAccess_=0;
   //  runNumber_=runNumber;
   //  outputDir_=outputDir;
@@ -46,7 +46,7 @@ PixelTKFECSupervisorConfiguration::PixelTKFECSupervisorConfiguration(const Pixel
   PixelFECSupervisors_ = tempConfiguration.PixelFECSupervisors_;
   theGlobalDelay25_ = tempConfiguration.theGlobalDelay25_;
 
-  diagService_ = tempConfiguration.diagService_;
+  // diagService_ = tempConfiguration.diagService_;
 
   fecAccess_ = tempConfiguration.fecAccess_;
 

@@ -17,11 +17,12 @@
 #include "xdaq/ApplicationStub.h"
 #include "xdaq/ApplicationStubImpl.h"
 #include "xdaq/exception/Exception.h"
+#include "toolbox/task/WorkLoopFactory.h"
 
 #include "xdaq/NamespaceURI.h"
 
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigKey.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
@@ -71,7 +72,7 @@ class PixelFEDSupervisorConfiguration : public PixelSupervisorConfigurationBase,
   //         VME Base Address  FED Number              Channel
 
   unsigned long crate_;
-  DiagBagWizard * diagService_;
+  // DiagBagWizard * diagService_;
 
   std::stringstream* console_;
 
