@@ -69,39 +69,39 @@ XDAQ_INSTANTIATOR_IMPL(PixelMonitor)
   myErrTable = new PixelErrorTable();
   
   /* Set up communications with DIAGSYSTEM, cargo cult code */
-  diagService_ = new DiagBagWizard(
-                                   ("ReconfigurationModule") ,
-                                   this->getApplicationLogger(),
-                                   getApplicationDescriptor()->getClassName(),
-                                   getApplicationDescriptor()->getInstance(),
-                                   getApplicationDescriptor()->getLocalId(),
-                                   (xdaq::WebApplication *)this,
-                                   "SYSTEM IS PIXEL",
-                                   "SUBSYSTEM IS BASELINEMONITOR"
-                                   );
+  // diagService_ = new DiagBagWizard(
+  //                                  ("ReconfigurationModule") ,
+  //                                  this->getApplicationLogger(),
+  //                                  getApplicationDescriptor()->getClassName(),
+  //                                  getApplicationDescriptor()->getInstance(),
+  //                                  getApplicationDescriptor()->getLocalId(),
+  //                                  (xdaq::WebApplication *)this,
+  //                                  "SYSTEM IS PIXEL",
+  //                                  "SUBSYSTEM IS BASELINEMONITOR"
+  //                                  );
 
 
-  diagService_->reportError("The DiagSystem for PixelMonitor is installed",DIAGINFO);
+  // diagService_->reportError("The DiagSystem for PixelMonitor is installed",DIAGINFO);
   
-  xgi::bind(this,&PixelMonitor::configureDiagSystem, "configureDiagSystem");
-  xgi::bind(this,&PixelMonitor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
+  // xgi::bind(this,&PixelMonitor::configureDiagSystem, "configureDiagSystem");
+  // xgi::bind(this,&PixelMonitor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
   
-  xoap::bind(this,&PixelMonitor::freeLclDiagSemaphore, "freeLclDiagSemaphore", XDAQ_NS_URI );
-  xoap::bind(this,&PixelMonitor::freeGlbDiagSemaphore, "freeGlbDiagSemaphore", XDAQ_NS_URI );
-  xoap::bind(this,&PixelMonitor::processOnlineDiagRequest, "processOnlineDiagRequest", XDAQ_NS_URI ); 
+  // xoap::bind(this,&PixelMonitor::freeLclDiagSemaphore, "freeLclDiagSemaphore", XDAQ_NS_URI );
+  // xoap::bind(this,&PixelMonitor::freeGlbDiagSemaphore, "freeGlbDiagSemaphore", XDAQ_NS_URI );
+  // xoap::bind(this,&PixelMonitor::processOnlineDiagRequest, "processOnlineDiagRequest", XDAQ_NS_URI); 
   
-  DIAG_DECLARE_USER_APP
+  // DIAG_DECLARE_USER_APP
 
-      std::stringstream timerName;
-  timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
-  timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
-  toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
-  toolbox::TimeInterval startDelay(AUTO_UP_CONFIGURE_DELAY,0);
-  toolbox::TimeInterval interval;
-  interval.fromString("00:00:00:00:01");
-  toolbox::TimeVal startTime;    
-  startTime = toolbox::TimeVal::gettimeofday() + startDelay;
-  timer->scheduleAtFixedRate(startTime, this, interval , 0, "flashlistloop" ); 
+  //     std::stringstream timerName;
+  // timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
+  // timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
+  // toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
+  // toolbox::TimeInterval startDelay(AUTO_UP_CONFIGURE_DELAY,0);
+  // toolbox::TimeInterval interval;
+  // interval.fromString("00:00:00:00:01");
+  // toolbox::TimeVal startTime;
+  // startTime = toolbox::TimeVal::gettimeofday() + startDelay;
+  // timer->scheduleAtFixedRate(startTime, this, interval , 0, "flashlistloop" );
 
   // Process configuration file to get URL of flashlist
   url = (char *)malloc(sizeof(char) * MAXURL);
@@ -157,7 +157,7 @@ void PixelMonitor::timeExpired (toolbox::task::TimerEvent& e)
   if (timerInitializationMode == true)
     {
       // Used for interfaceing with DIAGSYSTEM, cargo cult code run once.
-      DIAG_EXEC_FSM_INIT_TRANS	
+      // DIAG_EXEC_FSM_INIT_TRANS  
 	timerInitializationMode = false;
     }
   else
@@ -900,7 +900,7 @@ void PixelChannel::processNewBaselineCorrectionReading()
 	  errorStream << " has returned to normal. Value is "
 		      << newBCReading.get_baselineCorrectionMean() << endl;
 	  errorMsg = errorStream.str();
-	  parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGINFO);
+    // parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGINFO);
 	  currentBCReading.set_baselineCorrectionSquawk(CHANNEL_OK);
 	}
       else if (newState == CHANNEL_WARN) 
@@ -911,7 +911,7 @@ void PixelChannel::processNewBaselineCorrectionReading()
 	      errorStream << " is out of range. Value is now "
 			  << newBCReading.get_baselineCorrectionMean() << endl;
 	      errorMsg = errorStream.str();
-	      parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGWARN);
+        // parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGWARN);
 	      currentBCReading.set_baselineCorrectionSquawk(CHANNEL_WARN);
 	    }
 	  else if ( oldState < newState 
@@ -920,7 +920,7 @@ void PixelChannel::processNewBaselineCorrectionReading()
 	      errorStream << " is out of range. Value is "
 			  << newBCReading.get_baselineCorrectionMean() << endl;
 	      errorMsg = errorStream.str();
-	      parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGWARN);
+        // parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGWARN);
 	      currentBCReading.set_baselineCorrectionSquawk(CHANNEL_WARN);
 	    }
 	}
@@ -930,7 +930,7 @@ void PixelChannel::processNewBaselineCorrectionReading()
 	  errorStream << " is severely out of range. Value is "
 		      << newBCReading.get_baselineCorrectionMean() << endl;
 	  errorMsg = errorStream.str();
-	  parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGERROR);
+    // parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGERROR);
 	  currentBCReading.set_baselineCorrectionSquawk(CHANNEL_ERROR);
 	}
       else if (newState == CHANNEL_BORDERLINE_WARN && currentBCReading.get_baselineCorrectionSquawk() < CHANNEL_WARN )
@@ -938,7 +938,7 @@ void PixelChannel::processNewBaselineCorrectionReading()
 	      errorStream << " is out of range. Value is "
 			  << newBCReading.get_baselineCorrectionMean() << endl;
 	      errorMsg = errorStream.str();
-	      parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGWARN);
+        // parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGWARN);
 	      currentBCReading.set_baselineCorrectionSquawk(CHANNEL_WARN);	  
 	}
       else if (newState == CHANNEL_BORDERLINE_OK && currentBCReading.get_baselineCorrectionSquawk() > CHANNEL_WARN )
@@ -946,7 +946,7 @@ void PixelChannel::processNewBaselineCorrectionReading()
 	  errorStream << " has returned to normal. Value is "
 		      << newBCReading.get_baselineCorrectionMean() << endl;
 	  errorMsg = errorStream.str();
-	  parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGINFO);
+    // parentFEDPtr->parentCratePtr->parentMonitorPtr->diagService_->reportError(errorMsg,DIAGINFO);
 	  currentBCReading.set_baselineCorrectionSquawk(CHANNEL_OK);  
 	}
     }

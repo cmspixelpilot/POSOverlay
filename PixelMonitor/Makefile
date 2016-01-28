@@ -33,11 +33,6 @@ Sources= PixelMonitor.cc
 #Include directories
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/soapdiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-        $(ENV_CMS_TK_DIAG_ROOT) \
         $(shell root-config --incdir) \
         $(BUILD_HOME)/$(Project)/$(Package) \
 #	$(shell curlpp-config --libs)
@@ -63,14 +58,13 @@ ROOTLibs = Tree
 curlppLibs = curlpp curl  
 
 DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
-       $(ENV_CMS_TK_DIAG_ROOT)/tools/lib \
        $(XDAQ_ROOT)/lib	\
        $(shell root-config --libdir) \
        $(ROOTSYS)/lib 
 
 #K       $(BUILD_HOME)/$(Project)/$(Package)/curlpp-0.7.3/curlpp/.libs
 
-DependentLibraries = TkDiagBagWizard xmldiagappender 
+DependentLibraries = 
 
 DependentLibraries += $(ROOTLibs) $(curlppLibs)
 
