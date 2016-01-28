@@ -29,7 +29,7 @@ namespace {
 
 //// Constructor //////////////////////////////////////////////////
 PixelFEDInterface::PixelFEDInterface(const HAL::VMEDevice * const vmeDeviceP ) : 
-  runDegraded(false), vmeDevicePtr(vmeDeviceP)  {
+  runDegraded_(false), vmeDevicePtr(vmeDeviceP)  {
 
   cout<<" PixelFEDInterface constructor "<<endl;
   Printlevel=1;
@@ -827,6 +827,13 @@ int PixelFEDInterface::reset(void) {
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
   BaselineCorr_off();
 #endif
+  // do the reset 
+  //data=0x0;    
+  //vmeDevicePtr->write("ResTTCrx", data );
+  //usleep(20000);
+  //cout<<" After reset TTCrx, sleep for 20ms  "<<endl;
+
+
   // Reset TTCrx (to reset the event and bx counters)
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Check / Reset TTCrx"<<endl;
 
@@ -840,7 +847,19 @@ int PixelFEDInterface::reset(void) {
   if(ttcrx_stat&0x80) {cout<<" Pll Ready"<<endl;} else{resetTTCrx++;cout<<"Pll Not Ready!!!"<<endl;}
   if(ttcrx_stat&0x40) {cout<<" dll Ready"<<endl;} else{resetTTCrx++;cout<<"dll Not Ready!!!"<<endl;}
   if(ttcrx_stat&0x20) {cout<<" Frame Synced"<<endl;} else{resetTTCrx++;cout<<"Frame not Synced!!!"<<endl;}
-  
+  if(ttcrx_stat&0x10) { // added to clear the bit after TTCrx autoreset  1/9/15 dk
+    cout<<"Autoreset detected! Try to clear it "<<endl;
+    TTCRX_I2C_REG_WRITE(22,0); //reset watch dog
+    usleep(20000);
+    int ttcrx_stat1 = TTCRX_I2C_REG_READ( 22);
+    if(ttcrx_stat1 & 0x10) {
+      cout<<" Autoreset bit did not disappear, try resting the TTCrx "<<endl;
+      resetTTCrx++;
+    } else {
+      cout<<" Autoreset cleared, all OK "<<hex<<ttcrx_stat1<<dec<<endl;
+    }    
+  }
+
   if(resetTTCrx>0){
     cout<<"TTCrx problem...resetting"<<endl;
     
@@ -1529,6 +1548,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
   uint32_t d;
   int  i2c_addr,i2c_nbytes;
 
+  if(Printlevel&1) cout<<" 1 "<<endl;
+
   uint32_t ds =  0x2;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1540,6 +1561,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
+  if(Printlevel&1) cout<<" 2 "<<endl;
+
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1551,6 +1574,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
+  if(Printlevel&1) cout<<" 3 "<<endl;
+
   //I2C PAYLOAD 
   ds =  Register_Nr;
 #ifdef USE_HAL // Use HAL
@@ -1563,6 +1588,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
+  if(Printlevel&1) cout<<" 4 "<<endl;
+
   i2c_addr=7*2; 
   i2c_nbytes=1;
   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
@@ -1577,6 +1604,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
+  if(Printlevel&1) cout<<" 5 "<<endl;
+
 #ifdef USE_HAL // Use HAL
     vmeDevicePtr->read("I2C_RD_STAT",&d);
 #else  // Use direct CAEN 
@@ -1594,6 +1623,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
   if((d&0xff)==4)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: I2C_WBYTE NOT ACKNOWLEDGED !!"<<endl;
   if((d&0xff)==8)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: I2C_LBYTE NOT ACKNOWLEDGED !!"<<endl;
  
+  if(Printlevel&1) cout<<" 6 "<<endl;
+
   //RESET I2C STATE MACHINE
   ds =  0x2;
 #ifdef USE_HAL // Use HAL
@@ -1607,6 +1638,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
+  if(Printlevel&1) cout<<" 7 "<<endl;
+
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1619,6 +1652,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
  
+  if(Printlevel&1) cout<<" 8 "<<endl;
+
   ds =  Value;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_LOAD",ds);
@@ -1631,6 +1666,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);//
    
+  if(Printlevel&1) cout<<" 9 "<<endl;
+
    i2c_addr=7*2+1; i2c_nbytes=1;
   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
 #ifdef USE_HAL // Use HAL
@@ -1647,6 +1684,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
   //printf("%x\n",(i2c_nbytes<<8)+(i2c_addr<<1)+0 );
   usleep(300);
  
+  if(Printlevel&1) cout<<" 10 "<<endl;
+
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->read("I2C_RD_STAT",&d);
 #else  // Use direct CAEN 
@@ -1658,6 +1697,8 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);//
  
+  if(Printlevel&1) cout<<" 11 "<<endl;
+
   
   if((d&0xff)==1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: BUS BUSY !!"<<endl;
   if((d&0xff)==2)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: I2C_ADDR NOT ACKNOWLEDGED !!"<<endl ;
@@ -1677,7 +1718,7 @@ int PixelFEDInterface::setupFromDB(string fileName) {
   if(status!=0) return(-1);
 
   status = setup();
-
+ 
   return status;
 }
 /////////////////////////////////////////////////////////////////////////
@@ -1698,11 +1739,29 @@ int PixelFEDInterface::setup(void) {
   if(Printlevel&2) cout<<"Setting "<<"FEDID:"<<pixelFEDCard.fedNumber<<endl;
   cout<<"Setting "<<"FEDID:"<<pixelFEDCard.fedNumber<<endl;
 
+  int ttcrx_stat = TTCRX_I2C_REG_READ( 22);
+  cout<<"TTCrx status should be 0xe0 read = 0x"<<hex<<ttcrx_stat<<dec<<endl;
+  
   // Reprogram the TTCrx registers, onlu now we know the values from DB
   TTCRX_I2C_REG_WRITE( 2, pixelFEDCard.CoarseDel); //COARSE DELAY REG
+  if(Printlevel&1) cout<<"Setting "<<"TTCRX 2: "<<endl;
+  //ttcrx_stat = TTCRX_I2C_REG_READ( 22);
+  //cout<<"TTCrx status should be 0xe0 read = 0x"<<hex<<ttcrx_stat<<dec<<endl;
+
   TTCRX_I2C_REG_WRITE( 1, pixelFEDCard.FineDes2Del); // Fine Delay ClockDes2
+  if(Printlevel&1) cout<<"Setting "<<"TTCRX 1: "<<endl;
+  //ttcrx_stat = TTCRX_I2C_REG_READ( 22);
+  //cout<<"TTCrx status should be 0xe0 read = 0x"<<hex<<ttcrx_stat<<dec<<endl;
+
   TTCRX_I2C_REG_WRITE( 0, pixelFEDCard.FineDes1Del); // Fine Delay ClockDes1
+  if(Printlevel&1) cout<<"Setting "<<"TTCRX 0: "<<endl;
+  //ttcrx_stat = TTCRX_I2C_REG_READ( 22);
+  //cout<<"TTCrx status should be 0xe0 read = 0x"<<hex<<ttcrx_stat<<dec<<endl;
+
   TTCRX_I2C_REG_WRITE( 3, pixelFEDCard.ClkDes2);// ControlReg  enable ClockDes2 !need
+  if(Printlevel&1) cout<<"Setting "<<"TTCRX 3: "<<endl;
+  //ttcrx_stat = TTCRX_I2C_REG_READ( 22);
+  //cout<<"TTCrx status should be 0xe0 read = 0x"<<hex<<ttcrx_stat<<dec<<endl;
 
   loadFedIDRegister();
 
@@ -6214,38 +6273,38 @@ bool PixelFEDInterface::checkSEUCounters(int threshold) {
   if (return_val) {
     cout << ". Disabling." << endl;
     cout << "Setting runDegraded flag for FED " << pixelFEDCard.fedNumber << endl;
-    runDegraded = true;
+    runDegraded_ = true;
   } else cout << endl;
   return return_val;
 }
 
 void PixelFEDInterface::resetEnbableBits() {
-      // Get the current values of higher bits in these registers, so we can leave them alone
-      // This is also the time when the runDegraded flag gets set if appropriate
-      uint32_t nOtherConfigBits = 0;
-      uint32_t ncOtherConfigBits = 0;
-      uint32_t sOtherConfigBits = 0;
-      uint32_t scOtherConfigBits = 0;
-      uint32_t otherBitsMask = 0xFFFFFE00;
-      vmeDevicePtr->read("SWrRdCntrReg", &sOtherConfigBits);
-      sOtherConfigBits &= otherBitsMask;
-      vmeDevicePtr->read("SCWrRdCntrReg", &scOtherConfigBits);
-      scOtherConfigBits &= otherBitsMask;
-      vmeDevicePtr->read("NWrRdCntrReg", &nOtherConfigBits);
-      nOtherConfigBits &= otherBitsMask;
-      vmeDevicePtr->read("NCWrRdCntrReg", &ncOtherConfigBits);
-      ncOtherConfigBits &= otherBitsMask;
-
-      uint32_t N_write = (nOtherConfigBits | (uint32_t)N_enbable_expected.to_ulong());
-      uint32_t NC_write = (ncOtherConfigBits | (uint32_t)NC_enbable_expected.to_ulong());
-      uint32_t SC_write = (scOtherConfigBits | (uint32_t)SC_enbable_expected.to_ulong());
-      uint32_t S_write = (sOtherConfigBits | (uint32_t)S_enbable_expected.to_ulong());
-
-    // Set channels on/off as they were originally configured
-      vmeDevicePtr->write("SWrRdCntrReg", S_write);
-      vmeDevicePtr->write("SCWrRdCntrReg", SC_write);
-      vmeDevicePtr->write("NWrRdCntrReg", N_write);
-      vmeDevicePtr->write("NCWrRdCntrReg", NC_write);
+  // Get the current values of higher bits in these registers, so we can leave them alone
+  // This is also the time when the runDegraded flag gets set if appropriate
+  uint32_t nOtherConfigBits = 0;
+  uint32_t ncOtherConfigBits = 0;
+  uint32_t sOtherConfigBits = 0;
+  uint32_t scOtherConfigBits = 0;
+  uint32_t otherBitsMask = 0xFFFFFE00;
+  vmeDevicePtr->read("SWrRdCntrReg", &sOtherConfigBits);
+  sOtherConfigBits &= otherBitsMask;
+  vmeDevicePtr->read("SCWrRdCntrReg", &scOtherConfigBits);
+  scOtherConfigBits &= otherBitsMask;
+  vmeDevicePtr->read("NWrRdCntrReg", &nOtherConfigBits);
+  nOtherConfigBits &= otherBitsMask;
+  vmeDevicePtr->read("NCWrRdCntrReg", &ncOtherConfigBits);
+  ncOtherConfigBits &= otherBitsMask;
+  
+  uint32_t N_write = (nOtherConfigBits | (uint32_t)N_enbable_expected.to_ulong());
+  uint32_t NC_write = (ncOtherConfigBits | (uint32_t)NC_enbable_expected.to_ulong());
+  uint32_t SC_write = (scOtherConfigBits | (uint32_t)SC_enbable_expected.to_ulong());
+  uint32_t S_write = (sOtherConfigBits | (uint32_t)S_enbable_expected.to_ulong());
+  
+  // Set channels on/off as they were originally configured
+  vmeDevicePtr->write("SWrRdCntrReg", S_write);
+  vmeDevicePtr->write("SCWrRdCntrReg", SC_write);
+  vmeDevicePtr->write("NWrRdCntrReg", N_write);
+  vmeDevicePtr->write("NCWrRdCntrReg", NC_write);
 }
 
 void PixelFEDInterface::storeEnbableBits() {
@@ -6286,4 +6345,41 @@ uint32_t PixelFEDInterface::testReg(uint32_t data) {
     ret |= int(data == d) << i;
   }
   return ret;
+}
+
+void PixelFEDInterface::resetSEUCountAndDegradeState(void) {
+  cout << "reset SEU counters and the runDegrade flag " << endl;
+  // reset the state back to running 
+  runDegraded_ = false;
+  // clear the count flag
+  for (size_t i=0; i<9; i++) {
+    N_num_SEU[i]  = 0;
+    NC_num_SEU[i] = 0;
+    SC_num_SEU[i] = 0;
+    S_num_SEU[i]  = 0;
+  }
+  // reset the expected state to default
+  storeEnbableBits();
+
+  return;
+}
+
+void PixelFEDInterface::resetFED(void) {
+  // maine reset
+  vmeDevicePtr->write("LRES",0x80000000);
+  vmeDevicePtr->write("CLRES",0x80000000);
+  
+  //reset fake event counter
+  uint32_t resword=(1<<23);
+  vmeDevicePtr->write("LAD_C",resword,HAL::HAL_NO_VERIFY,0x1c8000);
+  //reset center OOS counter
+  resword=(1<<15);
+  vmeDevicePtr->write("LAD_C",resword,HAL::HAL_NO_VERIFY,0x1c8000);
+  
+  // reset the error-fifo
+  vmeDevicePtr->write("NWrResetPls", 0x80000000 );
+  vmeDevicePtr->write("NCWrResetPls",0x80000000 );
+  vmeDevicePtr->write("SCWrResetPls",0x80000000 );
+  vmeDevicePtr->write("SWrResetPls", 0x80000000 );
+
 }

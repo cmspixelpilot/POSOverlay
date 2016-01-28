@@ -64,6 +64,7 @@ class PixelFEDInterface {
 
   // Use VME access
   int reset(void); // reset FED (LRES)
+  void resetFED(void); // reset FED (LRES)
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
 //int loadEEPROM(void);// Re-programs the EEPROMs via VME
 
@@ -249,35 +250,36 @@ int FixBBB(int chan,uint32_t *data);
 
 // 2 very stupid bit finding functions for the CRC checker
 
-int lbitval(int ibit,uint64_t wrd)
-{uint64_t valb=((0x1ULL<<ibit)&wrd)>>ibit;
-int val=(int)valb;
-return val; }
-
-int sbitval(int ibit,int wrd)
-{int valb=((0x1<<ibit)&wrd)>>ibit;
-return valb; }
-
-// XY Mechanism
-void setXY( int X, int Y);
-int getXYCount();
-void resetXYCount();
-
-// Fake event mechanism
-int getNumFakeEvents();
-void resetNumFakeEvents();
-
-// Check for channels that don't match FEDCard
-// Passes bitsets which indicate which channel(s) didn't match
-// If something doesn't match, it usually indicates an SEU
-bool checkFEDChannelSEU();
-void incrementSEUCountersFromEnbableBits(vector<int>&, bitset<9>, bitset<9>);
-void resetEnbableBits();
-// Check to see if any channel as too many SEUs
-bool checkSEUCounters(int);
-bool runDegraded;
-void storeEnbableBits();
-
+  int lbitval(int ibit,uint64_t wrd)
+  {uint64_t valb=((0x1ULL<<ibit)&wrd)>>ibit;
+    int val=(int)valb;
+    return val; }
+  
+  int sbitval(int ibit,int wrd)
+  {int valb=((0x1<<ibit)&wrd)>>ibit;
+    return valb; }
+  
+  // XY Mechanism
+  void setXY( int X, int Y);
+  int getXYCount();
+  void resetXYCount();
+  
+  // Fake event mechanism
+  int getNumFakeEvents();
+  void resetNumFakeEvents();
+  
+  // Check for channels that don't match FEDCard
+  // Passes bitsets which indicate which channel(s) didn't match
+  // If something doesn't match, it usually indicates an SEU
+  bool checkFEDChannelSEU();
+  void incrementSEUCountersFromEnbableBits(vector<int>&, bitset<9>, bitset<9>);
+  void resetEnbableBits();
+  // Check to see if any channel as too many SEUs
+  bool checkSEUCounters(int);
+  void storeEnbableBits();  
+  void resetSEUCountAndDegradeState(void);
+  bool runDegraded(void) {return runDegraded_;}
+  
  uint32_t testReg(uint32_t data);
 
  private:
@@ -308,6 +310,9 @@ void storeEnbableBits();
 
   // Keep track of the number of SEUs in each channel
   vector<int> N_num_SEU, NC_num_SEU, SC_num_SEU, S_num_SEU;
+
+  // keep track of degraded state
+  bool runDegraded_;
 
   uint32_t lastErrorValue[8];
   uint32_t lastDACValue[8];
