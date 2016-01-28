@@ -25,3 +25,4 @@ cmspxldaq/PixelTTCSupervisor/trunk
 cmspxldaq/PixelUtilities/trunk
 cmspxldaq/XDAQConfiguration/trunk
 cmspxldaq/PixelTCDSSupervisor/trunk
+cmspxldaq/CalibFormats/SiPixelObjects/trunk

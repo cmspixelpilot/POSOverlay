@@ -15,7 +15,7 @@ import shutil
 
 def getPassword(userName):
   
-  if (userName == "pixelpro") or (userName == "pixeldev"):
+  if (userName == "pixelpro") or (userName == "pixeldev") or (userName == "root"):
     print "%s is not a user that can check out from SVN." %userName
     svnInputName = raw_input( "Please enter your CERN username: ")
     if svnInputName != '':
@@ -25,7 +25,7 @@ def getPassword(userName):
       exit(1)
   print "Using %s as username for SVN checkouts from CERN. Use \'--userName YourUserNameAtCERN\' option to change it." %userName
   userPass = getpass.getpass('Please enter CERN password for user %s: ' %userName)
-  return userPass
+  return userName,userPass
 
 
 def createSoftlinks(linkList, thisDir, force):
@@ -143,12 +143,15 @@ def main():
   parser.add_option("--noauth", dest="noauth",
                     action="store_true", default=False,
                     help="replace all packages deleting old ones")                  
-  parser.add_option("-p", "--packageFile", action="store",
+  parser.add_option("--packageFile", action="store",
                     dest="packagesFileName", default=packagesFileName,
                     help="choose packages.txt file")
   parser.add_option("-u", "--userName", action="store",
                     dest="userName", default=os.environ["USER"],
                     help="username used for SVN operations")
+  parser.add_option("-p", "--userPass", action="store",
+                    dest="userPass", default="",
+                    help="userpassword used for SVN operations")
   
   (options, args)=parser.parse_args()
   print "-"*100
@@ -166,6 +169,7 @@ def main():
   noauth = options.noauth
   packagesFileName = options.packagesFileName
   userName = options.userName
+  userPass = options.userPass
   option_types = (update, replace, switch, checkout)
   true_count =  sum([1 for ot in option_types if ot])
   if true_count > 1:
@@ -174,7 +178,8 @@ def main():
   # SVN authentication
   authString = ""
   if (not noauth):
-    userPass = getPassword(userName)
+    if userPass=="":
+      userName,userPass = getPassword(userName)
     authString = "--username %s" %userName
     if (userPass != ""):
       authString += " --password %s" %userPass

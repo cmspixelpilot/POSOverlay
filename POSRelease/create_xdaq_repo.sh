@@ -4,7 +4,7 @@
 # create xdaq.repo file according to machine architecture and SLC version
 #
 
-XDAQVERSION=11
+XDAQVERSION=12
 SLCVERSION=slc`cat /etc/redhat-release | awk 'match($0,"release"){print substr($0,RSTART+8,1)}'`x
 ARCHITECTURE=`uname -m`
 
