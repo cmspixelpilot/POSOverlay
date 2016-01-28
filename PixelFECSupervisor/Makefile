@@ -23,7 +23,7 @@ include $(XDAQ_ROOT)/config/mfDefs.$(XDAQ_OS)
 Project=pixel
 Package=PixelFECSupervisor
 
-Sources=PixelFECSupervisor.cc
+Sources=PixelFECSupervisor.cc DiagWrapper.cc
 
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
@@ -31,19 +31,14 @@ IncludeDirs = \
         $(XDAQ_ROOT)/include/i2o \
         $(XDAQ_ROOT)/include/i2o/shared \
         $(XDAQ_ROOT)/include/interface/evb \
-        $(XDAQ_ROOT)/include/interface/shared \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/soapdiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-        $(ENV_CMS_TK_DIAG_ROOT)/ 
+        $(XDAQ_ROOT)/include/interface/shared
 
 LibraryDirs = 
 
 UserSourcePath = 
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long
+UserCCFlags = -g -O -Wno-long-long -DLINUX
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
@@ -53,10 +48,9 @@ UserExecutableLinkFlags =
 #
 
 DependentLibraryDirs =  $(BUILD_HOME)/pixel/lib \
-			$(ENV_CMS_TK_DIAG_ROOT)/tools/lib \
                         $(XDAQ_ROOT)/lib	
 
-DependentLibraries = PixelFECInterface SiPixelObjects TkDiagBagWizard xmldiagappender PixelTestStandUtilities PixelGUIUtilities GenericHAL CAENVME CAENLinuxBusAdapter PixelDCSUtilities Pixelb2inUtilities occi nnz11 clntsh
+DependentLibraries = PixelFECInterface SiPixelObjects PixelTestStandUtilities PixelGUIUtilities GenericHAL CAENVME CAENLinuxBusAdapter PixelDCSUtilities Pixelb2inUtilities occi nnz12 clntsh
 
 
 ifeq ($(VMEDUMMY), yes)

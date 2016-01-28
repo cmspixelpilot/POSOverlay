@@ -38,15 +38,17 @@
 #include "xgi/Utils.h"
 #include "cgicc/HTMLClasses.h"
 
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "toolbox/task/Timer.h"
 #include "toolbox/task/TimerFactory.h"
 #include "toolbox/task/TimerListener.h"
 #include "toolbox/TimeInterval.h"
 #include "toolbox/BSem.h"
-
+#include "toolbox/task/WorkLoopFactory.h"
+#include "toolbox/task/WaitingWorkLoop.h"
+#include "toolbox/task/Action.h"
 
 
 #include "toolbox/fsm/AsynchronousFiniteStateMachine.h"
@@ -92,16 +94,21 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 
+#include "PixelFECSupervisor/include/DiagWrapper.h"
+
 //class pos::PixelCalibConfiguration;
 //class pos::PixelFECConfig;
+namespace log4cplus{
+	class Logger;
+	}
 
-class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener, public Pixelb2inCommander
+class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public Pixelb2inCommander
 {
   public:
 
     // gio
     toolbox::BSem executeReconfMethodMutex;
-    DiagBagWizard * diagService_;
+    // DiagBagWizard * diagService_;
     //
 
     XDAQ_INSTANTIATOR();
@@ -110,7 +117,7 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     ~PixelFECSupervisor();
 
     //gio
-    void timeExpired (toolbox::task::TimerEvent& e);
+    // void timeExpired (toolbox::task::TimerEvent& e);
 
     void Default(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
     void StateMachineXgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
@@ -186,6 +193,9 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     void b2inEvent(toolbox::mem::Reference* msg, xdata::Properties& plist) throw (b2in::nub::exception::Exception);
     
     void DetectSoftError();
+    
+    inline std::string stringF(int number) { stringstream ss; ss << number; return ss.str(); };
+    inline std::string stringF(const char* text) { stringstream ss; ss << text; return ss.str(); };
 
   protected:
 
@@ -290,11 +300,20 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
 
     vector<string> tbmReadbackBadChannels_;
 #endif
-    void DIAG_CONFIGURE_CALLBACK();
-    void DIAG_APPLY_CALLBACK();
+    // void DIAG_CONFIGURE_CALLBACK();
+    // void DIAG_APPLY_CALLBACK();
 
     /* xgi method called when the link <display_diagsystem> is clicked */
-    void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+    // void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+    DiagWrapper* diagService_;
+    static const int DIAGDEBUG = 0;
+    static const int DIAGTRACE = 1;
+    static const int DIAGUSERINFO = 2;
+    static const int DIAGINFO = 3;
+    static const int DIAGWARN = 4;
+    static const int DIAGERROR = 5;
+    static const int DIAGFATAL = 6;
 
+    log4cplus::Logger & sv_logger_;	
 };
 #endif

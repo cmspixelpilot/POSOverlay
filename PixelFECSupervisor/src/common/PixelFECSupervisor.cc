@@ -13,10 +13,13 @@
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
 
+#include "PixelFECSupervisor/include/exception/Exception.h"
+#include "log4cplus/logger.h"
+#include "log4cplus/loggingmacros.h"
 //gio
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
-#include <toolbox/convertstring.h>
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
+// #include <toolbox/convertstring.h>
 
 using namespace pos;
 
@@ -29,22 +32,23 @@ enum  { kProg_DACs_set, kProg_DACs_increase, kProg_DACs_decrease };
 PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception) : xdaq::Application(s), SOAPCommander(this), Pixelb2inCommander(this), executeReconfMethodMutex(toolbox::BSem::FULL),fsm_("urn:toolbox-task-workloop:PixelFECSupervisor")
 ,phlock_(new toolbox::BSem(toolbox::BSem::FULL,true))
 ,workloopContinue_(false)
+,sv_logger_(getApplicationLogger())
 {
 
   //gio
+  // diagService_ = new DiagBagWizard(
+  //                                  ("ReconfigurationModule") ,
+  //                                  this->getApplicationLogger(),
+  //                                  getApplicationDescriptor()->getClassName(),
+  //                                  getApplicationDescriptor()->getInstance(),
+  //                                  getApplicationDescriptor()->getLocalId(),
+  //                                  (xdaq::WebApplication *)this,
+  //                                  "Pixel",
+  //                                  "FECSupervisor"
+  //                                  );
 
-  diagService_ = new DiagBagWizard(
-                                   ("ReconfigurationModule") ,
-                                   this->getApplicationLogger(),
-                                   getApplicationDescriptor()->getClassName(),
-                                   getApplicationDescriptor()->getInstance(),
-                                   getApplicationDescriptor()->getLocalId(),
-                                   (xdaq::WebApplication *)this,
-                                   "Pixel",
-                                   "FECSupervisor"
-                                   );
-
-  diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
+//std::string const msg_info_uir = "The DiagSystem is installed --- this is a bogus error message";
+// LOG4CPLUS_INFO(sv_logger_,msg_info_uir);
 
 
   //Binding SOAP Callbacks to State Machine Commmands
@@ -101,14 +105,14 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
   xgi::bind(this, &PixelFECSupervisor::ROC_XgiHandler, "ROC_XgiHandler");
 
   //DIAGNOSTIC REQUESTED CALLBACK
-  xgi::bind(this,&PixelFECSupervisor::configureDiagSystem, "configureDiagSystem");
-  xgi::bind(this,&PixelFECSupervisor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
-  xgi::bind(this,&PixelFECSupervisor::callDiagSystemPage, "callDiagSystemPage");
+  // xgi::bind(this,&PixelFECSupervisor::configureDiagSystem, "configureDiagSystem");
+  // xgi::bind(this,&PixelFECSupervisor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
+  // xgi::bind(this,&PixelFECSupervisor::callDiagSystemPage, "callDiagSystemPage");
 
   b2in::nub::bind(this, &PixelFECSupervisor::b2inEvent);
 
 //DIAGNOSTIC REQUESTED DECLARATION
-  DIAG_DECLARE_USER_APP
+  // DIAG_DECLARE_USER_APP
 
   // Defining the state of the State Machine
   fsm_.addState('I', "Initial", this, &PixelFECSupervisor::stateChanged);
@@ -203,7 +207,7 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
   totalTimer_.setName("PixelFECSupervisorConfigurationTimer");
 
   // Initialize the Physics WorkLoop
-  doTBMReadoutLoop_ = true; 
+  doTBMReadoutLoop_ = false;  // disable 17/6/15 dk 
   if(doTBMReadoutLoop_) {
     workloop_ = toolbox::task::getWorkLoopFactory()->getWorkLoop("PixelFECSupervisorWorkLoop", "waiting");
     physicsRunning_=toolbox::task::bind (this, &PixelFECSupervisor::PhysicsRunning, "PhysicsRunning");
@@ -226,14 +230,14 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
 
 //DIAGNOSTIC REQUESTED AUTOCONF TIMER
 
-  std::stringstream timerName;
-  timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
-  timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
-  toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
-  toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
-  toolbox::TimeVal start;
-  start = toolbox::TimeVal::gettimeofday() + interval;
-  timer->schedule( this, start,  0, "" );
+  // std::stringstream timerName;
+  // timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
+  // timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
+  // toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
+  // toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
+  // toolbox::TimeVal start;
+  // start = toolbox::TimeVal::gettimeofday() + interval;
+  // timer->schedule( this, start,  0, "" );
 
 }
 
@@ -247,24 +251,24 @@ PixelFECSupervisor::~PixelFECSupervisor()
 
 
 //gio
-void PixelFECSupervisor::timeExpired (toolbox::task::TimerEvent& e)
-{
-  DIAG_EXEC_FSM_INIT_TRANS
-}
+// void PixelFECSupervisor::timeExpired (toolbox::task::TimerEvent& e)
+// {
+//   DIAG_EXEC_FSM_INIT_TRANS
+// }
 
 //DIAG ADDED
-void PixelFECSupervisor::callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception)
-{
-  diagService_->getDiagSystemHtmlPage(in, out,getApplicationDescriptor()->getURN());
-}
+// void PixelFECSupervisor::callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception)
+// {
+//   diagService_->getDiagSystemHtmlPage(in, out,getApplicationDescriptor()->getURN());
+// }
 
 void PixelFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception)
 {
 
   //gio
-  // diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGERROR);
+//std::string const msg_error_yfv = "The DiagSystem is installed --- this is a bogus error message";
+// LOG4CPLUS_ERROR(sv_logger_,msg_error_yfv);
   //diagService_->reportError("Access PixelFECSupervisor",DIAGERROR);
-  //
 
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
@@ -339,15 +343,14 @@ void PixelFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::
   *out << " <hr/> " << std::endl;
 
   // DiagSystem GUI
-  std::string urlDiag_ = "/"; \
-  urlDiag_ += getApplicationDescriptor()->getURN(); \
-  urlDiag_ += "/callDiagSystemPage"; \
-  *out << "<h2> Error Dispatcher </h2> "<<std::endl;
-  *out << "<a href=" << urlDiag_ << ">Configure DiagSystem</a>" <<std::endl;
-  *out << " <hr/> " << std::endl;
+  // std::string urlDiag_ = "/"; 
+  // urlDiag_ += getApplicationDescriptor()->getURN(); 
+  // urlDiag_ += "/callDiagSystemPage"; 
+  // *out << "<h2> Error Dispatcher </h2> "<<std::endl;
+  // *out << "<a href=" << urlDiag_ << ">Configure DiagSystem</a>" <<std::endl;
+  // *out << " <hr/> " << std::endl;
   
-  // Rendering Low Level GUI
-  
+  // Rendering Low Level GUI  
   *out<<"<h2>Low Level Commands</h2>"<<endl;
   
   for (FECInterfaceMap::iterator iFEC=FECInterface.begin();iFEC!=FECInterface.end();++iFEC)
@@ -912,7 +915,8 @@ void PixelFECSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *ou
 	  xoap::MessageReference reply=Initialize(msg);
 	  if (Receive(reply)!="InitializeDone")
 	  {
-	    diagService_->reportError("PixelFECSupervisor::StateMachineXgiHandler - PixelFECSupervisor for crate #"+stringF(crate_)+" could not be initialized!",DIAGERROR);
+std::string const msg_error_qtg = "PixelFECSupervisor::StateMachineXgiHandler - PixelFECSupervisor for crate #"+stringF(crate_)+" could not be initialized!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_qtg);
 	 
 	  }
         }	  
@@ -925,7 +929,8 @@ void PixelFECSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *ou
 		xoap::MessageReference reply = Configure(msg);
 		if (Receive(reply)!="ConfigureDone")
 		  {
-		    diagService_->reportError("The FEC could not be Configured!",DIAGERROR);
+std::string const msg_error_fta = "The FEC could not be Configured!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_fta);
 	     
 		  }
 	}
@@ -935,7 +940,8 @@ void PixelFECSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *ou
 		xoap::MessageReference reply = Start(msg);
 		if (Receive(reply)!="StartDone")
 		  {
-		    diagService_->reportError("The FEC could not be Started!",DIAGERROR);
+std::string const msg_error_gza = "The FEC could not be Started!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_gza);
 		    
 		  }
 	}
@@ -945,7 +951,8 @@ void PixelFECSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *ou
 		xoap::MessageReference reply = Pause(msg);
 		if (Receive(reply)!="PauseDone")
 		  {
-		    diagService_->reportError("The FEC could not be Paused!",DIAGERROR);
+std::string const msg_error_ynt = "The FEC could not be Paused!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ynt);
 		    
 		  }
 	}
@@ -955,7 +962,8 @@ void PixelFECSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *ou
 		xoap::MessageReference reply = Resume(msg);
 		if (Receive(reply)!="ResumeDone")
 		  {
-		  diagService_->reportError("The FEC could not be Resumed!",DIAGERROR);
+std::string const msg_error_las = "The FEC could not be Resumed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_las);
 		
 		  }
 	}
@@ -965,7 +973,8 @@ void PixelFECSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *ou
 		xoap::MessageReference reply = Halt(msg);
 		if (Receive(reply)!="HaltDone")
 		  {
-		    diagService_->reportError("The FEC could not be Halted!",DIAGERROR);
+std::string const msg_error_wjx = "The FEC could not be Halted!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_wjx);
 		    
 		  }
 	}
@@ -1008,7 +1017,8 @@ void PixelFECSupervisor::mFECsHubs_XgiHandler (xgi::Input *in, xgi::Output *out)
 		xoap::MessageReference reply = TBMCommand(msg);
 		if (Receive(reply)!="TBMCommandDone")
 		  {
-		    diagService_->reportError("TBMCommand could not be executed!",DIAGERROR);
+std::string const msg_error_jta = "TBMCommand could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_jta);
 		    
 		  }
 	}
@@ -1030,7 +1040,8 @@ void PixelFECSupervisor::mFECsHubs_XgiHandler (xgi::Input *in, xgi::Output *out)
 		xoap::MessageReference reply = Prog_Pix(msg);
 		if (Receive(reply)!="Prog_PixDone")
 		  {
-		    diagService_->reportError("Prog_Pix could not be executed!",DIAGERROR);
+std::string const msg_error_arq = "Prog_Pix could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_arq);
 		   
 		  }
 	}
@@ -1050,7 +1061,8 @@ void PixelFECSupervisor::mFECsHubs_XgiHandler (xgi::Input *in, xgi::Output *out)
                 xoap::MessageReference reply = Prog_DAC(msg);
                 if (Receive(reply)!="Prog_DACDone")
 		  {
-		    diagService_->reportError("Prog_DAC could not be executed!",DIAGERROR);
+std::string const msg_error_jli = "Prog_DAC could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_jli);
 		    
 		  }
 	}
@@ -1071,7 +1083,8 @@ void PixelFECSupervisor::mFECsHubs_XgiHandler (xgi::Input *in, xgi::Output *out)
                 xoap::MessageReference reply = Cal_Pix(msg);
                 if (Receive(reply)!="Cal_PixDone")
 		  {
-		    diagService_->reportError("Cal_Pix could not be executed!",DIAGERROR);
+std::string const msg_error_okn = "Cal_Pix could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_okn);
 		   
 		  }
 	}
@@ -1089,7 +1102,8 @@ void PixelFECSupervisor::mFECsHubs_XgiHandler (xgi::Input *in, xgi::Output *out)
                 xoap::MessageReference reply = ClrCal(msg);
                 if (Receive(reply)!="ClrCalDone")
 		  {
-		    diagService_->reportError("ClrCal could not be executed!",DIAGERROR);
+std::string const msg_error_guc = "ClrCal could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_guc);
 		    
 		  }
 	}
@@ -1117,7 +1131,8 @@ void PixelFECSupervisor::Panel_XgiHandler (xgi::Input *in, xgi::Output *out) thr
 		xoap::MessageReference reply = ResetROCs(msg);
 		if (Receive(reply)!="ResetROCsDone")
 		  {
-		    diagService_->reportError("Reset All ROCs could not be done.",DIAGERROR);
+std::string const msg_error_rfh = "Reset All ROCs could not be done.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_rfh);
 		    
 		  }
 	} else if (Command=="ResetTBM") {
@@ -1132,7 +1147,8 @@ void PixelFECSupervisor::Panel_XgiHandler (xgi::Input *in, xgi::Output *out) thr
 		xoap::MessageReference reply = ResetTBM(msg);
 		if (Receive(reply)!="ResetTBMDone")
 		  {
-		    diagService_->reportError("Reset TBM could not be done.",DIAGERROR);
+std::string const msg_error_ipt = "Reset TBM could not be done.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ipt);
 		   
 		  }
 	}
@@ -1166,7 +1182,8 @@ void PixelFECSupervisor::ROC_XgiHandler (xgi::Input *in, xgi::Output *out) throw
                 xoap::MessageReference reply = Prog_DAC(msg);
                 if (Receive(reply)!="Prog_DACDone")
 		  {
-		    diagService_->reportError("Prog_DAC could not be executed!",DIAGERROR);
+std::string const msg_error_uod = "Prog_DAC could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_uod);
 		    //out<<"Prog_DAC could not be executed!"<<endl;
 		  }
 		PixelModuleName moduleName(rocName_string);
@@ -1192,7 +1209,8 @@ void PixelFECSupervisor::ROC_XgiHandler (xgi::Input *in, xgi::Output *out) throw
                 xoap::MessageReference reply = Cal_Pix(msg);
                 if (Receive(reply)!="Cal_PixDone")
 		  {
-		    diagService_->reportError("Cal_Pix could not be executed!",DIAGERROR);
+std::string const msg_error_oul = "Cal_Pix could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_oul);
 		    
 		  }
 	} else if (Command=="Prog_Pix") {
@@ -1222,7 +1240,8 @@ void PixelFECSupervisor::ROC_XgiHandler (xgi::Input *in, xgi::Output *out) throw
                 xoap::MessageReference reply = Prog_Pix(msg);
                 if (Receive(reply)!="Prog_PixDone")
 		  {
-		    diagService_->reportError("Prog_Pix could not be executed!",DIAGERROR);
+std::string const msg_error_tag = "Prog_Pix could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_tag);
 		    
 		  }
 		PixelModuleName moduleName(rocName_string);
@@ -1248,7 +1267,8 @@ void PixelFECSupervisor::ROC_XgiHandler (xgi::Input *in, xgi::Output *out) throw
                 xoap::MessageReference reply = ClrCal(msg);
                 if (Receive(reply)!="ClrCalDone")
 		  {
-		    diagService_->reportError("ClrCal could not be executed!",DIAGERROR);
+std::string const msg_error_fkv = "ClrCal could not be executed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_fkv);
 		   
 		  }
 	} else if (Command=="ResetROC") {
@@ -1265,7 +1285,8 @@ void PixelFECSupervisor::ROC_XgiHandler (xgi::Input *in, xgi::Output *out) throw
                 xoap::MessageReference reply = ResetROCs(msg);
                 if (Receive(reply)!="ResetROCsDone")
 		  {
-		    diagService_->reportError("ROC could not be reset!",DIAGERROR);
+std::string const msg_error_yjz = "ROC could not be reset!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_yjz);
 		    
 		  }
         } else if (Command=="FileDACs") {
@@ -1313,20 +1334,31 @@ bool PixelFECSupervisor::qpllCheck(toolbox::task::WorkLoop * w1) {
     }
   }
   catch (HAL::BusAdapterException & e) {
-    diagService_->reportError("QPLL check caught hardware exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_mhm = "QPLL check caught hardware exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_mhm);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_mhm, e);
+this->notifyQualified("fatal",f);
     ::sleep(5);
     return true;
     //could return false here and cancel the workloop. depends on what we want in the rare case that this fails
   }
   catch (...) {
-    diagService_->reportError("QPLL check caught unknown exception!",DIAGERROR);
+std::string const msg_error_mfx = "QPLL check caught unknown exception!";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_mfx);
+pixel::PixelFECSupervisorException trivial_exception("pixel::PixelFECSupervisorException","module",msg_error_mfx,1318,"PixelFECSupervisor::qpllCheck(toolbox::task::WorkLoop*)");
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_mfx,trivial_exception);
+this->notifyQualified("fatal",f);
     ::sleep(5);
     return true; //as above
   }
   
   qplllock_->take();
-  if ( num_qpll_unlocked_>0 && num_qpll_unlocked==0 )  diagService_->reportError("All QPLLs are once again locked",DIAGUSERINFO);
-  else if ( num_qpll_unlocked>0 ) { //there is now a QPLL unlocked
+  if ( num_qpll_unlocked_>0 && num_qpll_unlocked==0 ) {
+std::string const msg_info_fwd = "All QPLLs are once again locked";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fwd);
+  }else{
+  if ( num_qpll_unlocked>0 ) { //there is now a QPLL unlocked
+	
     for (map<unsigned long, int>::const_iterator i=qpllStatus.begin(); i!=qpllStatus.end(); ++i) {
       if ( !((i->second & 0x2) && !(i->second & 0x4)) ) {
 	//this qpll is unlocked, so compare to the old status
@@ -1337,13 +1369,18 @@ bool PixelFECSupervisor::qpllCheck(toolbox::task::WorkLoop * w1) {
 	else wantoutput=true; //the old status does not exist
 	if (wantoutput) { //only print when something is new/changed
 	  ostringstream msg;
-	  msg<<"FEC at address 0x"<<hex<<i->first<<dec<<" has unlocked QPLL (status=0x"<<hex<<i->second<<dec<<")";
-	  diagService_->reportError(msg.str(),DIAGERROR);
+
+	  msg<<"FEC at address 0x"<<hex<<i->first<<dec
+	     <<" has unlocked QPLL (status=0x"<<hex<<i->second<<dec<<")";
+	  std::string const msg_error_djk = msg.str();
+	  LOG4CPLUS_ERROR(sv_logger_,msg_error_djk);
+	  // we should go to error state here 
 	  //::abort(); // added to make it clear, d.k. 8/1/15, disable 25/6/15
 	}
       }
     }
   }
+}
   //copy the local map into the global one
   for (map<unsigned long, int>::const_iterator i=qpllStatus.begin(); i!=qpllStatus.end(); ++i) 
     qpllStatus_[i->first] = i->second;
@@ -1359,34 +1396,47 @@ bool PixelFECSupervisor::qpllCheck(toolbox::task::WorkLoop * w1) {
 
 xoap::MessageReference PixelFECSupervisor::Initialize (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("--- INITIALIZE ---",DIAGINFO);
+std::string const msg_info_hli = "--- INITIALIZE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_hli);
 
   // Detect PixelSupervisor
   try {
     PixelSupervisor_=getApplicationContext()->getDefaultZone()->getApplicationGroup("daq")->getApplicationDescriptor("PixelSupervisor", 0);
 
-    diagService_->reportError("PixelFECSupervisor::Initialize - Instance 0 of PixelSupervisor found.",DIAGINFO);
+std::string const msg_info_kel = "PixelFECSupervisor::Initialize - Instance 0 of PixelSupervisor found.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kel);
   } catch (xdaq::exception::Exception& e) {
+std::string const msg_fatal_unu = "PixelFECSupervisor::Initialize - Instance 0 of PixelSupervisor not found!";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_unu);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_fatal_unu, e);
+this->notifyQualified("fatal",f);
     
-    diagService_->reportError("PixelFECSupervisor::Initialize - Instance 0 of PixelSupervisor not found!",DIAGFATAL);
   }
 
   // Detect PixelDCSFSMInterface
   try {
     PixelDCSFSMInterface_=getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("PixelDCSFSMInterface", 0);
     
-    diagService_->reportError("PixelFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface found.",DIAGINFO);
+std::string const msg_info_smz = "PixelFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface found.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_smz);
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("PixelFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface not found. Automatic Detector Startup procedure will not be followed. The detector must be powered on manually.",DIAGWARN);   
+std::string const msg_warn_wbj = "PixelFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface not found. Automatic Detector Startup procedure will not be followed. The detector must be powered on manually.";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_wbj);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_warn_wbj, e);
+this->notifyQualified("fatal",f);
   }
   
   // Detect the PSX Server
   try {
     PixelPSXServer_=getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("psx", 0);
-    diagService_->reportError("PixelFECSupervisor::Initialize - Instance 0 of PSX server found.", DIAGINFO);
+std::string const msg_info_nzo = "PixelFECSupervisor::Initialize - Instance 0 of PSX server found.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_nzo);
    
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("PixelFECSupervisor::Initialize - Instance 0 of PSX server not found. Automatic Detector Startup procedure will not check for changing currents due to ROC configuration",DIAGWARN);
+std::string const msg_warn_aab = "PixelFECSupervisor::Initialize - Instance 0 of PSX server not found. Automatic Detector Startup procedure will not check for changing currents due to ROC configuration";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_aab);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_warn_aab, e);
+this->notifyQualified("fatal",f);
   }
   
   // Query PixelDCSFSMInterface with a SOAP message. Update member data after parsing the response.
@@ -1412,14 +1462,16 @@ xoap::MessageReference PixelFECSupervisor::Initialize (xoap::MessageReference ms
 	else if (fsmState.find("LV_ON_REDUCED")!=string::npos) powerMap_.setVoltage(powerCoordinate, LV_ON_REDUCED, std::cout);
 	else if (fsmState.find("LV_ON")!=string::npos)  powerMap_.setVoltage(powerCoordinate, LV_ON,  std::cout);
 	else {
-	  diagService_->reportError("PixelFECSupervisor::Initialize - "+fsmState+" not recognized! (LV)", DIAGFATAL);
+std::string const msg_fatal_uar = "PixelFECSupervisor::Initialize - "+fsmState+" not recognized! (LV)";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_uar);
 	  assert(0);
 	}
 	//also look at HV state
 	if (fsmState.find("HV_OFF")!=string::npos) powerMap_.setHVoltage(powerCoordinate, HV_OFF, std::cout);
 	else if (fsmState.find("HV_ON")!=string::npos)  powerMap_.setHVoltage(powerCoordinate, HV_ON,  std::cout);
 	else {
-	  diagService_->reportError("PixelFECSupervisor::Initialize - "+fsmState+" not recognized! (HV)", DIAGFATAL);
+std::string const msg_fatal_ddm = "PixelFECSupervisor::Initialize - "+fsmState+" not recognized! (HV)";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_ddm);
 	  assert(0);
 	}
       }
@@ -1435,30 +1487,38 @@ xoap::MessageReference PixelFECSupervisor::Initialize (xoap::MessageReference ms
     XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
   }
   
-  diagService_->reportError("PixelFECSupervisor::Intitialize -- Exiting function",DIAGINFO);
+std::string const msg_info_fqd = "PixelFECSupervisor::Intitialize -- Exiting function";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fqd);
   xoap::MessageReference reply = MakeSOAPMessageReference("InitializeDone");
 
-  diagService_->reportError("--- INITIALIZATION DONE ---",DIAGINFO);
+std::string const msg_info_uxd = "--- INITIALIZATION DONE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_uxd);
   return reply;
 }
 
 xoap::MessageReference PixelFECSupervisor::Configure (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("--- CONFIGURE ---",DIAGINFO);
+  std::string const msg_info_zym = "--- CONFIGURE ---";
+  LOG4CPLUS_INFO(sv_logger_,msg_info_zym);
   if (state_ != "Halted") return MakeSOAPMessageReference("ConfigureFailed");  
   xoap::MessageReference reply = MakeSOAPMessageReference("ConfigureDone");  
-
-
+  
   // That's it! Step to the Configuring state, and
   // relegate all further configuring to the stateConfiguring method.
   try {
     toolbox::Event::Reference e(new toolbox::Event("Configure", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
-    diagService_->reportError("Failure to fire Configure transition: "+string(e.what()),DIAGERROR);
+    std::string const msg_error_uei = "Failure to fire Configure transition: "+string(e.what());
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_uei);
+    XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_uei, e);
+    this->notifyQualified("fatal",f);
     reply = MakeSOAPMessageReference("ConfigureFailed");
   }
+
+  std::string const m1 = "--- CONFIGURE, exit ---";
+  LOG4CPLUS_INFO(sv_logger_,m1);
 
   return reply;
 }
@@ -1466,10 +1526,11 @@ xoap::MessageReference PixelFECSupervisor::Configure (xoap::MessageReference msg
 xoap::MessageReference PixelFECSupervisor::Start (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("--- START ---",DIAGINFO);
-
+  std::string const msg_info_pca = "--- START ---";
+  LOG4CPLUS_INFO(sv_logger_,msg_info_pca);
+  
   xoap::MessageReference reply = MakeSOAPMessageReference("StartDone");
-
+  
   try
 	{
 
@@ -1478,7 +1539,8 @@ xoap::MessageReference PixelFECSupervisor::Start (xoap::MessageReference msg) th
 	  Receive(msg, parameter);
 	  runNumber_=parameter[0].value_;
 	  
-	  diagService_->reportError("Start Run "+runNumber_,DIAGINFO);
+std::string const msg_info_bhm = "Start Run "+runNumber_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_bhm);
 
 
 	  //check HV status and prog dacs if necessary
@@ -1488,14 +1550,23 @@ xoap::MessageReference PixelFECSupervisor::Start (xoap::MessageReference msg) th
 	  fsm_.fireEvent(e);
 	}
   catch (toolbox::fsm::exception::Exception & e)
-        {
+	{
+std::string const msg_error_blm = "Failure to fire Start transition: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_blm);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_blm, e);
+this->notifyQualified("fatal",f);
 	  reply = MakeSOAPMessageReference("StartFailed");
-	  diagService_->reportError("Failure to fire Start transition: "+string(e.what()),DIAGERROR);
         }
-  catch (std::exception & e) 
-	{ //exceptions might be thrown by startupHVCheck
+  catch (std::exception & e)
+	{ 
+std::string const msg_error_gle = "Failed to Start run with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_gle);
+std::exception * error_ptr = &e;
+pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_gle, *new_exception);
+this->notifyQualified("fatal",f);
+	 //exceptions might be thrown by startupHVCheck
 	  reply = MakeSOAPMessageReference("StartFailed");
-	  diagService_->reportError("Failed to Start run with exception: "+string(e.what()),DIAGERROR);
 	  //FIXME maybe we should transition to the Error state in case this happens?
 	}
 
@@ -1505,7 +1576,8 @@ xoap::MessageReference PixelFECSupervisor::Start (xoap::MessageReference msg) th
 
       phlock_->take(); workloopContinue_=true; phlock_->give();
       workloop_->activate();
-      diagService_->reportError("PixelFECSupervisor::Start. Calib object == 0. Physics data taking workloop activated.", DIAGINFO);
+std::string const msg_info_ncz = "PixelFECSupervisor::Start. Calib object == 0. Physics data taking workloop activated.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ncz);
     }
   }
 
@@ -1518,8 +1590,9 @@ xoap::MessageReference PixelFECSupervisor::Stop (xoap::MessageReference msg) thr
 {
 
 
-  diagService_->reportError("--- STOP ---",DIAGINFO);
-	xoap::MessageReference reply = MakeSOAPMessageReference("StopDone");
+  std::string const msg_info_nyi = "--- STOP ---";
+  LOG4CPLUS_INFO(sv_logger_,msg_info_nyi);
+  xoap::MessageReference reply = MakeSOAPMessageReference("StopDone");
 
   if (theCalibObject_==0) {
 
@@ -1528,11 +1601,13 @@ xoap::MessageReference PixelFECSupervisor::Stop (xoap::MessageReference msg) thr
       if (fsm_.getStateName(fsm_.getCurrentState())=="Running") {
 	phlock_->take(); workloopContinue_=false; phlock_->give();
 	workloop_->cancel();
-	diagService_->reportError("PixelFECSupervisor::Stop. Calib object == 0, physics workloop is cancelled.", DIAGINFO);
+	std::string const msg_info_tdp = "PixelFECSupervisor::Stop. Calib object == 0, physics workloop is cancelled.";
+	LOG4CPLUS_INFO(sv_logger_,msg_info_tdp);
       } else if (fsm_.getStateName(fsm_.getCurrentState())=="Paused") {
 	phlock_->take(); workloopContinue_=false; phlock_->give();
 	//workloop_->cancel();
-	diagService_->reportError("PixelFECSupervisor::Stop. Calib object == 0, physics workloop is cancelled.", DIAGINFO);
+	std::string const msg_info_jhn = "PixelFECSupervisor::Stop. Calib object == 0, physics workloop is cancelled.";
+	LOG4CPLUS_INFO(sv_logger_,msg_info_jhn);
       }
     }
 
@@ -1545,14 +1620,19 @@ xoap::MessageReference PixelFECSupervisor::Stop (xoap::MessageReference msg) thr
       toolbox::Event::Reference e(new toolbox::Event("Stop", this));
       fsm_.fireEvent(e);
     }
-  catch (toolbox::fsm::exception::Exception & e)
-    {
+catch (toolbox::fsm::exception::Exception & e)    {
       XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e); //FIXME
     }
-  catch (std::exception & e) 
-    { //exceptions might be thrown by startupHVCheck
+  catch (std::exception & e)
+	{ 
+std::string const msg_error_wtc = "Failed to Stop run with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_wtc);
+std::exception * error_ptr = &e;
+pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_wtc, *new_exception);
+this->notifyQualified("fatal",f);
+     //exceptions might be thrown by startupHVCheck
       reply = MakeSOAPMessageReference("StopFailed");
-      diagService_->reportError("Failed to Stop run with exception: "+string(e.what()),DIAGERROR);
       //FIXME maybe we should transition to the Error state in case this happens?
     }
   
@@ -1562,7 +1642,8 @@ xoap::MessageReference PixelFECSupervisor::Stop (xoap::MessageReference msg) thr
 
 xoap::MessageReference PixelFECSupervisor::Pause (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("--- PAUSE ---",DIAGINFO);
+std::string const msg_info_erx = "--- PAUSE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_erx);
 
   xoap::MessageReference reply = MakeSOAPMessageReference("PauseDone");
 
@@ -1572,7 +1653,8 @@ xoap::MessageReference PixelFECSupervisor::Pause (xoap::MessageReference msg) th
       
       phlock_->take(); workloopContinue_=false; phlock_->give();
       workloop_->cancel();
-      diagService_->reportError("PixelFECSupervisor::Pause. Calib object == 0, physics workloop is cancelled.", DIAGINFO);
+std::string const msg_info_rtx = "PixelFECSupervisor::Pause. Calib object == 0, physics workloop is cancelled.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rtx);
     }
   }
 
@@ -1583,14 +1665,19 @@ xoap::MessageReference PixelFECSupervisor::Pause (xoap::MessageReference msg) th
 	  toolbox::Event::Reference e(new toolbox::Event("Pause", this));
 	  fsm_.fireEvent(e);
 	}
-	catch (toolbox::fsm::exception::Exception & e)
-        {
+catch (toolbox::fsm::exception::Exception & e)        {
                 XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
         }
-	catch (std::exception & e) 
-	{ //exceptions might be thrown by startupHVCheck
+	catch (std::exception & e)
+	{ 
+std::string const msg_error_pvo = "Failed to Pause run with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_pvo);
+std::exception * error_ptr = &e;
+pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_pvo, *new_exception);
+this->notifyQualified("fatal",f);
+	 //exceptions might be thrown by startupHVCheck
 	  reply = MakeSOAPMessageReference("PauseFailed");
-	  diagService_->reportError("Failed to Pause run with exception: "+string(e.what()),DIAGERROR);
 	  //FIXME maybe we should transition to the Error state in case this happens?
 	}
 
@@ -1602,7 +1689,8 @@ xoap::MessageReference PixelFECSupervisor::Pause (xoap::MessageReference msg) th
 
 xoap::MessageReference PixelFECSupervisor::Resume (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("--- RESUME ---",DIAGINFO);
+std::string const msg_info_bcr = "--- RESUME ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_bcr);
   xoap::MessageReference reply = MakeSOAPMessageReference("ResumeDone");
 
 
@@ -1618,7 +1706,8 @@ xoap::MessageReference PixelFECSupervisor::Resume (xoap::MessageReference msg) t
 	  
 	  phlock_->take(); workloopContinue_=true; phlock_->give();
 	  workloop_->activate();
-	  diagService_->reportError("Resume. Physics data taking workloop activated.", DIAGINFO);
+std::string const msg_info_ksp = "Resume. Physics data taking workloop activated.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ksp);
 	}
       }
       
@@ -1627,26 +1716,32 @@ xoap::MessageReference PixelFECSupervisor::Resume (xoap::MessageReference msg) t
       fsm_.fireEvent(e);
 
     }
-  catch (toolbox::fsm::exception::Exception & e)
-    {
+catch (toolbox::fsm::exception::Exception & e)    {
       XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
     }
-  catch (std::exception & e) 
-    { //exceptions might be thrown by startupHVCheck
+  catch (std::exception & e){ 
+std::string const msg_error_dve = "Failed to Resume run with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_dve);
+std::exception * error_ptr = &e;
+pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_dve, *new_exception);
+this->notifyQualified("fatal",f);
+     //exceptions might be thrown by startupHVCheck
       reply = MakeSOAPMessageReference("ResumeFailed");
-      diagService_->reportError("Failed to Resume run with exception: "+string(e.what()),DIAGERROR);
       //FIXME maybe we should transition to the Error state in case this happens?
     }
 
 
-  diagService_->reportError("-- PixelFECSupervisor Resumed --",DIAGINFO); 
+std::string const msg_info_jua = "-- PixelFECSupervisor Resumed --";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_jua);
   
   return reply;
 }
 
 xoap::MessageReference PixelFECSupervisor::Halt (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("--- Enter HALT ---",DIAGINFO);
+std::string const msg_info_ozm = "--- Enter HALT ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ozm);
 
   if (theCalibObject_==0) {
 
@@ -1654,21 +1749,26 @@ xoap::MessageReference PixelFECSupervisor::Halt (xoap::MessageReference msg) thr
 
       if (fsm_.getStateName(fsm_.getCurrentState())=="Configured") {
 	workloop_->remove(physicsRunning_);
-	diagService_->reportError("PixelFECSupervisor::Halt from Configured. Removed Physics data taking job from workloop.", DIAGINFO);
+std::string const msg_info_ulj = "PixelFECSupervisor::Halt from Configured. Removed Physics data taking job from workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ulj);
 	
       } else if (fsm_.getStateName(fsm_.getCurrentState())=="Running") {
 	
-	diagService_->reportError("About to cancel workloop", DIAGDEBUG);
+std::string const msg_debug_fbt = "About to cancel workloop";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_fbt);
 	phlock_->take(); workloopContinue_=false; phlock_->give();
 	workloop_->cancel();
 	workloop_->remove(physicsRunning_);
-	diagService_->reportError("PixelFECSupervisor::Halt. Physics workloop is cancelled.", DIAGINFO);
+std::string const msg_info_snz = "PixelFECSupervisor::Halt. Physics workloop is cancelled.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_snz);
       } else if (fsm_.getStateName(fsm_.getCurrentState())=="Paused") {
-	diagService_->reportError("About to cancel workloop", DIAGDEBUG);
+std::string const msg_debug_wng = "About to cancel workloop";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_wng);
 	phlock_->take(); workloopContinue_=false; phlock_->give();
 	//workloop_->cancel(); // bug that caused error 9-4-2012 Nic
 	workloop_->remove(physicsRunning_);
-	diagService_->reportError("PixelFECSupervisor::Halt. Physics workloop is cancelled.", DIAGINFO);
+std::string const msg_info_yrw = "PixelFECSupervisor::Halt. Physics workloop is cancelled.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_yrw);
       }
     }
   }
@@ -1677,14 +1777,20 @@ xoap::MessageReference PixelFECSupervisor::Halt (xoap::MessageReference msg) thr
     //disable ROCs
     startupHVCheck(false);
   } catch (std::exception & e) {
-    diagService_->reportError("Failed to Halt run with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_vnc = "Failed to Halt run with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_vnc);
+std::exception * error_ptr = &e;
+pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_vnc,*new_exception);
+this->notifyQualified("fatal",f);
     //FIXME maybe we should transition to the Error state in case this happens?
     return MakeSOAPMessageReference("HaltFailed");
   }
 
   HaltAction();
   xoap::MessageReference reply=MakeSOAPMessageReference( HaltFSM() );
-  diagService_->reportError("--- Exit HALT ---",DIAGINFO);
+std::string const msg_info_mvb = "--- Exit HALT ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mvb);
   return reply;
 }
 
@@ -1695,7 +1801,10 @@ void PixelFECSupervisor::HaltAction() {
     qpllWorkloop_->remove(qpllCheck_);
   }
   catch (xcept::Exception & e) {
-    diagService_->reportError("While cancelling QPLL workloop, caught exception: "+string(e.what()),DIAGWARN);
+std::string const msg_warn_xac = "While cancelling QPLL workloop, caught exception: "+string(e.what());
+LOG4CPLUS_WARN(sv_logger_,msg_warn_xac);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_warn_xac, e);
+this->notifyQualified("fatal",f);
   }
   qplllock_->take(); //we already cancelled the workloop, but it shouldn't hurt
   qpllStatus_.clear();
@@ -1759,9 +1868,13 @@ string PixelFECSupervisor::HaltFSM() {
       fsm_.fireEvent(e);
     }
   catch (toolbox::fsm::exception::Exception & e)
-    {
+	{
+std::string const msg_error_mkz = "Invalid FSM command: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_mkz);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_mkz, e);
+this->notifyQualified("fatal",f);
+    
       reply="HaltFailed";
-      diagService_->reportError("Invalid FSM command: "+string(e.what()),DIAGERROR);
     }
   return reply;
 }
@@ -1770,9 +1883,11 @@ xoap::MessageReference PixelFECSupervisor::Recover (xoap::MessageReference msg) 
 
   //as far as I can tell, there is nothing special that needs to be done other than a regular Halt
   //except for canceling any preconfigure workloop
-  diagService_->reportError("--- Enter RECOVER ---",DIAGINFO);
+std::string const msg_info_ycr = "--- Enter RECOVER ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ycr);
   if (state_!="Error") {
-    diagService_->reportError("Can't do Recover from state = "+string(state_),DIAGERROR);
+std::string const msg_error_liv = "Can't do Recover from state = "+string(state_);
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_liv);
     return MakeSOAPMessageReference("RecoverFailed"); //sanity
   }
 
@@ -1783,8 +1898,11 @@ xoap::MessageReference PixelFECSupervisor::Recover (xoap::MessageReference msg) 
     preconfigureWorkloop_->remove(preconfigureTask_); 
   } 
   catch ( xcept::Exception & e) {
+std::string const msg_error_rta = "Exception caught while killing preconfigure workloop: "+string(e.what());
+LOG4CPLUS_DEBUG(sv_logger_,msg_error_rta);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_rta,e);
+this->notifyQualified("fatal",f);
     //odds are the remove() will fail
-    diagService_->reportError("Exception caught while killing preconfigure workloop: "+string(e.what()),DIAGDEBUG);
   }
   pclock_->give();
 
@@ -1799,7 +1917,10 @@ xoap::MessageReference PixelFECSupervisor::Recover (xoap::MessageReference msg) 
 	workloop_->remove(physicsRunning_); //will throw if the task was not submitted
       }
       catch (xcept::Exception & e) {
-	diagService_->reportError("Failed to remove FED physics workloop (probably ok): "+string(e.what()), DIAGDEBUG);
+std::string const msg_error_ouz = "Failed to remove FED physics workloop (probably ok): "+string(e.what());
+LOG4CPLUS_DEBUG(sv_logger_,msg_error_ouz);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_ouz, e);
+this->notifyQualified("fatal",f);
       }
     }
   }
@@ -1809,7 +1930,8 @@ xoap::MessageReference PixelFECSupervisor::Recover (xoap::MessageReference msg) 
   xoap::MessageReference replySOAP=MakeSOAPMessageReference("RecoverDone");
   string reply= HaltFSM();
   if (reply!="HaltDone") replySOAP=MakeSOAPMessageReference("RecoverFailed");
-  diagService_->reportError("--- Exit RECOVER ---",DIAGINFO);
+std::string const msg_info_dqt = "--- Exit RECOVER ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_dqt);
   return replySOAP;
 }
 
@@ -1830,12 +1952,17 @@ void PixelFECSupervisor::stateChanged(toolbox::fsm::FiniteStateMachine &fsm) //t
     parameters[2].name_="FSMState";   parameters[2].value_=state_;
     Send(PixelSupervisor_, "FSMStateNotification", parameters);
   }    
-  diagService_->reportError("New state is:" +std::string(state_),DIAGTRACE);
+std::string const msg_trace_wbh = "New state is:" +std::string(state_);
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_wbh);
  }
  catch (xcept::Exception & ex) {
    ostringstream err;
    err<<"Failed to report FSM state "<<state_.toString()<<" to PixelSupervisor. Exception: "<<ex.what();
-   diagService_->reportError(err.str(),DIAGERROR);
+std::string const msg_error_ozk = err.str();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_ozk);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_ozk, ex);
+this->notifyQualified("fatal",f);
+
  }
 }
 
@@ -1856,21 +1983,25 @@ It would be faster to allow hardware corresponding to already loaded data to be 
 we simultaneously loaded newer data. But that is a more complicated programming problem.
   */
 
-  diagService_->reportError("--- Enter preConfigure ---",DIAGINFO);
+  std::string const msg_info_sso = "--- Enter preConfigure ---";
+  LOG4CPLUS_INFO(sv_logger_,msg_info_sso);
   if (state_!="Halted") return MakeSOAPMessageReference("preConfigureFailed"); //sanity
-
+  
   try {
     if (preconfigureWorkloop_->isActive() ) { //if the workloop is still active, it is because something went wrong
-      diagService_->reportError("Found preConfigure workloop active at beginning of preconfigure. This can be normal after a Recover transition.",DIAGINFO);
+      std::string const msg_info_alu = "Found preConfigure workloop active at beginning of preconfigure. This can be normal after a Recover transition.";
+      LOG4CPLUS_INFO(sv_logger_,msg_info_alu);
       preconfigureWorkloop_->cancel(); 
       HaltAction(); //this stops the qpll workloop and clears configuration data
       preconfigureWorkloop_->remove(preconfigureTask_);  //this will probably fail with an exception
     }
+  } catch (xcept::Exception & e) {
+    std::string const msg_error_jni = "(probably normal) Exception caught while killing preconfigure workloop: "+string(e.what());
+    LOG4CPLUS_DEBUG(sv_logger_,msg_error_jni);
+    XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_jni, e);
+    this->notifyQualified("fatal",f);
   }
-  catch (xcept::Exception & e) {
-    diagService_->reportError("(probably normal) Exception caught while killing preconfigure workloop: "+string(e.what()),DIAGDEBUG);
-  }
-
+  
   preConfigureDone_=false;
   // Extract the Global Key from the SOAP message
   // Update the Global Key member data
@@ -1880,26 +2011,33 @@ we simultaneously loaded newer data. But that is a more complicated programming 
   Receive(msg, parameters);  
   theGlobalKey_ = new PixelConfigKey (atoi(parameters.at(0).value_.c_str()));
   if (theGlobalKey_==0) {
-    diagService_->reportError("Failure to create GlobalKey",DIAGERROR);
+    std::string const msg_error_mrk = "Failure to create GlobalKey";
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_mrk);
     return MakeSOAPMessageReference("preConfigureFailed");
   }
-  diagService_->reportError("The global key is " + stringF(theGlobalKey_->key()),DIAGDEBUG);
-  diagService_->reportError("PixelFECSupervisor::preConfigure - The Global Key was received as "+parameters.at(0).value_,DIAGINFO);
-
-
+  std::string const msg_debug_phw = "The global key is " + stringF(theGlobalKey_->key());
+  LOG4CPLUS_DEBUG(sv_logger_,msg_debug_phw);
+  std::string const msg_info_wew = "PixelFECSupervisor::preConfigure - The Global Key was received as "+parameters.at(0).value_;
+  LOG4CPLUS_INFO(sv_logger_,msg_info_wew);
+  
+  
   xoap::MessageReference replySOAP=MakeSOAPMessageReference("preConfigureDone");
   try {
     preconfigureWorkloop_->submit(preconfigureTask_);
     preconfigureWorkloop_->activate();
   }
   catch (xcept::Exception & e) {
-    diagService_->reportError("Creation of preconfiguration workloop failed with exception: "+string(e.what()),DIAGERROR);
+    std::string const msg_error_cjd = "Creation of preconfiguration workloop failed with exception: "+string(e.what());
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_cjd);
+    XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_cjd, e);
+    this->notifyQualified("fatal",f);
     //this is a very bad error in that it means Configuration will fail as well
     //I guess at this point PixelSupervisor should really complain
     replySOAP=MakeSOAPMessageReference("preConfigureFailed");
   }
   
-  diagService_->reportError("--- Exit preConfigure ---",DIAGINFO);
+  std::string const msg_info_xhn = "--- Exit preConfigure ---";
+  LOG4CPLUS_INFO(sv_logger_,msg_info_xhn);
   return replySOAP;
 }
 
@@ -1928,8 +2066,10 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
   //where only other data (e.g. the fed data) has been updated.
   //But for now we take the simple approach.
 
-  try { 
-    
+  std::string const m1 = "--- Enter preConfigure-workloop ---";
+  LOG4CPLUS_INFO(sv_logger_,m1);
+  
+  try {     
     pclock_->take();
     unsigned int theNewGlobalKey = theGlobalKey_->key();
     pclock_->give();
@@ -1942,6 +2082,10 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
       //would prefer to use a scoped_lock here
       pclock_->take(); //lock access to global objects
       // Retrieve the Pixel Name Translation from database
+
+      std::string const m2 = "--- In preConfigure-workloop, will load nametranslation ---";
+      LOG4CPLUS_INFO(sv_logger_,m2);
+
       PixelConfigInterface::get(theNameTranslation_, "pixel/nametranslation/", *theGlobalKey_);
       if (theNameTranslation_==0) {
 	pclock_->give();
@@ -1966,6 +2110,9 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
       detConfigLoaded_=true; //this is the signal for transitionHaltedToConfiguring to proceed
       pclock_->give();
       
+      std::string const m3 = "--- In preConfigure-workloop, detconfig loaded ---";
+      LOG4CPLUS_INFO(sv_logger_,m3);
+
       loadCalibObject();
       
       //moved from stateConfiguring
@@ -1981,6 +2128,10 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
     std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
     pclock_->give();
     std::vector <PixelModuleName>::iterator module_name;
+
+    std::string const m4 = "--- In preConfigure-workloop, load module data ---";
+    LOG4CPLUS_INFO(sv_logger_,m4);
+
     for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
       
       pclock_->take();
@@ -1988,6 +2139,7 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
       unsigned int fecnumber=module_firstHdwAddress.fecnumber();
       unsigned int feccrate=theFECConfiguration_->crateFromFECNumber(fecnumber);
       pclock_->give();      
+
 
       if (feccrate==crate_) {
 	
@@ -2027,14 +2179,19 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
       
     } // End of loop over all modules
 
-    diagService_->reportError("FEC get Trims total calls: "+stringF(getTrimTimer.ntimes())+" total time: "+stringF(getTrimTimer.tottime())+"  avg time: "+stringF(getTrimTimer.avgtime()),DIAGDEBUG);
-    diagService_->reportError("FEC get Masks total calls: "+stringF(getMaskTimer.ntimes())+" total time: "+stringF(getMaskTimer.tottime())+"  avg time: "+stringF(getMaskTimer.avgtime()),DIAGDEBUG); 
-    diagService_->reportError("FEC get DACs total calls : "+stringF(getDACTimer.ntimes())+" total time: "+stringF(getDACTimer.tottime())+"  avg time: "+stringF(getDACTimer.avgtime()),DIAGDEBUG); 
-    diagService_->reportError("FEC get TBMs total calls : "+stringF(getTBMTimer.ntimes())+" total time: "+stringF(getTBMTimer.tottime())+"  avg time: "+stringF(getTBMTimer.avgtime()),DIAGDEBUG); 
+
+    std::string const msg_debug_dgj = "FEC get Trims total calls: "+stringF(getTrimTimer.ntimes())+" total time: "+stringF(getTrimTimer.tottime())+" avg time: "+stringF(getTrimTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_dgj);
+    std::string const msg_debug_uqw = "FEC get Masks total calls: "+stringF(getMaskTimer.ntimes())+" total time: "+stringF(getMaskTimer.tottime())+" avg time: "+stringF(getMaskTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_uqw);
+    std::string const msg_debug_fec = "FEC get DACs total calls : "+stringF(getDACTimer.ntimes())+" total time: "+stringF(getDACTimer.tottime())+" avg time: "+stringF(getDACTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_fec);
+    std::string const msg_debug_asl = "FEC get TBMs total calls : "+stringF(getTBMTimer.ntimes())+" total time: "+stringF(getTBMTimer.tottime())+" avg time: "+stringF(getTBMTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_asl);
     
-    } //if
-    else {
-      diagService_->reportError("Global key is the same as last configuration. Skipping loading of FEC data from database.",DIAGINFO);
+    } else {
+      std::string const msg_info_rnc = "Global key is the same as last configuration. Skipping loading of FEC data from database.";
+      LOG4CPLUS_INFO(sv_logger_,msg_info_rnc);
       pclock_->take();
       detConfigLoaded_=true; //this is the signal for transitionHaltedToConfiguring to proceed
       pclock_->give();
@@ -2043,23 +2200,38 @@ bool PixelFECSupervisor::preconfigure_workloop(toolbox::task::WorkLoop * w1) {
       loadCalibObject();
     }
   } catch (std::exception & ex) {
-    diagService_->reportError("Caught exception while loading FEC configuration data: "+string(ex.what()),DIAGERROR);
+    std::string const msg_error_wec = "Caught exception while loading FEC configuration data: "+string(ex.what());
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_wec);
+    std::exception * error_ptr = &ex;
+    pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+    XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_wec, *new_exception);
+    this->notifyQualified("fatal",f);
     try {
       toolbox::Event::Reference e(new toolbox::Event("Failure", this));
       fsm_.fireEvent(e);
     } catch (toolbox::fsm::exception::Exception & e) {
-      diagService_->reportError("Failed to transition to Error state",DIAGFATAL);
+      std::string const msg_fatal_xvo = "Failed to transition to Error state";
+      LOG4CPLUS_FATAL(sv_logger_,msg_fatal_xvo);
+      XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_fatal_xvo, e);
+      this->notifyQualified("fatal",f);
     }
   }
   
   pclock_->take();
   preConfigureDone_=true;
   pclock_->give();
+
+  std::string const m5 = "--- In preConfigure-workloop, finished ---";
+  LOG4CPLUS_INFO(sv_logger_,m5);
+
   return false;
 }
 
 void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm) //throw (toolbox::fsm::exception::Exception)
 {
+
+  std::string const m1 = "--- stateCOnfiguring, entered ---";
+  LOG4CPLUS_INFO(sv_logger_,m1);
 
   while (true) {  //don't proceed until preconfiguration is done
     pclock_->take();
@@ -2070,33 +2242,41 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 	//preconfigureWorkloop_->remove(preconfigureTask_); //not needed because the workloop always returns false
       }
       catch ( xcept::Exception & e) {
-	diagService_->reportError("Exception caught while killing preconfigure workloop: "+string(e.what()),DIAGDEBUG);
+	std::string const msg_error_epd = "Exception caught while killing preconfigure workloop: "+string(e.what());
+	LOG4CPLUS_DEBUG(sv_logger_,msg_error_epd);
+	XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_epd, e);
+	this->notifyQualified("fatal",f);
       }
       break; 
     }
     pclock_->give();
     ::sleep(1); //can't make this too big or we'll be giving back the time that we're trying to save!
   }
+
   
   if (state_=="Error") { //preconfigure may have raised an error state
-    diagService_->reportError("In error state at the beginning of stateConfiguring. Stopping configuration.",DIAGINFO);
+    std::string const msg_info_huh = "In error state at the beginning of stateConfiguring. Stopping configuration.";
+    LOG4CPLUS_INFO(sv_logger_,msg_info_huh);
     return;
+  } else {
+    std::string const msg_info_ivb = "Preconfiguration is finished. Starting stateConfiguring.";
+    LOG4CPLUS_INFO(sv_logger_,msg_info_ivb);
   }
-  else {
-    diagService_->reportError("Preconfiguration is finished. Starting stateConfiguring.",DIAGINFO);
-  }
-
+  
   // Update the state_ member data so that Infospace may publish this information
   stateChanged(fsm); //should this go here or above the preConfigureDone check?
 
   bool proceed=true;
   
+
   try { //for hardware and configuration data access
 
   //Use the presence of PixelDCSFSMInterface to trigger the automatic detector startup  
   if (PixelDCSFSMInterface_!=0) {
     
-    diagService_->reportError("[PixelFECSupervisor::stateConfiguring] PixelDCSFSMInterface detected. Automatic detector startup.",DIAGINFO);
+    std::string const msg_info_hkq = 
+      "[PixelFECSupervisor::stateConfiguring] PixelDCSFSMInterface detected. Automatic detector startup.";
+    LOG4CPLUS_INFO(sv_logger_,msg_info_hkq);
     
     // Loop over all modules in the configuration
     std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
@@ -2104,7 +2284,8 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
     map <string, bool> printedDigitalLV;
     for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
       
-      const PixelHdwAddress& module_firstHdwAddress = theNameTranslation_->firstHdwAddress( *module_name );
+      const PixelHdwAddress& module_firstHdwAddress = 
+	theNameTranslation_->firstHdwAddress( *module_name );
       unsigned int fecnumber=module_firstHdwAddress.fecnumber();
       unsigned int feccrate=theFECConfiguration_->crateFromFECNumber(fecnumber);
       unsigned int fecVMEBaseAddress=theFECConfiguration_->VMEBaseAddressFromFECNumber(fecnumber);
@@ -2130,7 +2311,9 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 	  map<string, bool>::iterator iprinted = printedDigitalLV.find(powerCoordinate);
 	  if (iprinted == printedDigitalLV.end() || iprinted->second==false) doprint=true;
 	  if (doprint)  {
-	    diagService_->reportError("[PixelFECSupervisor::stateConfiguring] The Digital Voltage for "+powerCoordinate+" is OFF!",DIAGDEBUG);
+	    std::string const msg_debug_zay = 
+	      "[PixelFECSupervisor::stateConfiguring] The Digital Voltage for "+powerCoordinate+" is OFF!";
+	    LOG4CPLUS_DEBUG(sv_logger_,msg_debug_zay);
 	    printedDigitalLV[powerCoordinate] = true;
 	  }
           proceed=false;
@@ -2140,8 +2323,10 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 
           if (modulesProgDACced_.find(modulePath)==modulesProgDACced_.end()) {
 
-	    diagService_->reportError("[PixelFECSupervisor::stateConfiguring] Programming DACs (LV_ON_REDUCED) for module "+modulePath,DIAGTRACE);
-
+	    std::string const msg_trace_bji = 
+	      "[PixelFECSupervisor::stateConfiguring] Programming DACs (LV_ON_REDUCED) for module "+modulePath;
+	    LOG4CPLUS_TRACE(sv_logger_,msg_trace_bji);
+	    
             // Configure the DACs of this module's ROCs.
             // If a PSX server is visible, check to make sure that the currents drawn changed.
             // If it didn't then yell loudly
@@ -2155,10 +2340,12 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 
 	      //cout<<" CALL DACS ======================================================= 1"<<endl;
               tempDACs->generateConfiguration(FECInterface[fecVMEBaseAddress], theNameTranslation_, theDetectorConfiguration_, false);
-              ::sleep(1);
+              ::sleep(1); // why sleep?
               current2=readCurrent(*module_name);
               if (current1==current2) {
-		diagService_->reportError("[PixelFECSupervisor::stateConfiguring] Currents in module "+modulePath+" didn't change on configuring DACs!",DIAGERROR);
+		std::string const msg_error_vvt = 
+		  "[PixelFECSupervisor::stateConfiguring] Currents in module "+modulePath+" didn't change on configuring DACs!";
+		LOG4CPLUS_ERROR(sv_logger_,msg_error_vvt);
                 //XCEPT_RAISE(toolbox::fsm::exception::Exception, "Currents didn't change. Transitioning to Error state.");
               }
             } else {
@@ -2185,14 +2372,12 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
               std::string i_modulename=i_module->modulename();
               if (i_modulename.substr(0, 8) == powerCoordinate) {
                 if (modulesProgDACced_.find(i_modulename)==modulesProgDACced_.end()) {
-		  //I think this message is useless (JMT)
-		  //		  diagService_->reportError("[PixelFECSupervisor::stateConfiguring] module "+i_modulename+" hasn't been prog DACced",DIAGTRACE);
                   rampUp=false;
                 }
               }
             }
             if (rampUp) {
-
+	      
               xoap::MessageReference message = xoap::createMessage();
               xoap::SOAPEnvelope envelope = message->getSOAPPart().getEnvelope();
               xoap::SOAPName command = envelope.createName("fsmStateNotification", "xdaq", XDAQ_NS_URI);
@@ -2220,7 +2405,9 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
 	  map<string, bool>::iterator iprinted = printedDigitalLV.find(powerCoordinate);
 	  if (iprinted == printedDigitalLV.end() || iprinted->second==false) doprint=true;
 	  if (doprint)  {
-	    diagService_->reportError("[PixelFECSupervisor::stateConfiguring] The Digital Voltage for "+powerCoordinate+" is ON.",DIAGDEBUG);
+	    std::string const msg_debug_vdq = 
+	      "[PixelFECSupervisor::stateConfiguring] The Digital Voltage for "+powerCoordinate+" is ON.";
+	    LOG4CPLUS_DEBUG(sv_logger_,msg_debug_vdq);
 	    printedDigitalLV[powerCoordinate] = true;
 	  }
         }
@@ -2230,10 +2417,13 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
     } // End of loop over all modules
           
   } // End of if PixelDCSFSMInterface_ exists
+
   
   if (proceed) {
 
-      diagService_->reportError("[PixelFECSupervisor::stateConfiguring] Finally we program all the TBMs, DACs, Masks and Trims.",DIAGDEBUG);
+    std::string const msg_debug_hov = 
+      "[PixelFECSupervisor::stateConfiguring] Finally we program all the TBMs, DACs, Masks and Trims.";
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_hov);
     
     // Clear all std::sets
     modulesProgDACced_.clear();
@@ -2269,9 +2459,11 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
         
         std::string modulePath=(module_name->modulename());
 	modulecount++;
-	if (modulecount%48 == 0) //prescale this message
-	  diagService_->reportError("[PixelFECSupervisor::stateConfiguring] Now configuring module "+modulePath,DIAGTRACE);
-        
+	if (modulecount%48 == 0){ //prescale this message
+	  std::string const msg_trace_jee = 
+	    "[PixelFECSupervisor::stateConfiguring] Now configuring module "+modulePath;
+	  LOG4CPLUS_TRACE(sv_logger_,msg_trace_jee);
+        }
 	tempDACs = theDACs_.find(*module_name)->second;
         if (tempDACs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve dac settings!");
 
@@ -2341,16 +2533,21 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
       
     } // End of loop over all modules
     
-    diagService_->reportError("Total FEC time (preconfigure + configure) ="+stringF(totalTimer_.tottime()),DIAGINFO);
+    std::string const msg_info_hfn = "Total FEC time (preconfigure + configure) ="+stringF(totalTimer_.tottime());
+    LOG4CPLUS_INFO(sv_logger_,msg_info_hfn);
     totalTimer_.reset();
-    diagService_->reportError("PixelFECSupervisor::stateConfiguring: FEC config Trim+Mask total calls :"+stringF(configMaskTrimTimer.ntimes())+" total time:"+stringF(configMaskTrimTimer.tottime())+"  avg time:"+stringF(configMaskTrimTimer.avgtime()),DIAGDEBUG); 
-    diagService_->reportError("PixelFECSupervisor::stateConfiguring: FEC config DAC total calls       :"+stringF(configDACTimer.ntimes())+" total time:"+stringF(configDACTimer.tottime())+"  avg time:"+stringF(configDACTimer.avgtime()),DIAGDEBUG); 
-    diagService_->reportError("PixelFECSupervisor::stateConfiguring: FEC config TBM total calls       :"+stringF(configTBMTimer.ntimes())+" total time:"+stringF(configTBMTimer.tottime())+"  avg time:"+stringF(configTBMTimer.avgtime()), DIAGDEBUG); 
+    std::string const msg_debug_qmv = "PixelFECSupervisor::stateConfiguring: FEC config Trim+Mask total calls :"+stringF(configMaskTrimTimer.ntimes())+" total time:"+stringF(configMaskTrimTimer.tottime())+" avg time:"+stringF(configMaskTrimTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_qmv);
+    std::string const msg_debug_aoa = "PixelFECSupervisor::stateConfiguring: FEC config DAC total calls :"+stringF(configDACTimer.ntimes())+" total time:"+stringF(configDACTimer.tottime())+" avg time:"+stringF(configDACTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_aoa);
+    std::string const msg_debug_lua = "PixelFECSupervisor::stateConfiguring: FEC config TBM total calls :"+stringF(configTBMTimer.ntimes())+" total time:"+stringF(configTBMTimer.tottime())+" avg time:"+stringF(configTBMTimer.avgtime());
+    LOG4CPLUS_INFO(sv_logger_,msg_debug_lua);
     
     if (theCalibObject_ == 0) {
       if(doTBMReadoutLoop_) {
 	workloop_->submit(physicsRunning_);
-	diagService_->reportError("Physics data taking job submitted to the workloop", DIAGINFO);
+	std::string const msg_info_mez = "Physics data taking job submitted to the workloop";
+	LOG4CPLUS_INFO(sv_logger_,msg_info_mez);
       }
     }
 
@@ -2359,21 +2556,36 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
       toolbox::Event::Reference e(new toolbox::Event("ConfiguringDone", this));
       fsm_.fireEvent(e);
     } catch (toolbox::fsm::exception::Exception & e) {
-      diagService_->reportError("Caught exception: FSM transition error: Invalid Command: "+string(e.what()),DIAGWARN); 
+      std::string const msg_warn_jbj = 
+	"Caught exception: FSM transition error: Invalid Command: "+string(e.what());
+      LOG4CPLUS_WARN(sv_logger_,msg_warn_jbj);
+      XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_warn_jbj, e);
+      this->notifyQualified("fatal",f);
     }
   } //end of if proceed
   } catch (std::exception & ex) {
-    diagService_->reportError("Caught exception while configuring FEC: "+string(ex.what()),DIAGERROR);
+    std::string const msg_error_zsx = "Caught exception while configuring FEC: "+string(ex.what());
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_zsx);
+    std::exception * error_ptr = &ex;
+    pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+    XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_zsx, *new_exception);
+    this->notifyQualified("fatal",f);
     try {
       toolbox::Event::Reference e(new toolbox::Event("Failure", this));
       fsm_.fireEvent(e);
     } catch (toolbox::fsm::exception::Exception & e) {
-      diagService_->reportError("Failed to transition to Error state",DIAGFATAL);
+      std::string const msg_fatal_hyl = "Failed to transition to Error state";
+      LOG4CPLUS_FATAL(sv_logger_,msg_fatal_hyl);
+      XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_fatal_hyl, e);
+      this->notifyQualified("fatal",f);
     }
   }
-
-
+  
+  
   //readBackTBMs(); // call this function for reading the TBMs. it basically just produces couts
+  std::string const m2 = "--- stateCOnfiguring, exit ---";
+  LOG4CPLUS_INFO(sv_logger_,m2);
+
 }
 
 void PixelFECSupervisor::readBackTBMs() {
@@ -2456,7 +2668,8 @@ void PixelFECSupervisor::readBackTBMs() {
 xoap::MessageReference PixelFECSupervisor::Reconfigure (xoap::MessageReference msg) 
 {
 
-  diagService_->reportError("--- Enter RECONFIGURE ---",DIAGINFO);
+std::string const msg_info_afq = "--- Enter RECONFIGURE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_afq);
   xoap::MessageReference reply = MakeSOAPMessageReference("ReconfigureDone");  
 
   PixelTimer reconfigureTimer,dacLoadTimer,dacProgTimer;
@@ -2471,10 +2684,12 @@ xoap::MessageReference PixelFECSupervisor::Reconfigure (xoap::MessageReference m
     Receive(msg, parameters);  
     PixelConfigKey* newGlobalKey = new PixelConfigKey (atoi(parameters.at(0).value_.c_str()));
     if (newGlobalKey==0) {
-      diagService_->reportError("Reconfigure failed to create GlobalKey",DIAGERROR);
+std::string const msg_error_opr = "Reconfigure failed to create GlobalKey";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_opr);
       return MakeSOAPMessageReference("ReconfigureFailed");
     }
-    diagService_->reportError("Will reconfigure with global key = " + stringF(newGlobalKey->key()),DIAGDEBUG); 
+std::string const msg_debug_wxp = "Will reconfigure with global key = " + stringF(newGlobalKey->key());
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_wxp);
 
     //now get the dac settings
     PixelDACSettings *tempDACs=0;    
@@ -2526,7 +2741,12 @@ xoap::MessageReference PixelFECSupervisor::Reconfigure (xoap::MessageReference m
     delete theGlobalKey_;
     theGlobalKey_=newGlobalKey;
   } catch (exception & e) {
-    diagService_->reportError("Reconfiguration of DACs failed with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_ojp = "Reconfiguration of DACs failed with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_ojp);
+std::exception * error_ptr = &e;
+pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_ojp, *new_exception);
+this->notifyQualified("fatal",f);
     reply =  MakeSOAPMessageReference("ReconfigureFailed");
   }
 
@@ -2535,7 +2755,8 @@ xoap::MessageReference PixelFECSupervisor::Reconfigure (xoap::MessageReference m
   cout<<"Total database loading time               = "<<dacLoadTimer.tottime()<<endl;
   cout<<"Total ROC programming time                = "<<dacProgTimer.tottime()<<endl;
   cout<<"Total time for Reconfiguration of the FEC = "<<reconfigureTimer.tottime()<<endl;
-  diagService_->reportError("--- Exit RECONFIGURE ---",DIAGINFO);
+std::string const msg_info_pqc = "--- Exit RECONFIGURE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_pqc);
 
   return reply;
 }
@@ -2560,16 +2781,18 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
 						0,0, HAL::CAENLinuxBusAdapter::A3818);
     cout << " busAdapter after   " << endl;
     //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
-    diagService_->reportError("Got a CAEN Linux Bus Adapter for the FEC",DIAGTRACE);
+std::string const msg_trace_gfe = "Got a CAEN Linux Bus Adapter for the FEC";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_gfe);
     // ASCII address table
     HAL::VMEAddressTableASCIIReader reader(datbase_+"PFECAddressMap.dat");
     addressTablePtr_=new HAL::VMEAddressTable( "PFEC address table", reader );
   #else // USE_HAL
-    diagService_->reportError("PixelFECSupervisor::Configure - VMEBoard="+VMEBoard+" Device="+Device+" Link="+Link+" aBHandle="+aBHandle+" cvSuccess="+cvSuccess ,DIAGTRACE); 
+std::string const msg_trace_gea = "PixelFECSupervisor::Configure - VMEBoard="+VMEBoard+" Device="+Device+" Link="+Link+" aBHandle="+aBHandle+" cvSuccess="+cvSuccess ;
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_gea);
   #endif // USE_HAL
   }
-  catch (...) { //FIXME maybe we should catch the actual type of exception that is thrown....
-    XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught exception when getting FEC HAL BusAdapter");
+catch (...) { //FIXME maybe we should catch the actual type of exception that is thrown....    
+	XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught exception when getting FEC HAL BusAdapter");
   }
 
   //we need the detconfig next. But it is now loaded in the preconfigure step.
@@ -2624,9 +2847,10 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
 
         unsigned long version = 0;
         tempFECInterface->getversion(&version);
-	cout<<"after read "<<version<<endl; //dk
 
-	diagService_->reportError("[PixelFECSupervisor::transitionHaltedToConfiguring] FEC Crate="+itoa(crate_)+" VMEAdd=0x"+htoa(fecVMEBaseAddress)+" read mFEC firmware version="+itoa(version),DIAGINFO);      
+	std::string const msg_info_oaw = 
+	  "[PixelFECSupervisor::transitionHaltedToConfiguring] FEC Crate="+itoa(crate_)+" VMEAdd=0x"+htoa(fecVMEBaseAddress)+" read mFEC firmware version="+itoa(version);
+	LOG4CPLUS_INFO(sv_logger_,msg_info_oaw);
       }        
 
       // If this is a BPix module, do this
@@ -2651,16 +2875,18 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
   }
 
   //start the QPLL check, now that we have created the FECInterfaces
+  cout << " transitionHaltedToConfiguring - start qpll loop " << endl;
   qpllWorkloop_->submit(qpllCheck_);
   qpllWorkloop_->activate();
   
+  cout << " transitionHaltedToConfiguring - exit " << endl;
+
   }
-  catch (toolbox::fsm::exception::Exception & e) { throw; }
-  catch (std::exception & e) {  //translate std::exception to the correct type
-    XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
+catch (toolbox::fsm::exception::Exception & e) { throw; }
+catch (std::exception & e) { //translate std::exception to the correct type    XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
   }
-  catch (...) { 
-    XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught unknown exception while accessing FEC via VME");
+catch (...) {    
+	XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught unknown exception while accessing FEC via VME");
   }
 
 }
@@ -2675,7 +2901,8 @@ void PixelFECSupervisor::enteringError(toolbox::Event::Reference e)
 	<<  " to: " 
 	<< fe.getToState() 
 	<< "; exception: " << fe.getException().what();
-  diagService_->reportError(errstr.str(),DIAGERROR);
+std::string const msg_error_ybb = errstr.str();
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ybb);
 
 }
 
@@ -2857,8 +3084,8 @@ xoap::MessageReference PixelFECSupervisor::Prog_DACs (xoap::MessageReference msg
 		setElement != setElements.end(); ++setElement ) {
 	    try {
 	      decodeProg_DACs(envelope, *setElement, dacAddress, kProg_DACs_set);
-	    } catch ( xoap::exception::Exception& e ) {
-	      XCEPT_RETHROW(xoap::exception::Exception, std::string("Failed to decode Prog_DACs command: ") + e.what(), e);
+} catch ( xoap::exception::Exception& e ) {	      
+	XCEPT_RETHROW(xoap::exception::Exception, std::string("Failed to decode Prog_DACs command: ") + e.what(), e);
 	    }
 	  }
 
@@ -2868,8 +3095,8 @@ xoap::MessageReference PixelFECSupervisor::Prog_DACs (xoap::MessageReference msg
 		increaseElement != increaseElements.end(); ++increaseElement ) {
 	    try {
 	      decodeProg_DACs(envelope, *increaseElement, dacAddress, kProg_DACs_increase);
-	    } catch ( xoap::exception::Exception& e ) {
-	      XCEPT_RETHROW(xoap::exception::Exception, std::string("Failed to decode Prog_DACs command: ") + e.what(), e);
+} catch ( xoap::exception::Exception& e ) {	      
+	XCEPT_RETHROW(xoap::exception::Exception, std::string("Failed to decode Prog_DACs command: ") + e.what(), e);
 	    }
 	  }
 
@@ -2879,8 +3106,8 @@ xoap::MessageReference PixelFECSupervisor::Prog_DACs (xoap::MessageReference msg
 		decreaseElement != decreaseElements.end(); ++decreaseElement ) {
 	    try {
 	      decodeProg_DACs(envelope, *decreaseElement, dacAddress, kProg_DACs_decrease);
-	    } catch ( xoap::exception::Exception& e ) {
-	      XCEPT_RETHROW(xoap::exception::Exception, std::string("Failed to decode Prog_DACs command: ") + e.what(), e);
+} catch ( xoap::exception::Exception& e ) {	      
+	XCEPT_RETHROW(xoap::exception::Exception, std::string("Failed to decode Prog_DACs command: ") + e.what(), e);
 	    }
 	  }
 	}
@@ -3183,7 +3410,8 @@ xoap::MessageReference PixelFECSupervisor::DisableHitsEnMass (xoap::MessageRefer
 			std::map<pos::PixelModuleName, pos::PixelDACSettings*>::const_iterator thisModuleDACSettings = theDACs_.find(theNameTranslation_->getChannelForROC(*ROCsOnThisChannel_itr).module());
 			if (thisModuleDACSettings == theDACs_.end()) {
 			  std::string module=theNameTranslation_->getChannelForROC(*ROCsOnThisChannel_itr).module().modulename();
-			  diagService_->reportError("Could not find DAC settings for module:"+module,DIAGERROR); 
+std::string const msg_error_pix = "Could not find DAC settings for module:"+module;
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_pix);
 			  assert(0);
 			}
 			PixelROCDACSettings* thisROCDACSettings = thisModuleDACSettings->second->getDACSettings(*ROCsOnThisChannel_itr);
@@ -3366,7 +3594,8 @@ xoap::MessageReference PixelFECSupervisor::CalibRunningThreshold (xoap::MessageR
 
 xoap::MessageReference PixelFECSupervisor::fsmStateNotification(xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("[PixelFECSupervisor::fsmStateNotification] Entered.",DIAGTRACE); 
+std::string const msg_trace_qfl = "[PixelFECSupervisor::fsmStateNotification] Entered.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_qfl);
   xoap::MessageReference response=MakeSOAPMessageReference("fsmStateNotificationDone");
   
   // Update the tri-state voltage for each partition
@@ -3381,24 +3610,33 @@ xoap::MessageReference PixelFECSupervisor::fsmStateNotification(xoap::MessageRef
     for (unsigned int i=0; i<stateList.size(); ++i) {
       std::string powerCoordinate=stateList.at(i).getAttributeValue(partitionName);
       std::string fsmState=stateList.at(i).getValue();
-      diagService_->reportError("PixelFECSupervisor::fsmStateNotification - powerCoordinate = "+powerCoordinate+", fsmState = "+fsmState,DIAGINFO);
+std::string const msg_info_tra = "PixelFECSupervisor::fsmStateNotification - powerCoordinate = "+powerCoordinate+", fsmState = "+fsmState;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_tra);
       if (fsmState.find("LV_OFF")!=string::npos) {
 	powerMap_.setVoltage(powerCoordinate, LV_OFF, std::cout);
-	if ( state_ == "Running" ) diagService_->reportError("We are Running, but the LV is OFF for "+powerCoordinate,DIAGERROR);
+  if ( state_ == "Running" ){
+std::string const msg_error_eep = "We are Running, but the LV is OFF for "+powerCoordinate;
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_eep);
+	}
       }
       else if (fsmState.find("LV_ON_REDUCED")!=string::npos) powerMap_.setVoltage(powerCoordinate, LV_ON_REDUCED,  std::cout);
       else if (fsmState.find("LV_ON")!=string::npos) powerMap_.setVoltage(powerCoordinate, LV_ON, std::cout);
       else {
-	diagService_->reportError("PixelFECSupervisor::fsmStateNotification - "+fsmState+" not recognized! (LV)",DIAGERROR);
+std::string const msg_error_wuy = "PixelFECSupervisor::fsmStateNotification - "+fsmState+" not recognized! (LV)";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_wuy);
         response=MakeSOAPMessageReference("fsmStateNotificationFailed");
       }
       if (fsmState.find("HV_OFF")!=string::npos) {
 	powerMap_.setHVoltage(powerCoordinate, HV_OFF, std::cout);
-	if ( state_ == "Running" ) diagService_->reportError("We are Running, but the HV is OFF for "+powerCoordinate,DIAGWARN);
+  if ( state_ == "Running" ){
+std::string const msg_warn_scl = "We are Running, but the HV is OFF for "+powerCoordinate;
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_scl);
+	}
       }
       else if (fsmState.find("HV_ON")!=string::npos) powerMap_.setHVoltage(powerCoordinate, HV_ON,  std::cout);
       else {
-	diagService_->reportError("PixelFECSupervisor::fsmStateNotification - "+fsmState+" not recognized! (HV)",DIAGERROR);
+std::string const msg_error_zee = "PixelFECSupervisor::fsmStateNotification - "+fsmState+" not recognized! (HV)";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_zee);
         response=MakeSOAPMessageReference("fsmStateNotificationFailed");
       }
     }
@@ -3411,8 +3649,8 @@ xoap::MessageReference PixelFECSupervisor::fsmStateNotification(xoap::MessageRef
     try {
       toolbox::Event::Reference e(new toolbox::Event("Configure", this));
       fsm_.fireEvent(e);
-    } catch (toolbox::fsm::exception::Exception & e) {
-      XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
+} catch (toolbox::fsm::exception::Exception & e) {      
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
     }
 
   }
@@ -3454,13 +3692,15 @@ void PixelFECSupervisor::deleteHardware()
     }
   VMEPtr_.clear();  // clear the map of vme device pointers (used by FECInterface)
   if(busAdapter_==0) {
-    diagService_->reportError("PixelFECSupervisor::deleteHardware() called when busAdapter_==0", DIAGDEBUG);
+std::string const msg_debug_cch = "PixelFECSupervisor::deleteHardware() called when busAdapter_==0";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_cch);
   }
   else {
     delete busAdapter_;
   }
   if(addressTablePtr_==0) {
-    diagService_->reportError("PixelFECSupervisor::deleteHardware() called when addressTablePtr_==0", DIAGDEBUG);
+std::string const msg_debug_nvw = "PixelFECSupervisor::deleteHardware() called when addressTablePtr_==0";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_nvw);
   }
   else {
     delete addressTablePtr_;
@@ -3473,8 +3713,7 @@ void PixelFECSupervisor::startupHVCheck(bool startingRun, bool doReset) {
 
   //if startingRun is true, then we do HV-dependent programming of the ROCs
   //if it is false, then we always disable the ROCs (if they were previously enabled)
-  
-  bool printedEnable(false);//,printedDisable(false),printedOff(false);
+  bool printedEnable(false);
   //here we need to loop over the detector etc
   PixelTimer enableTimer;
   PixelTimer disableTimer;
@@ -3501,40 +3740,41 @@ void PixelFECSupervisor::startupHVCheck(bool startingRun, bool doReset) {
 //update -- NO LONGER USE lastHVstate. Just always program
 //	BiVoltage lastHVstate=powerMapLast_.getHVoltage(powerCoordinate, std::cout);
 //	if (startingRun && powerHV==HV_ON) {
-	    //we need to talk to PixelDACSettings and tell it to:
-	    //-- set Vcthr to the nominal values (get this from theDACS_[*module_name])
-	    //-- enable and reset the ROCs
-	    enableTimer.start();
-	    //also reprogram TBMs
-	    PixelTBMSettings * tempTBMs = theTBMs_.find(*module_name)->second;
-	    if (tempTBMs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve TBM settings!");
-	    //tempTBMs->generateConfiguration(FECInterface[fecVMEBaseAddress], theNameTranslation_,theCalibObject_==0,false);
-	    tempTBMs->generateConfiguration(FECInterface[fecVMEBaseAddress], theNameTranslation_,theCalibObject_==0,doReset);
+//we need to talk to PixelDACSettings and tell it to:
+//-- set Vcthr to the nominal values (get this from theDACS_[*module_name])
 
-            bool enableRocs = startingRun && (powerHV==HV_ON);
-
-	    //change to generateConfiguration
-	    theDACs_[*module_name]->generateConfiguration(FECInterface[fecVMEBaseAddress], theNameTranslation_, theDetectorConfiguration_,enableRocs);
-	    // First wait for the last command to finish. Added 3/9/09 d.k.
-	    unsigned int stat1=0, stat2=0;
-	    FECInterface[fecVMEBaseAddress]->mfecbusy(module_firstHdwAddress.mfec(),
-						      module_firstHdwAddress.mfecchannel(),
-						      &stat1,&stat2);
-	    FECInterface[fecVMEBaseAddress]->injectrstroc(module_firstHdwAddress.mfec(),1); // ResetROC
-
-	    enableTimer.stop();
-	    if (!printedEnable) {
-	       string msg;
-	       if (startingRun && enableRocs) msg = "While entering Running state, found HV is ON. Enabling ROCs.";
-               else if (startingRun && !enableRocs) msg="While entering Running state, found HV is OFF. Disabling ROCs.";
-               else if (!startingRun && !enableRocs) msg="Disabling ROCs because we are not running.";
-               else {msg = enableRocs ? "Unexpected logic error in startupHVcheck (rocs enabled)" : "Unexpected logic error in startupHVcheck (rocs disabled)";}
-	      diagService_->reportError(msg,DIAGUSERINFO);
-	      printedEnable=true;
-	    } //if !printedEnable
-//	}
+	//-- enable and reset the ROCs
+	enableTimer.start();
+	//also reprogram TBMs
+	PixelTBMSettings * tempTBMs = theTBMs_.find(*module_name)->second;
+	if (tempTBMs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve TBM settings!");
+	tempTBMs->generateConfiguration(FECInterface[fecVMEBaseAddress], theNameTranslation_,theCalibObject_==0,doReset);
+	
+	bool enableRocs = startingRun && (powerHV==HV_ON);
+	//change to generateConfiguration
+	theDACs_[*module_name]->generateConfiguration(FECInterface[fecVMEBaseAddress], theNameTranslation_, theDetectorConfiguration_,enableRocs);
+	// First wait for the last command to finish. Added 3/9/09 d.k.
+	unsigned int stat1=0, stat2=0;
+	FECInterface[fecVMEBaseAddress]->mfecbusy(module_firstHdwAddress.mfec(),
+						  module_firstHdwAddress.mfecchannel(),
+						  &stat1,&stat2);
+	FECInterface[fecVMEBaseAddress]->injectrstroc(module_firstHdwAddress.mfec(),1); // ResetROC
+	
+	enableTimer.stop();
+	if (!printedEnable) {
+	  string msg;
+	  if (startingRun && enableRocs) msg = "While entering Running state, found HV is ON. Enabling ROCs.";
+	  else if (startingRun && !enableRocs) msg="While entering Running state, found HV is OFF. Disabling ROCs.";
+	  else if (!startingRun && !enableRocs) msg="Disabling ROCs because we are not running.";
+	  else {msg = enableRocs ? "Unexpected logic error in startupHVcheck (rocs enabled)" : "Unexpected logic error in startupHVcheck (rocs disabled)";}
+	  std::string const msg_info_hel = msg;
+	  LOG4CPLUS_INFO(sv_logger_,msg_info_hel);
+	  printedEnable=true;
+	} //if !printedEnable
+	//	}
       } //if feccrate
     } //for (loop over modules)
+
     //update 'last' state to equal the current state
     if (startingRun) powerMapLast_ = powerMap_;
     else powerMapLast_.setHVoff(); //if startingRun is false, then we have treated it as if HV is off
@@ -3630,7 +3870,8 @@ void PixelFECSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
 xoap::MessageReference PixelFECSupervisor::FixSoftError (xoap::MessageReference msg)
 {
 
-  diagService_->reportError("--- FixSoftError ---",DIAGINFO);
+std::string const msg_info_gfe = "--- FixSoftError ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_gfe);
   
   // Extract the Global Key from the SOAP message
   // Update the Global Key member data
@@ -3641,11 +3882,14 @@ xoap::MessageReference PixelFECSupervisor::FixSoftError (xoap::MessageReference 
   // if(theGlobalKey_ != 0) delete theGlobalKey_;
   // theGlobalKey_ = new PixelConfigKey(atoi(parameters[0].value_.c_str()));
   if (theGlobalKey_==0) {
-    diagService_->reportError("GlobalKey does not exist",DIAGERROR);
+std::string const msg_error_boi = "GlobalKey does not exist";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_boi);
     return MakeSOAPMessageReference("FixSoftErrorFailed");
   }
-  diagService_->reportError("The global key is " + stringF(theGlobalKey_->key()),DIAGDEBUG);
-  diagService_->reportError("PixelFECSupervisor::FixSoftError: The Global Key is " + stringF(theGlobalKey_->key()),DIAGDEBUG);
+std::string const msg_debug_ymf = "The global key is " + stringF(theGlobalKey_->key());
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_ymf);
+std::string const msg_debug_ugj = "PixelFECSupervisor::FixSoftError: The Global Key is " + stringF(theGlobalKey_->key());
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_ugj);
   //*console_<<"PixelFECSupervisor::FixSoftError: The Global Key is " + stringF(theGlobalKey_->key())<<std::endl;
   
   xoap::MessageReference reply=MakeSOAPMessageReference("FixSoftErrorDone");
@@ -3656,13 +3900,18 @@ xoap::MessageReference PixelFECSupervisor::FixSoftError (xoap::MessageReference 
     toolbox::Event::Reference e(new toolbox::Event("FixSoftError", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
+std::string const msg_error_eiy = "[PixelFECSupervisor::FixSoftError] FixSoftError is an invalid command for the current state."+state_.toString();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_eiy);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_eiy, e);
+this->notifyQualified("fatal",f);
     //*console_<<"[PixelFECSupervisor::FixSoftError] FixSoftError is an invalid command for the "<<state_.toString()<<" state."<<std::endl;
-    diagService_->reportError("[PixelFECSupervisor::FixSoftError] FixSoftError is an invalid command for the current state."+state_.toString(), DIAGERROR);
     reply=MakeSOAPMessageReference("FixSoftErrorFailed");
   }
   
-  diagService_->reportError("--- FixSoftError DONE ---",DIAGINFO);
-  diagService_->reportError("PixelFECSupervisor::FixSoftError: A prompt SOAP reply is sent back before exiting function",DIAGINFO);
+std::string const msg_info_gee = "--- FixSoftError DONE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_gee);
+std::string const msg_info_tte = "PixelFECSupervisor::FixSoftError: A prompt SOAP reply is sent back before exiting function";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_tte);
   
   return reply;
   
@@ -3676,94 +3925,123 @@ void PixelFECSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine &
 
   PixelTimer FixingSoftErrorTimer;
   FixingSoftErrorTimer.start();
-  diagService_->reportError("--- FIXINGSOFTERROR ---",DIAGINFO);
+  std::string const msg_info_log = "--- FIXINGSOFTERROR ---";
+  LOG4CPLUS_INFO(sv_logger_,msg_info_log);
   //*console_<<"--- FIXINGSOFTERROR ---"<<std::endl;
-
+  
   // Stop the physicsRunning Workloop
   if (theCalibObject_==0) {
-
-    if(doTBMReadoutLoop_) {
-      
+    
+    if(doTBMReadoutLoop_) {   
       phlock_->take(); workloopContinue_=false; phlock_->give();
       workloop_->cancel();
-      diagService_->reportError("PixelFECSupervisor::Pause. Calib object == 0, physics workloop is cancelled.", DIAGINFO);
+      std::string const msg_info_azx = "PixelFECSupervisor::stateFixingSoftError. Calib object == 0, physics workloop is cancelled.";
+      LOG4CPLUS_INFO(sv_logger_,msg_info_azx);
     }
   }
-
+  
   try {
-    try
-      {
+    try {
 	//check HV status and prog dacs if necessary
 	//startupHVCheck(true);
 	startupHVCheck(true, true); // add the reset to the soft-error recovery, d.k. 20.11.12
-      }
-    catch (toolbox::fsm::exception::Exception & e)
-      {
-	XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
-      }
-    catch (std::exception & e) 
-      { //exceptions might be thrown by startupHVCheck
-	diagService_->reportError("PixelFECSupervisor::stateFixingSoftError: Detected Error: "+string(e.what()),DIAGERROR);
-	try {
-	  toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
-	  fsm_.fireEvent(ev);
-	} catch (toolbox::fsm::exception::Exception & e2) {
-	  diagService_->reportError("PixelFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!",DIAGFATAL);
-	}
-	return;
-      }
-  // Reset the list of bad channels for TBM readout
-#if 0
-  tbmReadbackBadChannels_.clear();
-#endif
-  // Reset all the AnalogLasts to the nominal values
-  // This way we'll immediately re-throw DetectSoftError if the problem wasn't actually fixed
-  std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
-  std::vector <PixelModuleName>::iterator module_name;
+    } catch (toolbox::fsm::exception::Exception & e)      {
+      XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
+    } catch (std::exception & e){ 
+      std::string const msg_error_vjb = "PixelFECSupervisor::stateFixingSoftError: Detected Error: "+string(e.what());
+      LOG4CPLUS_ERROR(sv_logger_,msg_error_vjb);
+      std::exception * error_ptr = &e;
+      pixel::PixelFECSupervisorException *new_exception = dynamic_cast<pixel::PixelFECSupervisorException *> (error_ptr);
+      XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_vjb, *new_exception);
+      this->notifyQualified("fatal",f);
+      //exceptions might be thrown by startupHVCheck
+      try {
+	toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
+	fsm_.fireEvent(ev);
+      } catch (toolbox::fsm::exception::Exception & e2) {
+	std::string const msg_fatal_srm = "PixelFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!";
+	LOG4CPLUS_FATAL(sv_logger_,msg_fatal_srm);
+	XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_fatal_srm, e2);
+	this->notifyQualified("fatal",f);
+      } // try-catch 
+      return;
+    } // try-catch
 
-  for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
-      PixelTBMSettings* tempTBMs = theTBMs_.find(*module_name)->second;
-      if (tempTBMs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve TBM settings!");
+    // deal with the FEC seu detector
+    if(doTBMReadoutLoop_) {   // do only if required
+
 #if 0
-      analogInputBiasLast_[module_name->modulename()] = tempTBMs->getAnalogInputBias();
-      analogOutputBiasLast_[module_name->modulename()] = tempTBMs->getAnalogOutputBias();
-      analogOutputGainLast_[module_name->modulename()] = tempTBMs->getAnalogOutputBias();
+      // Reset the list of bad channels for TBM readout
+      tbmReadbackBadChannels_.clear();
 #endif
-  }
     
+      // Reset all the AnalogLasts to the nominal values
+      // This way we'll immediately re-throw DetectSoftError if the problem wasn't actually fixed
+      std::vector <PixelModuleName> modules=theDetectorConfiguration_->getModuleList();
+      std::vector <PixelModuleName>::iterator module_name;
+      
+      for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
+	
+	const PixelHdwAddress& module_firstHdwAddress = theNameTranslation_->firstHdwAddress( *module_name );
+	unsigned int fecnumber=module_firstHdwAddress.fecnumber();
+	unsigned int feccrate=theFECConfiguration_->crateFromFECNumber(fecnumber);
+	//unsigned int fecVMEBaseAddress=theFECConfiguration_->VMEBaseAddressFromFECNumber(fecnumber);
+	
+	//Only work with this module if it belongs to this PixelFECSupervisor's crate
+	if (feccrate==crate_) {
+	  //cout<<module_name->modulename()<<" "<<theTBMs_.size()<<endl;
+	  PixelTBMSettings* tempTBMs = theTBMs_.find(*module_name)->second;
+	  if (tempTBMs==0) XCEPT_RAISE(xdaq::exception::Exception,"Failed to retrieve TBM settings!");      
+
+#if 0	  
+	  analogInputBiasLast_[module_name->modulename()] = tempTBMs->getAnalogInputBias();
+	  analogOutputBiasLast_[module_name->modulename()] = tempTBMs->getAnalogOutputBias();
+	  analogOutputGainLast_[module_name->modulename()] = tempTBMs->getAnalogOutputBias();
+#endif
+	} // if right crate
+      } // for loop 
+    } // if do 
+
     toolbox::Event::Reference e(new toolbox::Event("FixingSoftErrorDone", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
-    diagService_->reportError("PixelFECSupervisor::stateFixingSoftError: Detected Error: "+string(e.what()),DIAGERROR);
+    std::string const msg_error_pxm = "PixelFECSupervisor::stateFixingSoftError: Detected Error: "+string(e.what());
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_pxm);
+    XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_pxm, e);
+    this->notifyQualified("fatal",f);
     try {
       toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
       fsm_.fireEvent(ev);
     } catch (toolbox::fsm::exception::Exception & e2) {
-      diagService_->reportError("PixelFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!",DIAGFATAL);
+      std::string const msg_fatal_xmf = "PixelFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!";
+      LOG4CPLUS_FATAL(sv_logger_,msg_fatal_xmf);
+      XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_fatal_xmf, e2);
+      this->notifyQualified("fatal",f);
     }
     return;
   }
-
+  
   // Re-start the physicsRunning workloop
-  if (theCalibObject_==0) {
-
+  if (theCalibObject_==0) {    
     if(doTBMReadoutLoop_) {
-      
       phlock_->take(); workloopContinue_=true; phlock_->give();
       workloop_->activate();
-      diagService_->reportError("Resume. Physics data taking workloop activated.", DIAGINFO);
+      std::string const msg_info_ndq = "stateFixingSoftError. Physics data taking workloop activated.";
+      LOG4CPLUS_INFO(sv_logger_,msg_info_ndq);
     }
   }
-
+  
   FixingSoftErrorTimer.stop();
-  diagService_->reportError("--- Exit PixelFECSupervisor::stateFixingSoftError --- "+stringF(FixingSoftErrorTimer.tottime()),DIAGINFO);
-
+  std::string const msg_info_tui = "--- Exit PixelFECSupervisor::stateFixingSoftError --- "+stringF(FixingSoftErrorTimer.tottime());
+  LOG4CPLUS_INFO(sv_logger_,msg_info_tui);
+  
 }
 
 
 xoap::MessageReference PixelFECSupervisor::ResumeFromSoftError (xoap::MessageReference msg)
 {
-  diagService_->reportError("--- RESUMEFROMSOFTERROR ---",DIAGINFO);
+std::string const msg_info_vhq = "--- RESUMEFROMSOFTERROR ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_vhq);
   //*console_<<"--- Resuming From Soft Error ---"<<std::endl;
 
 
@@ -3775,9 +4053,12 @@ xoap::MessageReference PixelFECSupervisor::ResumeFromSoftError (xoap::MessageRef
     fsm_.fireEvent(e);
 
   } catch (toolbox::fsm::exception::Exception & e) {
+std::string const msg_error_ksb = "[PixelFECSupervisor::ResumeFromSoftError] ResumeFromSoftError is an invalid command for the current state."+state_.toString();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_ksb);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_ksb,e);
+this->notifyQualified("fatal",f);
 
     //*console_<<"[PixelFECSupervisor::ResumeFromSoftError] ResumeFromSoftError is an invalid command for the "<<state_.toString()<<" state."<<std::endl;
-    diagService_->reportError("[PixelFECSupervisor::ResumeFromSoftError] ResumeFromSoftError is an invalid command for the current state."+state_.toString(), DIAGERROR);
 
     reply = MakeSOAPMessageReference("ResumeFromSoftErrorFailed");
 
@@ -3787,9 +4068,10 @@ xoap::MessageReference PixelFECSupervisor::ResumeFromSoftError (xoap::MessageRef
 }
 
 bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
+
   // This workloop monitors the TBM settings registers and sends DetectSoftError to PixelSupervisor
   // if they change from the database values
-
+  
   // For pilot it does nothing.
 
 #if 0
@@ -3849,8 +4131,7 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 		      match = match & (read_analog_output_gain==FECInterface[fecVMEBaseAddress]->tbmread(mfec, mfecchannel,tbmchannel, hubaddress, port, 7));
 	      }
 	}
-	catch (TBMReadException e) {
-		// Add this to the list of bad channels and go to the next channel
+catch (TBMReadException e) {		// Add this to the list of bad channels and go to the next channel
 		tbmReadbackBadChannels_.push_back(module_name->modulename());
 		continue;
 	}
@@ -3875,7 +4156,8 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
           // Send a message to PixelSuperVisor
 	 std::stringstream warn;
 	 warn << "Detected soft error using TBM readback in module " << module_name->modulename().c_str();
-         diagService_->reportError(warn.str().c_str(), DIAGWARN);
+std::string const msg_warn_vja = warn.str().c_str();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_vja);
 
 	 cout<<" Detected TBM error "<<module_name->modulename()<<" mfec "<<mfec<<" chan"<<" "<<mfecchannel<<" tbm "
 	     <<tbmchannel<<" hub "<<hubaddress<<" port "<<port
@@ -3916,12 +4198,19 @@ void PixelFECSupervisor::DetectSoftError() {
     catch (xcept::Exception & ex) {
       ostringstream err;
       err<<"Failed to send DetectSoftError to PixelSupervisor. Exception: "<<ex.what();
-      diagService_->reportError(err.str(),DIAGERROR);
+std::string const msg_error_jse = err.str();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_jse);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_error_jse,ex);
+this->notifyQualified("fatal",f);
+
       try {
 	toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
 	fsm_.fireEvent(ev);
       } catch (toolbox::fsm::exception::Exception & e2) {
-	diagService_->reportError("PixelFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!",DIAGFATAL);
+std::string const msg_fatal_ppg = "PixelFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_ppg);
+XCEPT_DECLARE_NESTED(pixel::PixelFECSupervisorException,f,msg_fatal_ppg, e2);
+this->notifyQualified("fatal",f);
       }
     }
     return;
