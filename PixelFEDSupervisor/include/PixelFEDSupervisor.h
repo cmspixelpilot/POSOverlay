@@ -118,8 +118,8 @@
 #endif
 
 // gio
-#include "diagbag/DiagBagWizard.h"
-#include "DiagCompileOptions.h"
+// #include "diagbag/DiagBagWizard.h"
+// #include "DiagCompileOptions.h"
 //
 
 #include "toolbox/task/Timer.h"
@@ -139,11 +139,14 @@
 #include "xdata/Float.h"
 #include "xdata/Table.h"
 
-// END - PixelFEDMonitor: Robert
+// temporary DiagSystem wrapper
+#include "PixelFEDSupervisor/include/DiagWrapper.h"
 
+namespace log4cplus{
+	class Logger;
+	}
 
-
-class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener, public PixelFEDSupervisorConfiguration
+class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public PixelFEDSupervisorConfiguration
 {
   public:
     static pixel::SharedObjectOwner<pixel::PixelErrorCollection> ErrorCollectionDataOwner;//Ships error data out
@@ -157,7 +160,7 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     ~PixelFEDSupervisor();
 
     //gio
-    void timeExpired (toolbox::task::TimerEvent& e);
+    // void timeExpired (toolbox::task::TimerEvent& e);
 
     //
     void Default(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
@@ -238,6 +241,9 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     bool PhysicsRunning(toolbox::task::WorkLoop *w1);
 
     void callback_TA_CREDIT(toolbox::mem::Reference *ref) throw(i2o::exception::Exception);
+    
+    inline std::string stringF(int number) { stringstream ss; ss << number; return ss.str(); };
+    inline std::string stringF(const char* text) { stringstream ss; ss << text; return ss.str(); };
 
 
   protected:
@@ -367,19 +373,28 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     //        fed #        iterations stuck
     std::map<unsigned int, unsigned int> fedStuckInBusy_;
 
-    void DIAG_CONFIGURE_CALLBACK();
-    void DIAG_APPLY_CALLBACK();
+    // void DIAG_CONFIGURE_CALLBACK();
+    // void DIAG_APPLY_CALLBACK();
 
     /* xgi method called when the link <display_diagsystem> is clicked */
-    void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+    // void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+    DiagWrapper* diagService_;
+    static const int DIAGDEBUG = 0;
+    static const int DIAGTRACE = 1;
+    static const int DIAGUSERINFO = 2;
+    static const int DIAGINFO = 3;
+    static const int DIAGWARN = 4;
+    static const int DIAGERROR = 5;
+    static const int DIAGFATAL = 6;
 
     void closeOutputFiles();
     void reportStatistics();
     void EndOfRunFEDReset();
+    void SEUCountReset();
 
     toolbox::BSem* phlock_;
     bool workloopContinue_;
-
+    log4cplus::Logger &sv_logger_;
 };
 
 #endif
