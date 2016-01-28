@@ -3,100 +3,39 @@
 
 <!-- PixelSupervisor -->
   <xc:Context id="0" url="http://vmepc-s2b18-06-01.cms:1970/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1921" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1921" network="xmas"/>
     <xc:Application class="PixelSupervisor" id="51" instance="0" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
-        <UseRunInfo xsi:type="xsd:boolean">false</UseRunInfo>
+        <UseRunInfo xsi:type="xsd:boolean">true</UseRunInfo>
         <DataBaseConnection xsi:type="xsd:string">jdbc:oracle:thin:@cmsonr1-v:10121/cms_rcms.cern.ch</DataBaseConnection>
         <DataBaseUsername xsi:type="xsd:string">pixelpro</DataBaseUsername>
         <RunSequence xsi:type="xsd:string">cms.pixels.pib</RunSequence>
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/SupervisorConfig.set</DiagSystemSettings>
-        <TTCSupervisorApplicationName xsi:type="xsd:string">pixel::ici::PixeliCISupervisor</TTCSupervisorApplicationName>
+        <TTCSupervisorApplicationName xsi:type="xsd:string">pixel::tcds::PixeliCISupervisor</TTCSupervisorApplicationName>
+        <LTCSupervisorApplicationName xsi:type="xsd:string">pixel::tcds::PixelPISupervisor</LTCSupervisorApplicationName>
         <UseTCDS xsi:type="xsd:boolean">true</UseTCDS>
         <UseTTC xsi:type="xsd:boolean">false</UseTTC>
       </properties>
     </xc:Application>
-    <xc:Module>/opt/xdaq/lib/libxdaq2rc.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxdaq2rc.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelSupervisor.so</xc:Module>
   </xc:Context>
 
-  <!--  NO LOG
-  <xc:Context id="1" url="http://vmepc-s2b18-06-01.cms:1975/">
-
-    <xc:Application class="GlobalErrorDispatcher" id="40" instance="0" network="local" group="daq">
-      <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct"> 
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/GEDConfig.set</DiagSystemSettings>
-        <LogFilePath xsi:type="xsd:string">/tmp/</LogFilePath>
-      </properties>
-    </xc:Application>
-    <xc:Module>${BUILD_HOME}/DiagSystem/tools/lib/libGlobalErrorDispatcher.so</xc:Module>
-
-    <xc:Application class="AjaxLogReader" id="41" instance="0" network="local" group="daq">
-      <properties xmlns="urn:xdaq-application:AjaxLogReader" xsi:type="soapenc:Struct"> 
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/LogViewer.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
-    <xc:Module>${BUILD_HOME}/DiagSystem/tools/lib/libAjaxLogReader.so</xc:Module>
-  </xc:Context>
-  -->
-  
-  <!-- NO DCS
-  <xc:Context id="2" url="http://vmepc-s2b18-06-01.cms:1976/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="19111" network="xmas"/>
-    <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="xmas" group="dcs">
-      <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct"> 
-        <configuration xsi:type="xsd:string">/nfshome0/pixelpro/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/SupervisorConfig.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
-    <xc:Module>${BUILD_HOME}/pixel/lib/libPixelDCSInterface.so</xc:Module>
-    <xc:Application class="PixelDCStoTrkFECDpInterface" id="121" instance="0" network="xmas" group="daq">
-      <properties xmlns="urn:xdaq-application:PixelDCSInterface" xsi:type="soapenc:Struct"> 
-        <dpValueUpdate_maxLength xsi:type="xsd:integer">500</dpValueUpdate_maxLength>
-        <dpName_status xsi:type="xsd:string">cms_Pixel_DCSInterface</dpName_status>
-        <oracleViewName_dpNames xsi:type="xsd:string">urn:tstore-view-SQL:TrkFECdpNamesView</oracleViewName_dpNames>
-        <oracleTableName_dpNames xsi:type="xsd:string">CMS_PXL_PIXEL_VIEW.FPIX_DCU_DATAPOINTS_NEW_V</oracleTableName_dpNames>
-        <oracleViewName_dpFilter xsi:type="xsd:string">urn:tstore-view-SQL:TrkFECdpFilterView</oracleViewName_dpFilter>
-        <oracleTableName_dpFilter xsi:type="xsd:string">CMS_PXL_PIXEL_VIEW.FPIX_DCU_FILTER_NEW_V</oracleTableName_dpFilter>
-        <oracleViewName_dpCalibration xsi:type="xsd:string">urn:tstore-view-SQL:TrkFECdpCalibrationView</oracleViewName_dpCalibration>
-        <oracleTableName_dpCalibration xsi:type="xsd:string">FECTODCSDPCALIBRATION</oracleTableName_dpCalibration>
-        <oracleUserName xsi:type="xsd:string">CMS_PXL_PIXEL_R</oracleUserName>
-        <oraclePassword xsi:type="xsd:string">everyoneknows_mv2CERN</oraclePassword>
-        <version_dcu_calib_filter xsi:type="xsd:string">V1</version_dcu_calib_filter>
-        <psx_system_name xsi:type="xsd:string">cms_trk_dcs_1:</psx_system_name>
-      </properties>
-    </xc:Application>
-  <xc:Module>${BUILD_HOME}/pixel/lib/libPixelDCSInterface.so</xc:Module>
-  <xc:Application class="tstore::TStore" id="200" instance="0" network="xmas" group="daq">
-    <properties xmlns="urn:xdaq-application:TStore" xsi:type="soapenc:Struct"> 
-      <configurationRootDirectory xsi:type="xsd:string">/nfshome0/pixelpro/TriDAS/pixel/PixelDCSInterface/xml/</configurationRootDirectory>
-    </properties>
-    <xc:Module>${XDAQ_ROOT}/lib/libtstoreutils.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libtstore.so</xc:Module>
-  </xc:Context>
-  -->
 
 <!-- PixelFEDSupervisor 3 -->
   <xc:Context id="6" url="http://vmepc-s2b18-06-01.cms:1972/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1912" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1912" network="xmas"/>
 
     <xc:Application class="PixelFEDSupervisor" id="72" instance="3" network="xmas" group="daq" service="PixelFEDSupervisor">
       <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct"> 
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/SupervisorConfig.set</DiagSystemSettings>
       </properties>
     </xc:Application>
+    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelFEDSupervisor.so</xc:Module>
   </xc:Context>
 
   <!-- <xc:Context id="7" url="http://vmepc-s2b18-06-01.cms:1975/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1919" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1919" network="xmas"/>
     <xc:Application class="ttc::TTCciControl" id="90" instance="1" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
         <name xsi:type="xsd:string">Board 1</name>
@@ -116,31 +55,29 @@
 
 <!-- PixelFECSupervisor -->
   <xc:Context id="9" url="http://vmepc-s2b18-06-01.cms:1974/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1915" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1915" network="xmas"/>
     <xc:Application class="PixelFECSupervisor" id="61" instance="2" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelFECSupervisor" xsi:type="soapenc:Struct"> 
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/SupervisorConfig.set</DiagSystemSettings>
       </properties>
     </xc:Application>
+    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelFECSupervisor.so</xc:Module>
   </xc:Context>
 
 <!-- PixelTKFECSupervisor -->
   <xc:Context id="12" url="http://vmepc-s2b18-06-01.cms:1973/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1918" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1918" network="xmas"/>
 
     <xc:Application class="PixelTKFECSupervisor" id="101" instance="2" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelTKSupervisor" xsi:type="soapenc:Struct"> 
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/SupervisorConfig.set</DiagSystemSettings>
       </properties>
     </xc:Application>
+    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTKFECSupervisor.so</xc:Module>
   </xc:Context>
 
   <!-- <xc:Context id="13" url="http://vmepcs2b16-10.cms:1973/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepcs2b16-10.cms" port="1920" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepcs2b16-10.cms" port="1920" network="xmas"/>
     <xc:Application class="ttc::TTCciControl" id="91" instance="2" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
         <name xsi:type="xsd:string">Board 1</name>
@@ -160,9 +97,9 @@
 
 <!-- PixeliCISupervisor 1 -->
   <xc:Context  id="17" url="http://vmepc-s2b18-06-01.cms:1987/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1927" network="xmas"/>
-    <xc:Application class="pixel::ici::PixeliCISupervisor" id="87" instance="1" network="xmas" group="daq">
-      <properties xmlns="urn:xdaq-application:pixel::ici::pixel::PixeliCISupervisor" xsi:type="soapenc:Struct">
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1927" network="xmas"/>
+    <xc:Application class="pixel::tcds::PixeliCISupervisor" id="87" instance="1" network="xmas" group="daq">
+      <properties xmlns="urn:xdaq-application:pixel::tcds::PixeliCISupervisor" xsi:type="soapenc:Struct">
          <tcdsAppClassName xsi:type="xsd:string">tcds::ici::ICIController</tcdsAppClassName>
          <tcdsAppInstance xsi:type="xsd:unsignedInt">1</tcdsAppInstance>
          <sessionId xsi:type="xsd:string">dummy-session</sessionId>
@@ -179,14 +116,14 @@
      <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
      <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
      <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
-     <xc:Module>${BUILD_HOME}/pixel/lib/libPixeliCISupervisor.so</xc:Module>
+     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTCDSSupervisor.so</xc:Module>
   </xc:Context>
 
-<!-- PixeliCISupervisor 2 -->
+<!-- PixelPISupervisor 1 -->
   <xc:Context  id="18" url="http://vmepc-s2b18-06-01.cms:1988/">
-    <xc:Endpoint protocol="tcp" service="b2in" interface="eth0" hostname="vmepc-s2b18-06-01.cms" port="1928" network="xmas"/>
-    <xc:Application class="pixel::ici::PixeliCISupervisor" id="88" instance="2" network="xmas" group="daq">
-      <properties xmlns="urn:xdaq-application:pixel::ici::pixel::PixeliCISupervisor" xsi:type="soapenc:Struct">
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-06-01.cms" port="1928" network="xmas"/>
+    <xc:Application class="pixel::tcds::PixelPISupervisor" id="88" instance="1" network="xmas" group="daq">
+      <properties xmlns="urn:xdaq-application:pixel::tcds::PixelPISupervisor" xsi:type="soapenc:Struct">
         <tcdsAppClassName xsi:type="xsd:string">tcds::pi::PIController</tcdsAppClassName>
         <tcdsAppInstance xsi:type="xsd:unsignedInt">1</tcdsAppInstance>
         <sessionId xsi:type="xsd:string">dummy-session</sessionId>
@@ -203,7 +140,7 @@
     <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
-    <xc:Module>${BUILD_HOME}/pixel/lib/libPixeliCISupervisor.so</xc:Module>
+    <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTCDSSupervisor.so</xc:Module>
   </xc:Context>
 
 <!-- Remote contexts -->
