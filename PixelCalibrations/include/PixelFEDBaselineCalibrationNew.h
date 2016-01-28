@@ -38,6 +38,7 @@ class PixelFEDBaselineCalibrationNew: public PixelFEDCalibrationBase {
 
   unsigned int iteration_;
   float tolerance_;
+  bool doCut_;
 
   std::vector<std::pair<unsigned int,std::vector<unsigned int> > > fedsAndChannels_;
   std::map <unsigned int, std::map<unsigned int, std::vector<std::stringstream*> > > summary_long_;

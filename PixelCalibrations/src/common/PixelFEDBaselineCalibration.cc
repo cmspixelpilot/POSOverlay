@@ -8,7 +8,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "iomanip"
 
@@ -22,10 +22,14 @@
 
 using namespace pos;
 
-const unsigned int numberOfFEDs=40;
-const unsigned int channelsPerFED=36;
-const unsigned int opticalReceiversPerFED=3;
-const unsigned int blackTolerance=15;
+namespace {
+  const unsigned int numberOfFEDs=40;
+  const unsigned int channelsPerFED=36;
+  const unsigned int opticalReceiversPerFED=3;
+  const unsigned int blackTolerance=15;
+  const bool lowUBSetting = false;
+  const int lowUBValue = 75;
+}
 
 PixelFEDBaselineCalibration::PixelFEDBaselineCalibration(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
   : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr)
@@ -395,7 +399,8 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 	float ub = UB_Channel.at(fednumber*channelsPerFED+channel-1).mean();
 	// nomal case when ub=150
 	int lowBCut = int(  (B_Channel.at(fednumber*channelsPerFED+channel-1).mean() + ub )/2. );
-	if(ub<74.) { // for special channels with very low ub
+
+	if(ub<lowUBValue && lowUBSetting) { // for special channels with very low ub
 	  std::cout<<" FED ID = "<<fednumber<<", Channel = "<<channel
 		   <<" Low UB "<< ub <<" make the cut asymmetric "<<lowBCut;
 	  lowBCut = int( (B_Channel.at(fednumber*channelsPerFED+channel-1).mean())*0.45 + ub*0.55 );

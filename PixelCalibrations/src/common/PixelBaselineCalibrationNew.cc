@@ -13,7 +13,7 @@
 #include "PixelCalibrations/include/PixelBaselineCalibrationNew.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 #include "xdata/UnsignedInteger.h"
 
 using namespace pos;
@@ -39,10 +39,10 @@ void PixelBaselineCalibrationNew::beginCalibration()
   MaxIterations_=15;
 
   string tolerance = tempCalibObject->parameterValue("tolerance") ;
-  if (tolerance =="") tolerance_=5;
+  if (tolerance =="") tolerance_=15;
   else {
     tolerance_= atof( tolerance.c_str() );
-    if (tolerance_<=0) tolerance_=5;    
+    if (tolerance_<=0) tolerance_=15;    
   }
   
   // Turn off automatic baseline correction.

@@ -15,6 +15,8 @@
 
 #include "PixelSupervisorConfiguration/include/PixelFEDSupervisorConfiguration.h"
 
+// temporary DiagSystem wrapper
+#include "PixelCalibrations/include/DiagWrapper.h"
 
 class PixelFEDCalibrationBase : public PixelFEDSupervisorConfiguration, 
 	    public SOAPCommander {
@@ -34,6 +36,18 @@ class PixelFEDCalibrationBase : public PixelFEDSupervisorConfiguration,
   unsigned int TransparentDataStart (uint32_t *buffer, int fed=-1, int channel=-1);
 
   virtual void initializeFED()=0;
+  
+  inline std::string stringF(int number) { stringstream ss; ss << number; return ss.str(); };
+  inline std::string stringF(const char* text) { stringstream ss; ss << text; return ss.str(); };
+
+  DiagWrapper* diagService_;
+  static const int DIAGDEBUG = 0;
+  static const int DIAGTRACE = 1;
+  static const int DIAGUSERINFO = 2;
+  static const int DIAGINFO = 3;
+  static const int DIAGWARN = 4;
+  static const int DIAGERROR = 5;
+  static const int DIAGFATAL = 6;
 
 
  protected:
