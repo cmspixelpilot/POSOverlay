@@ -45,8 +45,8 @@
 #include "cgicc/HTMLClasses.h"
 
 // gio
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "toolbox/fsm/AsynchronousFiniteStateMachine.h"
 #include "toolbox/fsm/FailedEvent.h"
@@ -82,7 +82,14 @@
 //for debugging
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
-class PixelTKFECSupervisor: public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener, public PixelTKFECSupervisorConfiguration
+// temporary DiagSystem wrapper
+#include "PixelTKFECSupervisor/include/DiagWrapper.h"
+
+namespace log4cplus{
+	class Logger;
+	}
+
+class PixelTKFECSupervisor: public xdaq::Application, public SOAPCommander, public PixelTKFECSupervisorConfiguration
 
 {
 
@@ -90,7 +97,7 @@ public:
 
   // gio
   toolbox::BSem executeReconfMethodMutex;
-  DiagBagWizard * diagService_;
+  // DiagBagWizard * diagService_;
   //
   
   XDAQ_INSTANTIATOR();
@@ -98,7 +105,7 @@ public:
   PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);
   ~PixelTKFECSupervisor();
   //gio
-  void timeExpired (toolbox::task::TimerEvent& e);
+  // void timeExpired (toolbox::task::TimerEvent& e);
   //
   void helpMe( char *programName );
   void createFecAccess ( int argc, char **argv, int *cnt , unsigned int slot);
@@ -174,6 +181,9 @@ public:
   void transitionHaltedToConfiguring (toolbox::Event::Reference e) ; //throw (toolbox::fsm::exception::Exception);
   void enteringError(toolbox::Event::Reference e);
   
+  inline std::string stringF(int number) { std::stringstream ss; ss << number; return ss.str(); };
+  inline std::string stringF(const char* text) { std::stringstream ss; ss << text; return ss.str(); };
+  
 protected:
   
   toolbox::fsm::AsynchronousFiniteStateMachine fsm_;
@@ -216,11 +226,19 @@ private:
 		      tscType8 piaChannelAddress,
 		      bool turnOn,
 		      unsigned int portNumber);
-  void DIAG_CONFIGURE_CALLBACK();
-  void DIAG_APPLY_CALLBACK();
+  // void DIAG_CONFIGURE_CALLBACK();
+  // void DIAG_APPLY_CALLBACK();
 
   /* xgi method called when the link <display_diagsystem> is clicked */
-  void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+  // void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+  DiagWrapper* diagService_;
+  static const int DIAGDEBUG = 0;
+  static const int DIAGTRACE = 1;
+  static const int DIAGUSERINFO = 2;
+  static const int DIAGINFO = 3;
+  static const int DIAGWARN = 4;
+  static const int DIAGERROR = 5;
+  static const int DIAGFATAL = 6;
 
   PixelTimer GlobalTimer_;
   PixelTimer fsmStateNotificationTimer_;
@@ -231,6 +249,7 @@ private:
   bool workloopContinue_;
   bool workloopContinueRC_;
   bool suppressHardwareError_;
+  log4cplus::Logger & sv_logger_;
 
 };
 #endif
