@@ -43,6 +43,10 @@
 #include "toolbox/fsm/FiniteStateMachine.h"
 #include "toolbox/fsm/FailedEvent.h"
 
+#include "toolbox/task/WorkLoopFactory.h" 
+#include "toolbox/task/WaitingWorkLoop.h" 
+#include "toolbox/task/Action.h" 
+
 #include "xdaq2rc/RcmsStateNotifier.h"
 
 //#include "unistd.h"
@@ -54,8 +58,8 @@
 #include "PixelCalibrations/include/PixelCalibrationBase.h"
 
 // gio
-#include "diagbag/DiagBagWizard.h"
-#include "DiagCompileOptions.h"
+// #include "diagbag/DiagBagWizard.h"
+// #include "DiagCompileOptions.h"
 
 #include "toolbox/exception/Handler.h"
 #include "toolbox/Event.h"
@@ -67,11 +71,18 @@
 #include "xcept/Exception.h"
 #include "xmas/sensor/exception/Exception.h"
 
+// temporary DiagSystem wrapper
+#include "PixelSupervisor/include/DiagWrapper.h"
+
 //class pos::PixelConfigKey;
 class PixelConfigDataUpdates;
 class PixelJobControlMonitor;
 
-class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfiguration, public SOAPCommander, public toolbox::task::TimerListener
+namespace log4cplus{
+	class Logger;
+	}
+
+class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfiguration, public SOAPCommander //, public toolbox::task::TimerListener
 {
  public:
 
@@ -85,7 +96,7 @@ class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfigura
   ~PixelSupervisor(){};
 
   //gio
-  void timeExpired (toolbox::task::TimerEvent& e);
+  // void timeExpired (toolbox::task::TimerEvent& e);
   //
 
   void Default(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
@@ -251,6 +262,9 @@ class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfigura
   void SendConfigurationToTTC();
   void SendConfigurationToLTC();
 
+  inline std::string stringF(int number) { stringstream ss; ss << number; return ss.str(); };
+  inline std::string stringF(const char* text) { stringstream ss; ss << text; return ss.str(); };
+
  protected:
 	
   toolbox::fsm::FiniteStateMachine fsm_;
@@ -315,16 +329,24 @@ class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfigura
 
   void ClearErrors(std::string which);
 
-  void DIAG_CONFIGURE_CALLBACK();
-  void DIAG_APPLY_CALLBACK();
+  // void DIAG_CONFIGURE_CALLBACK();
+  // void DIAG_APPLY_CALLBACK();
 
   /* xgi method called when the link <display_diagsystem> is clicked */
-  void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+  // void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+  DiagWrapper* diagService_;
+  static const int DIAGDEBUG = 0;
+  static const int DIAGTRACE = 1;
+  static const int DIAGUSERINFO = 2;
+  static const int DIAGINFO = 3;
+  static const int DIAGWARN = 4;
+  static const int DIAGERROR = 5;
+  static const int DIAGFATAL = 6;
 
   bool extratimers_;
   PixelTimer configurationTimer_;
   bool runNumberFromLastFile_; 
-
+  log4cplus::Logger& sv_logger_;
 };
 
 #endif
