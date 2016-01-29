@@ -23,17 +23,17 @@
 #include "toolbox/task/Action.h"
 
 //diagsystem
-#include "toolbox/task/Timer.h"
-#include "toolbox/task/TimerFactory.h"
-#include "toolbox/task/TimerListener.h"
-#include "toolbox/TimeInterval.h"
+// #include "toolbox/task/Timer.h"
+// #include "toolbox/task/TimerFactory.h"
+// #include "toolbox/task/TimerListener.h"
+// #include "toolbox/TimeInterval.h"
 
 #include "xoap/DOMParserFactory.h"
 #include "xercesc/dom/DOMDocument.hpp"
 #include "xercesc/dom/DOMNodeList.hpp"
 #include "xercesc/dom/DOMNode.hpp"
 
-#include <diagbag/DiagBagWizard.h>
+// #include <diagbag/DiagBagWizard.h>
 
 #include "PixelUtilities/PixelGUIUtilities/include/HTML2XGI.h"
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSPVSSDpe.h"
@@ -95,17 +95,17 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
   : xdaq::Application(s), SOAPCommander(this), executeReconfMethodMutex(toolbox::BSem::FULL),fsm_("urn:toolbox-task-workloop:PixelDCSFSMInterface")
 {
 
-  diagService_ = new DiagBagWizard(("ReconfigurationModule") ,
-				   this->getApplicationLogger(),
-				   getApplicationDescriptor()->getClassName(),
-				   getApplicationDescriptor()->getInstance(),
-				   getApplicationDescriptor()->getLocalId(),
-                                   (xdaq::WebApplication *)this,
-				   "MYSYSTEM",
-				   "MYSUBSYTSTEM"
-				   );
-  
-  diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
+  // diagService_ = new DiagBagWizard(("ReconfigurationModule") ,
+  //            this->getApplicationLogger(),
+  //            getApplicationDescriptor()->getClassName(),
+  //            getApplicationDescriptor()->getInstance(),
+  //            getApplicationDescriptor()->getLocalId(),
+  //                                  (xdaq::WebApplication *)this,
+  //            "MYSYSTEM",
+  //            "MYSUBSYTSTEM"
+  //            );
+  //
+  // diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
 
   // A SOAP callback used for generic handshaking by retrieving the FSM state
   xoap::bind(this, &PixelDCSFSMInterface::FSMStateRequest, "FSMStateRequest", XDAQ_NS_URI);
@@ -195,15 +195,15 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
   smiCommander_ = new PixelDCSSMICommander(this, smiDescriptor);
 
    //diagsystem
-  DIAG_DECLARE_USER_APP
-   std::stringstream timerName;
-   timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
-   timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
-   toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
-   toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
-   toolbox::TimeVal start;
-   start = toolbox::TimeVal::gettimeofday() + interval;
-   timer->schedule( this, start,  0, "" );
+  // DIAG_DECLARE_USER_APP
+   // std::stringstream timerName;
+ //   timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
+ //   timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
+ //   toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
+ //   toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
+ //   toolbox::TimeVal start;
+ //   start = toolbox::TimeVal::gettimeofday() + interval;
+ //   timer->schedule( this, start,  0, "" );
    
 }
 
@@ -218,10 +218,10 @@ PixelDCSFSMInterface::~PixelDCSFSMInterface()
 }
 
 //diagsystem
-void PixelDCSFSMInterface::timeExpired (toolbox::task::TimerEvent& e)
-{
-  DIAG_EXEC_FSM_INIT_TRANS
-}
+// void PixelDCSFSMInterface::timeExpired (toolbox::task::TimerEvent& e)
+// {
+//   DIAG_EXEC_FSM_INIT_TRANS
+// }
 
 xoap::MessageReference PixelDCSFSMInterface::FSMStateRequest (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
@@ -975,7 +975,7 @@ void PixelDCSFSMInterface::XgiHandler(xgi::Input* in, xgi::Output* out) throw (x
     xoap::MessageReference msg = xoap::createMessage(); 
     try {
 
-      xoap::SOAPEnvelope env = msg->getEnvelope();
+      xoap::SOAPEnvelope env = msg->getSOAPPart().getEnvelope();
       xoap::SOAPBody body = env.getBody();
       xoap::SOAPName cmdName = env.createName("connect","smi",PSX_SMI_NS_URI);
       xoap::SOAPBodyElement bodyElem = body.addBodyElement(cmdName);
@@ -1016,7 +1016,7 @@ void PixelDCSFSMInterface::XgiHandler(xgi::Input* in, xgi::Output* out) throw (x
       reply->writeTo(std::cout);
       std::cout << std::endl;
 
-      xoap::SOAPEnvelope replyEnv = reply->getEnvelope();
+      xoap::SOAPEnvelope replyEnv = reply->getSOAPPart().getEnvelope();
       xoap::SOAPBody replyBody = replyEnv.getBody();
       if (replyBody.hasFault())
 	{
@@ -1420,7 +1420,7 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       
       string nodename=(*fsmNodeA4602)->getName();
       if (nodeIsUsedA4602.find(nodename)==nodeIsUsedA4602.end() ) {
- 	diagService_->reportError("[PixelDCSFSMInterface::stateConfiguring] Node "+nodename+" is not in the detconfig!",DIAGINFO);
+   diagService_->reportError("[PixelDCSFSMInterface::stateConfiguring] Node "+nodename+" is not in the detconfig!",DIAGINFO);
 	(*fsmPartition).setNodeUsedA4602(nodename,false);
       }
       else {
@@ -1428,7 +1428,7 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
  	ostringstream os;
  	os<<"[PixelDCSFSMInterface::stateConfiguring] Node = "<<nodename<<" ; state = ";
  	if (nodeIsUsedA4602[nodename]) {os<<"Used";} else {os<<"NOT used";}
- 	diagService_->reportError(os.str(),DIAGDEBUG);
+   diagService_->reportError(os.str(),DIAGDEBUG);
       }
     }
     std::list<const PixelDCSFSMNodeA4603*> fsmNodesA4603 = (*fsmPartition).getNodeListA4603();
@@ -1437,7 +1437,7 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       
       string nodename=(*fsmNodeA4603)->getName();
        if (nodeIsUsedA4603.find(nodename)==nodeIsUsedA4603.end() ) {
- 	diagService_->reportError("[PixelDCSFSMInterface::stateConfiguring] Node "+nodename+" is not in the detconfig!",DIAGINFO);
+   diagService_->reportError("[PixelDCSFSMInterface::stateConfiguring] Node "+nodename+" is not in the detconfig!",DIAGINFO);
 	(*fsmPartition).setNodeUsedA4603(nodename,false);
       }
       else  {
@@ -1445,7 +1445,7 @@ void PixelDCSFSMInterface::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
  	ostringstream os;
  	os<<"[PixelDCSFSMInterface::stateConfiguring] Node = "<<nodename<<" ; state = ";
  	if (nodeIsUsedA4603[nodename]) {os<<"Used";} else {os<<"NOT used";}
- 	diagService_->reportError(os.str(),DIAGDEBUG);
+   diagService_->reportError(os.str(),DIAGDEBUG);
       }
     }
 

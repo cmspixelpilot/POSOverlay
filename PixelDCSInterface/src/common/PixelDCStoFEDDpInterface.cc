@@ -357,7 +357,7 @@ xoap::MessageReference PixelDCStoFEDDpInterface::updateDpValueLastDAC(xoap::Mess
   std::cout << std::endl;
   std::cout << " ---------------------------------------------- "<< std::endl;
 
-  getApplicationContext()->postSOAP(fedResponse, fedDescriptor);
+  getApplicationContext()->postSOAP(fedResponse, *this->getApplicationDescriptor(), *fedDescriptor);
 
 //--- compose SOAP message containing update of calibrated data-point values
 //    and send it to PVSS (via PSX interface)
@@ -371,7 +371,7 @@ xoap::MessageReference PixelDCStoFEDDpInterface::updateDpValueLastDAC(xoap::Mess
   std::cout << std::endl;
   std::cout << " ---------------------------------------------- "<< std::endl;
 
-  xoap::MessageReference psxResponse = getApplicationContext()->postSOAP(psxRequest, psxDescriptor);
+  xoap::MessageReference psxResponse = getApplicationContext()->postSOAP(psxRequest, *this->getApplicationDescriptor(), *psxDescriptor);
   
 //--- print SOAP reply
   std::cout <<" Reply : -------------------------------------- "<< std::endl;
@@ -392,7 +392,7 @@ xoap::MessageReference PixelDCStoFEDDpInterface::updateDpValueLastDAC(xoap::Mess
   std::cout << std::endl;
   std::cout << " ---------------------------------------------- "<< std::endl;
   
-  xoap::MessageReference fecResponse = getApplicationContext()->postSOAP(fecRequest, fecDescriptor);
+  xoap::MessageReference fecResponse = getApplicationContext()->postSOAP(fecRequest, *this->getApplicationDescriptor(), *fecDescriptor);
   
 //--- print SOAP reply
   std::cout <<" Reply : -------------------------------------- "<< std::endl;
