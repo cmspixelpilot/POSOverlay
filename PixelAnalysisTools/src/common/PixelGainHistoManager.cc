@@ -17,10 +17,10 @@
 using namespace std;
 
 struct PixelLinearGainBranch{
-	float rocsWithSlopeGTN;
-	float rocsWithInterceptGTN;
-	float rocsWithChisquareGTN;
-	float rocsWithProbabilityGTN;
+	unsigned int rocsWithSlopeGTN;
+	unsigned int rocsWithInterceptGTN;
+	unsigned int rocsWithChisquareGTN;
+	unsigned int rocsWithProbabilityGTN;
 	float slope;
 	float intercept;
 	float chisquare;
@@ -32,7 +32,7 @@ struct PixelLinearGainBranch{
 };
 
 struct PixelTanhGainBranch{
-	float rocWithLinearityLTN;
+	unsigned int rocWithLinearityLTN;
 	float par0;
 	float par1;
 	float par2;
@@ -130,6 +130,11 @@ void PixelGainHistoManager::destroy(void){
   histoProbability1DMap_.clear();
   histoIntercept2DMap_  .clear();
   histoSlope2DMap_      .clear();
+#ifdef DEBUG
+  histoNpfits2DMap_     .clear();
+  histoDeltay2DMap_     .clear();
+  histoChisquare2DMap_  .clear();
+#endif
   //histoProbability2DMap_.clear();
   histoADC1DMap_.clear();
 }
@@ -243,17 +248,41 @@ void PixelGainHistoManager::bookHistos(void){
       histoIntercept2DMap_[rocName]->GetYaxis()->SetNdivisions(nYdivisions);
       histoIntercept2DMap_[rocName]->SetStats(false);
       histoIntercept2DMap_[rocName]->SetOption("COLZ");
+
+#ifdef DEBUG
+      histoName.str("");
+      histoName << rocName << "_Npfits2D";
+      histoNpfits2DMap_[rocName] = new TH2F(histoName.str().c_str(),histoName.str().c_str(),
+                                            52,-0.5,51.5,80,-0.5,79.5);
+      histoNpfits2DMap_[rocName]->GetXaxis()->SetTitle("col");
+      histoNpfits2DMap_[rocName]->GetXaxis()->SetNdivisions(nXdivisions);
+      histoNpfits2DMap_[rocName]->GetYaxis()->SetTitle("row");
+      histoNpfits2DMap_[rocName]->GetYaxis()->SetNdivisions(nYdivisions);
+      histoNpfits2DMap_[rocName]->SetStats(false);
+      histoNpfits2DMap_[rocName]->SetOption("COLZ");
+
+      histoName.str("");
+      histoName << rocName << "_Deltay2D";
+      histoDeltay2DMap_[rocName] = new TH2F(histoName.str().c_str(),histoName.str().c_str(),
+                                            52,-0.5,51.5,80,-0.5,79.5);
+      histoDeltay2DMap_[rocName]->GetXaxis()->SetTitle("col");
+      histoDeltay2DMap_[rocName]->GetXaxis()->SetNdivisions(nXdivisions);
+      histoDeltay2DMap_[rocName]->GetYaxis()->SetTitle("row");
+      histoDeltay2DMap_[rocName]->GetYaxis()->SetNdivisions(nYdivisions);
+      histoDeltay2DMap_[rocName]->SetStats(false);
+      histoDeltay2DMap_[rocName]->SetOption("COLZ");
       
-      //histoName.str("");
-      //histoName << rocName << "_Chisquare2D";
-      //histoChisquare2DMap_[rocName] = new TH2F(histoName.str().c_str(),histoName.str().c_str(),
-      //				       52,-0.5,51.5,80,-0.5,79.5);
-      //histoChisquare2DMap_[rocName]->GetXaxis()->SetTitle("col");
-      //histoChisquare2DMap_[rocName]->GetXaxis()->SetNdivisions(nXdivisions);
-      //histoChisquare2DMap_[rocName]->GetYaxis()->SetTitle("row");
-      //histoChisquare2DMap_[rocName]->GetYaxis()->SetNdivisions(nYdivisions);
-      //histoChisquare2DMap_[rocName]->SetStats(false);
-      //histoChisquare2DMap_[rocName]->SetOption("COLZ");
+      histoName.str("");
+      histoName << rocName << "_Chisquare2D";
+      histoChisquare2DMap_[rocName] = new TH2F(histoName.str().c_str(),histoName.str().c_str(),
+        				     52,-0.5,51.5,80,-0.5,79.5);
+      histoChisquare2DMap_[rocName]->GetXaxis()->SetTitle("col");
+      histoChisquare2DMap_[rocName]->GetXaxis()->SetNdivisions(nXdivisions);
+      histoChisquare2DMap_[rocName]->GetYaxis()->SetTitle("row");
+      histoChisquare2DMap_[rocName]->GetYaxis()->SetNdivisions(nYdivisions);
+      histoChisquare2DMap_[rocName]->SetStats(false);
+      histoChisquare2DMap_[rocName]->SetOption("COLZ");
+#endif
       
       //histoName.str("");
       //histoName << rocName << "_Probability2D" ;
@@ -506,6 +535,7 @@ void PixelGainHistoManager::fit(void){
 	  int linearIstat = 3, tanhIstat   = 3;
 	  double linearChis2n = 999., tanhChis2n = 999.;
 	  double slope=-999., intercept=-999., p1=-999.;
+          int linearFitStatus = -999, tanhFitStatus = -999;
 
 	  if (dumpGraphs_) {
 	    ascfile_ << gainCurve->GetName() << "_" << row << "_" << col << " "; 
@@ -522,7 +552,7 @@ void PixelGainHistoManager::fit(void){
 	    line_->SetParameter(0,80) ;
             line_->SetParameter(1,2) ;
             line_->SetRange(linearFitFrom, linearFitTo_) ;
-            gainCurve->Fit(line_,"QR+");
+            linearFitStatus = gainCurve->Fit(line_,"QR+");
 	    fitter = TVirtualFitter::Fitter(gainCurve) ;
 	    linearIstat = fitter->GetStats(fmin,fedm,errdef,npari,nparx) ; // always 0 with the new root
 	    //cout<<nparx<<" "<<npari<<" "<<errdef<<" "<<fedm<<" "<<fmin<<endl;
@@ -550,7 +580,11 @@ void PixelGainHistoManager::fit(void){
 	    //linearFitStatistic1DMap_    [rocName]->Fill(linearIstat);
 	    histoSlope2DMap_      	[rocName]->Fill(col,row,par1);	   
 	    histoIntercept2DMap_  	[rocName]->Fill(col,row,par0);	   
-	    //histoChisquare2DMap_  	[rocName]->Fill(col,row,linearChis2); 
+#ifdef DEBUG
+            histoNpfits2DMap_           [rocName]->Fill(col,row,line_->GetNumberFitPoints());
+            histoDeltay2DMap_           [rocName]->Fill(col,row,gainCurve->GetMaximum() - gainCurve->GetMinimum(0));
+	    histoChisquare2DMap_  	[rocName]->Fill(col,row,chis2/ndof); 
+#endif
 	    //histoProbability2DMap_	[rocName]->Fill(col,row,line_->GetProb());				   
 	    //          	linearFitStatistic2DMap_[rocName]->Fill(col,row,linearIstat);
 
@@ -565,7 +599,7 @@ void PixelGainHistoManager::fit(void){
 	    tanh_->SetParameter(2,85);//27
 	    tanh_->SetParameter(3,140);//31
             tanh_->SetRange(tanhFitFrom, tanhFitTo_) ;
-            gainCurve->Fit(tanh_,"QR+");
+            tanhFitStatus = gainCurve->Fit(tanh_,"QR+");
             fitter = TVirtualFitter::Fitter(gainCurve) ;
 	    tanhIstat = fitter->GetStats(fmin,fedm,errdef,npari,nparx) ; // always 0 with the new root
 	    //cout<<nparx<<" "<<npari<<" "<<errdef<<" "<<fedm<<" "<<fmin<<endl;
@@ -616,15 +650,49 @@ void PixelGainHistoManager::fit(void){
 
 	  //cout<<linearIstat<<" "<<tanhIstat<<" "<<maxNumberOfHistos_ << endl;
 	  static int count = 0;
-	  bool bad = ( (linearChis2n <= 0.) || (linearChis2n > rocChisquareMean_) ||
-		       (tanhChis2n <= 0.)  || (tanhChis2n > rocChisquareMean_) ||
-		       (slope>rocSlopeMean_) || (slope<=0.) ||
-		       (intercept>rocInterceptMean_) || (intercept<-20.) ||
-		       (p1>tanhLinearityMean_) || (p1<=0) );
+          bool badLinearFit = ( (linearFitStatus < 0) ||
+                                (linearChis2n <= 0.) || (linearChis2n > rocChisquareMean_) ||
+                                (slope>rocSlopeMean_) || (slope<=0.) ||
+                                (intercept>rocInterceptMean_) || (intercept<-20.) );
+          bool badTanhFit = ( (tanhFitStatus < 0) ||
+                              (tanhChis2n <= 0.)  || (tanhChis2n > rocChisquareMean_) ||
+                              (p1>tanhLinearityMean_) || (p1<=0) );
+          bool bad = (badLinearFit || badTanhFit);
 	  if(bad) {
 	    count++;
+            if (linearFitStatus < 0) {
+              linearChis2n = -1;
+              slope = -1;
+              intercept = -1;
+            }
+            if (tanhFitStatus < 0) {
+              tanhChis2n = -1;
+              p1 = -1;
+            }
 	    cout<<" Bad fit for "<<rocName<<" "<<col<<"/"<<row<<" chis "<<linearChis2n<<"/"<<tanhChis2n
-		<<" linear "<<slope<<"/"<<intercept<<" tanh "<<p1<<" "<<count<<endl;
+		<<" linear "<<slope<<"/"<<intercept<<" tanh "<<p1<<" "<<count;
+            if (badLinearFit) {
+              cout<<" (linear fit failed:";
+              if (linearFitStatus < 0) {
+                cout<<" data empty";
+              } else {
+                if ( (linearChis2n <= 0.) || (linearChis2n > rocChisquareMean_) ) cout<<" bad chis";
+                if ( (slope>rocSlopeMean_) || (slope<=0.) ) cout<<" bad slope";
+                if ( (intercept>rocInterceptMean_) || (intercept<-20.) ) cout <<" bad intercept";
+              }
+              cout<<")";
+            }
+            if (badTanhFit) {
+              cout<<" (tanh fit failed:";
+              if (tanhFitStatus < 0) {
+                cout<<" data empty";
+              } else {
+                if ( (tanhChis2n <= 0.)  || (tanhChis2n > rocChisquareMean_) ) cout<<" bad chis";
+                if ( (p1>tanhLinearityMean_) || (p1<=0) ) cout<<" bad linearity";
+              }
+              cout<<")";
+            }
+            cout<<endl;
 	  }
 	  	  
 	  // Store bad fits 
@@ -665,82 +733,86 @@ void PixelGainHistoManager::fit(void){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void PixelGainHistoManager::makeSummaryPlots(void){
   string mthn = "[PixelGainHistoManager::makeSummaryPlots()]\t";
-	PixelHistoManager::makeSummary("ADC");
-        if(linearFit_) {
-	  PixelHistoManager::makeSummary("Slope");
-	  PixelHistoManager::makeSummary("Intercept");
-	  PixelHistoManager::makeSummary("Chisquare");
-	  PixelHistoManager::makeSummary("Probability");
-	  //PixelHistoManager::makeSummary("LinearFitStatistics");
-	  PixelHistoManager::makeSummary("Slope2D");
-	  PixelHistoManager::makeSummary("Intercept2D");
-	  //PixelHistoManager::makeSummary("Chisquare2D");
-	  //PixelHistoManager::makeSummary("Probability2D");
-	  //PixelHistoManager::makeSummary("LinearFitStatistics2D");
-	}
+  PixelHistoManager::makeSummary("ADC");
+  if(linearFit_) 
+  {
+    PixelHistoManager::makeSummary("Slope");
+    PixelHistoManager::makeSummary("Intercept");
+    PixelHistoManager::makeSummary("Chisquare");
+    PixelHistoManager::makeSummary("Probability");
+    //PixelHistoManager::makeSummary("LinearFitStatistics");
+    PixelHistoManager::makeSummary("Slope2D");
+    PixelHistoManager::makeSummary("Intercept2D");
+    //PixelHistoManager::makeSummary("Chisquare2D");
+    //PixelHistoManager::makeSummary("Probability2D");
+    //PixelHistoManager::makeSummary("LinearFitStatistics2D");
+  }//if lienarFir_
 
-	if(tanhFit_){
-	  PixelHistoManager::makeSummary("Par0");
-	  PixelHistoManager::makeSummary("Par1");
-	  PixelHistoManager::makeSummary("Par2");
-	  PixelHistoManager::makeSummary("Par3");
-	  //PixelHistoManager::makeSummary("TanhFitStatistics");
-	  //PixelHistoManager::makeSummary("Par02D");
-	  PixelHistoManager::makeSummary("Par12D");
-	  //	PixelHistoManager::makeSummary("Par22D");
-	  //  	PixelHistoManager::makeSummary("Par32D");
-	  //  	PixelHistoManager::makeSummary("TanhFitStatistics2D");
-	}
+  if(tanhFit_)
+  {
+    PixelHistoManager::makeSummary("Par0");
+    PixelHistoManager::makeSummary("Par1");
+    PixelHistoManager::makeSummary("Par2");
+    PixelHistoManager::makeSummary("Par3");
+    //PixelHistoManager::makeSummary("TanhFitStatistics");
+    //PixelHistoManager::makeSummary("Par02D");
+    PixelHistoManager::makeSummary("Par12D");
+    //	PixelHistoManager::makeSummary("Par22D");
+    //  	PixelHistoManager::makeSummary("Par32D");
+    //  	PixelHistoManager::makeSummary("TanhFitStatistics2D");
+  }//if tanhFir_
 
-	PixelHistoManager::initializeSummaries();
-	//   gROOT->cd();
-// 	TDirectory * summaryTreeDir = gROOT->mkdir("SummaryTrees");
-// 	TDirectory * summaryDir     = gROOT->mkdir("Summaries");
-// 
-//   /////////////SUMMARY TREE DECLARATION///////////////////////
-// 	summaryTreeDir->cd();
-//   if(summaryTree_ != 0){
-// 		delete summaryTree_;
-// 		summaryTree_=0;
-// 	}
-//  	summaryTree_ = new TTree("PixelGainSummary","PixelGainSummary");
-  
+  //PixelHistoManager::initializeSummaries();
+  gROOT->cd();
+  TDirectory * summaryTreeDir_ = gROOT->mkdir("SummaryTrees");
+  TDirectory * summaryDir_     = gROOT->mkdir("Summaries");
+
+   /////////////SUMMARY TREE DECLARATION///////////////////////
+  summaryTreeDir_->cd();
+  if(summaryTree_ != 0)
+  {
+    delete summaryTree_;
+    summaryTree_=0;
+  }
+  summaryTree_ = new TTree("SummaryTree","SummaryTree");
+ 
+
+  struct BadDecodingBranch{                                     //added from PixelHistoManager.cc
+        int numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
+        float percentOfBadPixels;                                    //added from PixelHistoManager.cc
+        unsigned int numberOfBadPixels;                                    //added from PixelHistoManager.cc
+        char rocName[40];                                    //added from PixelHistoManager.cc
+  };
+
+  BadDecodingBranch branch_a;				//added from PixelHistoManager.cc
+  stringstream branchVariables_a;			//added from PixelHistoManager.cc
+  branchVariables_a.str("");				//added from PixelHistoManager.cc
+  branchVariables_a << "Number_of_wrongly_decoded_pixels=0/i" << ":Percentage_wrongly_decoded_pixels/F" << ":Number_wrongly_decoded_pixels/i" << ":ROCName/C";	//added from PixelHistoManager.cc
+
+  TBranch *wronglyBranch = summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
+ 
   PixelLinearGainBranch theLinearBranch;
   stringstream branchVariables;
   TBranch *linearBranch = 0;
   TBranch *tanhBranch = 0;
-  if(linearFit_){
+  if(linearFit_)
+  {
     branchVariables.str("");
-    branchVariables <<"Rocs with Slope < "        << rocSlopeMean_       << "/F"
-		    <<":Rocs with Intercept < "   << rocInterceptMean_   << "/F"
-		    <<":Rocs with Chisquare < "   << rocChisquareMean_   << "/F"
-		    <<":Rocs with Probability > " << rocProbabilityMean_ << "/F"
-		    <<":Slope/F"
-		    <<":Intercept/F"
-		    <<":Chisquare/F"
-		    <<":Probability/F"
-		    <<":FitStatistics/F"
-		    <<":SlopeRMS/F"
-		    <<":InterceptRMS/F"
-		    <<":ROCName/C";
+    branchVariables << "Rocs with Slope < " << rocSlopeMean_ << "/i" << ":Rocs with Intercept < " << rocInterceptMean_ << "/i" << ":Rocs with Chisquare < " << rocChisquareMean_ << "/i" <<":Rocs with Probability > "
+    	            << rocProbabilityMean_ << "/i" << ":Slope/F"  << ":Intercept/F" << ":Chisquare/F" << ":Probability/F" << ":FitStatistics/F" << ":SlopeRMS/F" << ":InterceptRMS/F" << ":ROCName/C";
     linearBranch = summaryTree_->Branch("LinearFit",&theLinearBranch,branchVariables.str().c_str());
-  }
+  }//linearFit_
   
   PixelTanhGainBranch theTanhBranch;
-  if(tanhFit_){
+  if(tanhFit_)
+  {
     branchVariables.str("");
-    branchVariables <<"Rocs with Linearity < "        << tanhLinearityMean_       << "/F"
-		    <<":Par0/F"
-		    <<":Par1 (Linearity check)/F"
-		    <<":Par2/F"
-		    <<":Par3/F"
-		    <<":FitStatistics/F"
-		    <<":ROCName/C";
+    branchVariables << "Rocs with Linearity < " << tanhLinearityMean_ << "/i" << ":Par0/F" << ":Par1 (Linearity check)/F" << ":Par2/F" << ":Par3/F" << ":FitStatistics/F" << ":ROCName/C";
     tanhBranch = summaryTree_->Branch("TanhFit",&theTanhBranch,branchVariables.str().c_str());
-  }
+  }//tanFit_
   
   /////////////SUMMARY HISTOS DECLARATION///////////////////////
-  PixelHistoManager::summaryDir_->cd();											  
+  summaryDir_->cd();											  
   //summary plots 									 
   //For linear fit
   TH1F * hMeanSlope = 0; 					 
@@ -753,6 +825,11 @@ void PixelGainHistoManager::makeSummaryPlots(void){
   TH1F * hSlopeOfAllPixels = 0;      		
   TH1F * hInterceptOfAllPixels = 0;  		
   TH2F * hInterceptVsSlopeOfAllPixels = 0;  		
+#ifdef DEBUG
+  TH1F * hNpfitsOfAllPixels = 0;
+  TH1F * hDeltayOfAllPixels = 0;
+  TH1F * hChisquareOfAllPixels = 0;
+#endif
 //  TH1F * hLinearStatisticsOfAllPixels = 0;
   TH1F * hADCOfAllPixelsSummary = 0;
 
@@ -765,7 +842,8 @@ void PixelGainHistoManager::makeSummaryPlots(void){
   hADCOfAllPixelsSummary = (TH1F*)hADCOfAllPixels_->Clone(); 
   hADCOfAllPixelsSummary->SetName("ADCOfAllPixelsSummary");
 
-  if(linearFit_){
+  if(linearFit_)
+  {
     hMeanSlope            = new TH1F("MeanSlope",            "Mean Slope of all the ROCs",          	 100, 0, 5);
     hMeanIntercept        = new TH1F("MeanIntercept",        "Mean Intercept of all the ROCs",      	 100, -50, 150);
     hMeanChisquare        = new TH1F("MeanChisquare",        "Mean Chisquare of all the ROCs",      	 100, 0,   10);
@@ -777,163 +855,225 @@ void PixelGainHistoManager::makeSummaryPlots(void){
     hSlopeOfAllPixels            = new TH1F("SlopeOfAllPixels",            "Slope of all Pixels",             100, 0,   10);
     hInterceptOfAllPixels        = new TH1F("InterceptOfAllPixels",        "Intercept of all Pixels",         100, -50, 150);
     hInterceptVsSlopeOfAllPixels = new TH2F("InterceptVsSlopeOfAllPixels", "Intercept vs slope of all Pixels",100, 0,   10, 100, -50, 150);
+#ifdef DEBUG
+    hNpfitsOfAllPixels           = new TH1F("NpfitsOfAllPixels",           "Number of points used in the fit of all Pixels", 10, 0, 10);
+    hDeltayOfAllPixels           = new TH1F("DeltayOfAllPixels",           "Delta y of all Pixels",           300, 0,  300);
+    hChisquareOfAllPixels        = new TH1F("ChisquareOfAllPixels",        "Chisquare of all Pixels",         200, 0,   20);
+#endif
     //  	hLinearStatisticsOfAllPixels = new TH1F("LinearStatisticsOfAllPixels", "Linear Statistics of all Pixels", 4,   0  , 4);
-  }
+  }//if linearFit_
   
-  if(tanhFit_){
+  if(tanhFit_)
+  {
     hMeanLinearity             = new TH1F("MeanLinearity",             "Mean Linearity of all the ROCs",       100,0,5);
     hMeanTanhStatistics        = new TH1F("MeanTanhStatistics",        "Mean Tanh Statistics of all the ROCs", 100,0,4);
-    
     hLinearityOfAllPixels      = new TH1F("LinearityOfAllPixels",      "Linearity of all Pixels",              100, 0.5,3.5);
     //  	hTanhStatisticsOfAllPixels = new TH1F("TanhStatisticsOfAllPixels", "Tanh Statistics of all Pixels",          4,0,4);
-  }
+  }//if tanhFit_
   //Initializing the map with the name of all the possible panels present
-  for (vector<pos::PixelROCName>::iterator it=rocList_.begin();it!=rocList_.end();it++){
-    string rocName = it->rocname();
-    if(!thePixelConfigurationsManager_->isDataToAnalyze(rocName)){continue;}
+
+  summaryTreeDir_->cd();
+
+  //Initializing the map with the name of all the possible panels present
+  map<unsigned int, map< unsigned int, map<unsigned int , vector<TH1 *> > > >::iterator itFed; //added from PixelHistoManager.cc
+  map<unsigned int, map<unsigned int , vector<TH1 *> > > ::iterator                    itChan;  //added from PixelHistoManager.cc
+  map<unsigned int , vector<TH1 *> >::iterator                                          itRoc;  //added from PixelHistoManager.cc
+  for (itFed = histoMap_.begin(); itFed != histoMap_.end(); ++itFed)                            //added from PixelHistoManager.cc
+  {
+    int fed = itFed->first;                                                                     //added from PixelHistoManager.cc
+    for (itChan = itFed->second.begin(); itChan != itFed->second.end(); ++itChan)               //added from PixelHistoManager.cc
+    {                                                                                           //added from PixelHistoManager.cc
+      int channel = itChan->first;                                                              //added from PixelHistoManager.cc
+      for (itRoc = itChan->second.begin(); itRoc != itChan->second.end(); ++itRoc)              //added from PixelHistoManager.cc
+      {                                                                                         //added from PixelHistoManager.cc
+        int roc = itRoc->first;                                                                 //added from PixelHistoManager.cc
+        string rocName = rocNameMap_[fed][channel][roc];                                        //added from PixelHistoManager.cc
+        strcpy(branch_a.rocName,rocName.c_str());
+        unsigned int nOfWronglyDecoded = wrongAddressMap_[fed][channel][roc];                   //added from PixelHistoManager.cc
+        float percentageBAD = 100.0*nOfWronglyDecoded/(52.0*80.0);                                      //added from PixelHistoManager.cc
+        unsigned int GT0 = 1;                                                                   //added from PixelHistoManager.cc
+        if(nOfWronglyDecoded > 0)                                                               //added from PixelHistoManager.cc
+          GT0 = 0;                                                                              //added from PixelHistoManager.cc
+        branch_a.numberOfBadPixelsGT0 = GT0;                                                    //added from PixelHistoManager.cc
+        branch_a.percentOfBadPixels = percentageBAD;                                            //added from PixelHistoManager.cc
+        branch_a.numberOfBadPixels  = nOfWronglyDecoded;                                        //added from PixelHistoManager.cc
+
+        if(!thePixelConfigurationsManager_->isDataToAnalyze(rocName))
+          continue;
 	
-    if(linearFit_){
-      strcpy(theLinearBranch.rocName,rocName.c_str());
-      
-      TH1F * tmpHistoSlope1D = (TH1F *)histoSlope1DMap_[rocName];
-      if (tmpHistoSlope1D->GetEntries() != 0) {
-	double meanThr = tmpHistoSlope1D->GetMean();
-	hMeanSlope->Fill(meanThr);
-	if (meanThr>rocSlopeMean_){
-	  *logger_ << mthn << "ROC="<< rocName <<" Mean Slope=" << meanThr << endl;
-	  theLinearBranch.rocsWithSlopeGTN = 0;
-	}else{
-	  theLinearBranch.rocsWithSlopeGTN = 1;
-				}
-	double rmsThr = tmpHistoSlope1D->GetRMS();
-	hRmsSlope->Fill(rmsThr);
-	theLinearBranch.slope    = meanThr;
-	theLinearBranch.slopeRMS = rmsThr;
-      }
-      //	 	  else{
-      //	  	    cout << mthn << "No entries for: " << tmpHistoSlope1D->GetName() << " rocname: " << rocName << endl;
-      //	 	  }
+        if(linearFit_)
+        {
+          strcpy(theLinearBranch.rocName,rocName.c_str());
+        
+          TH1F * tmpHistoSlope1D = (TH1F *)histoSlope1DMap_[rocName];
+          if (tmpHistoSlope1D->GetEntries() != 0)
+          {
+	    double     meanThr = tmpHistoSlope1D->GetMean();
+	    hMeanSlope->Fill(meanThr);
+	    if(meanThr>rocSlopeMean_)
+            {
+	      *logger_ << mthn << "ROC="<< rocName <<" Mean Slope=" << meanThr << endl;
+	      theLinearBranch.rocsWithSlopeGTN = 0;
+	    }//if     meanThr>rocSlopeMean_
+            else
+	      theLinearBranch.rocsWithSlopeGTN = 1;
+	    double     rmsThr = tmpHistoSlope1D->GetRMS();
+	    hRmsSlope->Fill(rmsThr);
+	    theLinearBranch.slope        = meanThr;
+	    theLinearBranch.slopeRMS     = rmsThr;
+          }//if tmpHistoSlope1D->GetEntries() != 0
+          //	 	  else{
+          //	  	    cout << mthn << "No entries for: " << tmpHistoSlope1D->GetName() << " rocname: " << rocName << endl;
+          //	 	  }
 
-      TH1F * tmpHistoIntercept1D     = (TH1F *)histoIntercept1DMap_[rocName];
-      if (tmpHistoIntercept1D->GetEntries()>0) {
-	double meanSig = tmpHistoIntercept1D->GetMean();
-	hMeanIntercept->Fill(meanSig);
-	if (meanSig>rocInterceptMean_){
-	  *logger_ << mthn << "ROC="<< rocName <<" Mean Intercept=" << meanSig <<endl;
-	  theLinearBranch.rocsWithInterceptGTN = 0;
-	}else{
-	  theLinearBranch.rocsWithInterceptGTN = 1;
-	}
-	double rmsSig = tmpHistoIntercept1D->GetRMS();
-	hRmsIntercept->Fill(rmsSig);
-	theLinearBranch.intercept    = meanSig;
-	theLinearBranch.interceptRMS = rmsSig;
-      }
-      
-      TH1F * tmpHistoChisquare1D     = (TH1F *)histoChisquare1DMap_[rocName];
-      if (tmpHistoChisquare1D->GetEntries()>0) {
-	double meanSig = tmpHistoChisquare1D->GetMean();
-	hMeanChisquare->Fill(meanSig);
-	if (meanSig>rocChisquareMean_){
-	  *logger_ << mthn << "ROC="<< rocName <<" Mean Chis2 t=" << meanSig << endl;
-	  theLinearBranch.rocsWithChisquareGTN = 0;
-	}else{
-	  theLinearBranch.rocsWithChisquareGTN = 1;
-	}
-	theLinearBranch.chisquare    = meanSig;
-      }
+          TH1F * tmpHistoIntercept1D     = (TH1F *)histoIntercept1DMap_[rocName];
+          if (tmpHistoIntercept1D->GetEntries()>0)
+          {
+	    double     meanSig = tmpHistoIntercept1D->GetMean();
+	    hMeanIntercept->Fill(meanSig);
+	    if (meanSig>rocInterceptMean_)
+            {
+	      *logger_ << mthn << "ROC="<< rocName <<" Mean Intercept=" << meanSig <<endl;
+	      theLinearBranch.rocsWithInterceptGTN = 0;
+	    }//if     meanSig > rocInterceptMean_
+            else
+	      theLinearBranch.rocsWithInterceptGTN = 1;
+	    double     rmsSig = tmpHistoIntercept1D->GetRMS();
+	    hRmsIntercept->Fill(rmsSig);
+	    theLinearBranch.intercept        = meanSig;
+	    theLinearBranch.interceptRMS     = rmsSig;
+          }//if tmpHistoIntercept1D->GetEntries()>0
+          
+          TH1F * tmpHistoChisquare1D     = (TH1F *)histoChisquare1DMap_[rocName];
+          if (tmpHistoChisquare1D->GetEntries()>0) 
+          {
+	    double     meanSig = tmpHistoChisquare1D->GetMean();
+	    hMeanChisquare->Fill(meanSig);
+	    if(meanSig>rocChisquareMean_)
+            {
+	      *logger_ << mthn << "ROC="<< rocName <<" Mean Chis2 t=" << meanSig << endl;
+	      theLinearBranch.rocsWithChisquareGTN = 0;
+	    }//if     meanSig > rocChisquareMean_
+            else
+	      theLinearBranch.rocsWithChisquareGTN = 1;
+	    theLinearBranch.chisquare        = meanSig;
+          }//if tmpHistoChisquare1D->GetEntries()>0
 
-      TH1F * tmpHistoProbability1D     = (TH1F *)histoProbability1DMap_[rocName];
-      if (tmpHistoProbability1D->GetEntries()>0) {
-	double meanSig = tmpHistoProbability1D->GetMean();
-	hMeanProbability->Fill(meanSig);
-	if (meanSig<rocProbabilityMean_){
-	  *logger_ << mthn << "ROC="<< rocName <<" Mean Prob. =" << meanSig << endl;
-	  theLinearBranch.rocsWithProbabilityGTN = 0;
-	}else{
-	  theLinearBranch.rocsWithProbabilityGTN = 1;
-	}
-	theLinearBranch.probability    = meanSig;
-      }
-      
-      //  	  TH1F * tmpLinearFitStatistic1D     = (TH1F *)linearFitStatistic1DMap_[rocName];
-      //   	  if (tmpLinearFitStatistic1D->GetEntries()>0) {
-      //   	    double meanStat = tmpLinearFitStatistic1D->GetMean();
-      //   	    hMeanLinearStatistics->Fill(meanStat);
-      // 			  theLinearBranch.fitStatistics = meanStat;
-      //   	  }
-      
-      TH2F * tmpHistoSlope2D         = (TH2F *)histoSlope2DMap_[rocName];
-      TH2F * tmpHistoIntercept2D     = (TH2F *)histoIntercept2DMap_[rocName];
-      //  	  TH2F * tmpLinearFitStatistic2D = (TH2F *)linearFitStatistic2DMap_[rocName];
-      if(tmpHistoSlope2D->GetEntries() != 0){
-	for(int binX=1; binX <= tmpHistoSlope2D->GetNbinsX(); ++binX){
-	  for(int binY=1; binY <= tmpHistoSlope2D->GetNbinsY(); ++binY){
-	    if(tmpHistoSlope2D->GetBinContent(binX,binY) != 0){
-	      hSlopeOfAllPixels           ->Fill(tmpHistoSlope2D->GetBinContent(binX,binY));
-	      hInterceptOfAllPixels       ->Fill(tmpHistoIntercept2D->GetBinContent(binX,binY));
-	      hInterceptVsSlopeOfAllPixels->Fill(tmpHistoSlope2D->GetBinContent(binX,binY),tmpHistoIntercept2D->GetBinContent(binX,binY));
-	      //				      hLinearStatisticsOfAllPixels->Fill(tmpLinearFitStatistic2D->GetBinContent(binX,binY));
-	    } 
-	  }
-	}
-      }   
-    }
-    if(tanhFit_){
-      strcpy(theTanhBranch.rocName,rocName.c_str());
-      
-      TH1F * tmpHistoTanhPar11D = (TH1F *)histoTanhPar11DMap_[rocName];
-      if (tmpHistoTanhPar11D->GetEntries() != 0) {
-	double mean = tmpHistoTanhPar11D->GetMean();
-	hMeanLinearity->Fill(mean);
-	if (mean>tanhLinearityMean_){
-	  *logger_ << mthn << "ROC="<< rocName <<" Mean Linearity=" << mean << endl;
-	  theTanhBranch.rocWithLinearityLTN = 0;
-	}else{
-	  theTanhBranch.rocWithLinearityLTN = 1;
-	}
-	theTanhBranch.par1 = mean;
-      }
+          TH1F * tmpHistoProbability1D     = (TH1F *)histoProbability1DMap_[rocName];
+          if (tmpHistoProbability1D->GetEntries()>0)
+          {
+	    double     meanSig = tmpHistoProbability1D->GetMean();
+	    hMeanProbability->Fill(meanSig);
+	    if (meanSig<rocProbabilityMean_)
+            {
+	      *logger_ << mthn << "ROC="<< rocName <<" Mean Prob. =" << meanSig << endl;
+	      theLinearBranch.rocsWithProbabilityGTN = 0;
+	    }//if     meanSig < rocProbabilityMean_
+            else
+	      theLinearBranch.rocsWithProbabilityGTN = 1;
+	    theLinearBranch.probability        = meanSig;
+          }//if tmpHistoProbability1D->GetEntries()>0
+          
+          //  	  TH1F * tmpLinearFitStatistic1D     = (TH1F *)linearFitStatistic1DMap_[rocName];
+          //   	  if (tmpLinearFitStatistic1D->GetEntries()>0) {
+          //   	    double meanStat = tmpLinearFitStatistic1D->GetMean();
+          //   	    hMeanLinearStatistics->Fill(meanStat);
+          // 			  theLinearBranch.fitStatistics = meanStat;
+          //   	  }
+          
+          TH2F * tmpHistoSlope2D         = (TH2F *)histoSlope2DMap_[rocName];
+          TH2F * tmpHistoIntercept2D     = (TH2F *)histoIntercept2DMap_[rocName];
+#ifdef DEBUG
+          TH2F * tmpHistoNpfits2D        = (TH2F *)histoNpfits2DMap_[rocName];
+          TH2F * tmpHistoDeltay2D        = (TH2F *)histoDeltay2DMap_[rocName];
+          TH2F * tmpHistoChisquare2D     = (TH2F *)histoChisquare2DMap_[rocName];
+#endif
+          //  	  TH2F * tmpLinearFitStatistic2D = (TH2F *)linearFitStatistic2DMap_[rocName];
+          if(tmpHistoSlope2D->GetEntries() != 0)
+          {
+	    for(int     binX=1; binX <= tmpHistoSlope2D->GetNbinsX(); ++binX)
+            {
+	      for(int binY=1; binY <= tmpHistoSlope2D->GetNbinsY(); ++binY)
+              {
+	        if(tmpHistoSlope2D->GetBinContent(binX,binY) != 0)
+                {
+	          hSlopeOfAllPixels           ->Fill(tmpHistoSlope2D->GetBinContent(binX,binY));
+	          hInterceptOfAllPixels       ->Fill(tmpHistoIntercept2D->GetBinContent(binX,binY));
+	          hInterceptVsSlopeOfAllPixels->Fill(tmpHistoSlope2D->GetBinContent(binX,binY),tmpHistoIntercept2D->GetBinContent(binX,binY));
+	          //				      hLinearStatisticsOfAllPixels->Fill(tmpLinearFitStatistic2D->GetBinContent(binX,binY));
+	        }//iftmpHistoSlope2D->GetBinContent(binX,binY) != 0 
+#ifdef DEBUG
+                hNpfitsOfAllPixels->Fill(tmpHistoNpfits2D->GetBinContent(binX,binY));
+                hDeltayOfAllPixels->Fill(tmpHistoDeltay2D->GetBinContent(binX,binY));
+                hChisquareOfAllPixels->Fill(tmpHistoChisquare2D->GetBinContent(binX,binY));
+#endif
+	      }//for binY
+	    }//for     binX
+          }//iftmpHistoSlope2D->GetEntries() != 0
+        }//if linearFit_
+        if(tanhFit_)
+        {
+          strcpy(theTanhBranch.rocName,rocName.c_str());
+          
+          TH1F * tmpHistoTanhPar11D = (TH1F *)histoTanhPar11DMap_[rocName];
+          if (tmpHistoTanhPar11D->GetEntries() != 0) 
+          {
+	    double     mean = tmpHistoTanhPar11D->GetMean();
+	    hMeanLinearity->Fill(mean);
+	    if (mean>tanhLinearityMean_)
+            {
+	      *logger_ << mthn << "ROC="<< rocName <<" Mean Linearity=" << mean << endl;
+	      theTanhBranch.rocWithLinearityLTN = 0;
+	    }//if     mean>tanhLinearityMean_
+            else
+	      theTanhBranch.rocWithLinearityLTN = 1;
+	    theTanhBranch.par1     = mean;
+          }//iftanhFit_
 
-      TH1F * tmpHistoTanhPar01D = (TH1F *)histoTanhPar01DMap_[rocName];
-      if (tmpHistoTanhPar01D->GetEntries() != 0) {
-	theTanhBranch.par0 = tmpHistoTanhPar01D->GetMean();
-      }
-      
-      TH1F * tmpHistoTanhPar21D = (TH1F *)histoTanhPar21DMap_[rocName];
-      if (tmpHistoTanhPar21D->GetEntries() != 0) {
-	theTanhBranch.par2 = tmpHistoTanhPar21D->GetMean();
-      }
-      
-      TH1F * tmpHistoTanhPar31D = (TH1F *)histoTanhPar31DMap_[rocName];
-      if (tmpHistoTanhPar31D->GetEntries() != 0) {
-	theTanhBranch.par3 = tmpHistoTanhPar31D->GetMean();
-      }
-      
-//  	  TH1F * tmpTanhFitStatistic1D     = (TH1F *)tanhFitStatistic1DMap_[rocName];
-//   	  if (tmpTanhFitStatistic1D->GetEntries()>0) {
-//   	    double meanStat = tmpTanhFitStatistic1D->GetMean();
-//   	    hMeanTanhStatistics->Fill(meanStat);
-// 			  theTanhBranch.fitStatistics = meanStat;
-//   	  }
+          TH1F * tmpHistoTanhPar01D = (TH1F *)histoTanhPar01DMap_[rocName];
+          if (tmpHistoTanhPar01D->GetEntries() != 0)
+  	    theTanhBranch.par0     = tmpHistoTanhPar01D->GetMean();
+          
+          TH1F * tmpHistoTanhPar21D = (TH1F *)histoTanhPar21DMap_[rocName];
+          if (tmpHistoTanhPar21D->GetEntries() != 0)
+	    theTanhBranch.par2     = tmpHistoTanhPar21D->GetMean();
+          
+          TH1F * tmpHistoTanhPar31D = (TH1F *)histoTanhPar31DMap_[rocName];
+          if (tmpHistoTanhPar31D->GetEntries() != 0)
+	    theTanhBranch.par3     = tmpHistoTanhPar31D->GetMean();
+          
+//      	  TH1F * tmpTanhFitStatistic1D     = (TH1F *)tanhFitStatistic1DMap_[rocName];
+//       	  if (tmpTanhFitStatistic1D->GetEntries()>0) {
+//       	    double meanStat = tmpTanhFitStatistic1D->GetMean();
+//       	    hMeanTanhStatistics->Fill(meanStat);
+//     			  theTanhBranch.fitStatistics = meanStat;
+//       	  }
 
-  	  TH2F * tmpLinearity2D        = (TH2F *)histoTanhPar12DMap_[rocName];
-//  	  TH2F * tmpTanhFitStatistic2D = (TH2F *)tanhFitStatistic2DMap_[rocName];
-  	  if(tmpLinearity2D->GetEntries() != 0){
-				for(int binX=1; binX <= tmpLinearity2D->GetNbinsX(); ++binX){
-				  for(int binY=1; binY <= tmpLinearity2D->GetNbinsY(); ++binY){
-				    if(tmpLinearity2D->GetBinContent(binX,binY) != 0){
-				      hLinearityOfAllPixels     ->Fill(tmpLinearity2D->GetBinContent(binX,binY));
-//				      hTanhStatisticsOfAllPixels->Fill(tmpTanhFitStatistic2D->GetBinContent(binX,binY));
-				    } 
-				  }
-				}
-  	  }   
-    }
-		linearBranch->Fill();
-		tanhBranch->Fill();
-  }		  					           
-}
+      	  TH2F * tmpLinearity2D        = (TH2F *)histoTanhPar12DMap_[rocName];
+//      	  TH2F * tmpTanhFitStatistic2D = (TH2F *)tanhFitStatistic2DMap_[rocName];
+          if(tmpLinearity2D->GetEntries() != 0)
+          {
+            for(int binX=1; binX <= tmpLinearity2D->GetNbinsX(); ++binX)
+            {
+	     for(int binY=1; binY <= tmpLinearity2D->GetNbinsY(); ++binY)
+             {
+	       if(tmpLinearity2D->GetBinContent(binX,binY) != 0)
+               {
+	         hLinearityOfAllPixels     ->Fill(tmpLinearity2D->GetBinContent(binX,binY));
+//               hTanhStatisticsOfAllPixels->Fill(tmpTanhFitStatistic2D->GetBinContent(binX,binY));
+	        }//iftmpLinearity2D->GetBinContent(binX,binY) != 0
+              }//for bin Y
+	    }//for binX
+      	  }//if tmpLinearity2D->GetEntries() != 0   
+        }//if tanhFit_
+        summaryTree_->Fill();
+      }//for ROC		  					        
+    }//for Channel
+  }//for FED
+  summaryTree_->Print();
+  summaryTree_->SetScanField(0);
+  summaryTree_->Scan("*","","",100);
+}//makeSummaryPlots
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void PixelGainHistoManager::drawHisto(unsigned int fed, unsigned int channel, unsigned int roc,string summary, string panelType, int plaquette, TH1* &summaryH){

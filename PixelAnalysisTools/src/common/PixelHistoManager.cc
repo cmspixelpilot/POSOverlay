@@ -181,7 +181,7 @@ void PixelHistoManager::saveHistos(void){
 	}
 	PixelHistoReadWriteFile histoWriter;
 	cout << mthn << "Saving file, please wait..." << endl;
- 	histoWriter.write(rootFileName.str());
+ 	histoWriter.write(rootFileName.str(), "RECREATE");
 	cout << mthn << "Saved results in " << rootFileName.str() << endl;
 //	histoWriter.open(rootFileName_,"RECREATE");
 //	histoWriter.transferFromTo(gROOT,histoWriter.getFile());
