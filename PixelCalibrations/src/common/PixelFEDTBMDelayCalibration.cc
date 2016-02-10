@@ -610,10 +610,10 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	    uint32_t dh = d & 0xf0;
 	    if (dh == 0x70 || dh == 0x10 || dh == 0xc0)
 	      std::cout << "\n";
-	    if (d > 0xFF)
-	      std::cout << "\nweird word: " << std::hex << d << "\n";
+	    if (d & 0xFFFFFF00)
+	      std::cout << std::setw(6) << std::hex << ((d&0xFFFFFF00)>>8) << " " << std::setw(2) << std::hex << (d&0xFF) << std::dec << " ";
 	    else 
-	      std::cout << std::setw(2) << std::hex << d << std::dec << " ";
+	      std::cout << std::setw(2) << std::hex << (d&0xFF) << std::dec << " ";
 	  }
 	  std::cout << "\n----------------------------------" << std::endl;
 	}
