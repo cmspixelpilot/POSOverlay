@@ -1884,6 +1884,7 @@ end of redundancy ring comment */
 	unsigned int slot = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
 	unsigned int ring = tempPortCard->getringAddress();
 	dcdc_map[std::make_pair(slot,ring)] = name;
+	std::cout << " DCDC map: slot " << slot << " ring " << ring << " name " << name << std::endl;
       }
 #endif
 
@@ -1900,13 +1901,16 @@ end of redundancy ring comment */
 	  PixelDCDCConfig* dcdc = 0;
 	  PixelConfigInterface::get(dcdc, "pixel/dcdc/" + name, *theGlobalKey_);
 
-	  if (dcdc->getDCDCEnabled())
+	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name << " enabled? " << dcdc->getDCDCEnabled() << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " port " << dcdc->getPortNumber() <<  std::endl;
+	  if (dcdc->getDCDCEnabled()) {
+	    std::cout << "   sending DCDC command" << std::endl;
 	    pixDCDCCommand(slot, ringiter->first,
 			   dcdc->getCCUAddressEnable(),
 			   dcdc->getCCUAddressPgood(),
 			   dcdc->getPIAChannelAddress(),
 			   true,
 			   dcdc->getPortNumber());
+	  }
 	}
 #endif
 
