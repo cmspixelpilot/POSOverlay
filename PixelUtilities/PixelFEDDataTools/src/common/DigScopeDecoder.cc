@@ -192,7 +192,7 @@ DigScopeDecoder::DigScopeDecoder(const uint32_t* buffer, unsigned int size) {
   
   std::vector<uint8_t> buf(size);
   for (unsigned i = 0; i < size; ++i) {
-    assert((buffer[i] & 0xFFFFFF00) == 0);
+    //assert((buffer[i] & 0xFFFFFF00) == 0);
     buf[i] = buffer[i] & 0xFF;
   }
 
