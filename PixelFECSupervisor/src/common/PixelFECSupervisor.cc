@@ -23,6 +23,8 @@
 
 using namespace pos;
 
+#define UTCA_XXX
+
 //#define USE_SEU_DETECT
 
 XDAQ_INSTANTIATOR_IMPL(PixelFECSupervisor)
@@ -176,10 +178,14 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
     datbase_=std::string(getenv("BUILD_HOME"))+"/pixel/PixelFECInterface/dat/";  
   }
 
+  const char* build_home = getenv("BUILD_HOME");
+  assert(build_home != 0);
+  connectionFile_ = "file://" + std::string(build_home) + "/pixel/PixelPh1FECInterface/dat/connections.xml";
 
   crate_=this->getApplicationDescriptor()->getInstance();
 
   // Change for HAL d.k. 19/12/07
+#ifndef UTCA_XXX
 #ifdef USE_HAL
   busAdapter_ = (HAL::CAENLinuxBusAdapter*) 0;
   addressTablePtr_ = (HAL::VMEAddressTable*) 0;
@@ -188,6 +194,7 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
   aBHandle=0;
   Link=0;
 #endif // USE_HAL
+#endif
   
   theGlobalKey_=0;
   theLastGlobalKey_=-1;  // change from 0, -1 is a valid key 
@@ -2770,7 +2777,8 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
   //exception of type toolbox::fsm::exception::Exception will automatically trigger a transition to the Error state
   
   cout << " transitionHaltedToConfiguring  " << endl;
-  
+
+#ifndef UTCA_XXX  
   try { //hardware access
   // Get the VME Bus Adapter
   #ifdef USE_HAL
@@ -2794,6 +2802,7 @@ std::string const msg_trace_gea = "PixelFECSupervisor::Configure - VMEBoard="+VM
 catch (...) { //FIXME maybe we should catch the actual type of exception that is thrown....    
 	XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught exception when getting FEC HAL BusAdapter");
   }
+#endif
 
   //we need the detconfig next. But it is now loaded in the preconfigure step.
   //we need to ensure that it has been loaded
@@ -2812,7 +2821,7 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
   pclock_->give();
   std::vector <PixelModuleName>::iterator module_name;
   
-  try { //hardware access
+  //  try { //hardware access
   for (module_name=modules.begin(); module_name!=modules.end(); ++module_name) {
    
     pclock_->take(); 
@@ -2828,6 +2837,13 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
       //there are globals used here, but they aren't used in preconfigure, so it is ok to leave them unlocked
 
       if(FECInterface.find(fecVMEBaseAddress)==FECInterface.end()) {           
+#ifdef UTCA_XXX
+        assert(RegMgr_.empty());
+        assert(FECInterface.empty());
+        RegMgr_[fecVMEBaseAddress] = new Ph2_HwInterface::RegManager(connectionFile_.c_str(), 0);
+        int dummy = 0;
+        PixelPh1FECInterface* tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], dummy, feccrate, fecSlot);
+#else
 #ifdef USE_HAL
 	VMEPtr_[fecVMEBaseAddress] =new HAL::VMEDevice(*addressTablePtr_, *busAdapter_, fecVMEBaseAddress);
         int dummy=0;
@@ -2835,6 +2851,7 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
 #else
 	PixelFECInterface* tempFECInterface=new PixelFECInterface(fecVMEBaseAddress, aBHandle,feccrate,fecSlot);
 #endif // USE_HAL
+#endif // UTCA_XXX
 
 	if (tempFECInterface==0) XCEPT_RAISE(toolbox::fsm::exception::Exception,"Could not create FECInterface");
         tempFECInterface->setssid(4);
@@ -2881,13 +2898,14 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
   
   cout << " transitionHaltedToConfiguring - exit " << endl;
 
-  }
-catch (toolbox::fsm::exception::Exception & e) { throw; }
-catch (std::exception & e) { //translate std::exception to the correct type    XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
-  }
-catch (...) {    
-	XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught unknown exception while accessing FEC via VME");
-  }
+//  }
+//  catch (toolbox::fsm::exception::Exception & e) { throw; }
+//  catch (std::exception & e) { //translate std::exception to the correct type
+//    XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
+//  }
+//  catch (...) {    
+//    XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught unknown exception while accessing FEC via VME");
+//  }
 
 }
 
@@ -3156,7 +3174,7 @@ xoap::MessageReference PixelFECSupervisor::SetROCDACsEnMass(xoap::MessageReferen
                                           true /* to turn the buffer mode on*/);
   }
 
-  std::map <unsigned long, PixelFECInterface*>::iterator iPixelFEC;
+  FECInterfaceMap::iterator iPixelFEC;
   for(iPixelFEC = FECInterface.begin(); iPixelFEC != FECInterface.end(); ++iPixelFEC){
     iPixelFEC->second->qbufsend();
   }
@@ -3684,6 +3702,10 @@ void PixelFECSupervisor::deleteHardware()
   FECInterface.clear();  //clear the map of FECInterface pointers
   FECInterfaceByFECNumber_.clear();
 
+#ifdef UTCA_XXX
+  for (RegMgrMap::iterator i=RegMgr_.begin();i!=RegMgr_.end(); i++)
+    delete i->second;
+#else
 #ifdef USE_HAL
 
   for (VMEPtrMap::iterator i=VMEPtr_.begin();i!=VMEPtr_.end(); i++)
@@ -3706,6 +3728,7 @@ std::string const msg_debug_nvw = "PixelFECSupervisor::deleteHardware() called w
     delete addressTablePtr_;
   }
 #endif //USE_HAL
+#endif //UTCA_XXX
 }
 
 

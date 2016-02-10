@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.21 2012/01/20 19:49:49 kreis Exp $
+# $Id: Makefile,v 1.7 2009/07/28 14:25:48 aryd Exp $
 
 #########################################################################
 # XDAQ Components for Distributed Data Acquisition                      #
@@ -17,61 +17,52 @@
 # make Library=ExampleName
 #
 ##
+
 include $(XDAQ_ROOT)/config/mfAutoconf.rules
 include $(XDAQ_ROOT)/config/mfDefs.$(XDAQ_OS)
 
 Project=pixel
-Package=PixelFECSupervisor
-
-Sources=PixelFECSupervisor.cc DiagWrapper.cc
+Package=PixelPh1FECInterface
 
 CACTUS_ROOT = /opt/cactus
+
+Sources = $(wildcard src/common/*.cc)
 
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
         $(CACTUS_ROOT)/include \
-        $(XDAQ_ROOT)/include/hal \
-        $(XDAQ_ROOT)/include/i2o \
-        $(XDAQ_ROOT)/include/i2o/shared \
-        $(XDAQ_ROOT)/include/interface/evb \
-        $(XDAQ_ROOT)/include/interface/shared
+        $(XDAQ_ROOT)/include 
 
-LibraryDirs = 
+LibraryDirs =
 
-UserSourcePath = 
+#UserSourcePath = \
+#	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
 UserCFlags = -O
-UserCCFlags = -std=c++0x -g -O -Wno-long-long -DLINUX
+UserCCFlags = -std=c++0x -g -O -Wno-long-long
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
+
+DependentLibraryDirs =  $(BUILD_HOME)/pixel/lib
+
+DependentLibraries = PixeluTCAUtilities
 
 # These libraries can be platform specific and
 # potentially need conditional processing
 #
 
-DependentLibraryDirs =  $(BUILD_HOME)/pixel/lib \
-                        $(XDAQ_ROOT)/lib	
-
-DependentLibraries = PixelPh1FECInterface SiPixelObjects PixelTestStandUtilities PixelGUIUtilities GenericHAL CAENVME CAENLinuxBusAdapter PixelDCSUtilities Pixelb2inUtilities occi nnz12 clntsh
-
-
-ifeq ($(VMEDUMMY), yes)
-UserCCFlags += -DVMEDUMMY
-BusAdapter:=DummyBusAdapters
-endif
-
-
-Libraries = 
+Libraries =
+ExternalObjects = 
 
 #
 # Compile the source files and create a shared library
 #
 
-DynamicLibrary= PixelFECSupervisor
+DynamicLibrary= PixelPh1FECInterface
 
 
-StaticLibrary=
+
 
 ifdef Executable
 Libraries=toolbox xdata xcept xoap xerces-c log4cplus mimetic

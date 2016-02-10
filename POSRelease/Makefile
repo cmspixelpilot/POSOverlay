@@ -39,9 +39,11 @@ Packages=\
 	PixelUtilities/PixelRootUtilities \
 	PixelUtilities/PixelDCSUtilities \
 	PixelUtilities/Pixelb2inUtilities \
+	PixelUtilities/PixeluTCAUtilities \
 	PixelUtilities/PixelJobControlUtilities \
 	PixelFEDInterface \
 	PixelFECInterface \
+	PixelPh1FECInterface \
 	PixelSupervisorConfiguration \
 	PixelCalibrations \
 	PixelFEDSupervisor \
@@ -91,6 +93,7 @@ install:
 	ln -s -f ../PixelUtilities/PixelSharedDataTools/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelSharedDataTools.so lib/.
 	ln -s -f ../PixelUtilities/PixelXmlUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelXmlUtilities.so lib/.
 	ln -s -f ../PixelUtilities/PixelJobControlUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelJobControlUtilities.so lib/.
+	ln -s -f ../PixelUtilities/PixeluTCAUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixeluTCAUtilities.so lib/.
 	ln -s -f ../PixelDCSInterface/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelDCSInterface.so lib/.
 	ln -s -f ../PixelAnalysisTools/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelAnalysisTools.so lib/.
 	ln -s -f ../PixelHistoViewer/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelHistoViewer.so lib/.

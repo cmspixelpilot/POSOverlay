@@ -73,8 +73,9 @@
 #include "PixelUtilities/PixelGUIUtilities/include/HTML2XGI.h"
 #include "PixelUtilities/PixelDCSUtilities/include/PixelPowerMap4603.h"
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
+#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
-#include "PixelFECInterface/include/PixelFECInterface.h"
+#include "PixelPh1FECInterface/include/PixelPh1FECInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelHdwAddress.h"
@@ -213,6 +214,8 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     std::string htmlbase_,datbase_;
     std::string runNumber_;
 
+    std::string connectionFile_;
+
     bool doQPLLLoop_;
     bool doTBMReadoutLoop_;
 
@@ -249,11 +252,13 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     std::set<std::string> powerCoordinatesRampingUp_;
 
     //For indexing based on VME address
-    typedef std::map<unsigned long, PixelFECInterface*> FECInterfaceMap;
+    typedef std::map<unsigned long, PixelPh1FECInterface*> FECInterfaceMap;
     FECInterfaceMap FECInterface;
     typedef std::map<unsigned long, HAL::VMEDevice*> VMEPtrMap;
     VMEPtrMap VMEPtr_;
-
+    typedef std::map<unsigned long, Ph2_HwInterface::RegManager*> RegMgrMap;
+    RegMgrMap RegMgr_;
+    
     //For indexing by FEC number
     std::map<unsigned int,  pos::PixelFECConfigInterface*> FECInterfaceByFECNumber_;
 
