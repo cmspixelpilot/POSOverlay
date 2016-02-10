@@ -1,0 +1,243 @@
+###########################################################
+#
+# TTCci configuration.
+#
+# (from TTCciControl::WriteConfigurationFile())
+#
+#
+# Automatically created with TTCci::WriteConfiguration() 
+# from current configuration on Tue Mar 24 14:16:59 2015 
+#
+# (Comments (will be ignored) are indicated by "#". Lines
+#  can be split using the '\' character at end of 1st line.)
+#
+###########################################################
+
+# THE SOURCES (What should the TTCci be listening to?):
+# options: TTC, LTC, CTC, VME, INTERNAL, FRONTPANEL0|1, CYCLIC, or BCHANNEL
+TRIGGER_SOURCE BCHANNEL CYCLIC # CTC, LTC, SCOM, BCHANNEL, CYCLIC, FRONTPANEL0, FRONTPANEL1, INTERNAL
+BGO_SOURCE VME CYCLIC # CTC, LTC, VME, CYCLIC
+ORBIT_SOURCE   INTERNAL     # CTC | LTC | TTC | INTERNAL
+
+# CLOCK: possible interfaces:  CTC | LTC | TTC | INTERNAL
+# parameters: QPLLReset=YES|NO       (ignored if not INTERNAL)
+#             QPLLAutoRestart=YES|NO (ignored if not INTERNAL)
+#             FreqBits==0x??
+# CLOCK_SOURCE CTC QPLLReset=NO QPLLAutoRestart=YES FreqBits=0x7
+CLOCK_SOURCE INTERNAL FreqBits=0x37 #  CTC | LTC | TTC | INTERNAL
+
+# TRIGGER SECTION (ignored if TRIGGER_SOURCE is not set to INTERNAL)
+# Set (last) trigger to 1 to stop trigger sequence.
+# (last) trigger = 0 ==> repetitive sequence (default)
+# e.g. with N>0 lines like: 'TRIGGER_INTERVAL 0x20'
+# or with 'TRIGGER_FREQUENCY_HZ 1.5 MODE=EQUI'
+# where 'MODE' can be 'EQUI' (equidistant) or 'RANDOM'
+# TRIGGER_INTERVAL 0x5784
+TRIGGER_FREQUENCY_HZ 100000 MODE=EQUI   # in Hz, MODE=EQUI or MODE=RANDOM
+
+# Set The BGO Channels, e.g. for channel 9 (=Start) with : 
+#   BGO_CHANNEL 9 L=SINGLE|DOUBLE|BLOCK REPETITIVE=YES|NO \
+#     DELAY1=255 DELAY2=3 PRESCALE=10 POSTSCALE=20
+#   ADDBGODATA 9 DATA=0x1234 MODE=S|L|A  # S=SHORT, L=LONG, A=A-Command
+# The first integer is the bgo channel number (0..15). 
+# Alternatively, one can use the channel name instead of the 
+# number. The channels 1 to 10 are reserved for BC0, TestEnable, 
+# PrivateGap, PrivateOrbit, Resynch, HardReset, EC0, OC0, Start,
+# and Stop, respectively.
+#
+# In order to use per word (individual) postscale values, add a parameter
+# POSTSCALE==xy to each ADDBGODATA command. Note that
+# you'll need a firmware version that supports it. The TTCci XDAQ application
+# will show you the corresponding fields in the 'BGO Configuration' page if
+# it does.
+
+
+# Channel # 0 (0):
+BGO_CHANNEL 0 L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA 0 DATA=0x1c MODE=S
+
+# Channel # 1 (BC0):
+BGO_CHANNEL BC0 L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA BC0 DATA=0x1 MODE=S
+
+# Channel # 2 (TestEnable):
+BGO_CHANNEL TestEnable L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA TestEnable DATA=0x0 MODE=S
+
+# Channel # 3 (PrivateGap):
+BGO_CHANNEL PrivateGap L=SINGLE REPETITIVE=YES STARTAFTER=0 DELAY1=3438
+ADDBGODATA PrivateGap DATA=0x20 MODE=S
+
+# Channel # 4 (PrivateOrbit):
+BGO_CHANNEL PrivateOrbit L=SINGLE REPETITIVE=YES STARTAFTER=0 DELAY1=90
+ADDBGODATA PrivateOrbit DATA=0x1c MODE=S
+
+# Channel # 5 (Resync):
+BGO_CHANNEL Resync L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA Resync DATA=0x1c MODE=S
+
+# Channel # 6 (HardReset):
+BGO_CHANNEL HardReset L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA HardReset DATA=0x14 MODE=S
+
+# Channel # 7 (EC0):
+BGO_CHANNEL EC0 L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA EC0 DATA=0x2 MODE=S
+
+# Channel # 9 (Start):
+BGO_CHANNEL Start L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA Start DATA=0x0 MODE=S
+
+# Channel # 10 (Stop):
+BGO_CHANNEL Stop L=SINGLE REPETITIVE=NO STARTAFTER=0
+ADDBGODATA Stop DATA=0x0 MODE=S
+
+# Channel # 11 (StartOfGap):
+BGO_CHANNEL StartOfGap L=SINGLE REPETITIVE=YES STARTAFTER=0 POSTSCALE=1
+ADDBGODATA StartOfGap DATA=0x1 MODE=A
+
+# Channel # 12 (12):
+BGO_CHANNEL 12 L=DOUBLE REPETITIVE=YES STARTAFTER=0 DELAY2=126
+ADDBGODATA 12 DATA=0x2c MODE=S
+ADDBGODATA 12 DATA=0x1 MODE=A
+
+# Channel # 13 (WarningTestEnable):
+BGO_CHANNEL WarningTestEnable L=SINGLE REPETITIVE=YES STARTAFTER=0 POSTSCALE=1
+ADDBGODATA WarningTestEnable DATA=0x1c MODE=S
+
+# Channel # 14 (14):
+BGO_CHANNEL 14 L=SINGLE REPETITIVE=YES STARTAFTER=0 POSTSCALE=1
+ADDBGODATA 14 DATA=0x14 MODE=S
+
+# Channel # 15 (15):
+BGO_CHANNEL 15 L=SINGLE REPETITIVE=YES STARTAFTER=0
+ADDBGODATA 15 DATA=0x2c MODE=S
+
+################################################################
+# Configuration of sequences. Individual sequences can be defined for 
+# 'coldReset', 'configure', 'enable', 'stop', 'suspend', 'periodic' 
+# and 'user' (predefined)
+# or for any user-defined sequence (use "ADDSEQUENCE ChooseName" first)
+# Example: 
+#   BEGINSEQUENCE enable 	# or configure, suspend, ...
+#   ResetCounters 		# resets evt+orb cntrs. (on TTCci only!)
+#   Sleep 5 			# sleep for 5 sec
+#   mSleep 10 			# sleep for 10 ms
+#   uSleep 100			# sleep for 10 us
+#   EnableL1A 			# or DisableL1A e.g. for 'Suspend' Sequence
+#   BGO 5 			# activates BGO-Channel 5 through VME	
+#   BGO Start 			# activates BGO-Channel 9 through VME	
+#   Periodic On 		# (On|Off) Use Periodic seq. with care!!!
+#   Periodic 60  		# periodicity of Periodic sequence: 60 sec
+#   SendBST 			# Take network time and send it as BST (to emulate BST)
+#   ResumeCyclicAtStart yes|no	# Do|don't resume from where you left of
+#   SendShortBDATA 0x5 		# Send short BDATA
+#   SendLongBDATA 0x555 	# Send long BDATA
+#   BGOSource CTC|LTC|VME|CYCLIC# To change the BGO source (VME ~= none)
+#   Write [i] ADDRESS 0xfff 	# Write 0xffff to reg. ADDRESS (offset i)
+#   Read [i] ADDRESS 		# Read from reg. ADDRESS (offset i)
+#   ENDSEQUENCE			# closes this sequence
+
+BEGINSEQUENCE coldReset
+ENDSEQUENCE
+
+BEGINSEQUENCE configure
+  DisableL1A
+  ResetCounters
+  BGO EC0
+  BGO OC0
+  BGO 14
+  mSleep 100
+  Periodic Off
+  EnableL1A
+ENDSEQUENCE
+
+BEGINSEQUENCE enable
+  EnableL1A
+  mSleep 100
+ENDSEQUENCE
+
+BEGINSEQUENCE stop
+ENDSEQUENCE
+
+BEGINSEQUENCE suspend
+  BGO STOP
+  mSleep 100
+  DisableL1A
+  Periodic Off
+ENDSEQUENCE
+
+BEGINSEQUENCE periodic
+  BGO 13
+ENDSEQUENCE
+
+BEGINSEQUENCE user
+  mSleep 100
+ENDSEQUENCE
+
+ADDSEQUENCE LevelOne
+BEGINSEQUENCE LevelOne
+  BGO 11
+ENDSEQUENCE
+
+ADDSEQUENCE CalSync
+BEGINSEQUENCE CalSync
+  BGO Start
+ENDSEQUENCE
+
+ADDSEQUENCE ResetROC
+BEGINSEQUENCE ResetROC
+  BGO 13
+  mSleep 100
+ENDSEQUENCE
+
+ADDSEQUENCE ResetTBM
+BEGINSEQUENCE ResetTBM
+  BGO 14
+  mSleep 100
+ENDSEQUENCE
+
+################################################################
+# Cyclic Trigger and BGO Generators
+# Usage: CYCLICTRIGGER id [arguments]
+#    or: CYCLICBGO id [arguments]
+# where id denotes the generator, i.e. 0..2 for TRIGGER and 
+# 0..4 for BGO generators.
+# The following arguments can be appended to these commands:
+#   STARTBX=i 		# i=Offset in BX
+#   PRES=i 		# i=prescale
+#   POST=i 		# i=postscale (# of times)
+#   INITWAIT=i 		# i=initial orbits to wait
+#   REPETITIVE=y|n 	# repeat sequence
+#   PAUSE=i 		# pause i orbits (for REPETITIVE=y)
+#   PERMANENT=y|n 	# don't listen to BGO Start/Stop
+#   CH=i|Name 		# BGO channel or name. For BGO only!
+# The argument CH denotes the BGO channel to be requested.
+# Its value can either be a number (0..15) or the channel 
+# name, e.g. Resynch, HardReset, EC0, OC0, Start, Stop, TestEnable, 
+# PrivateGap, or PrivateOrbit
+#
+CYCLICTRIGGER 0 STARTBX=199 PRES=1000 POST=1 INITWAIT=1 REPETITIVE=y PERMANENT=n
+CYCLICBGO 0 CH=BC0 REPETITIVE=y PERMANENT=y
+CYCLICBGO 2 CH=15 STARTBX=100 POST=1 REPETITIVE=y PERMANENT=n
+
+
+# TRIGGER RULE SETTINGS ###################################
+# There are 7 that can be changed using e.g.:
+# TRIGGERRULE i N_BX   # i = 1...7, N_BX = Min no. of clocks for i triggers
+
+TRIGGERRULE 1 3  	# No more than i trigs in j BX
+TRIGGERRULE 2 25  	# No more than i trigs in j BX
+TRIGGERRULE 3 100  	# No more than i trigs in j BX
+TRIGGERRULE 4 240  	# No more than i trigs in j BX
+TRIGGERRULE 5 0  	# No more than i trigs in j BX
+TRIGGERRULE 6 0  	# No more than i trigs in j BX
+TRIGGERRULE 7 0  	# No more than i trigs in j BX
+
+# EXTERNAL TRIGGER INPUT(S) DELAY(S) ##########################
+#
+# This value is used to set the external trigger 1 and or 0 input
+# delay in units of bunch crossings.
+# valid values are from 0 to 255
+EXTTRIG1DELAY 0
+########### CONFIGURATION END #############################

@@ -30,5 +30,9 @@ Create links
   ln -s ../../PixelFEDInterface/test/params_fed.dat
   ln -s ../../PixelFEDInterface/test/FEDAddressMap.dat
 
+in shell 1:
 ./runFedScope [-f 0x11000000] [-i] 
+
+in shell 2:
+./runFedConsumer
 

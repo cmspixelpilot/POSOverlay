@@ -108,6 +108,8 @@ bool PixelGainAliveSCurveCalibration::execute()
     fecTimer_.stop();
 
   }
+
+  //usleep(10000);	// 0.01 s. FIXME. Temporary throttling
   
   ttcTimer_.start();
 

@@ -1,0 +1,169 @@
+diff --git a/pixel/BPixelTools/caen/Makefile b/POSOverlay/BPixelTools/caen/Makefile
+# already merged
+ 
+diff --git a/pixel/BPixelTools/caen/run.csh b/pixel/BPixelTools/caen/run.csh
+# already merged
+
+diff --git a/pixel/BPixelTools/caen/setup.csh b/pixel/BPixelTools/caen/setup.csh
+# already merged
+
+diff --git a/pixel/BPixelTools/ccu/.hist b/pixel/BPixelTools/ccu/.hist
+# run history, keep old version
+
+diff --git a/pixel/BPixelTools/ccu/data/fec_ring_ccu_channel_group.txt b/POSOverlay/BPixelTools/ccu/data/fec_ring_ccu_channel_group.txt
+# already merged
+ 
+diff --git a/POSOverlay/BPixelTools/ccu/data/fec_ring_ccu_channel_group.txt.old b/POSOverlay/BPixelTools/ccu/data/fec_ring_ccu_channel_group.txt.old
+# backup file, keep as is
+
+diff --git a/pixel/BPixelTools/ccu/include/ServerAccess.h b/POSOverlay/BPixelTools/ccu/include/ServerAccess.h
+# already merged
+ 
+diff --git a/POSOverlay/BPixelTools/ccu/resetall.sh b/POSOverlay/BPixelTools/ccu/resetall.sh
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/ccu/run.bsh b/POSOverlay/BPixelTools/ccu/run.bsh
+# already merged
+
+diff --git a/pixel/BPixelTools/ccu/run.csh b/pixel/BPixelTools/ccu/run.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/ccu/setup.bsh b/POSOverlay/BPixelTools/ccu/setup.bsh
+# already merged
+
+diff --git a/pixel/BPixelTools/ccu/setup.csh b/pixel/BPixelTools/ccu/setup.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/ccu/src/ServerAccess.cc b/POSOverlay/BPixelTools/ccu/src/ServerAccess.cc
+# already merged.  some changes due to aoh->poh, among other things.
+
+diff --git a/pixel/BPixelTools/ccu/src/ccu.cxx b/POSOverlay/BPixelTools/ccu/src/ccu.cxx
+# already merged
+
+diff --git a/pixel/BPixelTools/fed/run.csh b/pixel/BPixelTools/fed/run.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/fed/setup.csh b/pixel/BPixelTools/fed/setup.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/fed/src/fed.cxx b/POSOverlay/BPixelTools/fed/src/fed.cxx
+# already merged
+
+diff --git a/pixel/BPixelTools/fed/src/setupPixelFED.cxx b/POSOverlay/BPixelTools/fed/src/setupPixelFED.cxx
+# no significant changes
+
+diff --git a/POSOverlay/BPixelTools/fedScope/FedConsumerDict.cc b/POSOverlay/BPixelTools/fedScope/FedConsumerDict.cc
+# UPDATED: new file
+
+diff --git a/POSOverlay/BPixelTools/fedScope/FedConsumerDict.h b/POSOverlay/BPixelTools/fedScope/FedConsumerDict.h
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/fedScope/README b/POSOverlay/BPixelTools/fedScope/README
+# already merged
+
+diff --git a/pixel/BPixelTools/pxfec/.hist b/pixel/BPixelTools/pxfec/.hist
+# command history, leave as is
+
+diff --git a/pixel/BPixelTools/pxfec/data/#d.ini# b/pixel/BPixelTools/pxfec/data/#d.ini#
+# backup file, leave as is
+
+diff --git a/pixel/BPixelTools/pxfec/data/d.ini b/POSOverlay/BPixelTools/pxfec/data/d.ini
+# already merged
+
+diff --git a/POSOverlay/BPixelTools/pxfec/data/d.ini.4hdib_modules b/POSOverlay/BPixelTools/pxfec/data/d.ini.4hdib_modules
+# new file, probably unnecessary, leave as is
+
+# below, many version of d.ini.* not copied over
+
+diff --git a/POSOverlay/BPixelTools/pxfec/data/generate_perms.py b/POSOverlay/BPixelTools/pxfec/data/generate_perms.py
+# UPDATED: new file
+
+diff --git a/POSOverlay/BPixelTools/pxfec/include/TBM_old.h b/POSOverlay/BPixelTools/pxfec/include/TBM_old.h
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/pxfec/run.csh b/pixel/BPixelTools/pxfec/run.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/pxfec/setup.csh b/pixel/BPixelTools/pxfec/setup.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/pxfec/src/Roc.cc b/POSOverlay/BPixelTools/pxfec/src/Roc.cc
+# UPDATED: Roc.cc to version in POS -- has several extra lines.
+
+diff --git a/POSOverlay/BPixelTools/pxfec/src/Roc_old.cc b/POSOverlay/BPixelTools/pxfec/src/Roc_old.cc
+# UPDATED: new file
+
+diff --git a/POSOverlay/BPixelTools/pxfec/src/TBM_old.cc b/POSOverlay/BPixelTools/pxfec/src/TBM_old.cc
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/setup.bsh b/POSOverlay/BPixelTools/setup.bsh
+# already merged
+ 
+diff --git a/pixel/BPixelTools/setup.csh b/pixel/BPixelTools/setup.csh
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/Logger.py b/POSOverlay/BPixelTools/test/Logger.py
+# UPDATED to POS version
+
+diff --git a/pixel/BPixelTools/test/SECTORS.py b/pixel/BPixelTools/test/SECTORS.py
+# deleted file, leave as is
+
+diff --git a/POSOverlay/BPixelTools/test/SystemTests_2014Oct15.py b/POSOverlay/BPixelTools/test/SystemTests_2014Oct15.py
+# new file, probably unnecessary, leave as is
+
+diff --git a/POSOverlay/BPixelTools/test/SystemTests_old.py b/POSOverlay/BPixelTools/test/SystemTests_old.py
+# new file, probably unnecessary, leave as is
+
+diff --git a/pixel/BPixelTools/test/aohrms.py b/pixel/BPixelTools/test/aohrms.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/demo.py b/pixel/BPixelTools/test/demo.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/hsimple.py b/pixel/BPixelTools/test/hsimple.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/log/testCCU_2015-06-19T10:47:06.048717.log b/pixel/BPixelTools/test/log/testCCU_2015-06-19T10:47:06.048717.log
+# deleted file, leave as is
+
+diff --git a/POSOverlay/BPixelTools/test/pilot_delay25.py b/POSOverlay/BPixelTools/test/pilot_delay25.py
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/test/setup.bsh b/pixel/BPixelTools/test/setup.bsh
+# deleted file, leave as is
+
+diff --git a/POSOverlay/BPixelTools/test/testBmI_PortCard.py b/POSOverlay/BPixelTools/test/testBmI_PortCard.py
+# UPDATED: new file
+
+diff --git a/POSOverlay/BPixelTools/test/testBmO_PortCard.py b/POSOverlay/BPixelTools/test/testBmO_PortCard.py
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/test/testCCUFED.py b/pixel/BPixelTools/test/testCCUFED.py
+# deleted file, leave as is
+
+diff --git a/POSOverlay/BPixelTools/test/testCCUandDCDC.py b/POSOverlay/BPixelTools/test/testCCUandDCDC.py
+# UPDATED: new file
+
+diff --git a/pixel/BPixelTools/test/testFED.py b/pixel/BPixelTools/test/testFED.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/testFED1.py b/pixel/BPixelTools/test/testFED1.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/testPortCard.py b/POSOverlay/BPixelTools/test/testPortCard.py
+# configured for TIF setup, leave as is
+
+diff --git a/pixel/BPixelTools/test/testROOT.py b/pixel/BPixelTools/test/testROOT.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/test/test_devel.py b/pixel/BPixelTools/test/test_devel.py
+# deleted file, leave as is
+
+diff --git a/pixel/BPixelTools/tools/Makefile b/POSOverlay/BPixelTools/tools/Makefile
+# already merged
+
+diff --git a/pixel/BPixelTools/tools/src/Getline.c b/POSOverlay/BPixelTools/tools/src/Getline.c
+# already merged
+ 
+diff --git a/POSOverlay/BPixelTools/tools/src/Getline.c_00 b/POSOverlay/BPixelTools/tools/src/Getline.c_00
+# new file, seems unnecessary

@@ -1,11 +1,15 @@
-// g++ -g $(root-config --cflags --glibs) -I.. ../PixelCalibrations/src/common/PixelIanaAnalysis.cc redo_iana.cc -o redo_iana.exe
+/*
+g++ -g $(root-config --cflags --glibs) -I.. \
+../PixelCalibrations/src/common/PixelIanaAnalysis.cc redo_iana.cc \
+-o redo_iana.exe
+*/
 
 #include "PixelCalibrations/include/PixelIanaAnalysis.h"
 #include <cstdio>
 
 int main(int argc, char** argv) {
   if (argc < 4) {
-    fprintf(stderr, "usage: redo_iana.exe datfile roc outfile");
+    fprintf(stderr, "usage: redo_iana.exe datfile roc outfile\n");
     return 1;
   }
 

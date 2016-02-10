@@ -112,6 +112,15 @@ const unsigned int init_aoh4b_bias0 = 25;
 const unsigned int init_aoh4b_bias1 = 26;
 const unsigned int init_aoh4b_bias2 = 26;
 
+const unsigned int init_poh1_gain0 = 0;
+const unsigned int init_poh1_gain1 = 1;
+const unsigned int init_poh1_gain2 = 1;
+const unsigned int init_poh1_gain3 = 1;
+const unsigned int init_poh1_bias0 = 29;
+const unsigned int init_poh1_bias1 = 30;
+const unsigned int init_poh1_bias2 = 29;
+const unsigned int init_poh1_bias3 = 29;
+
 const unsigned int init_doh_gain0 = 1;
 const unsigned int init_doh_gain1 = 0;
 const unsigned int init_doh_gain2 = 0;
@@ -271,6 +280,14 @@ std::string readLaserdriver ( FecAccess *fec,
 			      tscType8 deviceAddress,
 			      long loop, unsigned long tms) ;
 
+std::string readPoh ( FecAccess *fec,
+		      tscType8 fecAddress, 
+		      tscType8 ringAddress,
+		      tscType8 ccuAddress, 
+		      tscType8 channelAddress,
+		      tscType8 deviceAddress,
+	              long loop, unsigned long tms) ;
+
 /** \brief Basic test for accessing a LaserDriver
  */
 std::string setLaserdriver ( FecAccess *fecAccess,
@@ -292,6 +309,30 @@ std::string setLaserdriver ( FecAccess *fecAccess,
 			     unsigned int valuebias1,
 			     bool setbias2,
 			     unsigned int valuebias2);
+
+std::string setPoh ( FecAccess *fecAccess,
+		     tscType8 fecAddress, 
+		     tscType8 ringAddress,
+		     tscType8 ccuAddress, 
+		     tscType8 channelAddress,
+		     tscType8 deviceAddress,
+		     long loop, unsigned long tms,
+		     bool setgain0,
+		     unsigned int valuegain0,
+		     bool setgain1,
+		     unsigned int valuegain1,
+	             bool setgain2,
+	             unsigned int valuegain2,
+	             bool setgain3,
+	             unsigned int valuegain3,
+		     bool setbias0,
+		     unsigned int valuebias0,
+		     bool setbias1,
+		     unsigned int valuebias1,
+		     bool setbias2,
+		     unsigned int valuebias2,
+		     bool setbias3,
+		     unsigned int valuebias3);
 		
 /** \brief Basic test for accessing a DOH
  */
@@ -427,7 +468,13 @@ std::string getI2CDevice (FecAccess *fecAccess,
 		     enumDeviceType modeType,
 		     long loop, unsigned long tms) ;
 
-
+/* new method to set i2c speed */
+void setI2CSpeed ( FecAccess *fecAccess, 
+                   tscType8 fecAddress, 
+                   tscType8 ringAddress, 
+                   tscType8 ccuAddress, 
+                   tscType8 channelAddress, 
+                   unsigned int i2cSpeed );
 
 /** \brief Default test, just read the FEC CR0
  */
@@ -545,15 +592,6 @@ std::string CtrlRegE (FecAccess *fecAccess,
 		     tscType8 ccuAddress,
 		    tscType8 channelAddress=0x30, 
 		    int value=0xFF);
-
-std::string pixDCDCCommand(FecAccess* fecAccess,
-			   tscType8 fecAddress,
-			   tscType8 ringAddress,
-			   tscType8 ccuAddressEnable,
-			   tscType8 ccuAddressPgood,
-			   tscType8 piaChannelAddress,
-			   bool turnOn,
-			   unsigned int portNumber);
 
 #endif
 

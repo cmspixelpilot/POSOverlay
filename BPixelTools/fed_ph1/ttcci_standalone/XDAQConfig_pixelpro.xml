@@ -1,0 +1,43 @@
+<?xml version='1.0'?>
+
+<xc:Partition xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+              xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<xc:Context id="0" url="http://vmepcS2B16-10:1973">
+  <!-- #### BEGIN TTC-CONFIG-AUTO-GENERATED #### -->
+
+  <xc:Application class="LTCControl" id="30" instance="0" network="local">
+    <properties xmlns="urn:xdaq-application:LTCControl" xsi:type="soapenc:Struct">
+      <name xsi:type="xsd:string">Board 1</name>
+      <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+      <Location xsi:type="xsd:integer">13</Location>
+      <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+      <Configuration xsi:type="xsd:string">[file=/cmsnfshome0/nfshome0/pixelpro/TriDAS/TTCSoftware/config/LTCConfiguration.txt]</Configuration>
+      <ReloadAtEveryConfigure xsi:type="xsd:boolean">false</ReloadAtEveryConfigure>    
+      <BTimeCorrection xsi:type="xsd:unsignedInt">99</BTimeCorrection>
+      <SlinkSrcId xsi:type="xsd:unsignedInt">824</SlinkSrcId>
+    </properties>
+  </xc:Application>
+  
+  <xc:Module>/cmsnfshome0/nfshome0/pixelpro/TriDAS/TTCSoftware/xdaq/libLTCControl.so</xc:Module>
+
+  <xc:Application class="TTCciControl" id="40" instance="0" network="local">
+    <properties xmlns="urn:xdaq-application:TTCciControl" xsi:type="soapenc:Struct">
+      <name xsi:type="xsd:string">Board 1</name>
+      <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+      <Location xsi:type="xsd:integer">16</Location>
+      <HyperdaqCtrlLevel xsi:type="xsd:integer">0</HyperdaqCtrlLevel>
+      <Configuration xsi:type="xsd:string">[file=/cmsnfshome0/nfshome0/pixelpro/TriDAS/TTCSoftware/config/TTCciConfiguration.txt]</Configuration>
+      <ReloadAtEveryConfigure xsi:type="xsd:boolean">false</ReloadAtEveryConfigure>    
+      <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+      <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+    </properties>
+  </xc:Application>
+  
+  <xc:Module>/cmsnfshome0/nfshome0/pixelpro/TriDAS/TTCSoftware/xdaq/libTTCciControl.so</xc:Module>
+  <!-- #### END TTC-CONFIG-AUTO-GENERATED #### -->
+
+
+</xc:Context>
+
+</xc:Partition>

@@ -2872,7 +2872,11 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
 
       // If this is a BPix module, do this
       // FIXME hack!!!!
+#if defined SETUP_TIF
+      if (true) { //module_name->detsub()=='B') {  //BPIX
+#else
       if (module_name->detsub()=='B') {  //BPIX
+#endif
 	// set the bit to ignore the fullbuffRDa 
         FECInterface[fecVMEBaseAddress]->FullBufRDaDisable(module_firstHdwAddress.mfec(),1);
 	// disable the debug check 
