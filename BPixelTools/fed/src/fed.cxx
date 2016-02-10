@@ -87,6 +87,7 @@ int initialize(PixelFEDInterface &fed1, HAL::VMEDevice &PixFEDCard) {
 
 // ======================================================================
 int readChannel(PixelFEDInterface &fed1, int channel, int* data, int nValue=4096){
+
   // read the fifo for one channel and fill it into the buffer at *data
   if((channel<1) || (channel>36)){
     cout << "illegal channel " << channel << endl;
@@ -108,9 +109,12 @@ int readChannel(PixelFEDInterface &fed1, int channel, int* data, int nValue=4096
   // unsigned long buffer[(36*1024)]; // Data buffer for the FIFO (fifo1 = 36*1024?)
   uint32_t buffer[(36*1024)];
   //int status = fed1.drainFifo1(channel, buffer, 4096); 
-  fed1.drainFifo1(channel, buffer, 4096); 
+  int myread = fed1.drainFifo1(channel, buffer, 4096);
+  //fed1.drain_transBuffer(channel,buffer);
+  //cout << "here" << endl;
 
-  int nread=nValue;
+  //int nread=nValue;
+  int nread = myread;
   for(int i=0; i<nValue; i++){
     int marker=buffer[i]&0xff;                           // the lowest bits may contain extra data
     data[i] = ((buffer[i] & 0xffc00000)>>22) & 0xffffff; // analyze word
@@ -748,9 +752,10 @@ void exec(SimpleCommand* c){
 
 
   }else if(c->Keyword("rms")){
-    const int N=400;
+    const int N=140;
     for(int ch=1; ch<37; ch++){
       readChannel(*fed[fedSlot], ch, buffer);
+ 
       double sum=0,sum2=0;
       for(int i=100; i<100+N; i++){
 	sum+=double(buffer[i]);
@@ -769,12 +774,17 @@ void exec(SimpleCommand* c){
       cout << "invalid channel number " << channel << endl;
       return;
     }
-    const int N=400;
-    readChannel(*fed[fedSlot], channel, buffer);
+    //const int N=400;
+    const int N=readChannel(*fed[fedSlot], channel, buffer)-200;
+    //cout << "reads " << N << endl;
     double sum=0,sum2=0;
     for(int i=100; i<100+N; i++){
+    //for(int i=100; i<myread; i++){
+      //cout << "buffer " << i << ": " << buffer[i] << endl;
       sum+=double(buffer[i]);
       sum2+=double(buffer[i])*double(buffer[i]);
+      //cout << "sum " << sum << endl;
+      //cout << "sum2 " << sum2 << endl;
     }
     cout << setw(2) << channel << "   "
 	 << setw(6) << setprecision(1) << fixed << sum/double(N) << "    " 

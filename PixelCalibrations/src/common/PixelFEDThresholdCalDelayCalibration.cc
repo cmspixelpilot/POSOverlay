@@ -71,12 +71,13 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
       int status=iFED->spySlink64(buffer64);
       //printf(" status is %i\n", status);
       if (status>0) {
-	if(0){
+	if(false){
 	  std::cout<<"Contents of Spy FIFO 3"<<std::endl;
 	  std::cout<<"----------------------"<<std::endl;
 	  for (int i=0; i<=status;++i) {
 	    std::cout<<"Clock "<<i<<" = 0x"<<std::hex<<buffer64[i]<<std::dec<<std::endl;
 	  }
+
 	}
 	
 	FIFO3Decoder decode(buffer64);

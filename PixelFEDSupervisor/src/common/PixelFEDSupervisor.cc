@@ -2237,7 +2237,25 @@ std::string const msg_info_vkq = "Retrieving Calib object from DataBase done.";
       // Set up XY mechanism
       iFED->setXY( 8, 500000 );
       iFED->resetXYCount();
-	
+	cout << "FEDSupervisor:Configure" << endl;
+	cout << "vmeBaseAddress: " << vmeBaseAddress << endl;
+
+	uint32_t output = 0;
+	string name = "LAD_N";
+	VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+	cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_NC";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_SC";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
+
+        name = "LAD_S";
+        VMEPtr_[vmeBaseAddress]->read(name, &output, 0x1a0000);
+        cout << name << "; VME ptr readout: " << output << endl;
     }
 	
 
@@ -4682,6 +4700,10 @@ xoap::MessageReference PixelFEDSupervisor::JMTJunk(xoap::MessageReference msg) t
     done = true;
   }
 
+  //  for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); iFED++)
+  //    iFED->second->reset();
+
+ 
   xoap::MessageReference reply=MakeSOAPMessageReference("JMTJunkDone");
   return reply;
 }

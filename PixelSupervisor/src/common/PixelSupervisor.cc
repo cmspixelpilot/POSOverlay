@@ -286,8 +286,13 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   configurationTimer_.setName("PixelSupervisorConfigurationTimer");
 
   // Check infospace for TCDS/TTC running
-  useTCDS_=true;
-  useTTC_=false;
+#ifdef SETUP_TIF
+  useTCDS_ = false;
+  useTTC_  = true;
+#else
+  useTCDS_ = true;
+  useTTC_  = false;
+#endif
   TTCSupervisorApplicationName_="ttc::TTCciControl"; // pixel::ici::PixeliCISupervisor
   if (useTCDS_) TTCSupervisorApplicationName_="pixel::tcds::PixeliCISupervisor";
   LTCSupervisorApplicationName_="";
@@ -296,7 +301,9 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   getApplicationInfoSpace()->fireItemAvailable("UseTCDS", &useTCDS_);
   getApplicationInfoSpace()->fireItemAvailable("TTCSupervisorApplicationName", &TTCSupervisorApplicationName_);
   getApplicationInfoSpace()->fireItemAvailable("LTCSupervisorApplicationName", &LTCSupervisorApplicationName_);
+  
   std::cout << "useTCDS is " <<  useTCDS_ << " " <<  TTCSupervisorApplicationName_.toString() << " " <<  LTCSupervisorApplicationName_.toString() << std::endl;
+
   //  assert(useTTC_ != useTCDS_);
 }
 
@@ -2050,7 +2057,7 @@ std::string const msg_info_klk = "Created new TCDS session ID: "+TCDSSessionID_;
       std::string reply;
       if (useTTC_) {
         reply = Send(i_PixelTTCSupervisor->second, "reset");
-	statePixelTTCSupervisors_[i_PixelTTCSupervisor->first]="Halted";
+        statePixelTTCSupervisors_[i_PixelTTCSupervisor->first] = "Halted";
       }
       if (useTCDS_) {
         reply = Send(i_PixelTTCSupervisor->second, "Halt");

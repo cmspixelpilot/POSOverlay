@@ -1,0 +1,176 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+	<!--- This is where the TIF pc context begins -->
+	<xc:Context id="1" url="http://pixp1daq.cern.ch:1973/">
+		<xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
+		
+		<xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
+
+		<xc:Application class="PixelFECSupervisor" id="60" instance="1" network="local" group="daq"/>
+		
+		<xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
+		
+		<xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="local">
+			<properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
+				<UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
+				<DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
+			</properties>
+		</xc:Application>
+		
+		<xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86_64_slc6/libGlobalErrorDispatcher.so</xc:Module>
+		
+		<xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq">
+			<properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
+				<UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
+				<DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
+			</properties>
+		</xc:Application>
+		
+		<xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
+		
+		<!--xc:Application class="PixelLTCSupervisor" id="80" instance="1" network="local" group="daq"/>
+		<xc:Module>${BUILD_HOME}/pixel/PixelLTCSupervisor/lib/linux/x86_64_slc6/libPixelLTCSupervisor.so</xc:Module-->
+		
+			<!--
+			<xc:Application class="PixelTTCSupervisor" id="90" instance="1" network="local" group="daq">
+				<properties xmlns="urn:xdaq-application:PixelTTCSupervisor" xsi:type="soapenc:Struct">
+					<name xsi:type="xsd:string">Board 1</name>
+					<BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+					<Location xsi:type="xsd:integer">2</Location>
+				<Is64XCompatible xsi:type="xsd:boolean">true</Is64XCompatible>
+					<ReloadAtEveryConfigure xsi:type="xsd:boolean">true</ReloadAtEveryConfigure>
+					<BTimeCorrection xsi:type="xsd:unsignedLong">100</BTimeCorrection>
+					<DelayT2Correction xsi:type="xsd:unsignedLong">3</DelayT2Correction>
+			</properties>
+		</xc:Application>
+		<xc:Module>${BUILD_HOME}/pixel/PixelTTCSupervisor/lib/linux/x86_64_slc6/libPixelTTCSupervisor.so</xc:Module>
+		-->
+		
+		<xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="pixp1daq.cern.ch" port="1914" network="xmas"/>
+		
+		<xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="local" group="daq">
+			<properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
+				<readDCU_workloop_usleep xsi:type="xsd:integer">10000000</readDCU_workloop_usleep>
+			</properties>
+		</xc:Application>
+		
+		<xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
+		
+		<!-- section for TTCci instead of PixelTTCSupervisor -->
+		<xc:Application class="ttc::TTCciControl" id="90" instance="0" network="local" group="daq">
+			<properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
+				<name xsi:type="xsd:string">Board 1</name>
+				<BusAdapter xsi:type="xsd:string">CAENPCIe</BusAdapter>
+				<Location xsi:type="xsd:integer">2</Location>
+				<Configuration xsi:type="xsd:string">[file=/home/cmspixp1/build/pxlpilotfed/ttcci_standalone/TTCciConfiguration_DAQWorkshop.txt]</Configuration> 
+				<group xsi:type="xsd:string">Pixel</group>
+				<system xsi:type="xsd:string">CR</system>
+				<BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+				<DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+				<DisableMonitoring xsi:type="xsd:boolean">true</DisableMonitoring>
+			</properties>
+		</xc:Application>
+		
+		<xc:Module>${XDAQ_ROOT}/lib/libttcttcci.so</xc:Module>  
+		<xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
+		
+		<!-- <xc:Context id="4" url="http://pixp1daq.cern.ch:1980/"> -->
+		<!--
+			<xc:Application class="PixelDCSTestApplication" id="101" instance="0" network="local" group="dcs">
+				<properties xmlns="urn:xdaq-application:PixelDCSTestApplication" xsi:type="soapenc:Struct">
+					<fedDpInterface xsi:type="xsd:string">PixelDCStoFEDDpInterface</fedDpInterface>
+					<trkfecDpInterface xsi:type="xsd:string">PixelDCStoTrkFECDpInterface</trkfecDpInterface>
+					<dcsSupervisor xsi:type="xsd:string">PixelDCSSupervisor</dcsSupervisor>
+				</properties>
+			</xc:Application>
+			<xc:Module>${BUILD_HOME}/pixel/PixelUtilities/PixelDCSUtilities/lib/linux/x86_64_slc6/libPixelDCSUtilities.so</xc:Module>
+		
+			<xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="local" group="dcs">
+				<properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct">
+				<configuration xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
+							</properties>
+					</xc:Application>
+					<xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
+
+					<xc:Application class="PixelDCStoTrkFECDpInterface" id="121" instance="0" network="local" group="dcs">
+							<properties xmlns="urn:xdaq-application:PixelDCStoTrkFECDpInterface" xsi:type="soapenc:Struct">
+									<dpValueUpdate_maxLength xsi:type="xsd:integer">500</dpValueUpdate_maxLength>
+									<dpName_status xsi:type="xsd:string">cms_Pixel_DCSInterface</dpName_status>
+									<oracleViewName_dpNames xsi:type="xsd:string">urn:tstore-view-SQL:TrkFECdpNamesView</oracleViewName_dpNames>
+									<oracleTableName_dpNames xsi:type="xsd:string">CMS_PXL_PIXEL_VIEW.FPIX_DCU_DATAPOINTS_NEW_V</oracleTableName_dpNames>
+									<oracleViewName_dpFilter xsi:type="xsd:string">urn:tstore-view-SQL:TrkFECdpFilterView</oracleViewName_dpFilter>
+									<oracleTableName_dpFilter xsi:type="xsd:string">CMS_PXL_PIXEL_VIEW.FPIX_DCU_FILTER_NEW_V</oracleTableName_dpFilter>
+									<oracleViewName_dpCalibration xsi:type="xsd:string">urn:tstore-view-SQL:TrkFECdpCalibrationView</oracleViewName_dpCalibration>
+									<oracleTableName_dpCalibration xsi:type="xsd:string">FECTODCSDPCALIBRATION</oracleTableName_dpCalibration>
+									<oracleUserName xsi:type="xsd:string">CMS_PXL_PIXEL_R</oracleUserName>
+									<oraclePassword xsi:type="xsd:string"></oraclePassword>
+									<version_dcu_calib_filter xsi:type="xsd:string">V1</version_dcu_calib_filter>
+									<psx_system_name xsi:type="xsd:string">cms_trk_dcs_07:</psx_system_name>
+							</properties>
+					</xc:Application>
+					<xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
+
+					<xc:Application class="PixelDCStoFEDDpInterface" id="122" instance="0" network="local" group="dcs">
+						<properties xmlns="urn:xdaq-application:PixelDCStoFEDDpInterface" xsi:type="soapenc:Struct">
+									<dpValueUpdate_maxLength xsi:type="xsd:integer">500</dpValueUpdate_maxLength>
+									<dpName_status xsi:type="xsd:string">cms_Pixel_FEDSupervisor</dpName_status>
+									<oracleViewName_dpNames xsi:type="xsd:string">urn:tstore-view-SQL:FEDdpNamesView</oracleViewName_dpNames>
+									<oracleTableName_dpNames xsi:type="xsd:string">FEDTODCSDPNAMES</oracleTableName_dpNames>
+									<oracleViewName_dpFilter xsi:type="xsd:string">urn:tstore-view-SQL:FEDdpFilterView</oracleViewName_dpFilter>
+									<oracleTableName_dpFilter xsi:type="xsd:string">FEDTODCSDPFILTER</oracleTableName_dpFilter>
+									<oracleViewName_dpCalibration xsi:type="xsd:string">urn:tstore-view-SQL:FEDdpCalibrationView</oracleViewName_dpCalibration>
+									<oracleTableName_dpCalibration xsi:type="xsd:string">FEDTODCSDPCALIBRATION</oracleTableName_dpCalibration>
+							</properties>
+					</xc:Application>
+					<xc:Module>${BUILD_HOME}/pixel/PixelDCSInterface/lib/linux/x86_64_slc6/libPixelDCSInterface.so</xc:Module> 
+
+					<xc:Application class="tstore::TStore" id="200" instance="0" network="local" group="dcs">
+							<properties xmlns="urn:xdaq-application:TStore" xsi:type="soapenc:Struct">
+							<configurationRootDirectory xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelDCSInterface/xml/</configurationRootDirectory>
+							</properties>
+					</xc:Application>
+					<xc:Module>${XDAQ_ROOT}/lib/libtstoreutils.so</xc:Module>
+					<xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
+					<xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
+					<xc:Module>${XDAQ_ROOT}/lib/libtstore.so</xc:Module>
+			-->
+	</xc:Context>
+	
+			<!-- TIF PSX server: example of direct connection -->
+			<!--
+			<xc:Context id="0" url="http://vuslink2.cern.ch:1981"> 
+					<xc:Application class="psx" id="33" instance="0" network="local" group="dcs" service="psx"/>
+			</xc:Context>
+			-->
+
+			<!-- P5 PSX server: using of ssh tunnel (local address is 19923) from cmsfpix1: ssh -L 19923:srv-c2c03-16.cms:9923 cmsusr1 -->
+			<!--
+			<<xc:Context id="0" url="http://localhost:19923">
+					<xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
+			</xc:Context>
+			-->
+
+			<!-- P5 PSX server: http://srv-c2c03-16.cms:9923/urn:xdaq-application:lid=30/ -->
+			<!--
+			<xc:context url="http://srv-c2c03-16.cms:9923">
+			<xc:application group="dcs" network="local" id="30" service="psx" instance="0" _moz-userdefined="">
+			</xc:application>
+			</xc:context>
+			-->
+
+			<!-- P5 PSX server: http://srv-c2c03-16.cms:9923/urn:xdaq-application:lid=30/ -->
+			<!-- 9923 is just pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
+			<!-- <xc:Context id="6" url="http://srv-c2c03-16.cms:9922"> -->
+			<!-- <xc:Context id="6" url="http://cmspsx.cms:9922"> works with PSX running! Otherwise works with 9920 -->
+		<!--
+			<xc:Context id="6" url="http://cmspsx.cms:9923">
+			<xc:Application class="psx" id="30" instance="0" network="local"
+			group="dcs" service="psx"/>
+			</xc:Context>
+		-->
+			<!--xc:Context id="1" url="http://vuslink2.cern.ch:1973">
+					<xc:Application class="PixelSlinkMonitor" id="50" instance="0" network="local" group="daq" />
+					<xc:Module>/home/florez/TriDAS/pixel/PixelSlinkMonitor/lib/linux/x86_64_slc6/libPixelSlinkMonitor.so</xc:Module>
+			</xc:Context-->
+</xc:Partition>

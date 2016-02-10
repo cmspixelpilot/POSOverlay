@@ -272,6 +272,36 @@ string setI2CDevice (FecAccess *fecAccess,
   return o.str() ;
 }
 
+/* new method to set and test i2cspeed */
+void setI2CSpeed ( FecAccess *fecAccess, 
+                   tscType8 fecAddress, 
+                   tscType8 ringAddress, 
+                   tscType8 ccuAddress, 
+                   tscType8 channelAddress, 
+                   unsigned int i2cSpeed ) { 
+
+            keyType index = buildCompleteKey(fecAddress, ringAddress, ccuAddress,channelAddress, 0);
+            tscType32 channelCRA = fecAccess->geti2cChannelCRA (index) ;
+            int speed = 0;
+
+            if( channelCRA == 0 ) speed = 100;
+            else if( channelCRA == 1 ) speed = 200;
+            else if( channelCRA == 2 ) speed = 400;
+            else if( channelCRA == 3 ) speed = 1000;
+            std::cout << "current i2c speed : " << std::dec << speed << " kHz "<< std::endl;
+
+            channelCRA &= 0xFC;
+            if( i2cSpeed == 100 ) channelCRA |= 0x0; 
+            else if( i2cSpeed == 200 ) channelCRA |= 0x1;
+            else if( i2cSpeed == 400 ) channelCRA |= 0x2;
+            else if( i2cSpeed == 1000 ) channelCRA |= 0x3; 
+            fecAccess->seti2cChannelCRA(index,channelCRA);
+
+            tscType32 newCRA = fecAccess->geti2cChannelCRA (index) ;
+
+            if( newCRA == channelCRA ) std::cout << "Written new speed " << std::dec << i2cSpeed << " kHz " << std::endl;
+
+}
 
 /** 
  * <p>Command: -i2c read
@@ -1459,8 +1489,6 @@ string readLaserdriver ( FecAccess *fecAccess,
       o << "-->Gain channel 1:  " << std::dec << (int)mald->getGain1() << std::endl ;
       o << "-->Gain channel 2:  " << std::dec << (int)mald->getGain2() << std::endl ;
 
-    
-
       tscType8 bias[MAXLASERDRIVERCHANNELS] ;
       mald->getBias (bias) ;
 
@@ -1500,6 +1528,111 @@ string readLaserdriver ( FecAccess *fecAccess,
   }
 
   return o.str() ;
+}
+
+string readPoh ( FecAccess *fecAccess,
+		 tscType8 fecAddress, 
+		 tscType8 ringAddress,
+		 tscType8 ccuAddress, 
+		 tscType8 channelAddress,
+		 tscType8 deviceAddress,
+		 long loop, unsigned long tms) {
+
+  laserdriverAccess *lda = NULL ;
+  laserdriverDescription *malda = NULL ;
+  laserdriverAccess *ldb = NULL ;
+  laserdriverDescription *maldb = NULL ;
+
+  std::ostringstream o;
+  std::ostringstream er;
+  
+  try {
+
+    lda = new laserdriverAccess ( fecAccess,
+                                 fecAddress,
+                                 ringAddress,
+                                 ccuAddress,
+                                 channelAddress,
+                                 deviceAddress) ; // Open a laserdriver access
+    ldb = new laserdriverAccess ( fecAccess,
+                                 fecAddress,
+                                 ringAddress,
+                                 ccuAddress,
+                                 channelAddress,
+                                 deviceAddress+4) ; // Open a laserdriver access
+  }
+  catch (FecExceptionHandler e) {
+   
+    er << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+    
+    
+    return er.str() ;
+  }
+
+  for (long loopI = 0 ; (loopI < loop) || (loop < 0) ; loopI ++) {
+
+    if (loop != 1)
+      o << "----------------------- Loop " << loopI+1 << std::endl ;
+
+    try {
+
+      // Get its value back
+      malda = lda->getValues() ;
+      maldb = ldb->getValues() ;
+
+      o << endl
+	<< "Read POH (CCU 0x" << std::hex << (int)ccuAddress << ", channel 0x" << std::hex << (int)channelAddress << ", deviceAddress 0x" << std::hex << (int)deviceAddress << "):" << std::endl;
+      o << "-->Gain channel 0:  " << std::dec << (int)malda->getGain0() << std::endl ;
+      o << "-->Gain channel 1:  " << std::dec << (int)malda->getGain2() << std::endl ;
+      o << "-->Gain channel 2:  " << std::dec << (int)maldb->getGain0() << std::endl ;
+      o << "-->Gain channel 3:  " << std::dec << (int)maldb->getGain2() << std::endl ;
+
+      tscType8 bias_a[MAXLASERDRIVERCHANNELS] ;
+      malda->getBias (bias_a) ;
+      tscType8 bias_b[MAXLASERDRIVERCHANNELS] ;
+      maldb->getBias (bias_b) ;
+
+      o << "-->Bias channel 0:  " << std::dec << (int)bias_a[0] << std::endl ;
+      o << "-->Bias channel 1:  " << std::dec << (int)bias_a[2] << std::endl ;
+      o << "-->Bias channel 2:  " << std::dec << (int)bias_b[0] << std::endl ;
+      o << "-->Bias channel 3:  " << std::dec << (int)bias_b[2] << std::endl ;
+     
+      if ( lda->getSeuStatus() || ldb->getSeuStatus() ) o <<  "-->SEU detected  : yes" << std::endl ;
+      else o << "-->SEU detected  : no" << std::endl ; 
+      
+      delete malda ;
+      delete maldb ;
+
+    }
+    catch (FecExceptionHandler e) {
+    
+      o << endl << endl 
+      << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;      
+    }
+
+    // Wait
+    if ( (loop != 1) && (tms > 0) ) usleep (tms) ;
+  }
+
+
+  try {
+    if (lda != NULL) delete lda ;
+    if (ldb != NULL) delete ldb ;
+  }
+  catch (FecExceptionHandler e) {
+    
+    er << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+    
+    return er.str() ;
+  }
+
+  return o.str() ;
+
 }
 
 /** 
@@ -1627,6 +1760,140 @@ string setLaserdriver ( FecAccess *fecAccess,
   return o.str() ;
 }
 
+string setPoh ( FecAccess *fecAccess,
+		tscType8 fecAddress, 
+		tscType8 ringAddress,
+		tscType8 ccuAddress, 
+		tscType8 channelAddress,
+		tscType8 deviceAddress,
+		long loop, unsigned long tms,
+		bool setgain0,
+		unsigned int valuegain0,
+		bool setgain1,
+		unsigned int valuegain1,
+		bool setgain2,
+		unsigned int valuegain2,
+		bool setgain3,
+		unsigned int valuegain3,
+		bool setbias0,
+		unsigned int valuebias0,
+		bool setbias1,
+		unsigned int valuebias1,
+		bool setbias2,
+		unsigned int valuebias2,
+		bool setbias3,
+		unsigned int valuebias3) {
+
+  laserdriverAccess *lda = NULL ;
+  laserdriverDescription *malda1 = NULL ;
+  laserdriverDescription *malda = NULL ;
+
+  laserdriverAccess *ldb = NULL ;
+  laserdriverDescription *maldb1 = NULL ;
+  laserdriverDescription *maldb = NULL ;
+
+  std::ostringstream o;
+  std::ostringstream er;
+ 
+  try {
+
+    lda = new laserdriverAccess ( fecAccess,
+                                 fecAddress,
+                                 ringAddress,
+                                 ccuAddress,
+                                 channelAddress,
+                                 deviceAddress) ; // Open a laserdriver access
+    ldb = new laserdriverAccess ( fecAccess,
+                                 fecAddress,
+                                 ringAddress,
+                                 ccuAddress,
+                                 channelAddress,
+                                 deviceAddress+4) ; // Open a laserdriver access
+  }
+  catch (FecExceptionHandler e) { 
+   
+    er << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+    
+    
+    return er.str() ;
+  }
+
+  for (long loopI = 0 ; (loopI < loop) || (loop < 0) ; loopI ++) {
+
+    if (loop != 1)
+      o << "----------------------- Loop " << loopI+1 << std::endl ;
+
+    try {
+      
+      // Get its value back
+      malda1 = lda->getValues() ;
+      maldb1 = ldb->getValues() ;
+
+      // Set the values
+      if (setgain0) malda1->setGain(0,valuegain0);
+      if (setgain1) malda1->setGain(2,valuegain1);
+      if (setgain2) maldb1->setGain(0,valuegain2);
+      if (setgain3) maldb1->setGain(2,valuegain3);
+      if (setbias0) malda1->setBias(0,valuebias0);
+      if (setbias1) malda1->setBias(2,valuebias1);
+      if (setbias2) maldb1->setBias(0,valuebias2);
+      if (setbias3) maldb1->setBias(2,valuebias3);
+      
+      // Set the poh
+      lda->setValues (*malda1) ;
+      ldb->setValues (*maldb1) ;
+           
+      // Get its value back
+      malda = lda->getValues() ;
+      maldb = ldb->getValues() ;
+
+      if (*malda == *malda1 && *maldb == *maldb1) { // Show debug message
+	o << endl 
+	   << "Write POH (CCU 0x" << std::hex << (int)ccuAddress << ", channel 0x" << std::hex << (int)channelAddress << "): done" << std::endl;
+	 
+      }
+      else {
+	o << endl 
+	  << "Write AOH (CCU 0x" << std::hex << (int)ccuAddress << ", channel 0x" << std::hex << (int)channelAddress << "): ERROR" << std::endl;
+      }
+      
+
+      delete malda ;
+      delete maldb ;
+    }
+
+    catch (FecExceptionHandler e) {
+     
+      o << endl << endl 
+      << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;        
+
+      
+    }
+
+    // Wait
+    if ( (loop != 1) && (tms > 0) ) usleep (tms) ;
+  }
+
+
+  try {
+    if (lda != NULL) delete lda ;
+    if (ldb != NULL) delete ldb ;
+  }
+  catch (FecExceptionHandler e) {
+    
+    er << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+    
+    return er.str() ;
+    
+  }
+
+  return o.str() ;
+}
 
 /** 
  * <p>command: -device doh
@@ -2230,11 +2497,329 @@ string crateReset ( FecAccess *fecAccess, bool testCrateReset,
   return o.str();
 }
 
+//##################3
 /**
 This method performs a test on the DC-DC converters
 */
 
 string DCDCenableTest (  FecAccess   *fecAccess  , 
+			 tscType8     fecAddress ,
+			 tscType8     ringAddress, 
+			 tscType8     ccuAddress,
+			 unsigned int dcdcAddress,
+			 bool         noBroadcast )  {
+ 
+  std::ostringstream o;
+  char textBuffer[ 4096 ];
+
+
+  /// This is the initCCUs method from Aachen software/// 
+  keyType ccuAddressKey = buildCompleteKey(fecAddress,ringAddress,ccuAddress,0,0) ; // Build the key
+  keyType ccuChannelKey;
+  tscType32 ccuCRE;
+  tscType16 ddr, piaData, piaIndex;
+  tscType16 piaChannel[ 4 ] = { 0x30, 0x31, 0x32, 0x33 };
+  tscType16 piaDDR[ 4 ]     = { 0x06, 0x39, 0x8E, 0x67 };
+
+  try {
+ 
+      fecAccess->setCcuCRE( ccuAddressKey, 0xF0000 );
+      ccuCRE = fecAccess->getCcuCRE( ccuAddressKey );
+
+      if( ccuCRE != 0xF0000 ) {
+        printf( "CCU 0x%02X: CRE=0x%05X (0xF0000)\n", ccuAddress, ccuCRE );
+        return o.str();
+      }
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        fecAccess->setPiaChannelDataReg( ccuChannelKey, 0 );
+      }
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+
+        fecAccess->setPiaChannelDDR( ccuChannelKey, piaDDR[ piaIndex ] );
+        ddr = fecAccess->getPiaChannelDDR( ccuChannelKey );
+
+        if( ddr != piaDDR[ piaIndex ] ) {
+          printf( "CCU 0x%02X DDR%c=0x%02X (0x%02X)\n", ccuAddress, 'A' + piaIndex, ddr, piaDDR[ piaIndex ] );
+          return o.str();
+        }
+      }
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        piaData = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];
+
+        if( piaData != 0 ) {
+          printf( "CCU 0x%02X PIA%c=0x%02X (0x00)\n", ccuAddress, 'A' + piaIndex, piaData );
+          return o.str();
+        }
+      }
+    
+  }
+  catch( FecExceptionHandler e ) {
+    sprintf( textBuffer, "\n------------<<<< Exception >>>>------------\n" );
+    sprintf( textBuffer, "%sAn error occurs during CCU Channels Enable\n", textBuffer );
+    sprintf( textBuffer, "%s-------------------------------------------\n", textBuffer );
+    sprintf( textBuffer, "%s%s\n", textBuffer, e.what().c_str( ) );
+    sprintf( textBuffer, "%s-------------------------------------------\n", textBuffer );
+
+    std::cerr << textBuffer;
+    exit( EXIT_FAILURE );
+  }
+
+  o << " CCU DCDC Converter Enable Test started " << std::endl;
+
+  tscType16 piaValue;
+  tscType16 piaInMask[ 4 ]  = { 0xC0, 0xC6, 0x71, 0x98 };
+  tscType16 piaENPattern[ 4 ], piaPGPattern[ 4 ];
+  tscType16 i, mask, retry;
+
+  char bitPattern[ 14 ] = { 0 };
+
+  bool pgError[ 4 ] = { false };
+  bool error, printed;
+
+  struct { tscType16 pia;
+           tscType16 bit; } en[ 13 ] = { { 2, 0x08 },   //ENC1_0
+                                         { 2, 0x80 },   //ENC1_1
+                                         { 3, 0x04 },   //ENC1_2
+                                         { 3, 0x01 },   //ENC1_3
+                                         { 3, 0x02 },   //ENC1_4
+                                         { 3, 0x20 },   //ENC1_5
+                                         { 3, 0x40 },   //ENC1_6
+                                         { 2, 0x04 },   //ENC2_1
+                                         { 2, 0x02 },   //ENC2_2
+                                         { 1, 0x20 },   //ENC2_3
+                                         { 1, 0x10 },   //ENC2_4
+                                         { 1, 0x08 },   //ENC2_5
+                                         { 1, 0x01 } }; //ENC2_6
+
+  struct { tscType16 pia;
+           tscType16 bit; } pg[ 13 ] = { { 1, 0x02 },   //PGC1_0
+                                         { 2, 0x01 },   //PGC1_1
+                                         { 2, 0x10 },   //PGC1_2
+                                         { 2, 0x40 },   //PGC1_3
+                                         { 3, 0x08 },   //PGC1_4
+                                         { 3, 0x10 },   //PGC1_5
+                                         { 3, 0x80 },   //PGC1_6
+                                         { 1, 0x80 },   //PGC2_1
+                                         { 2, 0x20 },   //PGC2_2
+                                         { 1, 0x40 },   //PGC2_3
+                                         { 1, 0x04 },   //PGC2_4
+                                         { 0, 0x40 },   //PGC2_5
+                                         { 0, 0x80 } }; //PGC2_6
+  
+  std::string bitPatterns[ 14 ] = { "1111111111111", 
+                                    "1111111111110", 
+				    "1111111111101", 
+				    "1111111111011", 
+				    "1111111110111", 
+				    "1111111101111",
+                                    "1111111011111",
+                                    "1111110111111",
+				    "1111101111111",
+				    "1111011111111",
+				    "1110111111111",
+				    "1101111111111",
+				    "1011111111111",
+				    "0111111111111"};
+
+  try {
+   
+
+    for( int enPattern = 0x1FFF; enPattern >= 0; enPattern-- ) {
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        piaENPattern[ piaIndex ] = 0;
+        piaPGPattern[ piaIndex ] = 0;
+      }
+      
+      for( mask = 0x1000, i = 0; i < 13; i++, mask >>= 1 ){
+	if( enPattern & mask ) {
+	  piaENPattern[ en[ i ].pia ] |= en[ i ].bit;
+	  piaPGPattern[ pg[ i ].pia ] |= pg[ i ].bit;
+	  bitPattern[ i ] = '1';
+	}
+	else
+	  bitPattern[ i ] = '0';
+      }
+      
+      bool skip = true;
+      if( (std::string)bitPattern == bitPatterns[13-dcdcAddress] ) skip = false;
+      
+      if( skip ) continue;
+
+      o << "Pattern " << bitPattern << std::endl;
+      printed = false;
+
+      for( piaIndex = 1; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        retry = 0;
+
+        do {
+          error = false;
+          fecAccess->setPiaChannelDataReg( ccuChannelKey, piaENPattern[ piaIndex ] );
+          piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];
+
+          if( piaValue != piaENPattern[ piaIndex ] ) {
+            if( !printed ) {
+              o << " Enable Selection = " << bitPattern << std::endl;
+              printed = true;
+            }
+
+          
+            error = true;
+            retry++;
+          }
+
+        } while( error && ( retry < 10 ) );
+      }
+
+      if( printed )
+        o << std::endl;
+
+      printed = false;
+      sleep( 1 );
+
+      int ngood=0;
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaInMask[ piaIndex ];
+
+        if( piaValue != piaPGPattern[ piaIndex ] ) {
+          if( !printed ) {
+            o << " Enable Selection = " << bitPattern << std::endl;
+            printed = true;
+          }
+
+          pgError[ piaIndex ] = true;
+        }
+        else {
+          if( pgError[ piaIndex ] ) {
+            printf(  "Error for PIA%c\n", 'A' + piaIndex );
+	    
+	  }
+          else {
+	    ngood++;
+	  }
+        }
+
+        
+      }
+
+
+      if (ngood==4) {
+	o << "DCDC: Disable OK " << std::endl;
+      }   
+      else {
+	o << "DCDC: Disable ERROR " << std::endl;
+      }
+    }
+
+  
+  
+  //////////////////////////////////////////////////////////////
+      int enPattern = 0x1FFF;
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        piaENPattern[ piaIndex ] = 0;
+        piaPGPattern[ piaIndex ] = 0;
+      }
+
+      for( mask = 0x1000, i = 0; i < 13; i++, mask >>= 1 ){
+        if( enPattern & mask ) {
+          piaENPattern[ en[ i ].pia ] |= en[ i ].bit;
+          piaPGPattern[ pg[ i ].pia ] |= pg[ i ].bit;
+          bitPattern[ i ] = '1';
+        }
+        else
+          bitPattern[ i ] = '0';
+      }
+
+      o << "Pattern " << bitPattern  << std::endl;
+      printed = false;
+
+      for( piaIndex = 1; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        retry = 0;
+
+        do {
+          error = false;
+          fecAccess->setPiaChannelDataReg( ccuChannelKey, piaENPattern[ piaIndex ] );
+          piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];
+
+          if( piaValue != piaENPattern[ piaIndex ] ) {
+            if( !printed ) {
+              o << " Enable Selection = " << bitPattern << std::endl;
+              printed = true;
+            }
+
+            error = true;
+            retry++;
+          }
+
+        } while( error && ( retry < 10 ) );
+      }
+
+      if( printed )
+        o << std::endl;
+
+      printed = false;
+      sleep( 1 );
+
+      int ngood=0;
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaInMask[ piaIndex ];
+
+        if( piaValue != piaPGPattern[ piaIndex ] ) {
+          if( !printed ) {
+            o << " Enable Selection = " << bitPattern << std::endl;
+            printed = true;
+          }
+
+          pgError[ piaIndex ] = true;
+        }
+        else {
+          if( pgError[ piaIndex ] )
+            printf( "Error for PIA%c\n", 'A' + piaIndex );
+          else 
+            ngood++;
+        }
+
+        
+      }
+
+      if (ngood==4) {
+	o << "DCDC: Enable OK" << endl;
+      } 
+      else {
+	o << "DCDC: Enable ERROR" << endl;
+      }
+     ////////////////////////////////////////////////    
+    
+  }
+  catch( FecExceptionHandler e ) {
+    sprintf( textBuffer, "\n-------------<<<< Exception >>>>------------\n" );
+    sprintf( textBuffer, "%sAn error occurs during DCDC Converter Enable\n", textBuffer );
+    sprintf( textBuffer, "%s--------------------------------------------\n", textBuffer );
+    sprintf( textBuffer, "%s%s\n", textBuffer, e.what( ).c_str( ) );
+    sprintf( textBuffer, "%s--------------------------------------------\n", textBuffer );
+
+    std::cerr << textBuffer;
+    exit( EXIT_FAILURE );
+  }
+
+  return o.str();
+
+}
+/**
+This method performs a test on the DC-DC converters
+*/
+
+/*string DCDCenableTest (  FecAccess   *fecAccess  , 
 			 tscType8     fecAddress ,
 			 tscType8     ringAddress, 
 			 tscType8     ccuAddress,
@@ -2385,18 +2970,28 @@ string DCDCenableTest (  FecAccess   *fecAccess  ,
 
       for( piaIndex = 1; piaIndex < 4; piaIndex++ ) {
         ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
-        
+        cout << "piaindex " << piaIndex << endl;
 	error = false;
 	fecAccess->setPiaChannelDataReg( ccuChannelKey, piaENPattern[ piaIndex ] );
 	//write
-	piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];	
+	piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];
+	cout << "write " << piaValue << endl;
+	cout << "write " << piaENPattern[piaIndex] << endl;
 	if( piaValue != piaENPattern[ piaIndex ] ) {
+	  cout << "write " << endl;
+	  cout << std::hex << piaValue << endl;
+	  cout << std::hex << piaENPattern[piaIndex] << endl;
 	  error = true;
 	}
 	//read
 	piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaInMask[ piaIndex ];
+	cout << "read  " << piaValue << endl;
+	cout << "read  " << piaPGPattern[piaIndex] << endl;
 	if( piaValue != piaPGPattern[ piaIndex ] ) {
-	  error = true;
+	  error = true;  
+	  cout << "read " << endl;
+	  cout << std::hex << piaValue << endl;
+	  cout << std::hex << piaPGPattern[piaIndex] << endl;
 	}
      }
 
@@ -2491,7 +3086,7 @@ string DCDCenableTest (  FecAccess   *fecAccess  ,
 
   return o.str();
 
-}
+  }*/
 
 /**
  * This method try to find all the device driver loaded for FECs and scan the ring
@@ -2822,9 +3417,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 				  tscType8 fecAddress,
 				  tscType8 ringAddress,
 				  long loop, unsigned long tms) { 
-#ifdef PIXEL
-  return "JMTBAD 20140818 testScanPixelDevice nulled out due to equal addresses (plldeviceAddress, aoh4AdeviceAddress) used in switch statement...";
-#else
+
   std::ostringstream o;
   std::ostringstream er;
 
@@ -2851,15 +3444,14 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
   // Modify for BPix - IT DOES NOT SEEM TO BE USED LATER?
   int sizeValues = 11 ;
   keyType
-    deviceValues[11][2] = { 
-      {aoh1AdeviceAddress, NORMALMODE}, // AOH-1A
-      {aoh1BdeviceAddress, NORMALMODE}, // AOH-1B
-      {aoh2AdeviceAddress, NORMALMODE}, // AOH-2A
-      {aoh2BdeviceAddress, NORMALMODE}, // AOH-2B
-      {aoh3AdeviceAddress, NORMALMODE}, // AOH-3A
-      {aoh3BdeviceAddress, NORMALMODE}, // AOH-3B
-      {aoh4AdeviceAddress, NORMALMODE}, // AOH-4A
-      {aoh4BdeviceAddress, NORMALMODE}, // AOH-4B
+    deviceValues[10][2] = { 
+      {poh1deviceAddress, NORMALMODE}, // POH-1
+      {poh2deviceAddress, NORMALMODE}, // POH-2
+      {poh3deviceAddress, NORMALMODE}, // POH-3
+      {poh4deviceAddress, NORMALMODE}, // POH-4
+      {poh5deviceAddress, NORMALMODE}, // POH-5
+      {poh6deviceAddress, NORMALMODE}, // POH-6
+      {poh7deviceAddress, NORMALMODE}, // POH-7
       {dohdeviceAddress, NORMALMODE}, // DOH
       {plldeviceAddress, NORMALMODE}, // PLL
       {delay25deviceAddress, NORMALMODE}  // DELAY25  
@@ -2909,7 +3501,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	  else module = trackerModule[indexChannel] ;
 
 	  switch (getAddressKey(index)) {
-	  case aoh1AdeviceAddress:
+	  case poh1deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2922,7 +3514,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	    
 	    //o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh1BdeviceAddress:
+	  case poh2deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2935,7 +3527,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	   
 	    //o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh2AdeviceAddress:
+	  case poh3deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2947,7 +3539,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	  
 	    //o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh2BdeviceAddress:
+	  case poh4deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2959,7 +3551,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	    module[3] = true ;
 	    //o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh3AdeviceAddress:
+	  case poh5deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2970,7 +3562,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	    module[4] = true; 
 	    // o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh3BdeviceAddress:
+	  case poh6deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2983,7 +3575,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	 
 	    // o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh4AdeviceAddress:
+	  case poh7deviceAddress:
 	    try {
 	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
 	    }
@@ -2996,18 +3588,6 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	   
 	    // o << "AOH     " << msg << " found" << std::endl ;
 	    break ;
-	  case aoh4BdeviceAddress:
-	    try {
-	      laserdriverSet[index] = new laserdriverAccess (fecAccess, index) ;
-	    }
-	    catch (FecExceptionHandler e) {
-	    
-	      o << "Cannot create the access to a device" << std::endl ;
-	      o << e.what() << std::endl ;
-	    }
-	    module[7] = true ;
-	    // o << "AOH     " << msg << " found" << std::endl ;
-	    break ;
 	  case plldeviceAddress:
 	    try {
 	      pllSet[index] = new pllAccess (fecAccess, index) ;
@@ -3017,7 +3597,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	      o << "Cannot create the access to a device" << std::endl ;
 	      o << e.what() << std::endl ;
 	    }
-	    module[8] = true ;
+	    module[7] = true ;
 	  
 	    //o << "PLL     " << msg << " found" << std::endl ;
 	    break ;
@@ -3030,7 +3610,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	      o << "Cannot create the access to a device" << std::endl ;
 	      o << e.what() << std::endl ;
 	    }
-	    module[9] = true ;
+	    module[8] = true ;
 	  
 	    // o << "DOH     " << msg << " found" << std::endl ;
 	    break ;
@@ -3043,7 +3623,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	      o << "Cannot create the access to a device" << std::endl ;
 	      o << e.what() << std::endl ;
 	    }
-	    module[10]= true ;
+	    module[9]= true ;
 	  
 	    //o << "DELAY25 " << msg << " found" << std::endl ;
 	    break ;
@@ -3062,10 +3642,10 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	  if (module != NULL) {
 	    
 	    //bool aohF  = module[0] || module[1] || module[2] || module[3] ||  module[4] || module[5] || module[6] || module[7];
-	    bool pllF  = module[8] ;
-	    bool dohF  = module[9] ;
+	    bool pllF  = module[7] ;
+	    bool dohF  = module[8] ;
 	   	  
-	    bool delay25F = module[10] ;
+	    bool delay25F = module[9] ;
 	    
 	    if(currentCcuAddress == 0) {
 	      currentCcuAddress = getCcuKey(indexF);
@@ -3080,7 +3660,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	    
 	    //Layer 1&2
 	    if ( getChannelKey(indexF) == channel1 ) {
-	      if (module[0] && module[1] && module[2] && module[3] && module[4] && module[5] && module[6] && module[7] && module[8] && module[9]) {
+	      if (module[0] && module[1] && module[2] && module[3] && module[4] && module[5] && module[6] && module[7] && module[8]) {
 		o << std::endl << "FEC " << std::dec << (int)getFecKey(indexF) << " Ring " << (int)getRingKey(indexF) << " CCU 0x" << std::hex << (int)getCcuKey(indexF) << " channel 0x" << IntToString(getChannelKey(indexF)) << std::endl ;
 		o << "all devices found" << endl;
 		continue;
@@ -3092,7 +3672,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	    }
 	    //Layer 3
 	    else if ( getChannelKey(indexF) == channel3 ) {
-	      if (module[0] && module[1] && module[2] && module[3] && module[8] && module[9]) {
+	      if (module[0] && module[1] && module[2] && module[3] && module[4] && module[5] && module[6] && module[7] && module[8]) {
 		o << std::endl << "FEC " << std::dec << (int)getFecKey(indexF) << " Ring " << (int)getRingKey(indexF) << " CCU 0x" << std::hex << (int)getCcuKey(indexF) << " channel 0x" << IntToString(getChannelKey(indexF)) << std::endl ;
 		o << "all devices found" << endl;
 		continue;
@@ -3104,7 +3684,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 	    }
 	    //Tracker DOH
 	    else if ( getChannelKey(indexF) == channelccu ) {
-	      if (module[9]) {
+	      if (module[8]) {
 		o << std::endl << "FEC " << std::dec << (int)getFecKey(indexF) << " Ring " << (int)getRingKey(indexF) << " CCU 0x" << std::hex << (int)getCcuKey(indexF) << " channel 0x" << IntToString(getChannelKey(indexF)) << std::endl ;
 		o << "CCU DOH found" << endl;
 		continue;
@@ -3117,30 +3697,25 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 
 	    // Check each part
 	    if (!module[0]) {
-	      o << "\t" << "Miss an AOH 1A at address 0x" << std::hex << aoh1AdeviceAddress << std::endl ;
+	      o << "\t" << "Miss a POH-1 at address 0x" << std::hex << poh1deviceAddress << std::endl ;
 	    }
 	    if (!module[1]) {
-	      o << "\t" << "Miss an AOH 1B at address 0x" << std::hex << aoh1BdeviceAddress << std::endl ;
+	      o << "\t" << "Miss a POH-2 at address 0x" << std::hex << poh2deviceAddress << std::endl ;
 	    }
 	    if (!module[2]) {
-	      o << "\t" << "Miss an AOH 2A at address 0x" << std::hex << aoh2AdeviceAddress << std::endl ;
+	      o << "\t" << "Miss a POH-3 at address 0x" << std::hex << poh3deviceAddress << std::endl ;
 	    }
 	    if (!module[3]) {
-	      o << "\t" << "Miss an AOH 2B at address 0x" << std::hex << aoh2BdeviceAddress << std::endl ;
+	      o << "\t" << "Miss a POH-4 at address 0x" << std::hex << poh4deviceAddress << std::endl ;
 	    }
-	    if ( getChannelKey(indexF) == channel1 ) {
-	      if (!module[4]) {
-		o << "\t" << "Miss an AOH 3A at address 0x" << std::hex << aoh3AdeviceAddress << std::endl ;
-	      }
-	      if (!module[5]) {
-		o << "\t" << "Miss an AOH 3B at address 0x" << std::hex << aoh3BdeviceAddress << std::endl ;
-	      }
-	      if (!module[6]) {
-		o << "\t" << "Miss an AOH 4A at address 0x" << std::hex << aoh4AdeviceAddress << std::endl ;
-	      }
-	      if (!module[7]) {
-		o << "\t" << "Miss an AOH 4B at address 0x" << std::hex << aoh4BdeviceAddress << std::endl ;
-	      }
+	    if (!module[4]) {
+	      o << "\t" << "Miss a POH-5 at address 0x" << std::hex << poh5deviceAddress << std::endl ;
+	    }
+	    if (!module[5]) {
+	      o << "\t" << "Miss a POH-6 at address 0x" << std::hex << poh6deviceAddress << std::endl ;
+	    }
+	    if (!module[6]) {
+	      o << "\t" << "Miss a POH-7 at address 0x" << std::hex << poh7deviceAddress << std::endl ;
 	    }
 	    if (!pllF) {
 	      o << "\t" << "Miss a  PLL at address 0x" << std::hex << plldeviceAddress << std::endl ;
@@ -3205,7 +3780,6 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
   allCCUsPiaReset (fecAccess, fecAddress, ringAddress) ;
 
   return o.str() ;
-#endif
 }
 
 
@@ -4007,10 +4581,7 @@ std::string testPIAResetfunctions (FecAccess *fecAccess,
   }
 
   for (long loopI = 0 ; (loopI < loop) || (loop < 0) ; loopI ++) {
-
-   
       
-
     try {
 
       // Create the piaResetDescription
@@ -5096,69 +5667,3 @@ std::string CtrlRegE (FecAccess *fecAccess,
   return o.str();
 }
 
-
-std::string pixDCDCCommand(FecAccess* fecAccess,
-			   tscType8 fecAddress,
-			   tscType8 ringAddress,
-			   tscType8 ccuAddressEnable,
-			   tscType8 ccuAddressPgood,
-			   tscType8 piaChannelAddress,
-			   bool turnOn,
-			   unsigned int portNumber) {
-
-  std::ostringstream ret;
-
-  keyType enableKey = buildCompleteKey(fecAddress, ringAddress, ccuAddressEnable, piaChannelAddress, 0);
-  keyType pgoodKey  = buildCompleteKey(fecAddress, ringAddress, ccuAddressPgood,  piaChannelAddress, 0);
-
-  try {
-    fecAccess->addPiaAccess(enableKey, MODE_SHARE); // JMTBAD use PiaChannelAccess
-    fecAccess->addPiaAccess(pgoodKey,  MODE_SHARE);
-
-    unsigned int bits    = 0x3 << (portNumber * 2);
-    unsigned int invBits = 0xFF ^ bits;
-
-    // Set just the two pins we want to input for pgood.
-    fecAccess->setPiaChannelDDR(pgoodKey, invBits & fecAccess->getPiaChannelDDR(pgoodKey));
-
-    // Sleep 5 ms before reading back the pgood bit.
-    usleep(5000);
-      
-    // Read the pgood bit to check state before doing anything.
-    unsigned int initPgoodVal = fecAccess->getPiaChannelDataReg(pgoodKey);
-    bool initPgood = ((initPgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
-    ret << "Initial pgoodVal = 0x" << std::hex << initPgoodVal << " = " << (initPgood ? "PGOOD" : "NOT PGOOD") << "\n";
-    if (turnOn + initPgood != 1) {
-      ret << " but asked to turn " << (turnOn ? "ON" : "OFF") << " ; bailing out!!!";
-    }
-    else {
-      // Set just the two pins we want to output for enable;
-      fecAccess->setPiaChannelDDR(enableKey, bits | fecAccess->getPiaChannelDDR(enableKey));
-      // and set the inverted bits in the data reg.
-      unsigned int initEnableVal = fecAccess->getPiaChannelDataReg(enableKey); // JMTBAD the two lines below ere using the pgood values???
-      if (turnOn)
-	fecAccess->setPiaChannelDataReg(enableKey, invBits & initEnableVal);
-      else
-	fecAccess->setPiaChannelDataReg(enableKey, bits    | initEnableVal);
-
-      // Sleep 5 ms before reading back the pgood bit.
-      usleep(5000);
-
-      // Read back the pgood bit and report status. 
-      unsigned pgoodVal = fecAccess->getPiaChannelDataReg(pgoodKey);
-      bool pgood = ((pgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
-      ret << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << "\n";
-      if (turnOn + pgood == 1) {
-	ret << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!";
-      }
-    }
-
-    fecAccess->removePiaAccess(enableKey);
-    fecAccess->removePiaAccess(pgoodKey);
-  }
-  catch (FecExceptionHandler e) {
-    ret << std::string("Exception caught when doing PIA access: ") + e.what();
-  }
-    
-  return ret.str();
-}
