@@ -37,6 +37,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
 
   tempCalibObject->writeASCII(outputDir());
 
+  OnlyFIFO3 = tempCalibObject->parameterValue("OnlyFIFO3") == "yes";
   DumpFIFOs = tempCalibObject->parameterValue("DumpFIFOs") == "yes";
   PrintHits = tempCalibObject->parameterValue("PrintHits") == "yes";
 
@@ -126,116 +127,122 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
     PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
-    iFED->readDigFEDStatus(false, false);
 
-    const uint32_t fifoStatus = iFED->getFifoStatus();
-
+    uint32_t fifoStatus = 0;
     const int MaxChans = 37;    
     uint32_t bufferFifo1[MaxChans][1024];
     int statusFifo1[MaxChans] = {0};
-    for (int ch = 1; ch <= 36; ++ch)
-      statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
-
     const int MaxChips = 8;
     uint32_t bufferT[MaxChips][256];
     uint32_t bufferS[MaxChips][256];
     uint64_t buffer3[2048];
     uint32_t bufferErr[36*1024];
     int statusS[MaxChips] = {0};
-    for (int chip = 1; chip <= 7; chip += 2) {
-      if (chip == 1 || chip == 7)
-	iFED->drainDigTransFifo(chip, bufferT[chip]);
-      statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
-    }
-    const int status3 = iFED->spySlink64(buffer3);
-    const int statusErr = iFED->drainErrorFifo(bufferErr);
-
+    int status3 = 0;
+    int statusErr = 0;
     DigTransDecoder* decodeT[MaxChips] = {0};
     DigScopeDecoder* decodeS[MaxChips] = {0};
-    for (int chip = 1; chip <= 7; chip += 2) {
-      if (chip == 1 || chip == 7)
-	decodeT[chip] = new DigTransDecoder(bufferT[chip]);
-      decodeS[chip] = new DigScopeDecoder(bufferS[chip], statusS[chip]);
-    }
     FIFO3Decoder* decode3 = 0;
+    ErrorFIFODecoder* decodeErr = 0;
+
+    status3 = iFED->spySlink64(buffer3);
     if (status3 > 0)
       decode3 = new FIFO3Decoder(buffer3);
-    ErrorFIFODecoder decodeErr(bufferErr, statusErr);
 
-    if (fifoStatus & 0x01) FillEm(state, F11almostFull, 1);
-    if (fifoStatus & 0x04) FillEm(state, F13almostFull, 1);
-    if (fifoStatus & 0x10) FillEm(state, F15almostFull, 1);
-    if (fifoStatus & 0x40) FillEm(state, F17almostFull, 1);
-    if (fifoStatus & 0x02) FillEm(state, F21almostFull, 1);
-    if (fifoStatus & 0x08) FillEm(state, F23almostFull, 1);
-    if (fifoStatus & 0x20) FillEm(state, F25almostFull, 1);
-    if (fifoStatus & 0x80) FillEm(state, F27almostFull, 1);
-    if (fifoStatus & 0x100) FillEm(state, F31almostFull, 1);
-    if (fifoStatus & 0x200) FillEm(state, F37almostFull, 1);
-    
-    assert(FT7nTBMHeader - FT1nTBMHeader == 7);
-    for (int TransChip = 0; TransChip < 2; ++TransChip) {
-      const int chip = TransChip ? 7 : 1;
-      const int arroff = TransChip ? 7 : 0;
-      if (PrintHits) std::cout << "FT" << chip << " ";
+    if (!OnlyFIFO3) {
+      fifoStatus = iFED->getFifoStatus();
+      if (fifoStatus & 0x01) FillEm(state, F11almostFull, 1);
+      if (fifoStatus & 0x04) FillEm(state, F13almostFull, 1);
+      if (fifoStatus & 0x10) FillEm(state, F15almostFull, 1);
+      if (fifoStatus & 0x40) FillEm(state, F17almostFull, 1);
+      if (fifoStatus & 0x02) FillEm(state, F21almostFull, 1);
+      if (fifoStatus & 0x08) FillEm(state, F23almostFull, 1);
+      if (fifoStatus & 0x20) FillEm(state, F25almostFull, 1);
+      if (fifoStatus & 0x80) FillEm(state, F27almostFull, 1);
+      if (fifoStatus & 0x100) FillEm(state, F31almostFull, 1);
+      if (fifoStatus & 0x200) FillEm(state, F37almostFull, 1);
 
-      DigTransDecoder* d = decodeT[chip];
-      FillEm(state, FT1nTBMHeader + arroff,
-	     int(d->tbm_header_l[0].size() != 0) + 
-	     int(d->tbm_header_l[1].size() != 0));
-      FillEm(state, FT1nTBMHeaders + arroff, 
-	     d->tbm_header_l[0].size() + 
-	     d->tbm_header_l[1].size());
-      FillEm(state, FT1nTBMTrailer + arroff,
-	     int(d->tbm_trailer_l[0].size() != 0) + 
-	     int(d->tbm_trailer_l[1].size() != 0));
-      FillEm(state, FT1nTBMTrailers + arroff,
-	     d->tbm_trailer_l[0].size() + 
-	     d->tbm_trailer_l[1].size());
-      FillEm(state, FT1nROCHeaders + arroff,
-	     d->roc_header_l[0].size() + 
-	     d->roc_header_l[1].size());
+      for (int ch = 1; ch <= 36; ++ch)
+	statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
 
-      int nwrong = 0, nright = 0;
-      for (int tbm = 0; tbm < 2; ++tbm) {
-	assert(d->roc_hit_col[tbm].size() == d->roc_hit_row[tbm].size());
-	for (size_t h = 0; h < d->roc_hit_col[tbm].size(); ++h) {
-	  const int col = d->roc_hit_col[tbm][h];
-	  const int row = d->roc_hit_row[tbm][h];
-	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
-
-	  if ((col == 8 && row == 277) || (col == 17 && row == 276))
-	    ++nright;
-	  else
-	    ++nwrong;
+      for (int chip = 1; chip <= 7; chip += 2) {
+	if (chip == 1 || chip == 7) {
+	  iFED->drainDigTransFifo(chip, bufferT[chip]);
+	  decodeT[chip] = new DigTransDecoder(bufferT[chip]);
 	}
-      }
-      FillEm(state, FT1wrongPix + arroff, nwrong);
-      FillEm(state, FT1rightPix + arroff, nright);
-      if (PrintHits) std::cout << std::endl;
-    }
 
-    for (int chip = 1; chip <= 7; chip += 2) {
-      if (PrintHits) std::cout << "FS" << chip << " ";
-      DigScopeDecoder* d = decodeS[chip];
-      int arroff = (chip-1)/2*6;
-      FillEm(state, FS1nTBMHeader  + arroff, int(d->tbm_header_found_));
-      FillEm(state, FS1nTBMTrailer + arroff, int(d->tbm_trailer_found_));
-      FillEm(state, FS1nROCHeaders + arroff, int(d->roc_headers_.size()));
-      int nwrong = 0, nright = 0;
-      for (size_t h = 0; h< d->hits_.size(); ++h) {
-	if (PrintHits) std::cout << "c " << d->hits_[h].col << " r " << d->hits_[h].row << " ";
-	const int col = d->hits_[h].col;
-	const int row = d->hits_[h].row;
-	if ((col == 8 && row == 277) || (col == 17 && row == 276))
-	  ++nright;
-	else
-	  ++nwrong;
+	statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
+	decodeS[chip] = new DigScopeDecoder(bufferS[chip], statusS[chip]);
       }
-      FillEm(state, FS1wrongPix + arroff, nwrong);
-      FillEm(state, FS1rightPix + arroff, nright);
-      FillEm(state, FS1dangling + arroff, int(d->dangling_hit_info_));
-      if (PrintHits) std::cout << std::endl;
+
+      statusErr = iFED->drainErrorFifo(bufferErr);
+      decodeErr = new ErrorFIFODecoder(bufferErr, statusErr);
+
+      
+      assert(FT7nTBMHeader - FT1nTBMHeader == 7);
+      for (int TransChip = 0; TransChip < 2; ++TransChip) {
+        const int chip = TransChip ? 7 : 1;
+        const int arroff = TransChip ? 7 : 0;
+        if (PrintHits) std::cout << "FT" << chip << " ";
+  
+        DigTransDecoder* d = decodeT[chip];
+        FillEm(state, FT1nTBMHeader + arroff,
+  	     int(d->tbm_header_l[0].size() != 0) + 
+  	     int(d->tbm_header_l[1].size() != 0));
+        FillEm(state, FT1nTBMHeaders + arroff, 
+  	     d->tbm_header_l[0].size() + 
+  	     d->tbm_header_l[1].size());
+        FillEm(state, FT1nTBMTrailer + arroff,
+  	     int(d->tbm_trailer_l[0].size() != 0) + 
+  	     int(d->tbm_trailer_l[1].size() != 0));
+        FillEm(state, FT1nTBMTrailers + arroff,
+  	     d->tbm_trailer_l[0].size() + 
+  	     d->tbm_trailer_l[1].size());
+        FillEm(state, FT1nROCHeaders + arroff,
+  	     d->roc_header_l[0].size() + 
+  	     d->roc_header_l[1].size());
+  
+        int nwrong = 0, nright = 0;
+        for (int tbm = 0; tbm < 2; ++tbm) {
+  	assert(d->roc_hit_col[tbm].size() == d->roc_hit_row[tbm].size());
+  	for (size_t h = 0; h < d->roc_hit_col[tbm].size(); ++h) {
+  	  const int col = d->roc_hit_col[tbm][h];
+  	  const int row = d->roc_hit_row[tbm][h];
+  	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
+  
+  	  if ((col == 8 && row == 277) || (col == 17 && row == 276))
+  	    ++nright;
+  	  else
+  	    ++nwrong;
+  	}
+        }
+        FillEm(state, FT1wrongPix + arroff, nwrong);
+        FillEm(state, FT1rightPix + arroff, nright);
+        if (PrintHits) std::cout << std::endl;
+      }
+  
+      for (int chip = 1; chip <= 7; chip += 2) {
+        if (PrintHits) std::cout << "FS" << chip << " ";
+        DigScopeDecoder* d = decodeS[chip];
+        int arroff = (chip-1)/2*6;
+        FillEm(state, FS1nTBMHeader  + arroff, int(d->tbm_header_found_));
+        FillEm(state, FS1nTBMTrailer + arroff, int(d->tbm_trailer_found_));
+        FillEm(state, FS1nROCHeaders + arroff, int(d->roc_headers_.size()));
+        int nwrong = 0, nright = 0;
+        for (size_t h = 0; h< d->hits_.size(); ++h) {
+  	if (PrintHits) std::cout << "c " << d->hits_[h].col << " r " << d->hits_[h].row << " ";
+  	const int col = d->hits_[h].col;
+  	const int row = d->hits_[h].row;
+  	if ((col == 8 && row == 277) || (col == 17 && row == 276))
+  	  ++nright;
+  	else
+  	  ++nwrong;
+        }
+        FillEm(state, FS1wrongPix + arroff, nwrong);
+        FillEm(state, FS1rightPix + arroff, nright);
+        FillEm(state, FS1dangling + arroff, int(d->dangling_hit_info_));
+        if (PrintHits) std::cout << std::endl;
+      }
     }
 
     if (PrintHits) std::cout << "F3X ";
@@ -270,6 +277,8 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     //////
 
     if (DumpFIFOs) {
+      iFED->readDigFEDStatus(false, false);
+
       std::cout << "FIFO statuses:\n";
       iFED->dump_FifoStatus(fifoStatus);
 
@@ -674,7 +683,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       for (int i = 0; i <= statusErr; ++i)
 	std::cout << "Clock " << i << " = 0x" << std::hex << bufferErr[i] << std::dec << std::endl;
       std::cout << "ErrorFIFODecoder thinks:\n";
-      decodeErr.printToStream(std::cout);
+      decodeErr->printToStream(std::cout);
     }
 
     //////
@@ -684,7 +693,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	delete decodeT[chip];
       delete decodeS[chip];
     }
+
     delete decode3;
+    delete decodeErr;
   }
 
   sendResets();
