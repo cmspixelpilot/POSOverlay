@@ -698,7 +698,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     delete decodeErr;
   }
 
-  sendResets();
+  sendResets(); // LRES + CLRES
 }
 
 void PixelFEDTBMDelayCalibration::Analyze() {

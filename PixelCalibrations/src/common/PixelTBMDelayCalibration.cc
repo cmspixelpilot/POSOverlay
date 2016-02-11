@@ -57,14 +57,13 @@ bool PixelTBMDelayCalibration::execute() {
     commandToAllFEDCrates("SetScopeChannel", parametersToFED);
   }
 
-  // should take this out
-  commandToAllFEDCrates("JMTJunk");
+  if (firstOfPattern) {
+    //commandToAllFEDCrates("JMTJunk");
+    usleep(1000000);
+  }
 
-  if (DelayBeforeFirstTrigger && firstOfPattern)
-    usleep(1000);
-
-  if (DelayEveryTrigger)
-    usleep(100000);
+  //if (DelayEveryTrigger || (DelayBeforeFirstTrigger && firstOfPattern))
+  //  usleep(1000000);
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();
