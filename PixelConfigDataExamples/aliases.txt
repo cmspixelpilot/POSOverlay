@@ -180,6 +180,7 @@ lowvoltagemap  0 Default ;
 mask  0 Default ;
 mask  1 OldHotPixels ;
 mask  6 NewHotPixels ;
+mask  22 NewNewHotPixels ;
 mask  7 AllOff ;
 trim  11 Default ;
 trim  0 TrimOff ;
