@@ -1,4 +1,6 @@
 ConfigurationAliases
+Physics     403 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm 402 ;
 hello 398 ;
 PixelsDisabled1Hz 334 ;
 PixelsDisabled1kHz 335 ;
@@ -24,8 +26,6 @@ PixelsEnabled2kHz_15bx 344 ;
 PixelsEnabled11kHz 345 ;
 PixelsEnabled22kHz_4bx 346 ;
 PixelsEnabledAllChannels22kHz_4bx 392 ;
-PixelsEnabledAllChannels22kHz_4bx_newtbm 401 ;
-PixelsEnabledAllChannels22kHz_4bx_newtbm2 396 ;
 PixelsEnabled22kHz_15bx 347 ;
 PixelsEnabledSpy 349;
 PixelsEnabledSpyAllChannels 350;
@@ -47,7 +47,6 @@ PixelsEnabled1Col22kHz_4bx 366 ;
 PixelsEnabled1Col22kHz_15bx 367 ;
 PixelsEnabled1ColSpy 369;
 PixelsEnabled1ColSpyAllChannels 370;
-Physics     385 ;
 PhysicsRenameThisForEnabledPixels 382;
 PhysicsRenameThisForDisabledPixels 383;
 PhysicsRenameThisForDisabledPixelsAllChannels 384;
