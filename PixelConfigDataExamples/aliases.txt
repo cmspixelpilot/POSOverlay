@@ -1,4 +1,5 @@
 ConfigurationAliases
+hello 394 ;
 PixelsDisabled1Hz 334 ;
 PixelsDisabled1kHz 335 ;
 PixelsDisabled1kHz_TDelayScan2 372 ;
@@ -22,6 +23,9 @@ PixelsEnabled2kHz_4bx 343 ;
 PixelsEnabled2kHz_15bx 344 ;
 PixelsEnabled11kHz 345 ;
 PixelsEnabled22kHz_4bx 346 ;
+PixelsEnabledAllChannels22kHz_4bx 392 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm 395 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm2 396 ;
 PixelsEnabled22kHz_15bx 347 ;
 PixelsEnabledSpy 349;
 PixelsEnabledSpyAllChannels 350;
