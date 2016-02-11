@@ -24,7 +24,7 @@ PixelsEnabled2kHz_15bx 344 ;
 PixelsEnabled11kHz 345 ;
 PixelsEnabled22kHz_4bx 346 ;
 PixelsEnabledAllChannels22kHz_4bx 392 ;
-PixelsEnabledAllChannels22kHz_4bx_newtbm 395 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm 401 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm2 396 ;
 PixelsEnabled22kHz_15bx 347 ;
 PixelsEnabledSpy 349;
@@ -130,7 +130,7 @@ Physics_p47ns     200   detconfig  Golden2  lowvoltagemap  Default  nametranslat
 Delay25     7   ;
 VcThrCalDel     32   ;
 VcThr     46   ;
-PixelAlive     333   ;
+PixelAlive     400   ;
 PixelAliveBy3     90   ;
 PixelAlive5x5     332   ;
 PixelAliveForThreshMin     49   ;
