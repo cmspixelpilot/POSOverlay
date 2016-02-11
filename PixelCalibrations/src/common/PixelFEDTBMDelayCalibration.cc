@@ -253,17 +253,19 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	const unsigned channel = decode3->channel(ihit);
 	const unsigned rocid = decode3->rocid(ihit);
 	assert(rocid > 0);
+	const unsigned col = decode3->column(ihit);
+	const unsigned row = decode3->row(ihit);
 
 	const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
 
 	// Skip if this ROC is not on the list of ROCs to calibrate.
 	// Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
 	vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
-	if (foundROC == rocs.end()) // || !tempCalibObject->scanningROCForState(roc, state))
+	if (foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
+	  std::cout << "!! wrong roc: " << roc << " ch " << channel << " col " << col << " row " << row << std::endl;
 	  FillEm(state, F3wrongRoc, 1);
+	}
 	else {
-	  const unsigned col = decode3->column(ihit);
-	  const unsigned row = decode3->row(ihit);
 	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
 	  if (colrows.find(std::make_pair(col, row)) == colrows.end())
 	    FillEm(state, F3wrongPix, 1);
@@ -277,367 +279,369 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     //////
 
     if (DumpFIFOs) {
-      iFED->readDigFEDStatus(false, false);
+      if (!OnlyFIFO3) {
+	iFED->readDigFEDStatus(false, false);
 
-      std::cout << "FIFO statuses:\n";
-      iFED->dump_FifoStatus(fifoStatus);
+	std::cout << "FIFO statuses:\n";
+	iFED->dump_FifoStatus(fifoStatus);
 
-      std::cout << "-----------------------------------" << std::endl;
-      std::cout << "Contents of FIFO 1 for all channels" << std::endl;
-      std::cout << "-----------------------------------" << std::endl;
-      for (int ch = 1; ch <= 36; ++ch) {
-	std::cout << "ch #" << std::setw(2) << ch << ": status: " << statusFifo1[ch] << "\n";
-	if (statusFifo1[ch] > 0) {
-	  for (int i = 0; i < statusFifo1[ch]; ++i) {
-	    uint32_t w = bufferFifo1[ch][i];
-	    std::cout << "Word " << std::setw(4) << std::setfill(' ') << i << " = 0x " << std::hex << std::setw(4) << std::setfill('0') << (bufferFifo1[ch][i]>>16) << " " << std::setw(4) << std::setfill('0') << (bufferFifo1[ch][i] & 0xFFFF) << std::dec << "  ";
-	    for (int j = 31; j >= 0; --j){
-	      if (w & (1 << j)) std::cout << "1";
-	      else std::cout << "0";
-	      if (j % 4 == 0) std::cout << " ";
+	std::cout << "-----------------------------------" << std::endl;
+	std::cout << "Contents of FIFO 1 for all channels" << std::endl;
+	std::cout << "-----------------------------------" << std::endl;
+	for (int ch = 1; ch <= 36; ++ch) {
+	  std::cout << "ch #" << std::setw(2) << ch << ": status: " << statusFifo1[ch] << "\n";
+	  if (statusFifo1[ch] > 0) {
+	    for (int i = 0; i < statusFifo1[ch]; ++i) {
+	      uint32_t w = bufferFifo1[ch][i];
+	      std::cout << "Word " << std::setw(4) << std::setfill(' ') << i << " = 0x " << std::hex << std::setw(4) << std::setfill('0') << (bufferFifo1[ch][i]>>16) << " " << std::setw(4) << std::setfill('0') << (bufferFifo1[ch][i] & 0xFFFF) << std::dec << "  ";
+	      for (int j = 31; j >= 0; --j){
+		if (w & (1 << j)) std::cout << "1";
+		else std::cout << "0";
+		if (j % 4 == 0) std::cout << " ";
+	      }
+	      std::cout << std::setfill(' ') << "  ";
+	      uint32_t ch = (w >> 26) & 0x3f;
+	      uint32_t mk = (w >> 21) & 0x1f;
+	      uint32_t az = (w >> 8) & 0x1fff;
+	      uint32_t dc = (w >> 16) & 0x1f;
+	      uint32_t px = (w >> 8) & 0xff;
+	      uint32_t f8 = w & 0xff;
+	      std::cout << "ch " << ch << " ";
+	      if (mk == 0x1f) {
+		std::cout << "header ";
+		if (az != 0)
+		  std::cout << "(w/o 13 zeros) ";
+		std::cout << " trg# " << f8;
+	      }
+	      else if (mk == 0x1e) {
+		std::cout << "trailer ";
+		if (az & 8)
+		  std::cout << "inv#rocs ";
+		if (az & 1)
+		  std::cout << ">192 px/ch ";
+		std::cout << "fsm errbyte: " << (az >> 1) << " trailer word " << std::hex << f8 << std::dec;
+	      }
+	      else { 
+		if (az == 0)
+		  std::cout << "roc header  lastdac: " << std::hex << f8 << std::dec;
+		else
+		  std::cout << "hit dcol " << std::setw(2) << dc << " pxl " << std::setw(3) << px << " ph " << std::setw(3) << f8;
+	      }
+	      std::cout << std::endl;
 	    }
-	    std::cout << std::setfill(' ') << "  ";
-	    uint32_t ch = (w >> 26) & 0x3f;
-	    uint32_t mk = (w >> 21) & 0x1f;
-	    uint32_t az = (w >> 8) & 0x1fff;
-	    uint32_t dc = (w >> 16) & 0x1f;
-	    uint32_t px = (w >> 8) & 0xff;
-	    uint32_t f8 = w & 0xff;
-	    std::cout << "ch " << ch << " ";
-	    if (mk == 0x1f) {
-	      std::cout << "header ";
-	      if (az != 0)
-		std::cout << "(w/o 13 zeros) ";
-	      std::cout << " trg# " << f8;
-	    }
-	    else if (mk == 0x1e) {
-	      std::cout << "trailer ";
-	      if (az & 8)
-		std::cout << "inv#rocs ";
-	      if (az & 1)
-		std::cout << ">192 px/ch ";
-	      std::cout << "fsm errbyte: " << (az >> 1) << " trailer word " << std::hex << f8 << std::dec;
-	    }
-	    else { 
-	      if (az == 0)
-		std::cout << "roc header  lastdac: " << std::hex << f8 << std::dec;
-	      else
-		std::cout << "hit dcol " << std::setw(2) << dc << " pxl " << std::setw(3) << px << " ph " << std::setw(3) << f8;
-	    }
-	    std::cout << std::endl;
 	  }
 	}
-      }
 
-      int colS=-1, rowS=-1;
-      std::cout << "Scope FIFO buffer sizes: ";
-      for (int chip = 1; chip <= 7; chip += 2)
-	std::cout << std::setw(4) << statusS[chip] << " ";
-      std::cout << endl;
+	int colS=-1, rowS=-1;
+	std::cout << "Scope FIFO buffer sizes: ";
+	for (int chip = 1; chip <= 7; chip += 2)
+	  std::cout << std::setw(4) << statusS[chip] << " ";
+	std::cout << endl;
 
-      /*
-      std::cout << "event numbers: ";
-      const int evnum = decodeT[1]->event_number[0][0];
-      bool evnumok = true;
-      bool badtransdecode = false;
-      for (int chip = 1; chip <= 7; chip += 2) {
-	std::cout << "chip " << chip << ": ";
-	if (chip == 1 || chip == 7) {
+	/*
+	  std::cout << "event numbers: ";
+	  const int evnum = decodeT[1]->event_number[0][0];
+	  bool evnumok = true;
+	  bool badtransdecode = false;
+	  for (int chip = 1; chip <= 7; chip += 2) {
+	  std::cout << "chip " << chip << ": ";
+	  if (chip == 1 || chip == 7) {
 	  if (decode1[chip]->tbm_header_l[0].size() != 1 || 
-	      decode1[chip]->tbm_header_l[1].size() != 1 || 
-	      decode1[chip]->tbm_trailer_l[0].size() != 1 || 
-	      decode1[chip]->tbm_trailer_l[1].size() != 1)
-	    badtransdecode = true;
+	  decode1[chip]->tbm_header_l[1].size() != 1 || 
+	  decode1[chip]->tbm_trailer_l[0].size() != 1 || 
+	  decode1[chip]->tbm_trailer_l[1].size() != 1)
+	  badtransdecode = true;
 	  std::cout << "f1: " << decodeT[chip]->event_number[0][0] << " " << decodeT[chip]->event_number[1][0] << " ";
 	  if (decodeT[chip]->event_number[0][0] != evnum || decodeT[chip]->event_number[1][0] != evnum)
-	    evnumok = false;
-	}
-	std::cout << "f2: " << decodeS[chip]->event_number_ << " ";
-	if (int(decodeS[chip]->event_number_) != evnum)
 	  evnumok = false;
-      }
-      std::cout << std::endl << "fifo1 decodes ok? " << (badfifo1decode ? "no" : "yes") << " evnums ok? " << (evnumok ? "yes" : "no") << std::endl;
-      */
+	  }
+	  std::cout << "f2: " << decodeS[chip]->event_number_ << " ";
+	  if (int(decodeS[chip]->event_number_) != evnum)
+	  evnumok = false;
+	  }
+	  std::cout << std::endl << "fifo1 decodes ok? " << (badfifo1decode ? "no" : "yes") << " evnums ok? " << (evnumok ? "yes" : "no") << std::endl;
+	*/
 
-      for (int chip = 1; chip <= 7; chip += 2) {
-	if (chip == 1 || chip == 7) {
-	  bool trans_all_ff = false;
-	  int trans_found = 0;
-	  uint32_t pattern = 0;
-	  uint32_t* data  = bufferT[chip];
-	  uint32_t* datae = data + 255;
-	  std::cout << "-----------------------------------------\n";
-	  std::cout << "Contents of transparent FIFO for chip = " << chip << std::endl;
-	  std::cout << "-----------------------------------------\n";
-	  if (*data == 0xffffffff && *datae == 0xffffffff) {
-	    int nbeg = 0, nend = 0;
-	    while (*data == 0xffffffff && data != datae)
-	      ++nbeg, ++data;
-	    if (data == datae) {
-	      trans_all_ff = true;
-	      std::cout << "all 0xFFFFFFFF" << std::endl;
-	    }
-	    else {
-	      std::vector<char> bits[2]; // ha
-	      while (*datae == 0xffffffff)
-		++nend, --datae;
-	      trans_found = datae-data+1;
-	      std::cout << nbeg << " 0xFFFFFFFF then " << trans_found << " words:" << std::endl;
-	      while (data != datae + 1) {
-		uint32_t d = *data;
-		uint16_t h(d >> 16);
-		uint16_t l(d & 0xFFFF);
-		uint16_t ab[2] = {h, l};
-		std::cout << std::hex << std::setw(4) << h << std::dec << " ";
-		std::cout << std::hex << std::setw(4) << l << std::dec << "  ";
-		for (int j = 0; j < 2; ++j) {
-		  for (int i = 15; i >= 0; --i) {
-		    char bit = (ab[j] & (1 << i)) ? '1' : '0';
-		    bits[!j].push_back(bit);
-		    std::cout << bit;
-		    if (i % 4 == 0) std::cout << " ";
-		  }
-		  std::cout << "  ";
-		}
-		std::cout << std::endl;
-		++data;
+	for (int chip = 1; chip <= 7; chip += 2) {
+	  if (chip == 1 || chip == 7) {
+	    bool trans_all_ff = false;
+	    int trans_found = 0;
+	    uint32_t pattern = 0;
+	    uint32_t* data  = bufferT[chip];
+	    uint32_t* datae = data + 255;
+	    std::cout << "-----------------------------------------\n";
+	    std::cout << "Contents of transparent FIFO for chip = " << chip << std::endl;
+	    std::cout << "-----------------------------------------\n";
+	    if (*data == 0xffffffff && *datae == 0xffffffff) {
+	      int nbeg = 0, nend = 0;
+	      while (*data == 0xffffffff && data != datae)
+		++nbeg, ++data;
+	      if (data == datae) {
+		trans_all_ff = true;
+		std::cout << "all 0xFFFFFFFF" << std::endl;
 	      }
-	      std::cout << "then " << nend << " 0xFFFFFFFF" << std::endl;
-
-	      std::cout << "try to align with headers:\n";
-	      const int nroccands = 8;
-	      for (int j = 0; j < 2; ++j) {
-		std::cout << "tbm " << j << ":\n";
-		int besttbmhead = -1;
-		int besttbmheadcount = -1;
-		int besttbmtrail = -1;
-		int besttbmtrailcount = -1;
-		std::vector<int> bestroc(nroccands, -1);
-		std::vector<int> bestroccount(nroccands, -1);
-		std::vector<int> bestrocalign(nroccands, -1);
-		int count = -1;
-		const int nbits = bits[j].size();
-		if (nbits < 12)
-		  std::cout << "not enough bits\n";
-		else {
-		  for (int i = 0; i < nbits - 12; ++i) {
-		    count = 
-		      int(bits[j][i   ] == '0') +
-		      int(bits[j][i+ 1] == '1') +
-		      int(bits[j][i+ 2] == '1') +
-		      int(bits[j][i+ 3] == '1') +
-		      int(bits[j][i+ 4] == '1') +
-		      int(bits[j][i+ 5] == '1') +
-		      int(bits[j][i+ 6] == '1') +
-		      int(bits[j][i+ 7] == '1') +
-		      int(bits[j][i+ 8] == '1') +
-		      int(bits[j][i+ 9] == '1') +
-		      int(bits[j][i+10] == '0') +
-		      int(bits[j][i+11] == '0');
-		    if (count > besttbmheadcount) {
-		      besttbmheadcount = count;
-		      besttbmhead = i;
+	      else {
+		std::vector<char> bits[2]; // ha
+		while (*datae == 0xffffffff)
+		  ++nend, --datae;
+		trans_found = datae-data+1;
+		std::cout << nbeg << " 0xFFFFFFFF then " << trans_found << " words:" << std::endl;
+		while (data != datae + 1) {
+		  uint32_t d = *data;
+		  uint16_t h(d >> 16);
+		  uint16_t l(d & 0xFFFF);
+		  uint16_t ab[2] = {h, l};
+		  std::cout << std::hex << std::setw(4) << h << std::dec << " ";
+		  std::cout << std::hex << std::setw(4) << l << std::dec << "  ";
+		  for (int j = 0; j < 2; ++j) {
+		    for (int i = 15; i >= 0; --i) {
+		      char bit = (ab[j] & (1 << i)) ? '1' : '0';
+		      bits[!j].push_back(bit);
+		      std::cout << bit;
+		      if (i % 4 == 0) std::cout << " ";
 		    }
+		    std::cout << "  ";
+		  }
+		  std::cout << std::endl;
+		  ++data;
+		}
+		std::cout << "then " << nend << " 0xFFFFFFFF" << std::endl;
 
-		    count = 
-		      int(bits[j][i   ] == '0') +
-		      int(bits[j][i+ 1] == '1') +
-		      int(bits[j][i+ 2] == '1') +
-		      int(bits[j][i+ 3] == '1') +
-		      int(bits[j][i+ 4] == '1') +
-		      int(bits[j][i+ 5] == '1') +
-		      int(bits[j][i+ 6] == '1') +
-		      int(bits[j][i+ 7] == '1') +
-		      int(bits[j][i+ 8] == '1') +
-		      int(bits[j][i+ 9] == '1') +
-		      int(bits[j][i+10] == '1') +
-		      int(bits[j][i+11] == '0');
-		    if (count > besttbmtrailcount) {
-		      besttbmtrailcount = count;
-		      besttbmtrail = i;
-		    }
+		std::cout << "try to align with headers:\n";
+		const int nroccands = 8;
+		for (int j = 0; j < 2; ++j) {
+		  std::cout << "tbm " << j << ":\n";
+		  int besttbmhead = -1;
+		  int besttbmheadcount = -1;
+		  int besttbmtrail = -1;
+		  int besttbmtrailcount = -1;
+		  std::vector<int> bestroc(nroccands, -1);
+		  std::vector<int> bestroccount(nroccands, -1);
+		  std::vector<int> bestrocalign(nroccands, -1);
+		  int count = -1;
+		  const int nbits = bits[j].size();
+		  if (nbits < 12)
+		    std::cout << "not enough bits\n";
+		  else {
+		    for (int i = 0; i < nbits - 12; ++i) {
+		      count = 
+			int(bits[j][i   ] == '0') +
+			int(bits[j][i+ 1] == '1') +
+			int(bits[j][i+ 2] == '1') +
+			int(bits[j][i+ 3] == '1') +
+			int(bits[j][i+ 4] == '1') +
+			int(bits[j][i+ 5] == '1') +
+			int(bits[j][i+ 6] == '1') +
+			int(bits[j][i+ 7] == '1') +
+			int(bits[j][i+ 8] == '1') +
+			int(bits[j][i+ 9] == '1') +
+			int(bits[j][i+10] == '0') +
+			int(bits[j][i+11] == '0');
+		      if (count > besttbmheadcount) {
+			besttbmheadcount = count;
+			besttbmhead = i;
+		      }
 
-		    count = 
-		      int(bits[j][i   ] == '0') +
-		      int(bits[j][i+ 1] == '1') +
-		      int(bits[j][i+ 2] == '1') +
-		      int(bits[j][i+ 3] == '1') +
-		      int(bits[j][i+ 4] == '1') +
-		      int(bits[j][i+ 5] == '1') +
-		      int(bits[j][i+ 6] == '1') +
-		      int(bits[j][i+ 7] == '1') +
-		      int(bits[j][i+ 8] == '1') +
-		      int(bits[j][i+ 9] == '0');
-		    const int align = (i - (besttbmhead + 12 + 16)) % 12;
-		    if (align == 0) {
-		      for (int k = 0; k < nroccands; ++k) {
-			if (count > bestroccount[k]) {
-			  int tmpcount = bestroccount[k];
-			  int tmp = bestroc[k];
-			  bestroccount[k] = count;
-			  bestroc[k] = i;
-			  for (int l = nroccands-1; l > k+1; --l) {
-			    bestroccount[l] = bestroccount[l-1];
-			    bestroc[l] = bestroc[l-1];
+		      count = 
+			int(bits[j][i   ] == '0') +
+			int(bits[j][i+ 1] == '1') +
+			int(bits[j][i+ 2] == '1') +
+			int(bits[j][i+ 3] == '1') +
+			int(bits[j][i+ 4] == '1') +
+			int(bits[j][i+ 5] == '1') +
+			int(bits[j][i+ 6] == '1') +
+			int(bits[j][i+ 7] == '1') +
+			int(bits[j][i+ 8] == '1') +
+			int(bits[j][i+ 9] == '1') +
+			int(bits[j][i+10] == '1') +
+			int(bits[j][i+11] == '0');
+		      if (count > besttbmtrailcount) {
+			besttbmtrailcount = count;
+			besttbmtrail = i;
+		      }
+
+		      count = 
+			int(bits[j][i   ] == '0') +
+			int(bits[j][i+ 1] == '1') +
+			int(bits[j][i+ 2] == '1') +
+			int(bits[j][i+ 3] == '1') +
+			int(bits[j][i+ 4] == '1') +
+			int(bits[j][i+ 5] == '1') +
+			int(bits[j][i+ 6] == '1') +
+			int(bits[j][i+ 7] == '1') +
+			int(bits[j][i+ 8] == '1') +
+			int(bits[j][i+ 9] == '0');
+		      const int align = (i - (besttbmhead + 12 + 16)) % 12;
+		      if (align == 0) {
+			for (int k = 0; k < nroccands; ++k) {
+			  if (count > bestroccount[k]) {
+			    int tmpcount = bestroccount[k];
+			    int tmp = bestroc[k];
+			    bestroccount[k] = count;
+			    bestroc[k] = i;
+			    for (int l = nroccands-1; l > k+1; --l) {
+			      bestroccount[l] = bestroccount[l-1];
+			      bestroc[l] = bestroc[l-1];
+			    }
+			    if (k < nroccands-1) {
+			      bestroccount[k+1] = tmpcount;
+			      bestroc[k+1] = tmp;
+			    }
+			    break;
 			  }
-			  if (k < nroccands-1) {
-			    bestroccount[k+1] = tmpcount;
-			    bestroc[k+1] = tmp;
-			  }
-			  break;
 			}
 		      }
 		    }
-		  }
 
-		  std::cout << "best match of tbm header  at " << std::setw(4) << nbeg*16 + besttbmhead  << " with count " << besttbmheadcount << "\n";
-		  std::cout << "best match of tbm trailer at " << std::setw(4) << nbeg*16 + besttbmtrail << " with count " << besttbmtrailcount << "\n";
-		  if ((besttbmtrail - (besttbmhead + 12 + 16)) % 12 != 0)
-		    std::cout << "  ^ tbm trailer misaligned wrt tbm header!\n";
-		  std::cout << "matches of roc headers:\n";
-		  int bestroccountsum = 0;
-		  for (int k = 0; k < nroccands; ++k) {
-		    std::cout << "  at " << std::setw(4) << nbeg*16 + bestroc[k] << " with count " << bestroccount[k] << "\n";
-		    if (k < 8) {
-		      bestroccountsum += bestroccount[k];
-		      if ((bestroc[k] - (besttbmhead + 12 + 16)) % 12 != 0)
-			std::cout << "    ^ roc header misaligned wrt tbm header!\n";
+		    std::cout << "best match of tbm header  at " << std::setw(4) << nbeg*16 + besttbmhead  << " with count " << besttbmheadcount << "\n";
+		    std::cout << "best match of tbm trailer at " << std::setw(4) << nbeg*16 + besttbmtrail << " with count " << besttbmtrailcount << "\n";
+		    if ((besttbmtrail - (besttbmhead + 12 + 16)) % 12 != 0)
+		      std::cout << "  ^ tbm trailer misaligned wrt tbm header!\n";
+		    std::cout << "matches of roc headers:\n";
+		    int bestroccountsum = 0;
+		    for (int k = 0; k < nroccands; ++k) {
+		      std::cout << "  at " << std::setw(4) << nbeg*16 + bestroc[k] << " with count " << bestroccount[k] << "\n";
+		      if (k < 8) {
+			bestroccountsum += bestroccount[k];
+			if ((bestroc[k] - (besttbmhead + 12 + 16)) % 12 != 0)
+			  std::cout << "    ^ roc header misaligned wrt tbm header!\n";
+		      }
 		    }
-		  }
 
-//		  std::vector<std::pair<int, int> > roccands;
-//		  for (int k = 0; k < nroccands; ++k) {
-//		    if (bestroccount[k] == 10) {
-//		      roccands.push_back(std::make_pair(
-//		  }
+		    //		  std::vector<std::pair<int, int> > roccands;
+		    //		  for (int k = 0; k < nroccands; ++k) {
+		    //		    if (bestroccount[k] == 10) {
+		    //		      roccands.push_back(std::make_pair(
+		    //		  }
 		  
 
-		  if (besttbmheadcount != 12 || besttbmtrailcount != 12 || bestroccountsum != 80)
-		    std::cout << "problem with headers or trailers!\n";
+		    if (besttbmheadcount != 12 || besttbmtrailcount != 12 || bestroccountsum != 80)
+		      std::cout << "problem with headers or trailers!\n";
 
-		  std::cout << "print, aligning only with tbm header, and guessing where roc headers and hit bits should be based on " << tempCalibObject->maxNumHitsPerROC() << " hits / roc in calib\n";
-		  std::cout << "throw away: ";
-		  for (int i = 0; i < besttbmhead; ++i) {
-		    std::cout << bits[j][i];
-		    if (i % 4 == 3) std::cout << " ";
-		  }
-		  std::cout << "\n";
-
-		  std::cout << "tbm header: ";
-		  for (int i = besttbmhead; i < besttbmhead+12; ++i) {
-		    std::cout << bits[j][i];
-		  }
-		  std::cout << "  payload: ";
-		  for (int i = besttbmhead+12; i < besttbmhead+12+2*8; ++i) {
-		    std::cout << bits[j][i];
-		    const int id = i-(besttbmhead+12);
-		    if (id == 7 || id == 9) std::cout << " ";
-		  }
-		  std::cout << "\n";
-
-		  const int nhitsperroc = tempCalibObject->maxNumHitsPerROC();
-		  const int nbitsperroc = 12 + 3*8*nhitsperroc;
-		  for (int k = 0; k < 8; ++k) {
-		    const int ib = besttbmhead+12+2*8 + nbitsperroc*k;
-		    const int ic = besttbmhead+12+2*8 + nbitsperroc*k + 12;
-		    const int ie = besttbmhead+12+2*8 + nbitsperroc*(k+1);
-		    std::cout << "roc " << k << " header: ";
-		    for (int i = ib; i < ic; ++i) {
+		    std::cout << "print, aligning only with tbm header, and guessing where roc headers and hit bits should be based on " << tempCalibObject->maxNumHitsPerROC() << " hits / roc in calib\n";
+		    std::cout << "throw away: ";
+		    for (int i = 0; i < besttbmhead; ++i) {
 		      std::cout << bits[j][i];
-		      if ((i-ib) == 9) std::cout << " ";
+		      if (i % 4 == 3) std::cout << " ";
 		    }
-		    std::cout << "\nhits:\n";
-		    for (int i = ic; i < ie; ++i) {
-		      std::cout << bits[j][i];
-		      const int id = (i - ic) % 24;
-		      if (id == 5 || id == 14 || id == 18 || id == 19) std::cout << " ";
-		      else if (id == 23) std::cout << "\n";
-		    }
-		  }
+		    std::cout << "\n";
 
-		  std::cout << "tbm trailer: ";
-		  {
-		    const int ib = besttbmhead+12+2*8 + nbitsperroc*8;
-		    const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
-		    for (int i = ib; i < ie; ++i)
+		    std::cout << "tbm header: ";
+		    for (int i = besttbmhead; i < besttbmhead+12; ++i) {
 		      std::cout << bits[j][i];
-		  }
-		  std::cout << "  payload: ";
-		  {
-		    const int ib = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
-		    const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12 + 16;
-		    for (int i = ib; i < ie; ++i) {
-		      std::cout << bits[j][i];
-		      if ((i-ib) % 4 == 3) std::cout << " ";
 		    }
+		    std::cout << "  payload: ";
+		    for (int i = besttbmhead+12; i < besttbmhead+12+2*8; ++i) {
+		      std::cout << bits[j][i];
+		      const int id = i-(besttbmhead+12);
+		      if (id == 7 || id == 9) std::cout << " ";
+		    }
+		    std::cout << "\n";
+
+		    const int nhitsperroc = tempCalibObject->maxNumHitsPerROC();
+		    const int nbitsperroc = 12 + 3*8*nhitsperroc;
+		    for (int k = 0; k < 8; ++k) {
+		      const int ib = besttbmhead+12+2*8 + nbitsperroc*k;
+		      const int ic = besttbmhead+12+2*8 + nbitsperroc*k + 12;
+		      const int ie = besttbmhead+12+2*8 + nbitsperroc*(k+1);
+		      std::cout << "roc " << k << " header: ";
+		      for (int i = ib; i < ic; ++i) {
+			std::cout << bits[j][i];
+			if ((i-ib) == 9) std::cout << " ";
+		      }
+		      std::cout << "\nhits:\n";
+		      for (int i = ic; i < ie; ++i) {
+			std::cout << bits[j][i];
+			const int id = (i - ic) % 24;
+			if (id == 5 || id == 14 || id == 18 || id == 19) std::cout << " ";
+			else if (id == 23) std::cout << "\n";
+		      }
+		    }
+
+		    std::cout << "tbm trailer: ";
+		    {
+		      const int ib = besttbmhead+12+2*8 + nbitsperroc*8;
+		      const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
+		      for (int i = ib; i < ie; ++i)
+			std::cout << bits[j][i];
+		    }
+		    std::cout << "  payload: ";
+		    {
+		      const int ib = besttbmhead+12+2*8 + nbitsperroc*8 + 12;
+		      const int ie = besttbmhead+12+2*8 + nbitsperroc*8 + 12 + 16;
+		      for (int i = ib; i < ie; ++i) {
+			std::cout << bits[j][i];
+			if ((i-ib) % 4 == 3) std::cout << " ";
+		      }
+		    }
+		    std::cout << std::endl;
 		  }
+		}
+	      }
+	    }
+	    else {
+	      pattern = *((uint32_t*)data);
+	      bool same = true;
+	      while (data != datae + 1) {
+		uint32_t p = *((uint32_t*)data);
+		if (p != pattern)
+		  same = false;
+		data += 4;
+	      }
+	      if (same)
+		std::cout << "256 repetitions of " << std::hex << pattern << std::dec << std::endl;
+	      else {
+		uint8_t* data8 = (uint8_t*)bufferT[chip];
+		std::cout << "rw | ";
+		for (int j = 0; j < 64; ++j)
+		  std::cout << std::setw(2) << j << " ";
+		std::cout << std::endl;
+		for (int i = 0; i < 64; ++i) {
+		  std::cout << std::setw(2) << i << " | ";
+		  for (int j = 0; j < 64; ++j)
+		    std::cout << std::hex << std::setw(2) << unsigned(data8[i*64+j]) << std::dec << " ";
 		  std::cout << std::endl;
 		}
 	      }
 	    }
-	  }
-	  else {
-	    pattern = *((uint32_t*)data);
-	    bool same = true;
-	    while (data != datae + 1) {
-	      uint32_t p = *((uint32_t*)data);
-	      if (p != pattern)
-		same = false;
-	      data += 4;
-	    }
-	    if (same)
-	      std::cout << "256 repetitions of " << std::hex << pattern << std::dec << std::endl;
-	    else {
-	      uint8_t* data8 = (uint8_t*)bufferT[chip];
-	      std::cout << "rw | ";
-	      for (int j = 0; j < 64; ++j)
-		std::cout << std::setw(2) << j << " ";
-	      std::cout << std::endl;
-	      for (int i = 0; i < 64; ++i) {
-		std::cout << std::setw(2) << i << " | ";
-		for (int j = 0; j < 64; ++j)
-		  std::cout << std::hex << std::setw(2) << unsigned(data8[i*64+j]) << std::dec << " ";
-		std::cout << std::endl;
-	      }
-	    }
-	  }
 
-	  std::cout << "DigTransDecoder thinks:\n";
-	  decodeT[chip]->printToStream(std::cout);
-	}
-	//if (chip != 1 && chip != 7 && !trans_all_ff)
-	//  std::cout << "bad trans_all_ff: chip is " << chip << std::endl;
+	    std::cout << "DigTransDecoder thinks:\n";
+	    decodeT[chip]->printToStream(std::cout);
+	  }
+	  //if (chip != 1 && chip != 7 && !trans_all_ff)
+	  //  std::cout << "bad trans_all_ff: chip is " << chip << std::endl;
 
-	std::cout << "----------------------------------" << std::endl;
-	if (statusS[chip] < 0)
-	  std::cout << "Scope FIFO for chip = " << chip << " status = " << statusS[chip] << std::endl;
-	else {
-	  std::cout << "Contents of Scope FIFO for chip = " << chip << "(statusS = " << statusS[chip] << ")" <<std::endl;
 	  std::cout << "----------------------------------" << std::endl;
-	  for (int i = 0; i <= statusS[chip]; ++i) {
-	    uint32_t d = bufferS[chip][i];
-	    uint32_t dh = d & 0xf0;
-	    if (dh == 0x70 || dh == 0x10 || dh == 0xc0)
-	      std::cout << "\n";
-	    if (d & 0xFFFFFF00)
-	      std::cout << std::setw(6) << std::hex << ((d&0xFFFFFF00)>>8) << " " << std::setw(2) << std::hex << (d&0xFF) << std::dec << " ";
-	    else 
-	      std::cout << std::setw(2) << std::hex << (d&0xFF) << std::dec << " ";
+	  if (statusS[chip] < 0)
+	    std::cout << "Scope FIFO for chip = " << chip << " status = " << statusS[chip] << std::endl;
+	  else {
+	    std::cout << "Contents of Scope FIFO for chip = " << chip << "(statusS = " << statusS[chip] << ")" <<std::endl;
+	    std::cout << "----------------------------------" << std::endl;
+	    for (int i = 0; i <= statusS[chip]; ++i) {
+	      uint32_t d = bufferS[chip][i];
+	      uint32_t dh = d & 0xf0;
+	      if (dh == 0x70 || dh == 0x10 || dh == 0xc0)
+		std::cout << "\n";
+	      if (d & 0xFFFFFF00)
+		std::cout << std::setw(6) << std::hex << ((d&0xFFFFFF00)>>8) << " " << std::setw(2) << std::hex << (d&0xFF) << std::dec << " ";
+	      else 
+		std::cout << std::setw(2) << std::hex << (d&0xFF) << std::dec << " ";
+	    }
+	    std::cout << "\n----------------------------------" << std::endl;
 	  }
-	  std::cout << "\n----------------------------------" << std::endl;
+	  std::cout << "DigScopeDecoder thinks:\n";
+	  decodeS[chip]->printToStream(std::cout);
+	  if (decodeS[chip]->n_hits() > 6) {
+	    colS = decodeS[chip]->hits()[0].col;
+	    rowS = decodeS[chip]->hits()[0].row;
+	  }
 	}
-	std::cout << "DigScopeDecoder thinks:\n";
-	decodeS[chip]->printToStream(std::cout);
-	if (decodeS[chip]->n_hits() > 6) {
-	  colS = decodeS[chip]->hits()[0].col;
-	  rowS = decodeS[chip]->hits()[0].row;
+	if (statusS[1] > 0 && statusS[3] > 0) {
+	  cout<<"decodePTrans return: " << decodePTrans(bufferS[1],bufferS[3],16)<<endl;
+	  cout<<"decodePTrans2 return: " << decodePTrans2(bufferS[1],bufferS[3],16)<<endl;
+	  cout << "decodePTrans3: " << endl;
+	  decodePTrans3(bufferS[1], bufferS[3], 64);
 	}
-      }
-      if (statusS[1] > 0 && statusS[3] > 0) {
-	cout<<"decodePTrans return: " << decodePTrans(bufferS[1],bufferS[3],16)<<endl;
-	cout<<"decodePTrans2 return: " << decodePTrans2(bufferS[1],bufferS[3],16)<<endl;
-	cout << "decodePTrans3: " << endl;
-	decodePTrans3(bufferS[1], bufferS[3], 64);
       }
 
       std::cout << "----------------------" << std::endl;
@@ -675,15 +679,18 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	  for (int j = 0; j < 8; ++j)
 	    if (hits_by_roc[i][j])
 	      std::cout << "Ch " << std::setw(2) << i << " roc " << j << ": " << std::setw(3) << hits_by_roc[i][j] << "\n";
-	if (decode3->nhits() > 0)
-	  std::cout << "(fifo2 col: " << colS << " row: " << rowS << "   fifo3 dcol: " << decode3->dcol(0) << " pxl: " << decode3->pxl(0) << " col: " << decode3->column(0) << " row: " << decode3->row(0) << ")\n";
+	//if (decode3->nhits() > 0)
+	//  std::cout << "(fifo2 col: " << colS << " row: " << rowS << "   fifo3 dcol: " << decode3->dcol(0) << " pxl: " << decode3->pxl(0) << " col: " << decode3->column(0) << " row: " << decode3->row(0) << ")\n";
       }
-      std::cout << "Contents of Error FIFO" << std::endl;
-      std::cout << "----------------------" << std::endl;
-      for (int i = 0; i <= statusErr; ++i)
-	std::cout << "Clock " << i << " = 0x" << std::hex << bufferErr[i] << std::dec << std::endl;
-      std::cout << "ErrorFIFODecoder thinks:\n";
-      decodeErr->printToStream(std::cout);
+
+      if (!OnlyFIFO3) {
+	std::cout << "Contents of Error FIFO" << std::endl;
+	std::cout << "----------------------" << std::endl;
+	for (int i = 0; i <= statusErr; ++i)
+	  std::cout << "Clock " << i << " = 0x" << std::hex << bufferErr[i] << std::dec << std::endl;
+	std::cout << "ErrorFIFODecoder thinks:\n";
+	decodeErr->printToStream(std::cout);
+      }
     }
 
     //////
