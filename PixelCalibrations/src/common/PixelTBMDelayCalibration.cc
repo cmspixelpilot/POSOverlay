@@ -42,6 +42,7 @@ bool PixelTBMDelayCalibration::execute() {
 
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
   if (firstOfPattern) {
+    std::cout << "new state " << state << std::endl;
     if (ToggleChannels) commandToAllFEDCrates("ToggleChannels");
     commandToAllFECCrates("CalibRunning");
   }
@@ -59,7 +60,7 @@ bool PixelTBMDelayCalibration::execute() {
 
   if (firstOfPattern) {
     //commandToAllFEDCrates("JMTJunk");
-    usleep(1000000);
+    usleep(100000);
   }
 
   //if (DelayEveryTrigger || (DelayBeforeFirstTrigger && firstOfPattern))
