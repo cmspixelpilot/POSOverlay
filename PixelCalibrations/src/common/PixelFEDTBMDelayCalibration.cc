@@ -752,6 +752,9 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
     scans1d[idecode].clear();
     scans2d[idecode].clear();
 
+    if (OnlyFIFO3 && idecode < F3fifoErr)
+      continue;
+
     for (size_t i = 0; i < dacsToScan.size(); ++i) {
       const std::string& iname = dacsToScan[i];
       const TString itname(iname.c_str());
