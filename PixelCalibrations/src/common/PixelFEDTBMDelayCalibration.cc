@@ -116,6 +116,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
   }
   if (DumpFIFOs) std::cout << std::endl;
 
+  // for scan over ADelay, BDelay, and PLL, we split the output in multiple files so one long scan dying doesn't lose all the data
   if (dacsToScan.size() >= 3 && currentDACValues["TBMPLL"] != lastTBMPLL) {
     lastTBMPLL = currentDACValues["TBMPLL"];
     BookEm(TString::Format("TBMPLL%03i", lastTBMPLL));
