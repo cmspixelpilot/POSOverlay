@@ -1,7 +1,9 @@
 ConfigurationAliases
 Physics     403 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm 402 ;
-hello 398 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm2 404 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm3 406 ;
+hello 405 ;
 PixelsDisabled1Hz 334 ;
 PixelsDisabled1kHz 335 ;
 PixelsDisabled1kHz_TDelayScan2 372 ;
