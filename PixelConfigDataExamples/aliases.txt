@@ -1,4 +1,13 @@
 ConfigurationAliases
+Step0 423 ;
+Step1 424 ;
+Step2 425 ;
+Step3 426 ;
+Step4 427 ;
+Step5 428 ;
+Step6 429 ;
+Step7 430 ;
+Step8 431 ;
 Physics     403 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm 402 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm2 404 ;
@@ -6,7 +15,7 @@ PixelsEnabledAllChannels22kHz_4bx_newtbm3 406 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm1p5 408 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm1p6 409 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm1p7 412 ;
-PixelsEnabledAllChannels22kHz_4bx_newtbm1p7 414 ;
+PixelsEnabledAllChannels22kHz_4bx_newtbm1p8 414 ;
 hello 413 ;
 PixelsDisabled1Hz 334 ;
 PixelsDisabled1kHz 335 ;
