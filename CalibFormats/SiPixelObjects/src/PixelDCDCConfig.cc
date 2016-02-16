@@ -65,33 +65,31 @@ PixelDCDCConfig::PixelDCDCConfig(std::string filename):
     in >> settingName >> value;
     if (in.eof()) break;
     
-    if ( settingName[settingName.size()-1] == ':' ) settingName.resize( settingName.size()-1 ); // remove ':' from end of string, if it's there
-   
     // parse the DCDC config
     std::stringstream instr;
     int address=0;
-    if ( settingName == "Enabled" ){
-	    setDCDCEnabled( (value=="yes") );
+    if ( settingName == "Enabled:" ){
+      setDCDCEnabled( value == "yes" );
     }
-    if ( settingName == "CCUAddressEnable" ){
+    if ( settingName == "CCUAddressEnable:" ){
 	    instr << value;
 	    instr >> std::hex >> address;
 	    setCCUAddressEnable( address );
     }
-    if ( settingName == "CCUAddressPgood" ){
+    else if ( settingName == "CCUAddressPgood:" ){
 	    instr << value;
 	    instr >> std::hex >> address;
 	    setCCUAddressPgood( address );
     }
-    if ( settingName == "PIAChannelAddress" ){
+    else if ( settingName == "PIAChannelAddress:" ){
 	    instr << value;
 	    instr >> std::hex >> address;
 	    setPIAChannelAddress( address );
     }
-    if ( settingName == "PortNumber" ){
+    else if ( settingName == "PortNumber:" ){
 	    instr << value;
 	    instr >> std::dec >> address;
-	    setPortNumber( address );
+	    portnumbers_.push_back( address );
     }
 
   }
@@ -156,7 +154,10 @@ void PixelDCDCConfig::writeXML(std::ofstream *outstream,
   *outstream << "   <CCU_ADDR_ENABLE>"           << ccuaddressenable_     << "</CCU_ADDR_ENABLE>"		         		     << std::endl;
   *outstream << "   <CCU_ADDR_PGOOD>"       << ccuaddresspgood_      << "</CCU_ADDR_PGOOD>"				     << std::endl;
   *outstream << "   <PIA_CHANNEL_ADDR>"        << piachanneladdress_  << "</PIA_CHANNEL_ADDR>"        			     << std::endl;
-  *outstream << "   <PORT_NUMBER>"      << portnumber_        << "</PORT_NUMBER>" 			             << std::endl;
+  *outstream << "   <PORT_NUMBERS>";
+  for (size_t i = 0; i < portnumbers_.size(); ++i) 
+    *outstream << portnumbers_[i] << " ";
+  *outstream << "</PORT_NUMBERS>" << std::endl;
 
   *outstream << "  </DATA>" << std::endl;
 
@@ -191,8 +192,9 @@ void PixelDCDCConfig::writeASCII(std::string dir) const {
   out << "CCUAddressEnable: " << ccuaddressenable_ << std::endl;
   out << "CCUAddressPgood: 0x" <<std::hex<< ccuaddresspgood_ <<std::dec<< std::endl;
   out << "PIAChannelAddress: 0x" <<std::hex<< piachanneladdress_ <<std::dec<< std::endl;
-  
-  out << "PortNumber: 0x" <<std::hex<< portnumber_ <<std::dec<< std::endl;
+
+  for (size_t i = 0; i < portnumbers_.size(); ++i) 
+    out << "PortNumber: 0x" <<std::hex<< portnumbers_[i] <<std::dec<< std::endl;
 
   out.close();
 }

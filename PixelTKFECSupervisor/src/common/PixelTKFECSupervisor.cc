@@ -1900,16 +1900,22 @@ end of redundancy ring comment */
 	  printf("JMT pixDCDC slot %i ring %i name %s\n", slot, ringiter->first, name.c_str());
 	  PixelDCDCConfig* dcdc = 0;
 	  PixelConfigInterface::get(dcdc, "pixel/dcdc/" + name, *theGlobalKey_);
+	  const std::vector<unsigned>& ports = dcdc->getPortNumbers();
 
-	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name << " enabled? " << dcdc->getDCDCEnabled() << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " port " << dcdc->getPortNumber() <<  std::endl;
+	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name << " enabled? " << dcdc->getDCDCEnabled() << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " ports ";
+	  for (size_t i = 0; i < ports.size(); ++i)
+	    std::cout << ports[i] << " ";
+	  std::cout << std::endl;
+
 	  if (dcdc->getDCDCEnabled()) {
 	    std::cout << "   sending DCDC command" << std::endl;
-	    pixDCDCCommand(slot, ringiter->first,
-			   dcdc->getCCUAddressEnable(),
-			   dcdc->getCCUAddressPgood(),
-			   dcdc->getPIAChannelAddress(),
-			   true,
-			   dcdc->getPortNumber());
+	    for (size_t i = 0; i < ports.size(); ++i)
+	      pixDCDCCommand(slot, ringiter->first,
+			     dcdc->getCCUAddressEnable(),
+			     dcdc->getCCUAddressPgood(),
+			     dcdc->getPIAChannelAddress(),
+			     true,
+			     ports[i]);
 	  }
 	}
 #endif
