@@ -1,4 +1,5 @@
 ConfigurationAliases
+testdcdc 432 ;
 Step0 423 ;
 Step1 424 ;
 Step2 425 ;
@@ -202,7 +203,7 @@ trim  1 TrimOn ;
 tbm  1 Default ;
 tbm  2 NoTokenPass ;
 tbm  3 DisablePKAMCounter ;
-dcdc  0 Default ;
+dcdc  1 Default ;
 portcard  0 Default ;
 portcardmap  0 Default ;
 tkfecconfig  0 Default ;
