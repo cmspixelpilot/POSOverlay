@@ -1,4 +1,7 @@
 ConfigurationAliases
+tryit 437 ;
+step7redo 433 ;
+step1redo 434 ;
 testdcdc 432 ;
 Step0 423 ;
 Step1 424 ;
