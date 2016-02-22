@@ -281,8 +281,6 @@ int FixBBB(int chan,uint32_t *data);
   void resetSEUCountAndDegradeState(void);
   bool runDegraded(void) {return runDegraded_;}
   
- uint32_t testReg(uint32_t data);
-
  private:
 
   // Private methods

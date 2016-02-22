@@ -1264,7 +1264,7 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
   assert(0);
 #endif
 
-  printf("FEDID:%i phase stats:\n", pixelFEDCard.fedNumber);
+  printf("FEDID:%lu phase stats:\n", pixelFEDCard.fedNumber);
   for (int j = 1; j <= 18; ++j) {
     if (j == 3 || (j >= 6 && j <= 12) || j == 15 || j == 18)
       continue;
@@ -1273,7 +1273,7 @@ void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
       rmses[j] += pow(phases[j][k] - means[j], 2);
     rmses[j] /= (Npoll - 1);
     rmses[j] = sqrt(rmses[j]);
-    printf("ch %2i/%2i: #locks: %2i/%2i  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], Nkeep, means[j], rmses[j]);
+    printf("ch %2i/%2i: #locks: %2i/%2i  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], int(Nkeep), means[j], rmses[j]);
   }
 
   fflush(stdout);
