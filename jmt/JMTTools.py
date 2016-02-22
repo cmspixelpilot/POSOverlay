@@ -5,7 +5,9 @@ from collections import defaultdict
 from pprint import pprint
 from itertools import izip
 
+BUILD_HOME = os.environ['BUILD_HOME']
 POS_OUTPUT_DIRS = os.environ['POS_OUTPUT_DIRS']
+PIXELCONFIGURATIONBASE = os.environ['PIXELCONFIGURATIONBASE']
 
 def run_from_argv():
     run = None
@@ -152,8 +154,34 @@ def dec(dcol, pxl):
     row = 80 - pxl/2
     return col, row
 
-        
-if __name__ == '__main__':
-    c = calib_dat(1440)
-    d = detconfig_dat(1440)
+def configurations_txt():
+    fn = os.path.join(PIXELCONFIGURATIONBASE, 'configurations.txt')
+    d = {}
+    e = None
+    key = None
+    for line in open(fn):
+        line = line.strip()
+        if line:
+            if line.startswith('key'):
+                if e:
+                    d[key] = e
+                e = {}
+                key = line.split()[-1]
+            else:
+                line = line.split()
+                assert len(line) == 2
+                e[line[0]] = line[1]
+    return d
 
+#def translation_dat(key):
+#    fn = os.path.join(PIXELCONFIGURATIONBASE, 'nametranslation/%s/translation.dat')
+#    by_module = 
+#    for line in open(fn):
+#        line = line.strip():
+#        if line:
+#            line = line.split()
+#def tbm(key):
+    
+if __name__ == '__main__':
+    cfg = configurations_txt()
+    

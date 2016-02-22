@@ -42,6 +42,7 @@ bool PixelTBMDelayCalibration::execute() {
 
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
   if (firstOfPattern) {
+    std::cout << "new state " << state << std::endl;
     if (ToggleChannels) commandToAllFEDCrates("ToggleChannels");
     commandToAllFECCrates("CalibRunning");
   }
@@ -57,14 +58,13 @@ bool PixelTBMDelayCalibration::execute() {
     commandToAllFEDCrates("SetScopeChannel", parametersToFED);
   }
 
-  // should take this out
-  commandToAllFEDCrates("JMTJunk");
-
-  if (DelayBeforeFirstTrigger && firstOfPattern)
-    usleep(1000);
-
-  if (DelayEveryTrigger)
+  if (firstOfPattern) {
+    //commandToAllFEDCrates("JMTJunk");
     usleep(100000);
+  }
+
+  //if (DelayEveryTrigger || (DelayBeforeFirstTrigger && firstOfPattern))
+  //  usleep(1000000);
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();
