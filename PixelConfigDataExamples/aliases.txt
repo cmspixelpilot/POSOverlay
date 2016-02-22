@@ -1,5 +1,6 @@
 ConfigurationAliases
-Aurelijus_start_here 439 ;
+hello 451 ;
+VcThr_min 399 ;
 newpxalive 440 ;
 newscurve 438 ;
 tryit 437 ;
