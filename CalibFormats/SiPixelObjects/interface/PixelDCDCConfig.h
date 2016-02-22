@@ -63,18 +63,17 @@ namespace pos{
     unsigned int getPIAChannelAddress() { return piachanneladdress_; }
     void setPIAChannelAddress(unsigned int address) { piachanneladdress_ = address; }
 
-    unsigned int getPortNumber() { return portnumber_; }
-    void setPortNumber(unsigned int address) { portnumber_ = address; }
+    const std::vector<unsigned>& getPortNumbers() { return portnumbers_; }
     
   private:
 	
     std::string dcdcname_;
- 
+
     bool dcdcenabled_;
     unsigned int ccuaddressenable_;
     unsigned int ccuaddresspgood_;
     unsigned int piachanneladdress_;
-    unsigned int portnumber_;
+    std::vector<unsigned> portnumbers_;
 
     void fillNameToAddress();
     void fillDBToFileAddress();

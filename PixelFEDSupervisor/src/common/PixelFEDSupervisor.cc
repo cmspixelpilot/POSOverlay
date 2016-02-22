@@ -3155,10 +3155,11 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
-	    FIFO3Decoder decode3(buffer64);
-	    hitsseen += decode3.nhits();
-	    if(localPrint) { cout<<" fifo3 length "<<dataLength<<endl;
-	      if (dataLength) {
+	    if (localPrint) cout<<" fifo3 length "<<dataLength<<endl;
+	    if (dataLength) {
+	      FIFO3Decoder decode3(buffer64);
+	      hitsseen += decode3.nhits();
+	      if(localPrint) {
 		for (int i = 0; i <= dataLength; ++i)
 		  std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer64[i]>>32) << " " << std::setw(8) << (buffer64[i] & 0xFFFFFFFF) << std::dec << std::endl;
 		std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;

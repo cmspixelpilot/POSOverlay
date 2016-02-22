@@ -50,25 +50,34 @@ def unflatten_pll(h):
         h2.SetBinContent(h2.FindBin(p400, p160), h.GetBinContent(ix))
     return h2
 
-#def unflatten_abdel(h):
-#    assert type(h) == ROOT.TH2F
-#    hs = [
-#        ROOT.TH2F(h.GetName() + '_unflattened_TI0HT0', 'TI = 0, HT = 0;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
-#        ROOT.TH2F(h.GetName() + '_unflattened_TI0HT1', 'TI = 0, HT = 1;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
-#        ROOT.TH2F(h.GetName() + '_unflattened_TI1HT0', 'TI = 1, HT = 0;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
-#        ROOT.TH2F(h.GetName() + '_unflattened_TI1HT1', 'TI = 1, HT = 1;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
-#        ]
-#    for h2 in hs:
-#        h2.SetStats(0)
-#
-#    xax = h.GetXaxis()
-#    yax = h.GetYaxis()
-#    for ix in xrange(1, xax.GetNbins()+1):
-#        vx = xax.GetBinLowEdge(ix)
-#        for iy in xrange(1, yax.GetNbins()+1):
-#            vy = yax.GetBinLowEdge(iy)
-#    
-#    return hs
+def unflatten_abdel(h):
+    assert type(h) == ROOT.TH2F
+    hs = [
+        ROOT.TH2F(h.GetName() + '_unflattened_ATI0HT0_BTI0HT0', 'A=B, TI = 0, HT = 0;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+        ROOT.TH2F(h.GetName() + '_unflattened_ATI0HT1_BTI0HT1', 'A=B, TI = 0, HT = 1;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+        ROOT.TH2F(h.GetName() + '_unflattened_ATI1HT0_BTI1HT0', 'A=B, TI = 1, HT = 0;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+        ROOT.TH2F(h.GetName() + '_unflattened_ATI1HT1_BTI1HT1', 'A=B, TI = 1, HT = 1;TBM A ROC delay;TBM B ROC delay', 64, 0, 64, 64, 0, 64),
+        ]
+    for h2 in hs:
+        h2.SetStats(0)
+
+    xax = h.GetXaxis()
+    yax = h.GetYaxis()
+    for ia in xrange(1, xax.GetNbins()+1):
+        va = int(xax.GetBinLowEdge(ia))
+        a_tiht = (va & 0xc0)>>6
+        a_rd = va & 0x3f
+
+        for ib in xrange(1, yax.GetNbins()+1):
+            vb = int(yax.GetBinLowEdge(ib))
+            b_tiht = (vb & 0xc0)>>6
+            b_rd = vb & 0x3f
+
+            if a_tiht == b_tiht:
+                b = h.FindBin(a_rd, b_rd)
+                hs[a_tiht].SetBinContent(b, h.GetBinContent(b))
+    
+    return hs
 
 def analyze_abdel(f, fifo, chip, tbmh_req, tbmt_req, roch_req, wpix_req, rpix_req, dang_req):
     s = ''
@@ -120,12 +129,14 @@ def analyze_abdel(f, fifo, chip, tbmh_req, tbmt_req, roch_req, wpix_req, rpix_re
 
     return h
 
-if 0:
+if 1:
     for ikey, key in enumerate(keys):
         obj = key.ReadObj()
         if issubclass(type(obj), ROOT.TH1):
             h = obj
             name = h.GetName()
+            if not ('F3' in name and not 'F31' in name and not 'F37' in name):
+                continue
             h.SetStats(0)
             if '_v_' in name:
                 h.Draw('colz')
@@ -138,14 +149,21 @@ if 0:
                 h2 = unflatten_pll(h)
                 h2.Draw('colz text')
                 sv(ikey, h2)
+            elif name.startswith('TBMBDelay_v_TBMADelay_'):
+                h2s = unflatten_abdel(h)
+                for h2 in h2s:
+                    h2.Draw('colz text')
+                    sv(ikey, h2)
 
-for fifo in (1,2):
-    for chip in (1,):
-        h = analyze_abdel(f, fifo, chip, tbmh_req=4, tbmt_req=4, roch_req=8*4, wpix_req=0, rpix_req=2*4*8, dang_req=0)
-        if h is not None:
-            h.Draw('colz')
-            sv(999, h)
-            sv(999, h, 'root')
+if 0:
+    for fifo in (1,2):
+        for chip in (1,):
+            h = analyze_abdel(f, fifo, chip, tbmh_req=4, tbmt_req=4, roch_req=8*4, wpix_req=0, rpix_req=2*4*8, dang_req=0)
+            if h is not None:
+                h.Draw('colz')
+                sv(999, h)
+                sv(999, h, 'root')
+
 
 if 'scp' in sys.argv:
     remote_dir = 'public_html/qwer/dump_tbmdelay/%i' % run

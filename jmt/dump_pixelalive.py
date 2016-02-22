@@ -15,10 +15,14 @@ os.system('mkdir -p %s' % out_dir)
 f = ROOT.TFile(in_fn)
 
 dirs = [
+    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL1/Pilt_BmO_D3_BLD10_PNL1_PLQ1',
+    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL2/Pilt_BmO_D3_BLD10_PNL2_PLQ1',
+    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL1/Pilt_BmO_D3_BLD11_PNL1_PLQ1',
+    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL2/Pilt_BmO_D3_BLD11_PNL2_PLQ1',
     'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL1/Pilt_BmI_D3_BLD2_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD5/Pilt_BmI_D3_BLD5_PNL1/Pilt_BmI_D3_BLD5_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD5/Pilt_BmI_D3_BLD5_PNL2/Pilt_BmI_D3_BLD5_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD6/Pilt_BmI_D3_BLD6_PNL1/Pilt_BmI_D3_BLD6_PNL1_PLQ1',
+    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL2/Pilt_BmI_D3_BLD2_PNL2_PLQ1',
+    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL1/Pilt_BmI_D3_BLD3_PNL1_PLQ1',
+    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL2/Pilt_BmI_D3_BLD3_PNL2_PLQ1',
     ]
 
 by_ntrigs = []
@@ -67,7 +71,7 @@ for roc in sorted(num_dead.keys()):
         print '%s %10i' % (roc.ljust(35), num_dead[roc])
 
 if 'scp' in sys.argv:
-    remote_dir = 'public_html/qwer/dump_pixelalive/tif/%i' % run
+    remote_dir = 'public_html/qwer/dump_pixelalive/%i' % run
     cmd = 'ssh jmt46@lnx201.lns.cornell.edu "mkdir -p %s"' % remote_dir
     print cmd
     os.system(cmd)
