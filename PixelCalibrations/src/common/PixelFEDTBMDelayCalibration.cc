@@ -164,15 +164,15 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       if (fifoStatus & 0x200) FillEm(state, F37almostFull, 1);
 
       for (int ch = 1; ch <= 36; ++ch)
-	statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
+	statusFifo1[ch] = 0; //iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
 
       for (int chip = 1; chip <= 7; chip += 2) {
 	if (chip == 1 || chip == 7) {
-	  iFED->drainDigTransFifo(chip, bufferT[chip]);
+	  //iFED->drainDigTransFifo(chip, bufferT[chip]);
 	  decodeT[chip] = new DigTransDecoder(bufferT[chip]);
 	}
 
-	statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
+	statusS[chip] = 0; //iFED->drainDataFifo2(chip, bufferS[chip]);
 	decodeS[chip] = new DigScopeDecoder(bufferS[chip], statusS[chip]);
       }
 
@@ -281,10 +281,10 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 
     if (DumpFIFOs) {
       if (!OnlyFIFO3) {
-	iFED->readDigFEDStatus(false, false);
+	//iFED->readDigFEDStatus(false, false);
 
-	std::cout << "FIFO statuses:\n";
-	iFED->dump_FifoStatus(fifoStatus);
+	//std::cout << "FIFO statuses:\n";
+	//iFED->dump_FifoStatus(fifoStatus);
 
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "Contents of FIFO 1 for all channels" << std::endl;

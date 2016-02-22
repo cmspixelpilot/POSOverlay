@@ -32,9 +32,11 @@ Package=PixelSupervisor
 
 Sources= PixelSupervisor.cc DiagWrapper.cc
 
+CACTUS_ROOT = /opt/cactus
 
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
+        $(CACTUS_ROOT)/include \
 	$(XDAQ_ROOT)/include \
 	$(XDAQ_ROOT)/include/hal \
         $(XDAQ_ROOT)/include/xdaq2rc \
