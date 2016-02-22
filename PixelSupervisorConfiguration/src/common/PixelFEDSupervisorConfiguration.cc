@@ -44,7 +44,6 @@ PixelFEDSupervisorConfiguration::PixelFEDSupervisorConfiguration(const PixelFEDS
   theCalibObject_ = tempConfiguration.theCalibObject_;
   theGlobalDelay25_ = tempConfiguration.theGlobalDelay25_;
   
-  VMEPtr_ = tempConfiguration.VMEPtr_;
   FEDInterface_ = tempConfiguration.FEDInterface_;
   FEDInterfaceFromFEDnumber_ = tempConfiguration.FEDInterfaceFromFEDnumber_; 
   dataFIFO1_ = tempConfiguration.dataFIFO1_;

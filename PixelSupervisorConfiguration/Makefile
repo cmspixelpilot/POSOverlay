@@ -26,6 +26,8 @@ include $(ENV_CMS_TK_ONLINE_ROOT)/config/FecRules.linux
 
 FECSOFTWARE_ROOT:=${ENV_CMS_TK_ONLINE_ROOT}
 
+CACTUS_ROOT=/opt/cactus
+
 Project=pixel
 Package=PixelSupervisorConfiguration
 
@@ -36,6 +38,7 @@ Sources = $(wildcard src/common/*.cc)
 
 IncludeDirs = \
 	$(BUILD_HOME)/$(Project) \
+	$(CACTUS_ROOT)/include \
         $(XDAQ_ROOT)/include/hal \
         $(FECSOFTWARE_ROOT)/generic/include \
         $(FECSOFTWARE_ROOT)/ThirdParty/APIConsoleDebugger/include \

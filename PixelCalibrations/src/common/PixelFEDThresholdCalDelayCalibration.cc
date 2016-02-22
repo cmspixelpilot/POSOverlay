@@ -119,12 +119,12 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 	cout << "Error reading spySlink64 status="<<status<<endl;
       }
     }
-  } catch (HAL::HardwareAccessException& e) {
-    diagService_->reportError("Exception occurred :",DIAGTRACE);
-   
-    string mes = e.what();
-    diagService_->reportError(mes,DIAGINFO);
-   
+//  } catch (HAL::HardwareAccessException& e) {
+//    diagService_->reportError("Exception occurred :",DIAGTRACE);
+//   
+//    string mes = e.what();
+//    diagService_->reportError(mes,DIAGINFO);
+//   
   } catch (exception e) {
     diagService_->reportError("*** Unknown exception occurred",DIAGWARN);
   }

@@ -202,12 +202,8 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     xoap::MessageReference SetADC1V2VOneChannel (xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetFEDOffsetsEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetPrivateWord (xoap::MessageReference msg) throw (xoap::exception::Exception);
-    xoap::MessageReference ToggleChannels(xoap::MessageReference msg) throw (xoap::exception::Exception);
-    xoap::MessageReference SetScopeChannel(xoap::MessageReference msg) throw (xoap::exception::Exception);
-    xoap::MessageReference SetScopeChannels(xoap::MessageReference msg) throw (xoap::exception::Exception);
-    xoap::MessageReference JMTJunk(xoap::MessageReference msg) throw (xoap::exception::Exception);
-    xoap::MessageReference ArmDigFEDOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception);
-    xoap::MessageReference ReadDigFEDOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception);
+    xoap::MessageReference ArmOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception);
+    xoap::MessageReference ReadOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference ResetFEDsEnMass (xoap::MessageReference msg) throw (xoap::exception::Exception);
 
     //xoap::MessageReference ThresholdCalDelay (xoap::MessageReference msg) throw (xoap::exception::Exception);
@@ -256,24 +252,10 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
 
   private:
 
-    void createFEDVMEAccess();
+    typedef std::map<unsigned long, Ph2_HwInterface::RegManager*> RegMgrMap;
+    RegMgrMap RegMgr_;
+
     void deleteHardware();
-
-    #ifdef VMEDUMMY
-      HAL::VMEDummyBusAdapter *busAdapter_;
-    #else
-      HAL::CAENLinuxBusAdapter *busAdapter_; // pointer to VME bus
-    #endif
-
-    /**
-    * A pointer to the addressTable.
-    * The AddressTable is created dynamically during the
-    * configuration of the application, since the path to
-    * the file containing the table is a property (=parameter) of
-    * the XDAQ application. Therefore the VMEAddressTable cannot
-    * be instantiated in the constructor of this class.
-    */
-    HAL::VMEAddressTable *addressTablePtr_;
 
     std::map<unsigned short, FILE*> dataFile_;
     std::map<unsigned short, FILE*> dataFileT_;
@@ -297,8 +279,9 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     xdaq::ApplicationDescriptor* PixelSupervisor_;
 
     std::string htmlbase_,datbase_;
+    std::string connectionFile_;
     std::string runType_;
-    int eventNumber_;
+    uint32_t eventNumber_;
     int countLoopsThisRun_;
 
     toolbox::BSem m_lock;

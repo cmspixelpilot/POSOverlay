@@ -29,6 +29,8 @@ include $(ENV_CMS_TK_ONLINE_ROOT)/config/FecRules.linux
 
 FECSOFTWARE_ROOT:=${ENV_CMS_TK_ONLINE_ROOT}
 
+CACTUS_ROOT=/opt/cactus
+
 Project=pixel
 Package=PixelFEDSupervisor
 
@@ -40,6 +42,7 @@ IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
         $(BUILD_HOME)/pixel/PixelFEDSpySupervisor/include \
         $(BUILD_HOME)/pixel/PixelUtilities/PixelFEDDataTools/include \
+	$(CACTUS_ROOT)/include \
 	$(XDAQ_ROOT)/include/hal \
         $(XDAQ_ROOT)/include/i2o \
         $(XDAQ_ROOT)/include/i2o/shared \

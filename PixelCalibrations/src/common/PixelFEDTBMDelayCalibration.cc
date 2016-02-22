@@ -126,7 +126,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
     PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
-    iFED->readDigFEDStatus(false, false);
+    //    iFED->readDigFEDStatus(false, false);
 
     const uint32_t fifoStatus = iFED->getFifoStatus();
 
