@@ -4,7 +4,10 @@ export XDAQ_BASE=/opt/xdaq
 export XDAQ_OS=linux
 export XDAQ_PLATFORM=x86_64_slc6
 export ROOTSYS=~/root
-export BUILD_HOME=~/build/TriDAS
+export BUILD_HOME=~/TriDAS_XDAQ12
+
+# take out /usr/local/bin so you don't hit the newer gcc
+export PATH=$(echo $PATH | sed 's@/usr/local/bin:@@')
 
 # the part below should usually not be touched
 export XDAQ_DOCUMENT_ROOT=$XDAQ_ROOT/htdocs
@@ -19,6 +22,7 @@ export POS_LIB_DIRS=:$BUILD_HOME/pixel/lib
 export POS_OUTPUT_DIRS=$BUILD_HOME/pixel/PixelRun/Runs
 
 export LD_LIBRARY_PATH=${XDAQ_ROOT}/lib/:${ROOTSYS}/lib
+export LD_LIBRARY_PATH=/opt/cactus/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${BUILD_HOME}/FecSoftwareV3_0/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${ENV_CMS_TK_DIAG_ROOT}/tools/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${BUILD_HOME}/pixel/lib:${LD_LIBRARY_PATH}
