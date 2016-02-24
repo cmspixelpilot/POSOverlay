@@ -57,7 +57,7 @@ ROOTLibs =  -L$(shell root-config --libdir) \
 
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX -Wl,--no-undefined
+UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX -Wl,--no-undefined -DSETUP_TIF
 UserDynamicLinkFlags = $(ROOTLibs)
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
