@@ -93,6 +93,9 @@ namespace Ph2_HwInterface
          * \brief Time Out for sending the register/value stack in the writting.
          * \brief It has only to be set in a detached thread from the one you're working on
          */
+
+		virtual std::vector<uint32_t> ReadBlockRegValue( const std::string& pRegNode, const uint32_t& pBlocksize );
+
 		void StackWriteTimeOut();
            
 		bool FillIPBusFIFO( const std::string& pRegNode, const uint32_t& pVal );

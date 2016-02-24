@@ -2,6 +2,7 @@
 #define PixelFEDInterface_h
 
 #include <bitset>
+#include <map>
 #include <vector>
     
 #include "CalibFormats/SiPixelObjects/interface/PixelPh1FEDCard.h"
@@ -9,6 +10,15 @@
 
 class PixelFEDInterface {
  public:
+  struct FitelRegItem {
+    uint8_t fAddress;
+    uint8_t fDefValue;
+    uint8_t fValue;
+    char fPermission;
+  };
+
+  typedef std::map < std::string, FitelRegItem > FitelRegMap;
+
   typedef std::bitset<48> enbable_t;
 
   PixelFEDInterface(Ph2_HwInterface::RegManager*);
@@ -20,10 +30,31 @@ class PixelFEDInterface {
   pos::PixelPh1FEDCard& getPixelFEDCard() { return pixelFEDCard; }
   void setPixelFEDCard(const pos::PixelPh1FEDCard& aPixelFEDCard) { pixelFEDCard = aPixelFEDCard; }
 
+  void set_fitel_fn_base(const std::string& b) { fitel_fn_base = b; }
+
   int setup(const std::string& fileName); 
   int setup(pos::PixelPh1FEDCard& pfc); 
   int setupFromDB(pos::PixelPh1FEDCard& pfc) { return setup(pfc); }
   int setup();  // run the setup 
+
+  std::string getBoardType();
+  void getFEDNetworkParameters();
+  void getBoardInfo();
+  void disableFMCs();
+  void enableFMCs();
+  void FlashProm( const std::string & strConfig, const char* pstrFile );
+  void JumpToFpgaConfig( const std::string & strConfig );
+  std::vector<std::string> getFpgaConfigList();
+  void DeleteFpgaConfig( const std::string & strId );
+  void DownloadFpgaConfig( const std::string& strConfig, const std::string& strDest);
+  void checkIfUploading();
+  void EncodeFitelReg( const FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId , std::vector<uint32_t>& pVecReq );
+  void DecodeFitelReg( FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId, uint32_t pWord );
+  void i2cRelease(uint32_t pTries);
+  bool polli2cAcknowledge(uint32_t pTries);
+  bool WriteFitelBlockReg(std::vector<uint32_t>& pVecReq);
+  bool ReadFitelBlockReg(std::vector<uint32_t>& pVecReq);
+  std::pair<bool, std::vector<double> > ReadADC( const uint8_t pFMCId, const uint8_t pFitelId);
 
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
   void reset(); // resets everything
@@ -35,13 +66,18 @@ class PixelFEDInterface {
 
   void readPhases(bool verbose, bool override_timeout);
 
+  std::vector<uint32_t> readTransparentFIFO();
   int drainTransparentFifo(uint32_t* data);
+  std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
+  //void readFIFO1();
   int drainFifo1(uint32_t* data);
   int drainTBMFifo(uint32_t* data);
   int drainErrorFifo(uint32_t* data);
   int drainTemperatureFifo(uint32_t* data);
   int drainTTSFifo(uint32_t *data);
+  void SelectDaqDDR( uint32_t pNthAcq );
+  std::vector<uint32_t> ReadData(uint32_t pBlockSize );
   int spySlink64(uint64_t* data);
 
   bool isWholeEvent(uint32_t nTries=100000);
@@ -100,6 +136,9 @@ class PixelFEDInterface {
   int TTCRX_I2C_REG_READ(int Register_Nr);
   int TTCRX_I2C_REG_WRITE(int Register_Nr, int Value);
 
+  void setBlockSize(uint32_t s) { fBlockSize = s; }
+  uint32_t getBlockSize() const { return fBlockSize; }
+
  private:
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
   pos::PixelPh1FEDCard pixelFEDCard;
@@ -107,6 +146,21 @@ class PixelFEDInterface {
   typedef uhal::ValWord<uint32_t> valword;
   typedef uhal::ValVector<uint32_t> valvec;
   Ph2_HwInterface::RegManager* const regManager;
+
+  enum { FMC0_Fitel0, FMC0_Fitel1, FMC1_Fitel0, FMC1_Fitel1, nFitels};
+  FitelRegMap fRegMap[nFitels];
+  int FitelMapNum( int cFMCId, int cFitelId ) const { return 2*cFMCId + cFitelId; }
+  std::string fitel_fn_base;
+  std::string fRegMapFilename[nFitels];
+  void LoadFitelRegMap( int cFMCId, int cFitelId );
+  void ConfigureFitel(int cFMCId, int cFitelId , bool pVerifLoop );
+
+  unsigned long long fNthAcq; // for keeping track of reading from ddr0/1
+  uint32_t fBlockSize; // sigh
+  std::string fStrDDR;
+  std::string fStrDDRControl;
+  std::string fStrFull;
+  std::string fStrReadout;
 
   // Keep track of the expected status of the FED channels
   // and the status of the FED channels last time we checked

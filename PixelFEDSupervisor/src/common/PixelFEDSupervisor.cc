@@ -2235,6 +2235,8 @@ bool PixelFEDSupervisor::job_Configure ()
       FEDInterface_[vmeBaseAddress]=new PixelFEDInterface(RegMgr_[vmeBaseAddress]);
       FEDInterfaceFromFEDnumber_[fednumber]=FEDInterface_[vmeBaseAddress];
 
+      FEDInterface_[vmeBaseAddress]->set_fitel_fn_base(datbase_);
+
       //FEDInterface_[vmeBaseAddress]->set_Printlevel(1); // enable printout
       FEDInterface_[vmeBaseAddress]->reset();
 

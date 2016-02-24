@@ -244,7 +244,13 @@ namespace Ph2_HwInterface
         
 		return cBlockRead;
 	}
-    
+
+	std::vector<uint32_t> RegManager::ReadBlockRegValue( const std::string& pRegNode, const uint32_t& pBlocksize )
+	{
+		uhal::ValVector<uint32_t> valBlock = ReadBlockReg( pRegNode, pBlocksize );
+		std::vector<uint32_t> vBlock = valBlock.value();
+		return vBlock;
+	}
     
 	void RegManager::StackReg( const std::string& pRegNode, const uint32_t& pVal, bool pSend )
 	{

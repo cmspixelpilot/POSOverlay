@@ -20,6 +20,7 @@
 
     <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq"/>
     <xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
+
 <!--
     <xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
@@ -27,13 +28,10 @@
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
-
-    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq">
-      <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
-      </properties>
-    </xc:Application>
-    <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
 -->
+
+    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq"/>
+    <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
 
   </xc:Context>
 
