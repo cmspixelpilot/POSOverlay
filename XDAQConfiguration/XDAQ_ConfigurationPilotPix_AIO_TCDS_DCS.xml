@@ -89,7 +89,7 @@
 
   </xc:Context>
 
-  <xc:Context id="6" url="http://pc-c2e11-26-01.cms:9924">
+  <xc:Context id="6" url="http://psx-pix.cms:9923">
     <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
   </xc:Context>
 

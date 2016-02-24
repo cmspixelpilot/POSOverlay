@@ -61,7 +61,7 @@
   <!-- 9923 is just pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
   <!-- <xc:Context id="6" url="http://srv-c2c03-16.cms:9922"> -->
   <!-- <xc:Context id="6" url="http://cmspsx.cms:9922"> works with PSX running! Otherwise works with 9920 -->
-  <xc:Context id="6" url="http://cmspsx.cms:9923">
+  <xc:Context id="6" url="http://psx-pix.cms:9923">
     <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
   </xc:Context>
 
