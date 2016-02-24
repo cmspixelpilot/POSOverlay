@@ -67,9 +67,9 @@ PixelPh1FEDCard::PixelPh1FEDCard(string fileName)
   
   // Control register
   fscanf(infile,"Center Chip Control Reg:%x\n",&Ccntrl);
-  if(debug)printf("Control Reg:0x%x\n",Ccntrl);
+  if(debug)printf("Center Chip Control Reg:0x%x\n",Ccntrl);
   fscanf(infile,"Initial Slink DAQ mode:%d\n",&modeRegister);
-  if(debug)printf("Mode Reg:%d\n",modeRegister);
+  if(debug)printf("Initial Slink DAQ mode:%d\n",modeRegister);
   
    //These bits set ADC Gain/Range 1Vpp(0) and 2Vpp(1) for channels
   fscanf(infile,"Channel ADC Gain bits (1Vpp = 0):%llx\n", (long long unsigned*)&adcg);
