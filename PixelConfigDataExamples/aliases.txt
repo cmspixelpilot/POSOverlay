@@ -1,8 +1,14 @@
 ConfigurationAliases
-hello 451 ;
-VcThr_min 399 ;
-newpxalive 440 ;
-newscurve 438 ;
+hello 476 ;
+Physics     466 ;
+Physics_WBC167     465 ;
+Physics_WBC166     466 ;
+Physics_WBC168     467 ;
+Physics_WBC165     468 ;
+Physics_WBC169     469 ;
+VcThr_min 463 ;
+newpxalive 477 ;
+newscurve 475 ;
 tryit 437 ;
 step7redo 433 ;
 step1redo 434 ;
@@ -15,7 +21,6 @@ Step5 428 ;
 Step6 429 ;
 Step7 430 ;
 Step8 431 ;
-Physics     403 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm 402 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm2 404 ;
 PixelsEnabledAllChannels22kHz_4bx_newtbm3 406 ;
