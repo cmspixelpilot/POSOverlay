@@ -2,6 +2,13 @@
 <node id="FPGA1">
     <node id="BOUT_BUF1M1" address="0x40000000" mode="non-incremental" permission="rw" description="Chan1 Out FIFO MFEC01 "/>
     <node id="BOUT_BUF2M1" address="0x40000001" mode="non-incremental" permission="rw" description="Chan2 Out FIFO MFEC01 "/>
+    <node id="CONFIG00" address="0x00000000" mode="single" permission="rw" description="for setssid(), check what this is!!! "/>
+    <node id="SSID" address="0x00000000" mode="single" permission="rw" description="for setssid(), check what this is!!! "/>
+    <node id="VERSIONM01" address="0x4000001C" mode="single" permission="rw" description="Firmware version"/>
+    <node id="CLKSWITCH" address="0x00000004" mode="single" permission="rw" >
+        <node id="ENABLE"   mask="0x00100000"  description="Enable GLIB/CTA internal CLK"/>
+        <node id="DISABLE"  mask="0x00100000"  description="Disable GLIB/CTA internal CLK"/>
+    </node>
     <node id="OutFIFOCh1" address="0x40000000" permission="rw" mode="single">
         <node id="BOUT_BUF1M1"       mask="0xFFFFFFFF" description="Chan1 Out FIFO MFEC01" />
     </node>

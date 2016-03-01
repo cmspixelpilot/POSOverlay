@@ -78,7 +78,7 @@ DependentLibraries = PixelSupervisorConfiguration SiPixelObjects PixelConfigDBIn
 
 Libraries =
 ExternalObjects = -L$(ENV_CMS_TK_ONLINE_ROOT)/lib \
-                  -lAPIFecVme -lDeviceAccess
+                  -lDeviceAccess
 
 #
 # Compile the source files and create a shared library

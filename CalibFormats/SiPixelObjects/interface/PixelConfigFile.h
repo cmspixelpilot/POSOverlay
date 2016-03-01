@@ -26,6 +26,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelMaxVsf.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelNameTranslation.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelPh1FEDCard.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortCardConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDCDCConfig.h"
@@ -363,7 +364,7 @@ namespace pos{
     
       std::string fullpath=directory+"/"+dir+"/"+strversion+"/";
     
-      //std::cout << "Directory for configuration data:"<<fullpath<<std::endl;
+      std::cout << "Directory for configuration data:"<<fullpath<<std::endl;
 
       try {
     
@@ -414,6 +415,12 @@ namespace pos{
 	assert(dir=="fedcard");
 	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill open:"<<fullpath+"params_fed_"+ext+".dat"<< std::endl;
 	data = (T*) new PixelFEDCard(fullpath+"params_fed_"+ext+".dat");
+	return;
+      }else if (typeid(data)==typeid(PixelPh1FEDCard*)){
+	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelPh1FEDCard" << std::endl;
+	assert(dir=="fedcard");
+	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill open:"<<fullpath+"params_fed_"+ext+".dat"<< std::endl;
+	data = (T*) new PixelPh1FEDCard(fullpath+"params_fed_"+ext+".dat");
 	return;
       }else if (typeid(data)==typeid(PixelCalibBase*)){
 	//std::cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelCalibBase" << std::endl;
@@ -574,6 +581,8 @@ namespace pos{
 	fileName = fullpath+"translation.dat";
       }else if (typeid(data)==typeid(PixelFEDCard*)){
 	fileName = fullpath+"params_fed_"+ext+".dat";
+      }else if (typeid(data)==typeid(PixelPh1FEDCard*)){
+	fileName = fullpath+"params_fed_"+ext+".dat";
       }else if (typeid(data)==typeid(PixelTKFECConfig*)){
 	fileName = fullpath+"tkfecconfig.dat";
       }else if (typeid(data)==typeid(PixelFECConfig*)){
@@ -688,7 +697,7 @@ namespace pos{
     
       std::string fullpath=directory+"/"+dir+"/"+strversion+"/";
     
-      //std::cout << __LINE__ << mthn << "Directory for configuration data:"<<fullpath<<std::endl;
+      std::cout << __LINE__ << mthn << "Directory for configuration data:"<<fullpath<<std::endl;
     
       if (typeid(data)==typeid(PixelTrimBase*)){
 	//std::cout << __LINE__ << mthn << "Will return PixelTrimBase" << std::endl;
@@ -737,6 +746,12 @@ namespace pos{
 	assert(dir=="fedcard");
 	//std::cout << __LINE__ << mthn << "Will open:"<<fullpath+"params_fed_"+ext+".dat"<< std::endl;
 	data = (T*) new PixelFEDCard(fullpath+"params_fed_"+ext+".dat");
+	return;
+      }else if (typeid(data)==typeid(PixelPh1FEDCard*)){
+	//std::cout << __LINE__ << mthn << "Will return PixelPh1FEDCard" << std::endl;
+	assert(dir=="fedcard");
+	//std::cout << __LINE__ << mthn << "Will open:"<<fullpath+"params_fed_"+ext+".dat"<< std::endl;
+	data = (T*) new PixelPh1FEDCard(fullpath+"params_fed_"+ext+".dat");
 	return;
       }else if (typeid(data)==typeid(PixelCalibBase*)) {
 	//std::cout << __LINE__ << mthn << "Will return PixelCalibBase" << std::endl;

@@ -28,7 +28,7 @@ export LD_LIBRARY_PATH=${ENV_CMS_TK_DIAG_ROOT}/tools/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${BUILD_HOME}/pixel/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=/usr/lib64/root:${LD_LIBRARY_PATH}
-export PIXELCONFIGURATIONBASE=$BUILD_HOME/pixel/PixelConfigDataExamples/
+export PIXELCONFIGURATIONBASE=$BUILD_HOME/Config
 
 cd $ROOTSYS
 source bin/thisroot.sh

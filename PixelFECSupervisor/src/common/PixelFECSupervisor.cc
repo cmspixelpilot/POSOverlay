@@ -2897,8 +2897,8 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
 
   //start the QPLL check, now that we have created the FECInterfaces
   cout << " transitionHaltedToConfiguring - start qpll loop " << endl;
-  qpllWorkloop_->submit(qpllCheck_);
-  qpllWorkloop_->activate();
+//  qpllWorkloop_->submit(qpllCheck_);
+//  qpllWorkloop_->activate();
   
   cout << " transitionHaltedToConfiguring - exit " << endl;
 

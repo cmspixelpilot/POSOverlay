@@ -62,7 +62,7 @@ using namespace pos::PortCardSettingNames;
 
 #define MYTEST  // special tests 
 
-#define NO_PILOT_RESET // don't send crate/ring resets for pilot blade since this turns off/on modules on BmO
+//#define NO_PILOT_RESET // don't send crate/ring resets for pilot blade since this turns off/on modules on BmO
 
 const bool DEBUG = true; // some additinal debuging messages
 const bool do_force_ccu_readout = false; // force reading of CCU for each workloop (also force reset if enabled)
@@ -1552,7 +1552,7 @@ std::string const msg_trace_oym = "stateConfiguring -- configure portcards";
       const std::set<std::string>& portcards=thePortcardMap_->portcards(detconfig);
       unsigned int slot=9999; 
       unsigned int ring =9999;
-      static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
+      static bool ringInit[9] = {false,false,false,false,false,false,false,false,false}; // has the ring been reset
       int np=0;
       
       //this first loop loads the portcard information from the database
@@ -1678,6 +1678,21 @@ std::string const msg_trace_oym = "stateConfiguring -- configure portcards";
 		if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After carteReset");
 		
 	      }
+	      else if (type == "uTCA") {
+		std::string dummyConnections = "file://";
+		dummyConnections += getenv("ENV_CMS_TK_ONLINE_ROOT");
+		dummyConnections += "/generic/config/connections.xml";
+		std::string addressTablePath = "file://";
+		addressTablePath += getenv("ENV_CMS_TK_ONLINE_ROOT");
+		addressTablePath +="/generic/config/address_mfec.xml";
+	        fecAccess_ = FecAccess::createUtcaFecAccess(dummyConnections,
+							    TKFECID,
+							    theTKFECConfiguration_->URIFromTKFECID(TKFECID),
+							    addressTablePath,
+							    100, false, false);
+		if (!fecAccess_)
+		  std::cerr << "Creation of FecAccess failed. fecAccess pointer null." << std::endl ; 
+	      }
 	      else assert(0);
 	      fecAccessType = type;
 	    }
@@ -1708,12 +1723,12 @@ catch (FecExceptionHandler e) {
 	
 	
 	//send reset, check if ring has been reset alerady 
-	if( !ringInit[(ring-1)]) {  // rings go from 1-8
+	if( !ringInit[(ring)]) {  // rings go from 1-8
 	  cout<<" Reset slot/mfec "<<slot<<"/"<<ring<<endl;
 #ifndef NO_PILOT_RESET
 	  resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
 #endif
-	  ringInit[(ring-1)]=true;
+	  ringInit[ring]=true;
 	}
 	else
 	  cout << "NOT RESETTING slot/mfec " << slot << "/" << ring << " since it was already done" << endl;
@@ -2099,7 +2114,7 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 #endif
   //unsigned int slot=9999; 
   unsigned int ring =9999;
-  static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
+  static bool ringInit[9] = {false,false,false,false,false,false,false,false,false}; // has the ring been reset
   enumDeviceType modeType = PHILIPS ;
   bool problem = false;
 
@@ -2129,12 +2144,12 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 
     // Try the PLX reset , do it only once per ring (or should we do it for each portcard?)
      ring = tempPortCard->getringAddress();
-     if( !ringInit[(ring-1)]) {  // rings go from 1-8
+     if( !ringInit[ring]) {  // rings go from 1-8
        cout<<" Reset slot/mfec "<<TKFECAddress<<"/"<<ring<<endl;
 #ifndef NO_PILOT_RESET
        resetPlxFec ( fecAccess_, TKFECAddress, ring, loop, tms ) ;
 #endif
-       ringInit[(ring-1)]=true;
+       ringInit[ring]=true;
      }
 
     std::cout <<"Will now configure portcard:"<<std::endl;

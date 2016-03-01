@@ -21,9 +21,9 @@ cout << "Return value:"<<ret<<" in "<<__FILE__<<" on line "<<dec<<__LINE__<<endl
 using namespace std;
 using namespace pos;
 
+
 namespace {
-    const bool PRINT = true;
-    //const bool PRINT = true;
+    const bool PRINT = false;
 }
 
 //--------------------------------------------------------------------------
@@ -37,7 +37,7 @@ fecCrate_(fecCrate),
 fecSlot_(fecSlot)
 {
     //Constructor stuff
-    if (1) cout << "PixelPh1FECInterface Constructor called" << endl;
+    if (PRINT) cout << "PixelPh1FECInterface Constructor called" << endl;
     pfecvmeslot = vmeslot;
     
     maxbuffersize_=1000;
@@ -51,7 +51,8 @@ fecSlot_(fecSlot)
             qbufn_old[tmfec][tfecchannel]=0;
         }
     }
-    
+
+    disableinternalclk();
 }
 //------------------------------------------------------------------------
 PixelPh1FECInterface::~PixelPh1FECInterface(void)
@@ -126,6 +127,21 @@ int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
     if (PRINT) cout<<"Get FEC version finds firmware version: "<<*data<<endl;
     return 0;
 }
+
+
+// Nik added these two function for GLIB/CTA board internal clk switch 
+
+void PixelPh1FECInterface::enableinternalclk(){
+	outputwordhal("CLKSWITCH.ENABLE", 0);
+//	outputwordhal("ctrl.ttc_xpoint_A_out3", 3); 
+}
+
+void PixelPh1FECInterface::disableinternalclk(){
+	outputwordhal("CLKSWITCH.DISABLE", 1);
+//        outputwordhal("ctrl.ttc_xpoint_A_out3", 0);
+}
+
+
 //----------------------------------------------------------------------------
 //
 int PixelPh1FECInterface::writeCSregister(int mfec, int fecchannel,
@@ -209,8 +225,11 @@ int PixelPh1FECInterface::writeCSregister(int mfec, int fecchannel,
 // To implement this later!!! Check with Russell!!!
 void PixelPh1FECInterface::haltest(void) {
     unsigned long int data;
-    
-
+    data = 0x01020304;
+    pRegManager->WriteReg("SOUT_BUF1M1", data);
+      
+    sleep(1);
+/*
     sleep(1);
     data = 0x01020304;
     sleep(1);
@@ -222,7 +241,7 @@ void PixelPh1FECInterface::haltest(void) {
     sleep(1);
     pRegManager->WriteReg("TESTREG1", data);
     sleep(1);
-    
+  */  
 }
 //-------------------------------------------------------------------------------
 // mfecbusy reads the csreg and waits if the send_started is still
@@ -499,10 +518,19 @@ void PixelPh1FECInterface::outputwordhalblock(const char *halname, unsigned int 
 }
 //----------------------------------------------------------------------------------
 //// output one word in HAL single mode
+///notes from mia and nik: we hacked this function since it had problems with WriteReg for CTA(works fine with glib), reason unknown.
 void PixelPh1FECInterface::outputwordhal(const char *halname, unsigned int data) {
     
-    pRegManager->WriteReg(halname, data);
-    
+    cout <<"data in outputwordhal : before " << hex << data << hex << endl;	
+    valword value1 =  pRegManager->ReadReg(halname);	
+    cout << "value before: " << value1 << endl;
+    std::vector<uint32_t> data_tmp;
+    data_tmp.push_back(data);
+    pRegManager->WriteBlockReg(halname, data_tmp);
+  //  pRegManager->WriteReg(halname, data);
+    cout <<"data in outputwordhal : after" << hex << data << hex << endl;
+    valword value =  pRegManager->ReadReg(halname);	
+    cout << "value from read function " << value << endl;
 }
 
 
@@ -517,10 +545,9 @@ int PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std:
         {"BOUT_BUF2M1"} };
     
     // implement throw exception for the cases when mfec >/< bla and channel >/< bla
-    std::cout << "name " << names[fecchannel-1][mfec-1] << std::endl;
+    std::cout << "name " << names[fecchannel-1][mfec-1] << " size of the word vector " << wordcont.size()<< std::endl;
     pRegManager->WriteBlockReg( names[fecchannel-1][mfec-1], wordcont);
-
-    return 0;
+    
 }
 
 
@@ -1870,16 +1897,19 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
         // Now load the data to the word container
         for (int i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
+//            outputwordhal("SOUT_BUF1M1", *iword);
             wordvec.push_back( *iword );
             if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped " << flipByte(*iword)  <<dec<<endl;
         }
-        
+
+        cout <<"worked1"        <<endl;        
         outputblock(mfec, fecchannel, wordvec);
         
-        
+	cout <<"worked2"	<<endl;	
         // reset and send GO
         writeCSregister(mfec, fecchannel, 0x07);
         
+        cout <<"worked3" <<endl;
         if (fecdebug == 2) mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
         
         return 0;
@@ -2722,6 +2752,7 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
     // Now load the data to the word container
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
+//        outputwordhal("SOUT_BUF1M1",*iword);
         wordvec.push_back( *iword );
         if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped  " << flipByte(*iword) <<dec<<endl;
     }

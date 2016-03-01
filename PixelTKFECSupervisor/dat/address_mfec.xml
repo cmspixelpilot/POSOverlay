@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="param_table.xsl"?>
+<node id="root">
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  system regs -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  RegName           	RegAddr     RegMask      R     W     Description -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <node address="0x0" id="board_id" permission="r">
+    <node id="board_id_char1" mask="0xff000000" permission="r"/>
+    <node id="board_id_char2" mask="0x00ff0000" permission="r"/>
+    <node id="board_id_char3" mask="0x0000ff00" permission="r"/>
+    <node id="board_id_char4" mask="0x000000ff" permission="r"/>
+  </node>
+  <node address="0x1" id="sys_id" permission="r">
+    <node id="sys_id_char1" mask="0xff000000" permission="r"/>
+    <node id="sys_id_char2" mask="0x00ff0000" permission="r"/>
+    <node id="sys_id_char3" mask="0x0000ff00" permission="r"/>
+    <node id="sys_id_char4" mask="0x000000ff" permission="r"/>
+  </node>
+  <node address="0x2" id="firmware_id" permission="r">
+    <node id="ver_major" mask="0xf0000000" permission="r"/>
+    <node id="ver_minor" mask="0x0f000000" permission="r"/>
+    <node id="ver_build" mask="0x00ff0000" permission="r"/>
+    <node id="firmware_yy" mask="0x0000fe00" permission="r"/>
+    <node id="firmware_mm" mask="0x000001e0" permission="r"/>
+    <node id="firmware_dd" mask="0x0000001f" permission="r"/>
+    <!--   		                 -->
+  </node>
+  <node address="0x3" id="test" permission="rw">
+    <!-- 		                 -->
+  </node>
+  <node address="0x4" id="ctrl" permission="rw">
+    <node id="pcie_clk_fsel" mask="0x00000001" permission="rw"/>
+    <node id="pcie_clk_mr" mask="0x00000002" permission="rw"/>
+    <node id="pcie_clk_oe" mask="0x00000004" permission="rw"/>
+    <node id="cdce_powerup" mask="0x00000010" permission="rw"/>
+    <node id="cdce_refsel" mask="0x00000020" permission="rw"/>
+    <node id="cdce_sync" mask="0x00000040" permission="rw"/>
+    <node id="cdce_ctrl_sel" mask="0x00000080" permission="rw"/>
+    <node id="tclkb_dr_en" mask="0x00000200" permission="rw"/>
+    <node id="xpoint2_s10" mask="0x00001000" permission="rw"/>
+    <node id="xpoint2_s11" mask="0x00002000" permission="rw"/>
+    <node id="xpoint1_s10" mask="0x00010000" permission="rw"/>
+    <node id="xpoint1_s11" mask="0x00020000" permission="rw"/>
+    <node id="xpoint1_s20" mask="0x00040000" permission="rw"/>
+    <node id="xpoint1_s21" mask="0x00080000" permission="rw"/>
+    <node id="xpoint1_s30" mask="0x00100000" permission="rw"/>
+    <node id="xpoint1_s31" mask="0x00200000" permission="rw"/>
+    <node id="xpoint1_s40" mask="0x00400000" permission="rw"/>
+    <node id="xpoint1_s41" mask="0x00800000" permission="rw"/>
+    <node id="gbt_phase_mon_reset" mask="0x04000000" permission="rw"/>
+    <!-- 		                                                        -->
+  </node>
+  <node address="0x5" id="ctrl_2" permission="rw">
+    <node id="icap_page" mask="0x00000003" permission="rw"/>
+    <node id="icap_trigg" mask="0x00000010" permission="rw"/>
+  </node>
+  <node address="0x6" id="status" permission="r">
+    <node id="glib_sfp1_status" mask="0x00000007" permission="r"/>
+    <node id="glib_sfp1_mod_abs" mask="0x00000001" permission="r"/>
+    <node id="glib_sfp1_rxlos" mask="0x00000002" permission="r"/>
+    <node id="glib_sfp1_txfault" mask="0x00000004" permission="r"/>
+    <node id="glib_sfp2_status" mask="0x00000070" permission="r"/>
+    <node id="glib_sfp2_mod_abs" mask="0x00000010" permission="r"/>
+    <node id="glib_sfp2_rxlos" mask="0x00000020" permission="r"/>
+    <node id="glib_sfp2_txfault" mask="0x00000040" permission="r"/>
+    <node id="glib_sfp3_status" mask="0x00000700" permission="r"/>
+    <node id="glib_sfp3_mod_abs" mask="0x00000100" permission="r"/>
+    <node id="glib_sfp3_rxlos" mask="0x00000200" permission="r"/>
+    <node id="glib_sfp3_txfault" mask="0x00000400" permission="r"/>
+    <node id="glib_sfp4_status" mask="0x00007000" permission="r"/>
+    <node id="glib_sfp4_mod_abs" mask="0x00001000" permission="r"/>
+    <node id="glib_sfp4_rxlos" mask="0x00002000" permission="r"/>
+    <node id="glib_sfp4_txfault" mask="0x00004000" permission="r"/>
+    <node id="gbe_int" mask="0x00010000" permission="r"/>
+    <node id="fmc1_present" mask="0x00020000" permission="r"/>
+    <node id="fmc2_present" mask="0x00040000" permission="r"/>
+    <node id="fpga_reset" mask="0x00080000" permission="r"/>
+    <node id="v6_cpld" mask="0x03f00000" permission="r"/>
+    <node id="cdce_lock" mask="0x08000000" permission="r"/>
+    <node id="sfp_phase_mon_done" mask="0x10000000" permission="r"/>
+    <node id="sfp_phase_mon_ok" mask="0x20000000" permission="r"/>
+    <node id="fmc1_phase_mon_done" mask="0x40000000" permission="r"/>
+    <node id="fmc1_phase_mon_ok" mask="0x80000000" permission="r"/>
+    <!-- 		                 -->
+  </node>
+  <node address="0x7" id="status_2" permission="r">
+    <!-- 		                 -->
+  </node>
+  <node address="0x8" id="ctrl_sram" permission="rw">
+    <node id="sram1_user_logic" mask="0x00000001" permission="rw"/>
+    <node id="sram1_bist_run" mask="0x00000002" permission="rw"/>
+    <node id="sram2_user_logic" mask="0x00010000" permission="rw"/>
+    <node id="sram2_bist_run" mask="0x00020000" permission="rw"/>
+    <node id="flash_select" mask="0x00100000" permission="rw"/>
+    <!-- 		                 -->
+  </node>
+  <node address="0x9" id="status_sram" permission="r">
+    <node id="sram1_bist_done" mask="0x00000001" permission="r"/>
+    <node id="sram1_bist_ok" mask="0x00000002" permission="r"/>
+    <node id="sram1_bist_errors" mask="0x00000ff0" permission="r"/>
+    <node id="sram2_bist_done" mask="0x00010000" permission="r"/>
+    <node id="sram2_bist_ok" mask="0x00020000" permission="r"/>
+    <node id="sram2_bist_errors" mask="0x0ff00000" permission="r"/>
+    <!--   		                 -->
+  </node>
+  <node address="0xa" id="spi_txdata" permission="rw">
+    <!-- 		                 -->
+  </node>
+  <node address="0xb" id="spi_command" permission="rw">
+    <node id="spi_autoclear" mask="0xf0000000" permission="rw"/>
+    <!-- 		                 -->
+  </node>
+  <node address="0xc" id="spi_rxdata" permission="r">
+    <!-- 		                 -->
+  </node>
+  <node address="0xd" id="i2c_settings" permission="rw">
+    <node id="i2c_enable" mask="0x00000800" permission="rw"/>
+    <node id="i2c_bus_select" mask="0x00000400" permission="rw"/>
+    <node id="i2c_prescaler" mask="0x000003ff" permission="rw"/>
+    <!-- 		                 -->
+  </node>
+  <node address="0xe" id="i2c_command" permission="rw">
+    <node id="i2c_autoclear" mask="0xf0000000" permission="rw"/>
+    <node id="i2c_strobe" mask="0x80000000" permission="rw"/>
+    <node id="i2c_mode16" mask="0x02000000" permission="rw"/>
+    <node id="i2c_write" mask="0x00800000" permission="rw"/>
+    <node id="i2c_slvaddr_7b" mask="0x007f0000" permission="rw"/>
+    <node id="i2c_wrdata" mask="0x000000ff" permission="rw"/>
+    <!-- 		                 -->
+  </node>
+  <node address="0xf" id="i2c_reply" permission="r">
+    <node id="i2c_reply_status" mask="0x0c000000" permission="r"/>
+    <node id="i2c_reply_8b" mask="0x000000ff" permission="r"/>
+    <node id="i2c_reply_16b" mask="0x0000ffff" permission="r"/>
+    <!--  -->
+  </node>
+  <node address="0x10" id="sfp_phase_mon_ctrl" permission="rw">
+    <node id="sfp_phase_mon_lower" mask="0x000000ff" permission="rw"/>
+    <node id="sfp_phase_mon_upper" mask="0x0000ff00" permission="rw"/>
+  </node>
+  <node address="0x11" id="sfp_phase_mon_stats" permission="r"/>
+  <node address="0x12" id="fmc1_phase_mon_ctrl" permission="rw">
+    <node id="fmc1_phase_mon_lower" mask="0x000000ff" permission="rw"/>
+    <node id="fmc1_phase_mon_upper" mask="0x0000ff00" permission="rw"/>
+  </node>
+  <node address="0x13" id="fmc1_phase_mon_stats" permission="r"/>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  icap memory space -->
+  <node address="0x200" id="icap" permission="rw"/>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  sram memory space -->
+  <node address="0x02000000" id="sram1" permission="rw"/>
+  <node address="0x04000000" id="sram2" permission="rw"/>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  flash memory space -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  RegName          		RegAddr     RegMask      R     W     Description -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <node address="0x0800bddf" id="flash_conf_reg" permission="rw"/>
+
+  <node address="0x40000100" id="FIFO" permission="rw">
+    <node address="0x0" id="ring0">
+      <node address="0x0" id="TRA" mode="non-incremental" permission="w" size="256"/>
+      <node address="0x1" id="REC" mode="non-incremental" permission="r" size="1024"/>
+    </node>
+    <node address="0x2" id="ring1">
+      <node address="0x0" id="TRA" mode="non-incremental" permission="w" size="256"/>
+      <node address="0x1" id="REC" mode="non-incremental" permission="r" size="1024"/>
+    </node>
+    <node address="0x4" id="ring2">
+      <node address="0x0" id="TRA" mode="non-incremental" permission="w" size="256"/>
+      <node address="0x1" id="REC" mode="non-incremental" permission="r" size="1024"/>
+    </node>
+    <node address="0x6" id="ring3">
+      <node address="0x0" id="TRA" mode="non-incremental" permission="w" size="256"/>
+      <node address="0x1" id="REC" mode="non-incremental" permission="r" size="1024"/>
+    </node>
+  </node>
+  <!--                                                             to be able to use blockWrite and fifoWrite -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  user space -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--  RegName           	RegAddr     RegMask      R     W     Description -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+    <!-- #################################################################### -->
+    <!-- #################################################################### -->
+    <!-- #### the declarations below this point refer to the  -->
+    <!-- #### glib_bench_iphc_strasbourg (see glib_bench_iphc_strasbourg.vhd) -->
+    <!-- #################################################################### -->
+    <!-- #################################################################### -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+    <!--  user_wb_reg1 / lcharles / mFEC -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 		 -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+    <!--  RegName           			RegAddr     RegMask      R     W     Description -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <node address="0x80000000" id="FEC_Rd" permission="r">
+    <node address="0x0" id="ascii_code_1" mask="0xff000000" permission="r"/>
+    <node address="0x0" id="ascii_code_2" mask="0x00ff0000" permission="r"/>
+    <node address="0x0" id="ascii_code_3" mask="0x0000ff00" permission="r"/>
+    <node address="0x0" id="ascii_code_4" mask="0x000000ff" permission="r"/>
+    <node address="0x1" id="ascii_code_5" mask="0xff000000" permission="r"/>
+    <node address="0x1" id="ascii_code_6" mask="0x00ff0000" permission="r"/>
+    <node address="0x1" id="ascii_code_7" mask="0x0000ff00" permission="r"/>
+    <node address="0x1" id="ascii_code_8" mask="0x000000ff" permission="r"/>
+    <!-- *************************************************************** -->
+    <node address="0x2" id="version" permission="r">
+      <node id="year" mask="0xFE000000"/>
+      <node id="month" mask="0x01E00000"/>
+      <node id="day" mask="0x001F0000"/>
+      <node id="archi" mask="0x0000FF00" description="Archi version number (incremental)"/>
+      <node id="firmware" mask="0x000000FF" description="Firmware version number (incremental)"/>
+    </node>
+    <node address="0x7" id="access_ack" permission="r">
+      <node address="0x0"
+        description="Individual access acknowledge for each CTRL_RING&#xa;'0': not yet / '1': addressing OK &#xa;Handshaking mechanism:&#xa;Once AccessAck is received, the s/w should reset AccessRequest"
+        id="ring0" mask="0x00000001"/>
+      <node address="0x0"
+        description="Individual access acknowledge for each CTRL_RING&#xa;'0': not yet / '1': addressing OK &#xa;Handshaking mechanism:&#xa;Once AccessAck is received, the s/w should reset AccessRequest"
+        id="ring1" mask="0x00000002"/>
+      <node address="0x0"
+        description="Individual access acknowledge for each CTRL_RING&#xa;'0': not yet / '1': addressing OK &#xa;Handshaking mechanism:&#xa;Once AccessAck is received, the s/w should reset AccessRequest"
+        id="ring2" mask="0x00000004"/>
+      <node address="0x0"
+        description="Individual access acknowledge for each CTRL_RING&#xa;'0': not yet / '1': addressing OK &#xa;Handshaking mechanism:&#xa;Once AccessAck is received, the s/w should reset AccessRequest"
+        id="ring3" mask="0x00000008"/>
+      <node address="0x0" description="Clock checking" id="clk_locked" mask="0x00000010"/>
+    </node>
+    <node address="0x8" id="status">
+      <node address="0x0" id="ring0">
+        <node id="SR0" mask="0x00007FFF"/>
+        <node id="SR1" mask="0x00FF0000"/>
+      </node>
+      <node address="0x1" id="ring1">
+        <node id="SR0" mask="0x00007FFF"/>
+        <node id="SR1" mask="0x00FF0000"/>
+      </node>
+      <node address="0x2" id="ring2">
+        <node id="SR0" mask="0x00007FFF"/>
+        <node id="SR1" mask="0x00FF0000"/>
+      </node>
+      <node address="0x3" id="ring3">
+        <node id="SR0" mask="0x00007FFF"/>
+        <node id="SR1" mask="0x00FF0000"/>
+      </node>
+    </node>
+    <node address="0xC" description="Version Register as defined in the initial specifications" id="mfec_version" mask="0x000000FF"/>
+    <node address="0xD" id="rec_fifo_words_nb">
+      <node address="0x0" description="Words number to read from REC 0: CTRL_RING(0)" id="ring0" mask="0x0000FFFF"/>
+      <node address="0x0" description="Words number to read from REC 0: CTRL_RING(1)" id="ring1" mask="0xFFFF0000"/>
+      <node address="0x1" description="Words number to read from REC 0: CTRL_RING(2)" id="ring2" mask="0x0000FFFF"/>
+      <node address="0x1" description="Words number to read from REC 0: CTRL_RING(3)" id="ring3" mask="0xFFFF0000"/>
+    </node>
+    <node address="0xF" description="Monitoring status (Rx or Tx, A or B, clk or data)" id="monitoring" mask="0xFFFFFFFF"/>
+  </node>
+  <node address="0x80000010" id="FEC_Rd_Wr" permission="rw">
+    <node address="0x0" id="ring0">
+      <node address="0x2" description="Individual asynchronous reset for each CTRL_RING&#xa;Active low " id="aclr_n" mask="0x00000001"/>
+    </node>
+    <node address="0x3" id="ring1">
+      <node address="0x2" description="Individual asynchronous reset for each CTRL_RING&#xa;Active low " id="aclr_n" mask="0x00000001"/>
+    </node>
+    <node address="0x6" id="ring2">
+      <node address="0x2" description="Individual asynchronous reset for each CTRL_RING&#xa;Active low " id="aclr_n" mask="0x00000001"/>
+    </node>
+    <node address="0x9" id="ring3">
+      <node address="0x2" description="Individual asynchronous reset for each CTRL_RING&#xa;Active low " id="aclr_n" mask="0x00000001" />
+    </node>
+    <node address="0xB" id="fec_rx_clk_shift" mask="0x00000010"/>
+    <node address="0xB" id="fec_tx_clk_shift" mask="0x00000020"/>
+    <node address="0xC" id="control">
+      <node address="0x0" id="ring0">
+        <node mask="0x0000FFFF" id="CR0" description="Control Register 0 as defined in the initial specifications 0: CTRL_RING(0)"/>
+        <node mask="0xFFFF0000" id="CR1" description="Control Register 1 as defined in the initial specifications 0: CTRL_RING(0)"/>
+      </node>
+      <node address="0x1" id="ring1">
+        <node mask="0x0000FFFF" id="CR0" description="Control Register 0 as defined in the initial specifications 1: CTRL_RING(1)"/>
+        <node mask="0xFFFF0000" id="CR1" description="Control Register 1 as defined in the initial specifications 1: CTRL_RING(1)"/>
+      </node>
+      <node address="0x2" id="ring2">
+        <node mask="0x0000FFFF" id="CR0" description="Control Register 0 as defined in the initial specifications 2: CTRL_RING(2)"/>
+        <node mask="0xFFFF0000" id="CR1" description="Control Register 1 as defined in the initial specifications 2: CTRL_RING(2)"/>
+      </node>
+      <node address="0x3" id="ring3">
+        <node mask="0x0000FFFF" id="CR0" description="Control Register 0 as defined in the initial specifications 3: CTRL_RING(3)"/>
+        <node mask="0xFFFF0000" id="CR1" description="Control Register 1 as defined in the initial specifications 3: CTRL_RING(3)"/>
+      </node>
+    </node>
+  </node>
+</node>
+

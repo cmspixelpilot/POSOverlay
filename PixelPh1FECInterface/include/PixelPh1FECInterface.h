@@ -1,7 +1,7 @@
 #ifndef PIXELFECINTERFACE_H
 #define PIXELFECINTERFACE_H
 
-// The PixelFECInterface class for VME access to the pixel FEC.
+// The PixelPh1FECInterface class for VME access to the pixel FEC.
 // Uses HAL calls for VME, the direct CAEN access can be still used..
 /*
  This is an initial release which supports setting trims on an entire ROC,
@@ -15,7 +15,7 @@
 #include <assert.h>
 
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
-#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
+#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h" // To do: give a correct path
 
 
 #define USE_UHAL  // to enable HAL use
@@ -70,6 +70,10 @@ public:
     int getversion(unsigned long *data);
     int setssid(const int ssid);
     int getStatus(void);
+
+    // Nik added these two 
+    void enableinternalclk();
+    void disableinternalclk();
     
     int writeCSregister(int mfec, int fecchannel, int cscommand);
     

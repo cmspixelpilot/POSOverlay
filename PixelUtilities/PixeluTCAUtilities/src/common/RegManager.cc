@@ -31,7 +31,7 @@ namespace Ph2_HwInterface
         
 		uhal::ConnectionManager cm( fUHalConfigFileName ); // Get connection
 		char cBuff[7] = "GLIB";
-//		sprintf( cBuff, "board%d", pBoardId );
+		sprintf( cBuff, "board%d", pBoardId );
 		fBoard = new uhal::HwInterface( cm.getDevice( ( cBuff ) ) );
         
 		fThread.detach();

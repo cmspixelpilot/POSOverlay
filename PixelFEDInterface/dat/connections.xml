@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connections>
+<connection id="board0" uri="chtcp-2.0://cmsuppixch:10203?target=devfed:50001" address_table="file://address_table.xml" />
+</connections>
