@@ -29,10 +29,10 @@ int PixelFEDInterface::setup(pos::PixelPh1FEDCard& pfc) {
 }
 
 int PixelFEDInterface::setup() {
-  fRegMapFilename[FMC0_Fitel0] + fitel_fn_base + "/FMC0_Fitel0.txt";
-  fRegMapFilename[FMC0_Fitel1] + fitel_fn_base + "/FMC0_Fitel1.txt";
-  fRegMapFilename[FMC1_Fitel0] + fitel_fn_base + "/FMC1_Fitel0.txt";
-  fRegMapFilename[FMC1_Fitel1] + fitel_fn_base + "/FMC1_Fitel1.txt";
+  fRegMapFilename[FMC0_Fitel0] = fitel_fn_base + "/FMC0_Fitel0.txt";
+  fRegMapFilename[FMC0_Fitel1] = fitel_fn_base + "/FMC0_Fitel1.txt";
+  fRegMapFilename[FMC1_Fitel0] = fitel_fn_base + "/FMC1_Fitel0.txt";
+  fRegMapFilename[FMC1_Fitel1] = fitel_fn_base + "/FMC1_Fitel1.txt";
 
   LoadFitelRegMap(0, 0);
   LoadFitelRegMap(0, 1);
@@ -57,17 +57,17 @@ int PixelFEDInterface::setup() {
 
   // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
   //computeBlockSize( pFakeData );
-  const uint32_t fBlockSize32 = 8192;
+  const uint32_t fBlockSize32 = 0x7f;
   cVecReg.push_back( {"pixfed_ctrl_regs.PACKET_NB", fBlockSize32 } );
 
   // <!--Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP-->
   cVecReg.push_back( {"ctrl.ttc_xpoint_A_out3", 0x0} );
 
-  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_1", 0xfffffffc} );
-  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_2", 0xffffffff} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_1", 0xffffffff} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_2", 0xffffc30f} );
   cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_3", 0xffffffff} );
   cVecReg.push_back( {"pixfed_ctrl_regs.TRIGGER_SEL", 0x0} );
-  cVecReg.push_back( {"pixfed_ctrl_regs.data_type", 0x2} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.data_type", 0x0} );
 
   regManager->WriteStackReg(cVecReg);
   cVecReg.clear();
@@ -83,12 +83,12 @@ int PixelFEDInterface::setup() {
 
   int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
-  regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_addr", 0x4d);
-
   ConfigureFitel(0, 0, true);
   ConfigureFitel(0, 1, true);
 
   fNthAcq = 0;
+
+  getBoardInfo();
 
   return cDDR3calibrated;
 }
@@ -729,6 +729,48 @@ void PixelFEDInterface::SelectDaqDDR( uint32_t pNthAcq )
     fStrReadout = ( ( pNthAcq % 2 + 1 ) == 1 ? "pixfed_ctrl_regs.DDR0_end_readout" : "pixfed_ctrl_regs.DDR1_end_readout" );
 }
 
+void prettyprintTBMFIFO(const std::vector<uint32_t>& pData )
+{
+    std::cout << "Global TBM Readout FIFO: " << std::endl;
+    //now I need to do something with the Data that I read into cData
+    int cIndex = 0;
+    uint32_t cPreviousWord;
+    for ( size_t i = 0; i < pData.size(); ++i)
+    {
+      uint32_t cWord = pData[i];
+        //      std::cout << std::hex << std::setw(8) << std::setfill('0');
+        if (cIndex % 2 == 0)
+            cPreviousWord = cWord;
+
+        else if (cPreviousWord == 0x1)
+        {
+            //std::cout << cWord <<  std::endl;
+            std::cout << "    Pixel Hit: CH: " << ((cWord >> 26) & 0x3f) << " ROC: " << ((cWord >> 21) & 0x1f) << " DC: " << ((cWord >> 16) & 0x1f) << " ROW: " << ((cWord >> 8) & 0xff) << " PH: " << (cWord & 0xff) << std::dec << std::endl;
+        }
+        //else if (cPreviousWord == 0x6)
+        //{
+        ////std::cout << cWord <<  std::endl;
+        //std::cout << "Event Trailer: CH: " << ((cWord >> 26) & 0x3f) << " ID: " << ((cWord >> 21) & 0x1f) << " marker: " << (cWord & 0x1fffff) << " ROW: " << ((cWord >> 8) & 0xff) << " PH: " << (cWord & 0xff) << std::dec << std::endl;
+        //}
+        else if (cPreviousWord == 0x8)
+        {
+            //std::cout << cWord <<  std::endl;
+            std::cout << "Event Header: CH: " << ((cWord >> 26) & 0x3f) << " ID: " << ((cWord >> 21) & 0x1f) << " TBM H: " << ((cWord >> 16) & 0x1f) << " ROW: " << ((cWord >> 9) & 0xff) << " EventNumber: " << (cWord & 0xff) << std::dec << std::endl;
+        }
+        else if (cPreviousWord == 0xC)
+        {
+            //std::cout << cWord <<  std::endl;
+            std::cout << " ROC Header: CH: " << ((cWord >> 26) & 0x3f) << " ROC Nr: " << ((cWord >> 21) & 0x1f) << " Status : " << (cWord  & 0xff) << std::dec << std::endl;
+        }
+        else if (cPreviousWord == 0x4)
+        {
+            //std::cout << cWord <<  std::endl;
+            std::cout << " TBM Trailer: CH: " << ((cWord >> 26) & 0x3f) << " ID: " << ((cWord >> 21) & 0x1f) << " TBM T2: " << ((cWord >> 12) & 0xff) << " TBM_T1: " << (cWord & 0xff) << std::dec << std::endl;
+        }
+        cIndex++;
+    }
+}
+
 std::vector<uint32_t> PixelFEDInterface::ReadData(uint32_t pBlockSize )
 {
     uint32_t cBlockSize = 0;
@@ -766,13 +808,14 @@ std::vector<uint32_t> PixelFEDInterface::ReadData(uint32_t pBlockSize )
       usleep(10000);
     regManager->WriteReg( fStrReadout, 0 );
 
-    //    prettyprintTBMFIFO(cData);
+    prettyprintTBMFIFO(cData);
     fNthAcq++;
     return cData;
 }
 
 
 int PixelFEDInterface::spySlink64(uint64_t *data) {
+  ReadData(4);
   return 0;
 }
 
