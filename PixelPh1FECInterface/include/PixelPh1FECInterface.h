@@ -72,6 +72,7 @@ public:
     int getStatus(void);
 
     // Nik added these two 
+    void switchclk(unsigned int clk_word);
     void enableinternalclk();
     void disableinternalclk();
     
