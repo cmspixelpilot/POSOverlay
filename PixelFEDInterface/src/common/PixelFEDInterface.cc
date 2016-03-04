@@ -47,6 +47,9 @@ int PixelFEDInterface::setup() {
   //cVecReg.push_back( {"pixfed_ctrl_regs.INT_TRIGGER_EN", 0} );
   cVecReg.push_back( {"pixfed_ctrl_regs.rx_index_sel_en", 0} );
 
+//  cVecReg.push_back( {  "pixfed_ctrl_regs.DDR0_ctrl_sel", 1 } );
+//  cVecReg.push_back( {  "pixfed_ctrl_regs.DDR1_ctrl_sel", 1 } );
+
   cVecReg.push_back( {"pixfed_ctrl_regs.DDR0_end_readout", 0} );
   cVecReg.push_back( {"pixfed_ctrl_regs.DDR1_end_readout", 0} );
 
@@ -649,26 +652,51 @@ int PixelFEDInterface::drainTransparentFifo(uint32_t* data) {
   return ie;
 }
 
+void prettyprintSpyFIFO(const std::vector<uint32_t>& pVec)
+{
+    uint32_t cMask = 0xf0;
+    for (size_t i = 0; i < pVec.size(); ++i)
+    {
+      uint32_t cWord = pVec[i];
+        if (cWord != 0)
+        {
+            if ((cWord & 0xff) != 0) std::cout << std::hex << (cWord & 0xff) << " " ;
+            if (((cWord & cMask) >> 4) == 11 ) std::cout << " " << std::endl;
+            if (((cWord & cMask) >> 4) == 6 ) std::cout << " " << std::endl;
+            if (((cWord & cMask) >> 4) == 7 ) std::cout << " " << std::endl;
+            if (((cWord & cMask) >> 4) == 15 ) std::cout << " " << std::endl;
+        }
+
+    }
+}
+
 std::vector<uint32_t> PixelFEDInterface::readSpyFIFO()
 {
-    std::vector<uint32_t> cSpyA;
-    std::vector<uint32_t> cSpyB;
+  std::vector<uint32_t> cSpy[2];
+  const size_t N = 4096;
+  for (int i = 0; i < 2; ++i) {
+    while (1) {
+      std::vector<uint32_t> tmp = regManager->ReadBlockRegValue(i == 0 ? "fifo.spy_A" : "fifo.spy_B", N);
+      std::vector<uint32_t>::iterator it = std::find(tmp.begin(), tmp.end(), 0);
+      int l = it - tmp.begin();
+      if (l == 0)
+	break;
+      cSpy[i].insert(cSpy[i].end(), tmp.begin(), it);
+    }
+  }
 
-    // cSpyA = ReadBlockRegValue( "fifo.spy_A", fBlockSize / 2 );
-    // cSpyB = ReadBlockRegValue( "fifo.spy_B", fBlockSize / 2 );
+  std::cout  << std::endl << "TBM_SPY FIFO A (size " << cSpy[0].size() << "):" << std::endl;
+  prettyprintSpyFIFO(cSpy[0]);
+  std::cout << std::endl << "TBM_SPY FIFO B (size " << cSpy[0].size() << "):" << std::endl;
+  prettyprintSpyFIFO(cSpy[1]);
 
-    cSpyA = regManager->ReadBlockRegValue( "fifo.spy_A", 4096 );
-    cSpyB = regManager->ReadBlockRegValue( "fifo.spy_B", 4096 );
-
-//    std::cout  << std::endl << BOLDBLUE << "TBM_SPY FIFO A: " << RESET << std::endl;
-//    prettyprintSpyFIFO(cSpyA);
-//    std::cout << std::endl << BOLDBLUE << "TBM_SPY FIFO B: " << RESET << std::endl;
-//    prettyprintSpyFIFO(cSpyB);
 //append content of Spy Fifo B to A and return
-    std::vector<uint32_t> cAppendedSPyFifo = cSpyA;
-    cAppendedSPyFifo.insert(cSpyA.end(), cSpyB.begin(), cSpyB.end());
-    return cAppendedSPyFifo;
+    return std::vector<uint32_t>();
+//    std::vector<uint32_t> cAppendedSPyFifo = cSpyA;
+//    cAppendedSPyFifo.insert(cSpyA.end(), cSpyB.begin(), cSpyB.end());
+//    return cAppendedSPyFifo;
 }
+
 
 int PixelFEDInterface::drainSpyFifo(uint32_t* data) {
   const size_t MAX_SPY_FIFO = 1024;
@@ -679,31 +707,58 @@ int PixelFEDInterface::drainSpyFifo(uint32_t* data) {
   return ie;
 }
 
-//void PixelFEDInterface::readFIFO1()
-//{
-//  //std::stringstream cFIFO1Str;
-//    std::vector<uint32_t> cFifo1A;
-//    std::vector<uint32_t> cFifo1B;
-//    std::vector<uint32_t> cMarkerA;
-//    std::vector<uint32_t> cMarkerB;
-//
-//    cFifo1A = ReadBlockRegValue("fifo.spy_1_A", fBlockSize / 4);
-//    cMarkerA = ReadBlockRegValue("fifo.spy_1_A_marker", fBlockSize / 4);
-//    cFifo1B = ReadBlockRegValue("fifo.spy_1_B", fBlockSize / 4);
-//    cMarkerB = ReadBlockRegValue("fifo.spy_1_B_marker", fBlockSize / 4);
-//    // pass cFIFO1Str as ostream to prettyPrint for later FileIo
-//    //std::cout << std::endl << BOLDBLUE <<  "FIFO 1 Channel A: " << RESET << std::endl;
-//    //cFIFO1Str << "FIFO 1 Channel A: " << std::endl;
-//    //prettyprintFIFO1(cFifo1A, cMarkerA);
-//    //prettyprintFIFO1(cFifo1A, cMarkerA, cFIFO1Str);
-//    //
-//    //std::cout << std::endl << BOLDBLUE << "FIFO 1 Channel B: " << RESET << std::endl;
-//    //cFIFO1Str << "FIFO 1 Channel B: " << std::endl;
-//    //prettyprintFIFO1(cFifo1B, cMarkerB);
-//    //prettyprintFIFO1(cFifo1B, cMarkerB, cFIFO1Str);
-//
-//    return cFIFO1Str.str();
-//}
+void prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os)
+{
+    os << "----------------------------------------------------------------------------------" << std::endl;
+    for (uint32_t cIndex = 0; cIndex < pFifoVec.size(); cIndex++ )
+    {
+        if (pMarkerVec.at(cIndex) == 8)
+        {
+            // Event Header
+            os << std::dec << "    Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_H: " <<  ( (pFifoVec.at(cIndex) >> 9) & 0xff ) << " EVT Nr: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
+        }
+
+        if (pMarkerVec.at(cIndex) == 12)
+        {
+            os << std::dec << "ROC Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f  ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " Status: " << (  (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
+        }
+
+        if (pMarkerVec.at(cIndex) == 1)
+        {
+            os  << std::dec << "            CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " DC: " <<  ( (pFifoVec.at(cIndex) >> 16) & 0x1f ) << " PXL: " <<  ( (pFifoVec.at(cIndex) >> 8) & 0xff ) <<  " PH: " <<  ( (pFifoVec.at(cIndex)) & 0xff ) << std::endl;
+        }
+
+        if (pMarkerVec.at(cIndex) == 4)
+        {
+            // TBM Trailer
+            os << std::dec << "   Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_T2: " <<  ( (pFifoVec.at(cIndex) >> 12) & 0xff ) << " TBM_T1: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
+        }
+
+        if (pMarkerVec.at(cIndex) == 6)
+        {
+            // Event Trailer
+            os << std::dec << "Event Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " marker: " <<  ( (pFifoVec.at(cIndex)) & 0x1fffff )  << std::endl;
+        }
+    }
+    os << "----------------------------------------------------------------------------------" << std::endl;
+}
+
+void PixelFEDInterface::readFIFO1() {
+  std::vector<uint32_t> cFifo1A;
+  std::vector<uint32_t> cFifo1B;
+  std::vector<uint32_t> cMarkerA;
+  std::vector<uint32_t> cMarkerB;
+
+  cFifo1A  = regManager->ReadBlockRegValue("fifo.spy_1_A", 2048);
+  cMarkerA = regManager->ReadBlockRegValue("fifo.spy_1_A_marker", 2048);
+  cFifo1B  = regManager->ReadBlockRegValue("fifo.spy_1_B", 2048);
+  cMarkerB = regManager->ReadBlockRegValue("fifo.spy_1_B_marker", 2048);
+
+  std::cout << std::endl <<  "FIFO 1 Channel A: " << std::endl;
+  prettyprintFIFO1(cFifo1A, cMarkerA, std::cout);
+  std::cout << std::endl << "FIFO 1 Channel B: " << std::endl;
+  prettyprintFIFO1(cFifo1B, cMarkerB, std::cout);
+}
 
 int PixelFEDInterface::drainFifo1(uint32_t *data) {
   return 0;
@@ -731,14 +786,14 @@ void PixelFEDInterface::SelectDaqDDR( uint32_t pNthAcq )
 
 void prettyprintTBMFIFO(const std::vector<uint32_t>& pData )
 {
-    std::cout << "Global TBM Readout FIFO: " << std::endl;
+  std::cout << "Global TBM Readout FIFO: size " << pData.size() << std::endl;
     //now I need to do something with the Data that I read into cData
     int cIndex = 0;
     uint32_t cPreviousWord;
     for ( size_t i = 0; i < pData.size(); ++i)
     {
       uint32_t cWord = pData[i];
-        //      std::cout << std::hex << std::setw(8) << std::setfill('0');
+      std::cout << std::setw(5) << i << ": " << std::hex << std::setw(8) << cWord << std::dec << std::endl;
         if (cIndex % 2 == 0)
             cPreviousWord = cWord;
 
@@ -776,28 +831,36 @@ std::vector<uint32_t> PixelFEDInterface::ReadData(uint32_t pBlockSize )
     uint32_t cBlockSize = 0;
     if (pBlockSize == 0) cBlockSize = fBlockSize;
     else cBlockSize = pBlockSize;
-    std::chrono::milliseconds cWait( 10 );
+    std::cout << "JJJ READ DATA " << cBlockSize << std::endl;
+    //std::chrono::milliseconds cWait( 10 );
     // the fNthAcq variable is automatically used to determine which DDR FIFO to read - so it has to be incremented in this method!
 
     // first find which DDR bank to read
     SelectDaqDDR( fNthAcq );
-    //std::cout << "Querying " << fStrDDR << " for FULL condition!" << std::endl;
+    std::cout << "Querying " << fStrDDR << " for FULL condition!" << std::endl;
 
     uhal::ValWord<uint32_t> cVal;
+    int tries = 0;
+    int maxtries = 100;
     do
     {
         cVal = regManager->ReadReg( fStrFull );
-        if ( cVal == 0 ) usleep(10000);
+        if ( cVal == 0 && tries++ < maxtries ) usleep(1000);
     }
-    while ( cVal == 0 );
-    //std::cout << fStrDDR << " full: " << regManager->ReadReg( fStrFull ) << std::endl;
+    while ( cVal == 0 && tries < maxtries);
+    std::cout << fStrDDR << " full: " << regManager->ReadReg( fStrFull ) << " after " << tries << " tries " << std::endl;
 
     // DDR control: 0 = ipbus, 1 = user
     regManager->WriteReg( fStrDDRControl, 0 );
     usleep(10000);
-    //std::cout << "Starting block read of " << fStrDDR << std::endl;
+    std::cout << "Starting block read of " << fStrDDR << std::endl;
 
-    std::vector<uint32_t> cData = regManager->ReadBlockRegValue( fStrDDR, cBlockSize );
+    std::vector<uint32_t> cData;
+    for (int i = 0; i < 5; ++i) {
+      std::vector<uint32_t> tmp = regManager->ReadBlockRegValue( fStrDDR, cBlockSize );
+      cData.insert(cData.end(), tmp.begin(), tmp.end());
+    }
+
     regManager->WriteReg( fStrDDRControl , 1 );
     usleep(10000);
     regManager->WriteReg( fStrReadout, 1 );
@@ -815,7 +878,12 @@ std::vector<uint32_t> PixelFEDInterface::ReadData(uint32_t pBlockSize )
 
 
 int PixelFEDInterface::spySlink64(uint64_t *data) {
-  ReadData(4);
+  readSpyFIFO();
+  readFIFO1();
+  std::vector<uint32_t> cData = ReadData(1024);
+  cData = ReadData(1024);
+  regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
+  usleep(10000);
   return 0;
 }
 

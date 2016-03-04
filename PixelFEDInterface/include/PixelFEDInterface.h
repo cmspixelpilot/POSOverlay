@@ -70,7 +70,7 @@ class PixelFEDInterface {
   int drainTransparentFifo(uint32_t* data);
   std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
-  //void readFIFO1();
+  void readFIFO1();
   int drainFifo1(uint32_t* data);
   int drainTBMFifo(uint32_t* data);
   int drainErrorFifo(uint32_t* data);

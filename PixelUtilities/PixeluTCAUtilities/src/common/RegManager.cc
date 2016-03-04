@@ -10,9 +10,9 @@
 #include "RegManager.h"
 
 
-#define DEV_FLAG    1
+#define DEV_FLAG    0
 #define TIME_OUT    5
-
+//#define JMTREGMGRPRINTS
 
 
 namespace Ph2_HwInterface
@@ -48,6 +48,10 @@ namespace Ph2_HwInterface
     
 	bool RegManager::WriteReg( const std::string& pRegNode, const uint32_t& pVal )
 	{
+#ifdef JMTREGMGRPRINTS
+	  std::cout << "JMT WriteReg " << pRegNode << " 0x" << std::hex << pVal << std::dec << std::endl;
+#endif
+
 	 	fBoardMutex.lock();
 		fBoard->getNode( pRegNode ).write( pVal );
 		fBoard->dispatch();
@@ -78,10 +82,16 @@ namespace Ph2_HwInterface
     
 	bool RegManager::WriteStackReg( const std::vector< std::pair<std::string, uint32_t> >& pVecReg )
 	{
-        
+#ifdef JMTREGMGRPRINTS
+	  std::cout << "JMT WriteStackReg:\n";
+#endif        
+
 		fBoardMutex.lock();
 		for(unsigned int v = 0; v < pVecReg.size(); v++ )
 		{
+#ifdef JMTREGMGRPRINTS
+		  std::cout << "\tJMT " << pVecReg[v].first << " 0x" << std::hex << pVecReg[v].second << std::dec << std::endl;
+#endif
 			fBoard->getNode( pVecReg[v].first ).write( pVecReg[v].second );
 			// std::cout << pVecReg[v].first << "  :  " << pVecReg[v].second << std::endl;
 		}
@@ -121,6 +131,11 @@ namespace Ph2_HwInterface
     
 	bool RegManager::WriteBlockReg( const std::string& pRegNode, const std::vector< uint32_t >& pValues )
 	{
+#ifdef JMTREGMGRPRINTS
+	  std::cout << "JMT WriteBlockReg " << pRegNode << ":\n";
+	  for (size_t jmt = 0; jmt < pValues.size(); ++jmt)
+	    std::cout << "  JMT 0x" << std::hex << pValues[jmt] << std::dec << std::endl;
+#endif
 		fBoardMutex.lock();
 		fBoard->getNode( pRegNode ).writeBlock( pValues );
 		fBoard->dispatch();
@@ -156,6 +171,12 @@ namespace Ph2_HwInterface
     
 	bool RegManager::WriteBlockAtAddress( uint32_t uAddr, const std::vector< uint32_t >& pValues, bool bNonInc )
 	{
+#ifdef JMTREGMGRPRINTS
+	  std::cout << "JMT WriteBlockReg(NonInc=" << bNonInc << ") @ 0x" << std::hex << uAddr << std::dec << ":\n";
+	  for (size_t jmt = 0; jmt < pValues.size(); ++jmt)
+	    std::cout << "  JMT 0x" << std::hex << pValues[jmt] << std::dec << std::endl;
+#endif
+
 		fBoardMutex.lock();
 		fBoard->getClient().writeBlock( uAddr, pValues, bNonInc ? uhal::defs::NON_INCREMENTAL : uhal::defs::INCREMENTAL );
 		fBoard->dispatch();
@@ -202,6 +223,13 @@ namespace Ph2_HwInterface
 			uint32_t read = ( uint32_t ) cValRead;
 			std::cout << "\nValue in register ID " << pRegNode << " : " << read << std::endl;
 		}
+
+#ifdef JMTREGMGRPRINTS
+		std::cout << "JMT ReadReg " << pRegNode << " valid? " << cValRead.valid();
+		if (cValRead.valid())
+		  std::cout << "  JMT 0x" << std::hex << cValRead << std::dec;
+		std::cout << std::endl;
+#endif
         
 		return cValRead;
 	}
@@ -218,6 +246,13 @@ namespace Ph2_HwInterface
 			uint32_t read = ( uint32_t ) cValRead;
 			std::cout << "\nValue at address " << std::hex << uAddr << std::dec << " : " << read << std::endl;
 		}
+
+#ifdef JMTREGMGRPRINTS
+		std::cout << "JMT ReadAtAddress @ 0x" << std::hex << uAddr << " mask 0x" << uMask << std::dec << " valid? " << cValRead.valid();
+		if (cValRead.valid())
+		  std::cout << "  JMT 0x" << std::hex << cValRead << std::dec;
+		std::cout << std::endl;
+#endif
         
 		return cValRead;
 	}
@@ -241,6 +276,14 @@ namespace Ph2_HwInterface
 				std::cout << " " << read << " " << std::endl;
 			}
 		}
+
+#ifdef JMTREGMGRPRINTS
+		std::cout << "JMT ReadBlockReg " << pRegNode << " blocksize " << pBlockSize << " valid? " << cBlockRead.valid() << ":";
+		if (cBlockRead.valid())
+		  for (size_t jmt = 0; jmt < cBlockRead.size(); ++jmt)
+		    std::cout << "  JMT 0x" << std::hex << cBlockRead[jmt] << std::dec << std::endl;
+		std::cout << std::endl;
+#endif
         
 		return cBlockRead;
 	}
@@ -254,6 +297,7 @@ namespace Ph2_HwInterface
     
 	void RegManager::StackReg( const std::string& pRegNode, const uint32_t& pVal, bool pSend )
 	{
+	  std::cout << "JMT StackReg\n";
         
 		for ( std::vector< std::pair<std::string, uint32_t> >::iterator cIt = fStackReg.begin(); cIt != fStackReg.end(); cIt++ )
 		{
@@ -274,6 +318,7 @@ namespace Ph2_HwInterface
     
 	void RegManager::StackWriteTimeOut()
 	{
+	  std::cout << "JMT StackWriteTimeOut\n";
 		uint32_t i = 0;
         
 		while ( !fDeactiveThread )
@@ -296,42 +341,5 @@ namespace Ph2_HwInterface
 	{
 		return fBoard->getNode( pStrPath );
 	}
-
-	bool RegManager::FillIPBusFIFO( const std::string& pRegNode, const uint32_t& pVal )
-        {
-        
-        fBoardMutex.lock();
-	fBoard->getNode( pRegNode ).write( pVal );
-        std::cout << "size " << fBoard->getNode( pRegNode ).getSize() <<std::endl;
-	fBoardMutex.unlock();
-        
-		// Verify if the writing is done correctly
-		if ( DEV_FLAG )
-		{
-                        std::cout << "start reading " <<std::endl; 
-			fBoardMutex.lock();
-			uhal::ValWord<uint32_t> reply = fBoard->getNode( pRegNode ).read();
-			fBoardMutex.unlock();
-            
-			uint32_t comp = ( uint32_t ) reply;
-            
-			if ( comp == pVal )
-			{
-				std::cout << "Values written correctly to FIFO !" << comp << "=" << pVal << std::endl;
-				return true;
-			}
-            
-			std::cout << "\nERROR !!\nValues are not consistent : \nExpected : " << pVal << "\nActual : " << comp << std::endl;
-		}
-        
-		return false;
-
-	}        
-
-       void RegManager::DispatchIPBusFIFO(){
- 
-              fBoard->dispatch();
-	}
-    
 }
 
