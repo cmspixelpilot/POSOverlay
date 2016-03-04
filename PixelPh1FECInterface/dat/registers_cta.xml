@@ -145,6 +145,7 @@
     <node id="CONFIG00" address="0x00000000" mode="single" permission="rw" description="for setssid(), check what this is!!! "/>
     <node id="SSID" address="0x00000000" mode="single" permission="rw" description="for setssid(), check what this is!!! "/>
     <node id="VERSIONM01" address="0x4000001C" mode="single" permission="rw" description="Firmware version"/>
+    <node id="CLKReg" address="0x00000004" mode="single" permission="rw" description="For internal/external clock!!! "/>
     <node id="CLKSWITCH" address="0x00000004" mode="single" permission="rw" >
         <node id="ENABLE"   mask="0x00030000"  description="Enable GLIB/CTA internal CLK"/>
         <node id="DISABLE"  mask="0x00030000"  description="Disable GLIB/CTA internal CLK"/>
