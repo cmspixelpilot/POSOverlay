@@ -32,7 +32,6 @@
     <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
   </xc:Context>
 
-<!--
   <xc:Context id="1" url="http://pixp1daq.cern.ch:1973/">
 
     <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="pixp1daq.cern.ch" port="1914" network="xmas"/>
@@ -54,6 +53,5 @@
     <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
 
   </xc:Context>
--->
 
 </xc:Partition>
