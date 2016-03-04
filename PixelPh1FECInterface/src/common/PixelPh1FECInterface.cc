@@ -52,7 +52,8 @@ fecSlot_(fecSlot)
         }
     }
 
-    disableinternalclk();
+    //disableinternalclk();
+    switchclk(0xFF7CFFD8);
 }
 //------------------------------------------------------------------------
 PixelPh1FECInterface::~PixelPh1FECInterface(void)
@@ -130,6 +131,10 @@ int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
 
 
 // Nik added these two function for GLIB/CTA board internal clk switch 
+
+void PixelPh1FECInterface::switchclk(unsigned int clk_word){
+       outputwordhal("CLKReg", clk_word);
+}
 
 void PixelPh1FECInterface::enableinternalclk(){
 	outputwordhal("CLKSWITCH.ENABLE", 0);
@@ -545,7 +550,7 @@ int PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std:
         {"BOUT_BUF2M1"} };
     
     // implement throw exception for the cases when mfec >/< bla and channel >/< bla
-    std::cout << "name " << names[fecchannel-1][mfec-1] << " size of the word vector " << wordcont.size()<< std::endl;
+    //std::cout << "name " << names[fecchannel-1][mfec-1] << " size of the word vector " << wordcont.size()<< std::endl;
     pRegManager->WriteBlockReg( names[fecchannel-1][mfec-1], wordcont);
     
 }
