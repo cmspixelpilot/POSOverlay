@@ -46,7 +46,7 @@ class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
 public:
     
     
-  PixelPh1FECInterface(Ph2_HwInterface::RegManager * const RegManagerPtr, const int vmeslot,
+  PixelPh1FECInterface(RegManager* const RegManagerPtr, const int vmeslot,
                       unsigned int fecCrate, unsigned int fecSlot);
     
     ~PixelPh1FECInterface();
@@ -257,7 +257,7 @@ private:
     int pfecvmeslot;
     typedef uhal::ValWord<uint32_t> valword;
     typedef uhal::ValVector<uint32_t> valvec;
-    Ph2_HwInterface::RegManager * const pRegManager;
+    RegManager * const pRegManager;
     
 
     // ordering mfecs to match designations on vme card

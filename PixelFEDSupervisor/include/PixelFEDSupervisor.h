@@ -252,7 +252,7 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
 
   private:
 
-    typedef std::map<unsigned long, Ph2_HwInterface::RegManager*> RegMgrMap;
+    typedef std::map<unsigned long, RegManager*> RegMgrMap;
     RegMgrMap RegMgr_;
 
     void deleteHardware();

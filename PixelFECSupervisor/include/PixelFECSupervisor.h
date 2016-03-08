@@ -73,7 +73,6 @@
 #include "PixelUtilities/PixelGUIUtilities/include/HTML2XGI.h"
 #include "PixelUtilities/PixelDCSUtilities/include/PixelPowerMap4603.h"
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
-#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
 #include "PixelPh1FECInterface/include/PixelPh1FECInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
@@ -96,6 +95,8 @@
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 
 #include "PixelFECSupervisor/include/DiagWrapper.h"
+
+class RegManager;
 
 //class pos::PixelCalibConfiguration;
 //class pos::PixelFECConfig;
@@ -256,7 +257,7 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     FECInterfaceMap FECInterface;
     typedef std::map<unsigned long, HAL::VMEDevice*> VMEPtrMap;
     VMEPtrMap VMEPtr_;
-    typedef std::map<unsigned long, Ph2_HwInterface::RegManager*> RegMgrMap;
+    typedef std::map<unsigned long, RegManager*> RegMgrMap;
     RegMgrMap RegMgr_;
     
     //For indexing by FEC number

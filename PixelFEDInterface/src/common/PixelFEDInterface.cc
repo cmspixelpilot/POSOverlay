@@ -8,7 +8,7 @@
 
 using namespace std;
 
-PixelFEDInterface::PixelFEDInterface(Ph2_HwInterface::RegManager * const rm)
+PixelFEDInterface::PixelFEDInterface(RegManager* const rm)
   : Printlevel(1),
     regManager(rm)
 {
@@ -789,7 +789,7 @@ void prettyprintTBMFIFO(const std::vector<uint32_t>& pData )
   std::cout << "Global TBM Readout FIFO: size " << pData.size() << std::endl;
     //now I need to do something with the Data that I read into cData
     int cIndex = 0;
-    uint32_t cPreviousWord;
+    uint32_t cPreviousWord = 0;
     for ( size_t i = 0; i < pData.size(); ++i)
     {
       uint32_t cWord = pData[i];

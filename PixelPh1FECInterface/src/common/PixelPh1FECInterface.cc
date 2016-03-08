@@ -29,7 +29,7 @@ namespace {
 //--------------------------------------------------------------------------
 // Here comes the constructor -- with two versions, one for HAL, one for CAEN
 #ifdef USE_UHAL
-PixelPh1FECInterface::PixelPh1FECInterface(Ph2_HwInterface::RegManager * const RegManagerPtr,
+PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
                                      const int vmeslot,
                                      unsigned int fecCrate,
                                      unsigned int fecSlot): pRegManager(RegManagerPtr),
@@ -552,7 +552,6 @@ int PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std:
     // implement throw exception for the cases when mfec >/< bla and channel >/< bla
     //std::cout << "name " << names[fecchannel-1][mfec-1] << " size of the word vector " << wordcont.size()<< std::endl;
     pRegManager->WriteBlockReg( names[fecchannel-1][mfec-1], wordcont);
-    
 }
 
 
@@ -2177,7 +2176,6 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
     unsigned int ch1stat, ch2stat;
     unsigned char coltemp0, coltemp1, coltemp2, tmask, ttrim, databyte;
     std::vector<uint32_t>  wordvec;
-    
     
     if (PRINT) cout << "ROCINIT CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
     

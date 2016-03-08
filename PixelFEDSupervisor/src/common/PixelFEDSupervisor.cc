@@ -2230,7 +2230,7 @@ bool PixelFEDSupervisor::job_Configure ()
 
       assert(RegMgr_.empty());
       assert(FEDInterface_.empty());
-      RegMgr_[vmeBaseAddress] = new Ph2_HwInterface::RegManager(connectionFile_.c_str(), 0);
+      RegMgr_[vmeBaseAddress] = new RegManager(connectionFile_, "board0");
       
       FEDInterface_[vmeBaseAddress]=new PixelFEDInterface(RegMgr_[vmeBaseAddress]);
       FEDInterfaceFromFEDnumber_[fednumber]=FEDInterface_[vmeBaseAddress];

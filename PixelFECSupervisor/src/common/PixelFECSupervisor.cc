@@ -2840,7 +2840,7 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
 #ifdef UTCA_XXX
         assert(RegMgr_.empty());
         assert(FECInterface.empty());
-        RegMgr_[fecVMEBaseAddress] = new Ph2_HwInterface::RegManager(connectionFile_.c_str(), 0);
+        RegMgr_[fecVMEBaseAddress] = new RegManager(connectionFile_, "board0");
         int dummy = 0;
         PixelPh1FECInterface* tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], dummy, feccrate, fecSlot);
 #else

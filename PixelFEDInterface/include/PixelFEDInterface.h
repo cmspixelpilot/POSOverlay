@@ -21,7 +21,7 @@ class PixelFEDInterface {
 
   typedef std::bitset<48> enbable_t;
 
-  PixelFEDInterface(Ph2_HwInterface::RegManager*);
+  PixelFEDInterface(RegManager*);
   ~PixelFEDInterface();
 
   void set_Printlevel(int level) { Printlevel = level; }
@@ -143,9 +143,7 @@ class PixelFEDInterface {
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
   pos::PixelPh1FEDCard pixelFEDCard;
 
-  typedef uhal::ValWord<uint32_t> valword;
-  typedef uhal::ValVector<uint32_t> valvec;
-  Ph2_HwInterface::RegManager* const regManager;
+  RegManager* const regManager;
 
   enum { FMC0_Fitel0, FMC0_Fitel1, FMC1_Fitel0, FMC1_Fitel1, nFitels};
   FitelRegMap fRegMap[nFitels];
