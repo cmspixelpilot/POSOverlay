@@ -543,7 +543,7 @@ void PixelPh1FECInterface::outputwordhal(const char *halname, unsigned int data)
 
 
 // This function is invoked if the BLOCKTRANSFER defined
-int PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std::vector<uint32_t> wordcont) {
+void PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std::vector<uint32_t> wordcont) {
  
     const string names[2][1] = {
         {"BOUT_BUF1M1"},
@@ -2262,7 +2262,7 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
     writeCSregister(mfec, fecchannel, 0x37);
     
     if (fecdebug == 2) mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
-    
+
     return 0;
 }
 //------------------------------------------------------------------------------------

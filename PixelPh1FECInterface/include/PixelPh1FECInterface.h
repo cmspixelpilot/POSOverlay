@@ -80,7 +80,7 @@ public:
     
     void mfecbusy(int mfec, int fecchannel, unsigned int *cs1,unsigned int *cs2);
     int outputbuffer(const int mfec, const int fecchannel, unsigned long data);
-    int outputblock(const int mfec, const int fecchannel,std::vector<uint32_t> wordcont);
+    void outputblock(const int mfec, const int fecchannel,std::vector<uint32_t> wordcont);
     void outputwordhalblock(const char *halname, unsigned int data);
     void outputwordhal(const char *halname, unsigned int data);
     
