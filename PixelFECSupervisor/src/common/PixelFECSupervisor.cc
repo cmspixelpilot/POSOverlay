@@ -1802,7 +1802,7 @@ std::string const msg_info_mvb = "--- Exit HALT ---";
 }
 
 void PixelFECSupervisor::HaltAction() {
-
+#if 0
   try {
     if (qpllWorkloop_->isActive()) qpllWorkloop_->cancel();
     qpllWorkloop_->remove(qpllCheck_);
@@ -1818,7 +1818,7 @@ this->notifyQualified("fatal",f);
   num_qpll_locked_ = 0;
   num_qpll_unlocked_ = 0;  
   qplllock_->give();
-  
+#endif  
 
   pclock_->take();
   detConfigLoaded_=false;
