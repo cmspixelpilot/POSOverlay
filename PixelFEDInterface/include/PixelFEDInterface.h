@@ -66,11 +66,35 @@ class PixelFEDInterface {
 
   void readPhases(bool verbose, bool override_timeout);
 
+struct encfifo1hit {
+  unsigned ch;
+  unsigned roc;
+  unsigned dcol;
+  unsigned pxl;
+  unsigned ph;
+};
+struct encfifo1 {
+  unsigned event;
+  bool found;
+  std::vector<encfifo1hit> hits;
+  encfifo1() : found(false) {}
+};
+
+
+struct digfifo1 {
+  std::vector<uint32_t> cFifo1A;
+  std::vector<uint32_t> cFifo1B;
+  std::vector<uint32_t> cMarkerA;
+  std::vector<uint32_t> cMarkerB;
+  encfifo1 a;
+  encfifo1 b;
+};
+
   std::vector<uint32_t> readTransparentFIFO();
   int drainTransparentFifo(uint32_t* data);
   std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
-  void readFIFO1();
+  digfifo1 readFIFO1();
   int drainFifo1(uint32_t* data);
   int drainTBMFifo(uint32_t* data);
   int drainErrorFifo(uint32_t* data);
