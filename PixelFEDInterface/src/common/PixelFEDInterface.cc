@@ -60,17 +60,19 @@ int PixelFEDInterface::setup() {
 
   // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
   //computeBlockSize( pFakeData );
-  const uint32_t fBlockSize32 = 0x7f;
+  const uint32_t fBlockSize32 = 0xa;
   cVecReg.push_back( {"pixfed_ctrl_regs.PACKET_NB", fBlockSize32 } );
 
   // <!--Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP-->
   cVecReg.push_back( {"ctrl.ttc_xpoint_A_out3", 0x0} );
 
-  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_1", 0xffffffff} );
-  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_2", 0xffffc30f} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_1", 0xfffffcff} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_2", 0xffffffff} );
   cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_3", 0xffffffff} );
   cVecReg.push_back( {"pixfed_ctrl_regs.TRIGGER_SEL", 0x0} );
   cVecReg.push_back( {"pixfed_ctrl_regs.data_type", 0x0} );
+  //  cVecReg.push_back( {"fe_ctrl_regs.decode_reg_reset", 1} );
+  cVecReg.push_back( {"fe_ctrl_regs.fifo_config.channel_of_interest", 8} );
 
   regManager->WriteStackReg(cVecReg);
   cVecReg.clear();
@@ -92,6 +94,8 @@ int PixelFEDInterface::setup() {
   fNthAcq = 0;
 
   getBoardInfo();
+
+  //  readPhases(true, true);
 
   return cDDR3calibrated;
 }
@@ -614,7 +618,92 @@ uint32_t PixelFEDInterface::readOSDFifo(int channel) {
   return 0;
 }
 
+void prettyprintPhase(const std::vector<uint32_t>& pData, int pChannel)
+{
+    std::cout <<  "Fibre: " << std::setw(2) <<  pChannel + 1 << "    " <<
+              std::bitset<1>( (pData.at( (pChannel * 4 ) + 0 ) >> 10 ) & 0x1 )   << "    " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 0 ) >> 5  ) & 0x1f )  << "    " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 0 )       ) & 0x1f ) << "    " <<
+      std::bitset<32>( pData.at( (pChannel * 4 ) + 1 )) << "    " <<
+              std::bitset<1>( (pData.at( (pChannel * 4 ) + 2 ) >> 31 ) & 0x1 )  << " " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 2 ) >> 23 ) & 0x1f)  << " " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 2 ) >> 18 ) & 0x1f)  << " " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 2 ) >> 13 ) & 0x1f ) << " " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 2 ) >> 8  ) & 0x1f ) << " " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 2 ) >> 5  ) & 0x7  ) << " " << std::setw(2) <<
+              ((pData.at( (pChannel * 4 ) + 2 )       ) & 0x1f ) << std::endl;
+}
+
 void PixelFEDInterface::readPhases(bool verbose, bool override_timeout) {
+    // Perform all the resets
+    std::vector< std::pair<std::string, uint32_t> > cVecReg;
+    cVecReg.push_back( { "fe_ctrl_regs.decode_reset", 1 } ); // reset deocode auto clear
+    cVecReg.push_back( { "fe_ctrl_regs.decode_reg_reset", 1 } ); // reset REG auto clear
+    cVecReg.push_back( { "fe_ctrl_regs.idel_ctrl_reset", 1} );
+    regManager->WriteStackReg(cVecReg);
+    cVecReg.clear();
+    cVecReg.push_back( { "fe_ctrl_regs.idel_ctrl_reset", 0} );
+    regManager->WriteStackReg(cVecReg);
+    cVecReg.clear();
+
+    // NOTE: here the register idel_individual_ctrl is the base address of the registers for all 48 channels. So each 32-bit word contains the control info for 1 channel. Thus by creating a vector of 48 32-bit words and writing them at the same time I can write to each channel without using relative addresses!
+
+    // set the parameters for IDELAY scan
+    std::vector<uint32_t> cValVec;
+    for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
+        // create a Value Vector that contains the write value for each channel
+        cValVec.push_back( 0x80000000 );
+    regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
+    cValVec.clear();
+
+    // set auto_delay_scan and set idel_RST
+    for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
+        cValVec.push_back( 0xc0000000 );
+    regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
+    cValVec.clear();
+
+    // set auto_delay_scan and remove idel_RST
+    for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
+        cValVec.push_back( 0x80000000 );
+    regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
+    cValVec.clear();
+
+    // some additional configuration
+    cVecReg.push_back( { "fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}); // set 192val
+    cVecReg.push_back( { "fe_ctrl_regs.fifo_config.channel_of_interest", 8} ); // set channel for scope FIFO
+    regManager->WriteStackReg(cVecReg);
+    cVecReg.clear();
+
+    // initialize Phase Finding
+    regManager->WriteReg("fe_ctrl_regs.initialize_swap", 1);
+    std::cout << "Initializing Phase Finding ..." << std::endl << std::endl;
+    sleep(3);
+
+    //here I might do the print loop again as Helmut does it in the latest version of the PixFED python script
+    regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
+
+    sleep(3);
+
+    std::cout <<  "Phase finding Results: " << std::endl;
+
+    uint32_t cNChannel = 24;
+    std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue( "idel_individual_stat_block", cNChannel * 4 );
+
+    std::cout << "FIBRE CTRL_RDY CNTVAL_Hi CNTVAL_Lo   pattern:                     S H1 L1 H0 L0   W R" << std::endl;
+    //for(uint32_t cChannel = 0; cChannel < 48; cChannel++){
+    for (uint32_t cChannel = 0; cChannel < cNChannel; cChannel++)
+    {
+        prettyprintPhase(cReadValues, cChannel);
+    }
+
+    //std::this_thread::sleep_for( cWait );
+
+    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 0} );
+    regManager->WriteStackReg(cVecReg);
+    cVecReg.clear();
+    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 1} );
+    regManager->WriteStackReg(cVecReg);
+    cVecReg.clear();
 }
 
 std::vector<uint32_t> PixelFEDInterface::readTransparentFIFO()
