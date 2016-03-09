@@ -1906,14 +1906,11 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
             if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped " << flipByte(*iword)  <<dec<<endl;
         }
 
-        cout <<"worked1"        <<endl;        
         outputblock(mfec, fecchannel, wordvec);
         
-	cout <<"worked2"	<<endl;	
         // reset and send GO
         writeCSregister(mfec, fecchannel, 0x07);
         
-        cout <<"worked3" <<endl;
         if (fecdebug == 2) mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
         
         return 0;
