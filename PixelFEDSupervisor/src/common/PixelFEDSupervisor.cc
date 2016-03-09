@@ -2231,6 +2231,8 @@ bool PixelFEDSupervisor::job_Configure ()
       assert(RegMgr_.empty());
       assert(FEDInterface_.empty());
       RegMgr_[vmeBaseAddress] = new RegManager(connectionFile_, "board0");
+      //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
+      //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
       
       FEDInterface_[vmeBaseAddress]=new PixelFEDInterface(RegMgr_[vmeBaseAddress]);
       FEDInterfaceFromFEDnumber_[fednumber]=FEDInterface_[vmeBaseAddress];
