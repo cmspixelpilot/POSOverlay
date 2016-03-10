@@ -253,16 +253,19 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
 	const unsigned channel = decode3->channel(ihit);
 	const unsigned rocid = decode3->rocid(ihit);
-	assert(rocid > 0);
 	const unsigned col = decode3->column(ihit);
 	const unsigned row = decode3->row(ihit);
 
-	const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
-
 	// Skip if this ROC is not on the list of ROCs to calibrate.
 	// Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
-	vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
-	if (foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
+	PixelROCName roc;
+	vector<PixelROCName>::const_iterator foundROC;
+	if (rocid > 0) {
+	  roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
+	  foundROC = find(rocs.begin(), rocs.end(), roc);
+	}
+
+	if (rocid == 0 || foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
 	  std::cout << "!! wrong roc: " << roc << " ch " << channel << " col " << col << " row " << row << std::endl;
 	  FillEm(state, F3wrongRoc, 1);
 	}

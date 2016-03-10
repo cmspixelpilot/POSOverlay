@@ -54,8 +54,8 @@ LibraryDirs =
 UserSourcePath = \
 	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
-UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long ${BUSADAPTERC++FLAG} -std=c++0x -DLINUX
+UserCFlags = -O0
+UserCCFlags = -g -O0 -Wno-long-long ${BUSADAPTERC++FLAG} -std=c++0x -DLINUX
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =

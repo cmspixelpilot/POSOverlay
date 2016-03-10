@@ -4,10 +4,7 @@ export XDAQ_BASE=/opt/xdaq
 export XDAQ_OS=linux
 export XDAQ_PLATFORM=x86_64_slc6
 export ROOTSYS=~/root
-export BUILD_HOME=~/TriDAS_XDAQ12
-
-# take out /usr/local/bin so you don't hit the newer gcc
-export PATH=$(echo $PATH | sed 's@/usr/local/bin:@@')
+export BUILD_HOME=~/uTCA/TriDAS
 
 # the part below should usually not be touched
 export XDAQ_DOCUMENT_ROOT=$XDAQ_ROOT/htdocs

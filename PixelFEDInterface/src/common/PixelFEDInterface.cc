@@ -11,7 +11,8 @@ using namespace std;
 
 PixelFEDInterface::PixelFEDInterface(RegManager* const rm)
   : Printlevel(1),
-    regManager(rm)
+    regManager(rm),
+    slink64calls(0)
 {
   num_SEU.assign(48, 0);
 }
@@ -61,19 +62,19 @@ int PixelFEDInterface::setup() {
 
   // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
   //computeBlockSize( pFakeData );
-  const uint32_t fBlockSize32 = 0xa;
+  const uint32_t fBlockSize32 = 0x1;
   cVecReg.push_back( {"pixfed_ctrl_regs.PACKET_NB", fBlockSize32 } );
 
   // <!--Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP-->
   cVecReg.push_back( {"ctrl.ttc_xpoint_A_out3", 0x0} );
 
-  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_1", 0xfffffcff} );
-  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_2", 0xffffffff} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_1", 0xffffffff} );
+  cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_2", 0xffffc30f} );
   cVecReg.push_back( {"pixfed_ctrl_regs.TBM_MASK_3", 0xffffffff} );
   cVecReg.push_back( {"pixfed_ctrl_regs.TRIGGER_SEL", 0x0} );
   cVecReg.push_back( {"pixfed_ctrl_regs.data_type", 0x0} );
   //  cVecReg.push_back( {"fe_ctrl_regs.decode_reg_reset", 1} );
-  cVecReg.push_back( {"fe_ctrl_regs.fifo_config.channel_of_interest", 8} );
+  cVecReg.push_back( {"fe_ctrl_regs.fifo_config.channel_of_interest", 22} );
 
   regManager->WriteStackReg(cVecReg);
   cVecReg.clear();
@@ -762,15 +763,16 @@ void prettyprintSpyFIFO(const std::vector<uint32_t>& pVec)
 
 std::vector<uint32_t> PixelFEDInterface::readSpyFIFO()
 {
+  
   std::vector<uint32_t> cSpy[2];
   const size_t N = 4096;
   for (int i = 0; i < 2; ++i) {
-    while (1) {
+    { //while (1) {
       std::vector<uint32_t> tmp = regManager->ReadBlockRegValue(i == 0 ? "fifo.spy_A" : "fifo.spy_B", N);
       std::vector<uint32_t>::iterator it = std::find(tmp.begin(), tmp.end(), 0);
-      int l = it - tmp.begin();
-      if (l == 0)
-	break;
+//      int l = it - tmp.begin();
+//      if (l == 0)
+//	break;
       cSpy[i].insert(cSpy[i].end(), tmp.begin(), it);
     }
   }
@@ -821,6 +823,8 @@ PixelFEDInterface::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pFifo
         {
 	  PixelFEDInterface::encfifo1hit h;
 	  h.ch = (pFifoVec.at(cIndex) >> 26) & 0x3f;
+	  if (h.ch == 45) h.ch = 33;
+	  if (h.ch == 46) h.ch = 34;
 	  h.roc = (pFifoVec.at(cIndex) >> 21) & 0x1f;
 	  h.dcol = (pFifoVec.at(cIndex) >> 16) & 0x1f;
 	  h.pxl = (pFifoVec.at(cIndex) >> 8) & 0xff;
@@ -856,7 +860,7 @@ PixelFEDInterface::digfifo1 PixelFEDInterface::readFIFO1() {
   df.a = prettyprintFIFO1(df.cFifo1A, df.cMarkerA, std::cout);
   std::cout << std::endl << "FIFO 1 Channel B: " << std::endl;
   df.b = prettyprintFIFO1(df.cFifo1B, df.cMarkerB, std::cout);
-  assert(df.a.event == df.b.event);
+  //  assert(df.a.event == 0 || df.b.event == 0 || df.a.event == df.b.event);
 
   return df;
 }
@@ -932,7 +936,7 @@ std::vector<uint32_t> PixelFEDInterface::ReadData(uint32_t pBlockSize )
     uint32_t cBlockSize = 0;
     if (pBlockSize == 0) cBlockSize = fBlockSize;
     else cBlockSize = pBlockSize;
-    std::cout << "JJJ READ DATA " << cBlockSize << std::endl;
+    //    std::cout << "JJJ READ DATA " << cBlockSize << std::endl;
     //std::chrono::milliseconds cWait( 10 );
     // the fNthAcq variable is automatically used to determine which DDR FIFO to read - so it has to be incremented in this method!
 
@@ -972,34 +976,48 @@ std::vector<uint32_t> PixelFEDInterface::ReadData(uint32_t pBlockSize )
       usleep(10000);
     regManager->WriteReg( fStrReadout, 0 );
 
-    prettyprintTBMFIFO(cData);
+    //prettyprintTBMFIFO(cData);
     fNthAcq++;
     return cData;
 }
 
 
 int PixelFEDInterface::spySlink64(uint64_t *data) {
+  ++slink64calls;
+  std::cout << "slink64call #" << slink64calls << std::endl;
+
   //  usleep(1000000);
   //sleep(10);
-  //readSpyFIFO();
+  readSpyFIFO();
   PixelFEDInterface::digfifo1 f = readFIFO1();
   data[0] = 0x5000000000000000;
-  data[0] |= uint64_t(f.a.event) << 32;
+  data[0] |= uint64_t(f.a.event & 0xffffff) << 32;
   data[0] |= uint64_t(41) << 8;
   size_t j = 1;
   for (size_t i = 0; i < f.a.hits.size(); ++i, ++j) {
     encfifo1hit h = f.a.hits[i];
-    data[j] = (h.ch << 26) | ((h.roc+1) << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+    data[j] = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
     data[j] |= uint64_t(0x1b) << 53;
   }
   for (size_t i = 0; i < f.b.hits.size(); ++i, ++j) {
     encfifo1hit h = f.b.hits[i];
-    data[j] = (h.ch << 26) | ((h.roc+1) << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+    data[j] = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
     data[j] |= uint64_t(0x1b) << 53;
   }
   data[j] = 0xa000000000000000;
-  data[j] |= uint64_t(j+1) << 32;
+  data[j] |= uint64_t((j+1)&0x3fff) << 32;
   ++j;
+
+  std::cout << "my fake fifo3:\n";
+  for (size_t i = 0; i < j; ++i)
+    std::cout << std::hex << "0x" << std::setw(8) << data[i] << std::endl;
+
+  regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
+  usleep(1000);
+  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK",0);
+  usleep(1000);
+  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK",1);
+  usleep(1000);
 
   //std::vector<uint32_t> cData = ReadData(1024);
   //cData = ReadData(1024);
