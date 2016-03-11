@@ -1,0 +1,52 @@
+echo this is d.ini
+sys
+fec  12
+mfec 12 7 -6P
+
+cn -6PL12
+#cn -6PL3
+cn hello
+module 14
+
+# FOR MODULE M_CL_907
+echo configuring module M_CL_907
+
+echo configuring rocs
+roc 1:15
+Vdig         8
+Vana       121
+Vsh         30
+Vcomp       12
+VwllPr     150
+VwllSh     150
+VhldDel    250
+Vtrim      103 
+VthrComp   145
+VIBias_Bus  30
+PHOffset   170
+Vcomp_ADC   50
+PHScale    130
+VIColOr     50
+Vcal       200
+CalDel      52
+CtrlReg      0
+WBC        167
+mask
+arm 4 4
+
+echo tbm reset
+tbm
+reset tbm
+#fullspeed
+disablepkam
+#enablepkam
+tbmpkamcount 255
+mode cal
+setA 7 200
+tbmadelay 228 
+tbmbdelay 228
+
+roc 0:15
+ReadBack 1
+
+echo done with d.ini

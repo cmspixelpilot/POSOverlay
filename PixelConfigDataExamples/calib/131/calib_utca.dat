@@ -1,0 +1,13 @@
+Mode: PixelAlive
+Parameters:
+useSOAP yes
+Rows:
+0
+Cols:
+0
+Vcal:
+255 255 1
+Repeat:
+1
+Rocs:
+all
