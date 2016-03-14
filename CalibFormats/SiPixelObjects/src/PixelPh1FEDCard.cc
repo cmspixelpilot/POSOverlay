@@ -181,6 +181,8 @@ PixelPh1FEDCard::PixelPh1FEDCard(string fileName)
   Ccntrl_original=Ccntrl;
   modeRegister_original=modeRegister;
 
+  assert(cntrl_3 == 0xFFFFFFFF);
+
   cntrl_1_original=cntrl_1;
   cntrl_2_original=cntrl_2;
   cntrl_3_original=cntrl_3;
@@ -302,7 +304,7 @@ void PixelPh1FEDCard::writeASCII(std::string dir) const {
 }
 
 uint64_t PixelPh1FEDCard::enabledChannels() {
-  return ~cntrl; 
+  return ~((uint64_t(cntrl_2) << 32) | cntrl_1); 
 }
 
 bool PixelPh1FEDCard::useChannel(unsigned int iChannel){
@@ -321,11 +323,14 @@ void PixelPh1FEDCard::setChannel(unsigned int iChannel, bool mode){
     bit=~bit;
     mask=mask&bit;
   }
-  cntrl = ~mask;
+  cntrl_1 = (~mask) & 0xFFFFFFFFULL;
+  cntrl_2 = (~mask) & 0xFFFFFFFF00000000ULL;
 }  
 
 void PixelPh1FEDCard::restoreChannelMasks(){
-  cntrl=cntrl_original;
+  cntrl_1=cntrl_1_original;
+  cntrl_2=cntrl_2_original;
+  cntrl_3=cntrl_3_original;
 }
 
 void PixelPh1FEDCard::restoreControlAndModeRegister(){
