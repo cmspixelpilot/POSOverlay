@@ -34,7 +34,7 @@ namespace pos{
 
     void writeASCII(std::string dir="") const; // write to files
 
-    uint64_t enabledChannels();  // returns 64-bit integer mask 35..0
+    uint64_t enabledChannels();  // returns 64-bit integer mask
     bool useChannel(unsigned int iChannel);
     void setChannel(unsigned int iChannel, bool mode);
     void restoreChannelMasks();
@@ -47,8 +47,12 @@ namespace pos{
     int NRocs[48];
 
     // enbable bits
-    uint64_t cntrl;
-    uint64_t cntrl_original;
+    uint32_t cntrl_1;
+    uint32_t cntrl_2;
+    uint32_t cntrl_3;
+    uint32_t cntrl_1_original;
+    uint32_t cntrl_2_original;
+    uint32_t cntrl_3_original;
 
     // Control register and delays for the TTCrx
     int CoarseDel,FineDes2Del,FineDes1Del;
@@ -88,6 +92,9 @@ namespace pos{
     
     // was roc skips, what now?
     uint32_t testreg;
+
+    // for setting the ddr data size expectation -- will we need this
+    uint32_t packet_nb;
 
     int BusyHoldMin       ;
     int BusyWhenBehind    ;

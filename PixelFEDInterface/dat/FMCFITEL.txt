@@ -10,7 +10,7 @@ DeviceConfigReg6					0x05		0x0d		0x0d        w
 
 PadStateReg							0x07		0x07		0x07        r
 
-# all channels disabled per default and will be enabled by SW upon configure!
+# all channels disabled by default and will be enabled by SW upon configure depending on fedcard
 AllCh_ConfigReg						0x3f		0x0e		0x02        w
 Ch01_ConfigReg						0x40		0x0e		0x02        w
 Ch02_ConfigReg						0x41		0x0e		0x02        w

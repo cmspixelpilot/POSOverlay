@@ -54,8 +54,12 @@ PixelPh1FEDCard::PixelPh1FEDCard(string fileName)
   }
 
   //These bits turn off(1) and on(0) channels
-  fscanf(infile,"Channel Enbable bits (on = 0):%llx\n", (long long unsigned*)&cntrl);
-  if(debug) printf("Channel Enbable bits (on = 0):%llx\n", (long long unsigned)cntrl);
+  fscanf(infile,"Channel Enbable bits Ch  1-32 (on = 0):%x\n", &cntrl_1);
+  if(debug) printf("Channel Enbable bits Ch  1-32 (on = 0):0x%x\n", cntrl_1);
+  fscanf(infile,"Channel Enbable bits Ch 33-64 (on = 0):%x\n", &cntrl_2);
+  if(debug) printf("Channel Enbable bits Ch 33-64 (on = 0):0x%x\n", cntrl_2);
+  fscanf(infile,"Channel Enbable bits Ch 65-96 (on = 0):%x\n", &cntrl_3);
+  if(debug) printf("Channel Enbable bits Ch 65-96 (on = 0):0x%x\n", cntrl_3);
   
   //These are delays to the TTCrx
   fscanf(infile,"TTCrx Coarse Delay Register 2:%d\n",&CoarseDel);
@@ -117,6 +121,9 @@ PixelPh1FEDCard::PixelPh1FEDCard(string fileName)
   fscanf(infile,"testreg:%x\n", &testreg);
   if(debug) printf("testreg:%x\n", testreg);
 
+  fscanf(infile,"packet_nb:%x\n", &packet_nb);
+  if(debug) printf("packet_nb:0x%x\n", packet_nb);
+
   fscanf(infile,"Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",&BusyWhenBehind);
   if(debug) printf("Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",BusyWhenBehind);
 				
@@ -174,7 +181,9 @@ PixelPh1FEDCard::PixelPh1FEDCard(string fileName)
   Ccntrl_original=Ccntrl;
   modeRegister_original=modeRegister;
 
-  cntrl_original=cntrl;
+  cntrl_1_original=cntrl_1;
+  cntrl_2_original=cntrl_2;
+  cntrl_3_original=cntrl_3;
 }
 
 void PixelPh1FEDCard::clear() {
@@ -184,8 +193,12 @@ void PixelPh1FEDCard::clear() {
   for(int i=0;i<48;i++) 
     NRocs[i] = 0;
 
-  cntrl        = 0; 
-  cntrl_original = 0;
+  cntrl_1        = 0; 
+  cntrl_2        = 0; 
+  cntrl_3        = 0; 
+  cntrl_1_original = 0;
+  cntrl_2_original = 0;
+  cntrl_3_original = 0;
   CoarseDel    = 0;
   ClkDes2      = 0;
   FineDes2Del  = 0;
@@ -202,6 +215,7 @@ void PixelPh1FEDCard::clear() {
   Errlvl       = 0;
   fifo1Bzlvl   = 0;
   fifo3Wrnlvl  = 0;
+  packet_nb = 0;
   
   BusyHoldMin	    = 0;
   BusyWhenBehind    = 0;
@@ -244,7 +258,9 @@ void PixelPh1FEDCard::writeASCII(std::string dir) const {
   fprintf(outfile,"FEDID Number                             :0x%lx\n", fedNumber);
   for(int i=0;i<48;i++)
     fprintf(outfile,"Number of ROCs Chnl %d:%d\n",i+1,NRocs[i]);
-  fprintf(outfile,"Channel Enbable bits chnls (on = 0):0x%llx\n", (long long unsigned)cntrl);
+  fprintf(outfile,"Channel Enbable bits Ch  1-32 (on = 0):0x%x\n", cntrl_1);
+  fprintf(outfile,"Channel Enbable bits Ch 33-64 (on = 0):0x%x\n", cntrl_2);
+  fprintf(outfile,"Channel Enbable bits Ch 65-96 (on = 0):0x%x\n", cntrl_3);
   fprintf(outfile,"TTCrx Coarse Delay Register 2:%d\n",CoarseDel);
   fprintf(outfile,"TTCrc      ClkDes2 Register 3:0x%x\n",ClkDes2);
   fprintf(outfile,"TTCrc Fine Dlay ClkDes2 Reg 1:%d\n",FineDes2Del);
@@ -261,7 +277,8 @@ void PixelPh1FEDCard::writeASCII(std::string dir) const {
   fprintf(outfile,"FED Master delay 0=0,1=32,2=48,3=64:%d\n", FedTTCDelay);
   fprintf(outfile,"TTCrx Register 0 fine delay ClkDes1:%d\n", FineDes1Del);
   fprintf(outfile,"fifo-1 hit limit (max ? (hard) ? (soft):%d\n", hitlimit); //ch 1-9
-  fprintf(outfile,"testreg:%x\n", testreg);
+  fprintf(outfile,"testreg:0x%x\n", testreg);
+  fprintf(outfile,"packet_nb:0x%x\n", packet_nb);
   fprintf(outfile,"Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n", BusyWhenBehind);
   fprintf(outfile,"D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):0x%x\n", FeatureRegister);	 
   fprintf(outfile,"Limit for fifo-2 almost full (point for the TTS flag):0x%x\n", FIFO2Limit);	 

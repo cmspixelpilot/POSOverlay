@@ -19,7 +19,16 @@ class PixelFEDInterface {
 
   typedef std::map < std::string, FitelRegItem > FitelRegMap;
 
-  typedef std::bitset<48> enbable_t;
+  typedef std::bitset<96> enbable_t;
+  enbable_t masks_to_enbable(uint32_t m1, uint32_t m2, uint32_t m3) {
+    enbable_t e = 0;
+    enbable_expected |= m3;
+    enbable_expected <<= 32;
+    enbable_expected |= m2;
+    enbable_expected <<= 32;
+    enbable_expected |= m1;
+    return e;
+  }
 
   PixelFEDInterface(RegManager*);
   ~PixelFEDInterface();
@@ -27,8 +36,8 @@ class PixelFEDInterface {
   void set_Printlevel(int level) { Printlevel = level; }
   int get_Printlevel() const { return Printlevel; }
 
-  pos::PixelPh1FEDCard& getPixelFEDCard() { return pixelFEDCard; }
-  void setPixelFEDCard(const pos::PixelPh1FEDCard& aPixelFEDCard) { pixelFEDCard = aPixelFEDCard; }
+  pos::PixelPh1FEDCard& getPixelFEDCard() { return card; }
+  void setPixelFEDCard(const pos::PixelPh1FEDCard& c) { card = c; }
 
   void set_fitel_fn_base(const std::string& b) { fitel_fn_base = b; }
 
@@ -160,25 +169,21 @@ struct digfifo1 {
   int TTCRX_I2C_REG_READ(int Register_Nr);
   int TTCRX_I2C_REG_WRITE(int Register_Nr, int Value);
 
-  void setBlockSize(uint32_t s) { fBlockSize = s; }
-  uint32_t getBlockSize() const { return fBlockSize; }
-
  private:
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
-  pos::PixelPh1FEDCard pixelFEDCard;
-
   RegManager* const regManager;
+
+  pos::PixelPh1FEDCard card;
 
   enum { FMC0_Fitel0, FMC0_Fitel1, FMC1_Fitel0, FMC1_Fitel1, nFitels};
   FitelRegMap fRegMap[nFitels];
   int FitelMapNum( int cFMCId, int cFitelId ) const { return 2*cFMCId + cFitelId; }
   std::string fitel_fn_base;
   std::string fRegMapFilename[nFitels];
-  void LoadFitelRegMap( int cFMCId, int cFitelId );
-  void ConfigureFitel(int cFMCId, int cFitelId , bool pVerifLoop );
+  void LoadFitelRegMap(int cFMCId, int cFitelId);
+  void ConfigureFitel(int cFMCId, int cFitelId, bool pVerifLoop);
 
   unsigned long long fNthAcq; // for keeping track of reading from ddr0/1
-  uint32_t fBlockSize; // sigh
   std::string fStrDDR;
   std::string fStrDDRControl;
   std::string fStrFull;

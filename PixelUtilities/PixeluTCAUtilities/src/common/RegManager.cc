@@ -58,6 +58,9 @@ bool RegManager::WriteStackReg(const std::vector< std::pair<std::string, uint32_
     if (fDebugPrints)
       std::cout << "\t" << fUniqueId << pVecReg[v].first << " 0x" << std::hex << pVecReg[v].second << std::dec << std::endl;
 
+    if (pVecReg[v].first == "REGMGR_DISPATCH")
+      fBoard->dispatch();
+
     fBoard->getNode(pVecReg[v].first).write(pVecReg[v].second);
   }
 
