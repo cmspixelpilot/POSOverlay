@@ -8,35 +8,8 @@ PixelFEDParameters::PixelFEDParameters()
 fednumber_=0;
 crate_=0;
 vmebaseaddress_=0;
-
-}
-
-PixelFEDParameters::~PixelFEDParameters()
-{
-
-}
-
-
-unsigned int PixelFEDParameters::getFEDNumber() const{
-
-  
-    return fednumber_;
-
-}
-
-
-unsigned int PixelFEDParameters::getCrate() const{
-
-    
-    return crate_;
-
-}
-
-
-unsigned int PixelFEDParameters::getVMEBaseAddress() const{
-
-    
-    return vmebaseaddress_;
+ type_="VME";
+ uri_="";
 
 }
 
@@ -45,25 +18,6 @@ void PixelFEDParameters::setFEDParameters( unsigned int fednumber , unsigned int
 fednumber_ = fednumber;
 crate_ = crate;
 vmebaseaddress_ =vmebaseaddress;
-
-}
-
-void PixelFEDParameters::setFEDNumber(unsigned int fednumber) {
-
-fednumber_ = fednumber;
-
-}
-
-
-void PixelFEDParameters::setCrate(unsigned int crate) {
-
-crate_=crate;
-
-}
-
-void PixelFEDParameters::setVMEBaseAddress(unsigned int vmebaseaddress){
-
-vmebaseaddress_=vmebaseaddress;
 
 }
 

@@ -1,26 +1,29 @@
-#include <uhal/uhal.hpp>
 #include "RegManager.h"
 
-
-#define JMTREGMGRPRINTS
-
-
-RegManager::RegManager(const std::string& puHalConfigFileName, const std::string& pBoardId)
-  : fUHalConfigFileName(puHalConfigFileName),
-    fBoardId(pBoardId),
-    fUniqueId(fUHalConfigFileName + ":" + fBoardId),
+RegManager::RegManager()
+  : fUniqueId("RegManager"),
     fVerifyWrites(false),
     fDebugPrints(false),
-    fCM(new uhal::ConnectionManager(fUHalConfigFileName)),
-    fBoard(new uhal::HwInterface(fCM->getDevice(fBoardId)))
-{
+    fCM(0),
+    fBoard(0)
+{}
+
+void RegManager::fromConfigFile(const std::string& puHalConfigFileName, const std::string& pBoardId) {
+  fUniqueId = fUHalConfigFileName + ":" + fBoardId;
+  
+  fCM = new uhal::ConnectionManager(fUHalConfigFileName);
+  fBoard = new uhal::HwInterface(fCM->getDevice(fBoardId));
+}
+
+void RegManager::fromURI(const std::string& fURI, const std::string& fAddressTableFilename) {
+  fUniqueId = fURI;
+  
+  fBoard = new uhal::HwInterface(how the hell ever);
 }
 
 RegManager::~RegManager() {
   delete fCM;
   delete fBoard;
-  fCM = 0;
-  fBoard = 0;
 }
     
 bool RegManager::WriteReg(const std::string& pRegNode, const uint32_t& pVal) {

@@ -256,8 +256,8 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
     datbase_=std::string(getenv("BUILD_HOME"))+"/pixel/PixelFEDInterface/dat/";  
   }
 
-  connectionFile_ = "file://" + std::string(build_home) + "/pixel/PixelFEDInterface/dat/connections.xml";
-
+  uTCAaddressTableFn_ = "file://" + std::string(build_home) + "/pixel/PixelFEDInterface/dat/address_table.xml";
+  
   crate_=this->getApplicationDescriptor()->getInstance();
   console_=new std::stringstream();
   eventNumber_=0;
@@ -2228,16 +2228,23 @@ bool PixelFEDSupervisor::job_Configure ()
       std::set <unsigned int> channels=i_fedsAndChannels->second;
       vmeBaseAddressAndFEDNumberAndChannels_.insert(make_pair(make_pair(vmeBaseAddress, fednumber), channels));
 
-      assert(RegMgr_.empty());
-      assert(FEDInterface_.empty());
-      RegMgr_[vmeBaseAddress] = new RegManager(connectionFile_, "board0");
-      //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
-      //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
+      const std::string fedtype = theFEDConfiguration_->typeFromFEDNumber(fednumber);
+      if (fedtype == "uTCA") {
+        RegMgr_[vmeBaseAddress] = new RegManager;
+        RegMgr_[vmeBaseAddress]->fromURI(theFEDConfiguration_->URIFromFEDNumber(fednumber));
+        //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
+        //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
       
-      FEDInterface_[vmeBaseAddress]=new PixelFEDInterface(RegMgr_[vmeBaseAddress]);
-      FEDInterfaceFromFEDnumber_[fednumber]=FEDInterface_[vmeBaseAddress];
+        FEDInterface_[vmeBaseAddress]=new PixelPh1FEDInterface(RegMgr_[vmeBaseAddress]);
 
-      FEDInterface_[vmeBaseAddress]->set_fitel_fn_base(datbase_);
+        FEDInterface_[vmeBaseAddress]->set_fitel_fn_base(datbase_);
+      }
+      else {
+        assert(fedtype == "VME");
+        assert(0);
+      }
+
+      FEDInterfaceFromFEDnumber_[fednumber] = FEDInterface_[vmeBaseAddress];
 
       //FEDInterface_[vmeBaseAddress]->set_Printlevel(1); // enable printout
       FEDInterface_[vmeBaseAddress]->reset();

@@ -11,12 +11,10 @@
  */
 class RegManager {
  protected:
-  const std::string fUHalConfigFileName;         /*!< path of the uHal Config File*/
-  const std::string fBoardId; /*!< board id from connection file*/
   std::string fUniqueId; /*!< used in prints*/
   bool fVerifyWrites; /*!< whether to verify writes*/
   bool fDebugPrints; /*!< print out mostly everything*/
-  uhal::ConnectionManager* fCM; /*!< connection manager*/
+  uhal::ConnectionManager* fCM; /*!< connection manager JMTBAD do we need to keep this around*/
   uhal::HwInterface* fBoard;         /*!< Board in use*/
         
  public:
@@ -75,13 +73,22 @@ class RegManager {
   virtual std::vector<uint32_t> ReadBlockRegValue( const std::string& pRegNode, const uint32_t& pBlocksize );
 
  public:
-  // Connection w uHal
   /*!
-   * \brief Constructor of the RegManager class
+   * \brief constructor. Hope you remember to call fromConfigFile or fromURI!
+   */
+  RegManager();
+  /*!
+   * \brief initializer of the RegManager class
    * \param puHalConfigFileName : path of the uHal Config File
    * \param pBoardId Board Id in the XML configuration file.
    */
-  RegManager(const std::string& puHalConfigFileName, const std::string& pBoardId);
+  void fromConfigFile(const std::string& puHalConfigFileName, const std::string& pBoardId);
+  /*!
+   * \brief Constructor of the RegManager class
+   * \param fURI : connection URI (ask a stupid question?)
+   * \param fAddressTableFn : address table fn
+   */
+  void fromURI(const std::string& fURI, const std::string& fAddressTableFn) {
   /*!
    * \brief Destructor of the RegManager class
    */
