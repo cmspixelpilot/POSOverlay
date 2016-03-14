@@ -40,6 +40,8 @@ namespace pos{
     unsigned int getCrate(unsigned int i) const;
     unsigned int getVMEBaseAddress(unsigned int i) const;
     unsigned int crateFromFEDNumber(unsigned int fednumber) const;
+    std::string typeFromFEDNumber(unsigned fednumber) const;
+    std::string URIFromFEDNumber(unsigned fednumber) const;
     unsigned int VMEBaseAddressFromFEDNumber(unsigned int fednumber) const;
     
     unsigned int FEDNumberFromCrateAndVMEBaseAddress(unsigned int crate, unsigned int vmebaseaddress) const;

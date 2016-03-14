@@ -2838,9 +2838,8 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
 
       if(FECInterface.find(fecVMEBaseAddress)==FECInterface.end()) {           
 #ifdef UTCA_XXX
-        assert(RegMgr_.empty());
-        assert(FECInterface.empty());
-        RegMgr_[fecVMEBaseAddress] = new RegManager(connectionFile_, "board0");
+        RegMgr_[fecVMEBaseAddress] = new RegManager;
+        RegMgr_[fecVMEBaseAddress]->fromURI("", "");
 	//RegMgr_[fecVMEBaseAddress]->setDebugPrints(true);
 	//RegMgr_[fecVMEBaseAddress]->setUniqueId("JMTFEC");
        int dummy = 0;

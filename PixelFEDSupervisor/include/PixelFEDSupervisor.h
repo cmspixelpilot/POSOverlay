@@ -279,7 +279,7 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     xdaq::ApplicationDescriptor* PixelSupervisor_;
 
     std::string htmlbase_,datbase_;
-    std::string connectionFile_;
+    std::string uTCAaddressTableFn_;
     std::string runType_;
     uint32_t eventNumber_;
     int countLoopsThisRun_;
