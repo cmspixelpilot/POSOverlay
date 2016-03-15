@@ -80,8 +80,11 @@
 //#include "CAENVMElib.h"  // CAEN library prototypes  NOT needed anymore? kme 10/05/06
 #include "VMEDevice.hh" 
 
+#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
+
 #include "PixelSupervisorConfiguration/include/PixelFEDSupervisorConfiguration.h" 
 #include "PixelFEDInterface/include/PixelFEDInterface.h" 
+#include "PixelPh1FEDInterface/include/PixelPh1FEDInterface.h" 
 #include "PixelFEDInterface/include/PixelFEDFifoData.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelHdwAddress.h"
