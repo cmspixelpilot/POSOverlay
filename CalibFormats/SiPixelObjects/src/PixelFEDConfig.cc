@@ -6,6 +6,7 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
+#include "CalibFormats/SiPixelObjects/interface/Utility.h"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -150,24 +151,24 @@ PixelFEDConfig::PixelFEDConfig(std::string filename):
 
     std::string line;
 
-    while (getline(file, line)) {
-      if (line.find_first_not_of( " \t" ) == std::string::npos) continue;
-      if (line.at(0) == '#' || line.at(0) == '*') continue;
-      std::vector<std::string> tokens = jmt_tokenize(line);
-      assert(tokens.size() >= 3);
+    while (getline(in, line)) {
+      if (line.find_first_not_of(" \t") == std::string::npos) continue;
+      std::vector<std::string> tokens = tokenize(line, true);
+      if (tokens.size() == 0) continue; // a comment line
+      assert(tokens.size() == 3 || tokens.size() == 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
 
-      unsigned fednumber = strtoul(tokens[0].c_str(), 0);
-      unsigned crate     = strtoul(tokens[1].c_str(), 0);
-      unsigned vme_base_address = strtoul(tokens[2].c_str(), 0, 16);
+      const unsigned fednumber        = strtoul(tokens[0].c_str(), 0, 10);
+      const unsigned crate            = strtoul(tokens[1].c_str(), 0, 10);
+      const unsigned vme_base_address = strtoul(tokens[2].c_str(), 0, 16);
 
       PixelFEDParameters tmp;
       tmp.setFEDParameters(fednumber, crate, vme_base_address);
 
       if (tokens.size() == 3 || tokens[3] != "uTCA") {
-        assert(tokens[3] == "VME");
+	tmp.setType("VME");
       }
       else {
-        assert(tokens.size() == 5);
+	tmp.setType("uTCA");
         tmp.setURI(tokens[4]);
       }
 
@@ -258,7 +259,7 @@ unsigned int PixelFEDConfig::crateFromFEDNumber(unsigned int fednumber) const{
 
 }
 
-unsigned int PixelFEDConfig::typeFromFEDNumber(unsigned int fednumber) const {
+std::string PixelFEDConfig::typeFromFEDNumber(unsigned int fednumber) const {
 
 
   std::string mthn = "[PixelFEDConfig::typeFromFEDNumber()]\t\t\t    " ;
@@ -274,7 +275,7 @@ unsigned int PixelFEDConfig::typeFromFEDNumber(unsigned int fednumber) const {
 
 }
 
-unsigned int PixelFEDConfig::URIFromFEDNumber(unsigned int fednumber) const {
+std::string PixelFEDConfig::URIFromFEDNumber(unsigned int fednumber) const {
 
 
   std::string mthn = "[PixelFEDConfig::URIFromFEDNumber()]\t\t\t    " ;

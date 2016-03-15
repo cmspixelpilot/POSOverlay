@@ -9,6 +9,7 @@
 */
 
 #include <iosfwd>
+#include <string>
 
 namespace pos{
 /*! \class PixelFEDParameters PixelFEDParameters.h "interface/PixelFEDParameters.h"

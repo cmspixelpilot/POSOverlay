@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<connections>
-<connection id="board0" uri="chtcp-2.0://ctrl-s2c16-07-01:10203?target=amc-s1g03-13-03:50001" address_table="file://address_table.xml" />
-</connections>

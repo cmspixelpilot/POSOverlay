@@ -1,41 +1,29 @@
-#include "RegManager.h"
+#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
-RegManager::RegManager()
-  : fUniqueId("RegManager"),
+RegManager::RegManager(const std::string& puHalConfigFileName, const std::string& pBoardId)
+  : fUniqueId(pBoardId),
     fVerifyWrites(false),
     fDebugPrints(false),
-    fCM(0),
-    fBoard(0)
+    fBoard(uhal::ConnectionManager(puHalConfigFileName).getDevice(pBoardId))
 {}
 
-void RegManager::fromConfigFile(const std::string& puHalConfigFileName, const std::string& pBoardId) {
-  fUniqueId = fUHalConfigFileName + ":" + fBoardId;
-  
-  fCM = new uhal::ConnectionManager(fUHalConfigFileName);
-  fBoard = new uhal::HwInterface(fCM->getDevice(fBoardId));
-}
-
-void RegManager::fromURI(const std::string& fURI, const std::string& fAddressTableFilename) {
-  fUniqueId = fURI;
-  
-  fBoard = new uhal::HwInterface(how the hell ever);
-}
-
-RegManager::~RegManager() {
-  delete fCM;
-  delete fBoard;
-}
+RegManager::RegManager(const std::string& pBoardId, const std::string& pURI, const std::string& pAddressTableFn)
+  : fUniqueId(pBoardId),
+    fVerifyWrites(false),
+    fDebugPrints(false),
+    fBoard(uhal::ConnectionManager::getDevice(pBoardId, pURI, pAddressTableFn))
+{}
     
 bool RegManager::WriteReg(const std::string& pRegNode, const uint32_t& pVal) {
   if (fDebugPrints)
     std::cout << fUniqueId << " WriteReg " << pRegNode << " 0x" << std::hex << pVal << std::dec << std::endl;
 
-  fBoard->getNode(pRegNode).write(pVal);
-  fBoard->dispatch();
+  fBoard.getNode(pRegNode).write(pVal);
+  fBoard.dispatch();
 
   if (fVerifyWrites) {
-    uhal::ValWord<uint32_t> reply = fBoard->getNode(pRegNode).read();
-    fBoard->dispatch();
+    uhal::ValWord<uint32_t> reply = fBoard.getNode(pRegNode).read();
+    fBoard.dispatch();
             
     if (!reply.valid()) {
       std::cout << fUniqueId << " Read invalid for node " << pRegNode << std::endl;
@@ -62,19 +50,19 @@ bool RegManager::WriteStackReg(const std::vector< std::pair<std::string, uint32_
       std::cout << "\t" << fUniqueId << pVecReg[v].first << " 0x" << std::hex << pVecReg[v].second << std::dec << std::endl;
 
     if (pVecReg[v].first == "REGMGR_DISPATCH")
-      fBoard->dispatch();
+      fBoard.dispatch();
 
-    fBoard->getNode(pVecReg[v].first).write(pVecReg[v].second);
+    fBoard.getNode(pVecReg[v].first).write(pVecReg[v].second);
   }
 
-  fBoard->dispatch();
+  fBoard.dispatch();
 
   if (fVerifyWrites) {
     size_t cNbOK = 0;
             
     for (size_t v = 0; v < pVecReg.size(); v++) {
-      uhal::ValWord<uint32_t> reply = fBoard->getNode(pVecReg[v].first).read();
-      fBoard->dispatch();
+      uhal::ValWord<uint32_t> reply = fBoard.getNode(pVecReg[v].first).read();
+      fBoard.dispatch();
                 
       if (!reply.valid())
 	std::cout << fUniqueId << " Read invalid for node " << pVecReg[v].first << std::endl;
@@ -104,16 +92,16 @@ bool RegManager::WriteBlockReg(const std::string& pRegNode, const std::vector<ui
       std::cout << "\t" << fUniqueId << " 0x" << std::hex << pValues[i] << std::dec << std::endl;
   }
 
-  fBoard->getNode(pRegNode).writeBlock(pValues);
-  fBoard->dispatch();
+  fBoard.getNode(pRegNode).writeBlock(pValues);
+  fBoard.dispatch();
         
   bool cWriteCorr = true;
   if (fVerifyWrites) {
     int cErrCount = 0;
             
-    uhal::ValVector<uint32_t> cBlockRead = fBoard->getNode(pRegNode).readBlock(pValues.size());
-    std::cout << fBoard->getNode(pRegNode).getAddress () <<" size " << fBoard->getNode(pRegNode).getSize() << std::endl;
-    fBoard->dispatch();
+    uhal::ValVector<uint32_t> cBlockRead = fBoard.getNode(pRegNode).readBlock(pValues.size());
+    std::cout << fBoard.getNode(pRegNode).getAddress () <<" size " << fBoard.getNode(pRegNode).getSize() << std::endl;
+    fBoard.dispatch();
             
     for (size_t i = 0; i != cBlockRead.size(); i++) {
       if (cBlockRead[i] != pValues.at(i)) {
@@ -135,15 +123,15 @@ bool RegManager::WriteBlockAtAddress(uint32_t uAddr, const std::vector<uint32_t>
       std::cout << "\t" << fUniqueId << " 0x" << std::hex << pValues[jmt] << std::dec << std::endl;
   }
 
-  fBoard->getClient().writeBlock(uAddr, pValues, bNonInc ? uhal::defs::NON_INCREMENTAL : uhal::defs::INCREMENTAL);
-  fBoard->dispatch();
+  fBoard.getClient().writeBlock(uAddr, pValues, bNonInc ? uhal::defs::NON_INCREMENTAL : uhal::defs::INCREMENTAL);
+  fBoard.dispatch();
         
   bool cWriteCorr = true;
   if (fVerifyWrites) {
     int cErrCount = 0;
             
-    uhal::ValVector<uint32_t> cBlockRead = fBoard->getClient().readBlock(uAddr, pValues.size(), bNonInc ? uhal::defs::NON_INCREMENTAL : uhal::defs::INCREMENTAL);
-    fBoard->dispatch();
+    uhal::ValVector<uint32_t> cBlockRead = fBoard.getClient().readBlock(uAddr, pValues.size(), bNonInc ? uhal::defs::NON_INCREMENTAL : uhal::defs::INCREMENTAL);
+    fBoard.dispatch();
             
     for (size_t i = 0; i != cBlockRead.size(); i++) {
       if (cBlockRead[i] != pValues.at(i)) {
@@ -159,8 +147,8 @@ bool RegManager::WriteBlockAtAddress(uint32_t uAddr, const std::vector<uint32_t>
 }
 
 uhal::ValWord<uint32_t> RegManager::ReadReg(const std::string& pRegNode) {
-  uhal::ValWord<uint32_t> cValRead = fBoard->getNode(pRegNode).read();
-  fBoard->dispatch();
+  uhal::ValWord<uint32_t> cValRead = fBoard.getNode(pRegNode).read();
+  fBoard.dispatch();
 
   if (fDebugPrints) {
     std::cout << fUniqueId << " ReadReg " << pRegNode << " valid? " << cValRead.valid();
@@ -173,8 +161,8 @@ uhal::ValWord<uint32_t> RegManager::ReadReg(const std::string& pRegNode) {
 }
     
 uhal::ValWord<uint32_t> RegManager::ReadAtAddress(uint32_t uAddr, uint32_t uMask) {
-  uhal::ValWord<uint32_t> cValRead = fBoard->getClient().read(uAddr, uMask);
-  fBoard->dispatch();
+  uhal::ValWord<uint32_t> cValRead = fBoard.getClient().read(uAddr, uMask);
+  fBoard.dispatch();
 
   if (fDebugPrints) {
     std::cout << fUniqueId << " ReadAtAddress @ 0x" << std::hex << uAddr << " mask 0x" << uMask << std::dec << " valid? " << cValRead.valid();
@@ -187,8 +175,8 @@ uhal::ValWord<uint32_t> RegManager::ReadAtAddress(uint32_t uAddr, uint32_t uMask
 }
     
 uhal::ValVector<uint32_t> RegManager::ReadBlockReg(const std::string& pRegNode, const uint32_t& pBlockSize) {
-  uhal::ValVector<uint32_t> cBlockRead = fBoard->getNode(pRegNode).readBlock(pBlockSize);
-  fBoard->dispatch();
+  uhal::ValVector<uint32_t> cBlockRead = fBoard.getNode(pRegNode).readBlock(pBlockSize);
+  fBoard.dispatch();
 
   if (fDebugPrints) {
     std::cout << fUniqueId << " ReadBlockReg " << pRegNode << " blocksize " << pBlockSize << " valid? " << cBlockRead.valid() << ":";

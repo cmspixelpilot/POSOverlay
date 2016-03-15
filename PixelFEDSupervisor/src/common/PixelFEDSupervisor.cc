@@ -2230,8 +2230,11 @@ bool PixelFEDSupervisor::job_Configure ()
 
       const std::string fedtype = theFEDConfiguration_->typeFromFEDNumber(fednumber);
       if (fedtype == "uTCA") {
-        RegMgr_[vmeBaseAddress] = new RegManager;
-        RegMgr_[vmeBaseAddress]->fromURI(theFEDConfiguration_->URIFromFEDNumber(fednumber));
+	char boardid[32];
+	snprintf(boardid, 32, "FED%02lu", fednumber);
+        RegMgr_[vmeBaseAddress] = new RegManager(boardid,
+						 theFEDConfiguration_->URIFromFEDNumber(fednumber),
+						 uTCAaddressTableFn_);
         //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
         //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
       

@@ -42,6 +42,7 @@ Packages=\
 	PixelUtilities/PixeluTCAUtilities \
 	PixelUtilities/PixelJobControlUtilities \
 	PixelFEDInterface \
+	PixelPh1FEDInterface \
 	PixelFECInterface \
 	PixelPh1FECInterface \
 	PixelSupervisorConfiguration \
@@ -77,6 +78,7 @@ install:
 	ln -s -f ../PixelPh1FECInterface/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelPh1FECInterface.so lib/.
 	ln -s -f ../PixelFECSupervisor/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelFECSupervisor.so lib/.
 	ln -s -f ../PixelFEDInterface/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelFEDInterface.so lib/.
+	ln -s -f ../PixelPh1FEDInterface/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelPh1FEDInterface.so lib/.
 	ln -s -f ../PixelFEDSupervisor/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelFEDSupervisor.so lib/.
 	ln -s -f ../PixelFEDMonitor/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelFEDMonitor.so lib/.
 	ln -s -f ../PixelMonitor/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelMonitor.so lib/.
