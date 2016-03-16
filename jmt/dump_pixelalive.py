@@ -6,9 +6,10 @@ set_style()
 
 run = run_from_argv()
 run_dir = run_dir(run)
-in_fn = os.path.join(run_dir, 'PixelAlive_Fed_40_Run_%i.root' % run)
-if not os.path.isfile(in_fn):
+in_fn = glob(os.path.join(run_dir, 'PixelAlive_Fed_*_Run_%i.root' % run))
+if not in_fn:
     raise RuntimeError('need to make the root file: /nfshome0/pixelpilot/build/TriDAS/pixel/jmt/pxalive.sh %i' % run)
+in_fn = in_fn[0]
 out_dir = os.path.join(run_dir, 'dump_pixelalive')
 os.system('mkdir -p %s' % out_dir)
 
