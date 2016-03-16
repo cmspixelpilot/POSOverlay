@@ -10,7 +10,7 @@ mask   0
 trim   0
 calib   0
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -29,7 +29,7 @@ mask   0
 trim   0
 calib   1
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -48,7 +48,7 @@ mask   0
 trim   0
 calib   2
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -67,7 +67,7 @@ mask   0
 trim   0
 calib   3
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -86,7 +86,7 @@ mask   0
 trim   0
 calib   4
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -105,7 +105,7 @@ mask   0
 trim   0
 calib   5
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -124,7 +124,7 @@ mask   0
 trim   0
 calib   6
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -143,7 +143,7 @@ mask   0
 trim   0
 calib   7
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -162,7 +162,7 @@ mask   0
 trim   0
 calib   8
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -180,7 +180,7 @@ dac   0
 mask   0
 trim   0
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -199,7 +199,7 @@ mask   0
 trim   0
 calib   0
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -218,7 +218,7 @@ mask   0
 trim   0
 calib   1
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -237,7 +237,7 @@ mask   0
 trim   11
 calib   9
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -256,7 +256,7 @@ mask   0
 trim   0
 calib   4
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -275,7 +275,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -303,7 +303,7 @@ mask   0
 trim   0
 calib   10
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -322,7 +322,7 @@ mask   0
 trim   0
 calib   20
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -341,7 +341,7 @@ mask   0
 trim   0
 calib   19
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -360,7 +360,7 @@ mask   0
 trim   0
 calib   13
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -379,7 +379,7 @@ mask   0
 trim   0
 calib   18
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -399,7 +399,7 @@ mask   0
 trim   0
 calib   21
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -416,7 +416,7 @@ mask   0
 trim   0
 calib   24
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -436,7 +436,7 @@ mask   0
 trim   0
 calib   25
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -455,7 +455,7 @@ mask   0
 trim   0
 calib   26
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -474,7 +474,7 @@ mask   0
 trim   0
 calib   27
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -494,7 +494,7 @@ mask   0
 trim   0
 calib   28
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -514,7 +514,7 @@ mask   0
 trim   0
 calib   29
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -534,7 +534,7 @@ mask   0
 trim   0
 calib   30
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -553,7 +553,7 @@ mask   0
 trim   0
 calib   31
 tbm   0
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -572,7 +572,7 @@ mask   0
 trim   11
 calib   32
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -591,7 +591,7 @@ mask   0
 trim   11
 calib   33
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -610,7 +610,7 @@ mask   0
 trim   0
 calib   7
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -629,7 +629,7 @@ mask   0
 trim   0
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -648,7 +648,7 @@ mask   0
 trim   0
 calib   33
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -667,7 +667,7 @@ mask   0
 trim   0
 calib   32
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -686,7 +686,7 @@ tbm   0
 mask   0
 trim   0
 calib   33
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -704,7 +704,7 @@ tbm   1
 mask   0
 trim   0
 calib   33
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -722,7 +722,7 @@ tbm   1
 mask   0
 trim   0
 calib   32
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -740,7 +740,7 @@ tbm   1
 mask   0
 trim   0
 calib   33
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -758,7 +758,7 @@ tbm   1
 mask   0
 trim   0
 calib   32
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -776,7 +776,7 @@ tbm   1
 mask   0
 trim   0
 calib   34
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -794,7 +794,7 @@ mask   0
 trim   11
 calib   35
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -813,7 +813,7 @@ mask   0
 trim   0
 calib   36
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -832,7 +832,7 @@ mask   0
 trim   11
 calib   37
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -850,7 +850,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -868,7 +868,7 @@ dac   28
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -887,7 +887,7 @@ mask   0
 trim   11
 calib   38
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -906,7 +906,7 @@ mask   0
 trim   11
 calib   39
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -925,7 +925,7 @@ mask   0
 trim   0
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -944,7 +944,7 @@ mask   0
 trim   0
 calib   44
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -963,7 +963,7 @@ mask   0
 trim   0
 calib   45
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -982,7 +982,7 @@ mask   0
 trim   1
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1001,7 +1001,7 @@ mask   0
 trim   0
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1020,7 +1020,7 @@ mask   0
 trim   4
 calib   40
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1039,7 +1039,7 @@ mask   0
 trim   5
 calib   57
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1058,7 +1058,7 @@ mask   0
 trim   5
 calib   58
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1077,7 +1077,7 @@ mask   0
 trim   5
 calib   59
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1096,7 +1096,7 @@ mask   0
 trim   5
 calib   60
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1115,7 +1115,7 @@ mask   0
 trim   5
 calib   61
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1134,7 +1134,7 @@ mask   0
 trim   5
 calib   62
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1153,7 +1153,7 @@ mask   0
 trim   5
 calib   63
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1172,7 +1172,7 @@ mask   0
 trim   5
 calib   64
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1191,7 +1191,7 @@ mask   0
 trim   5
 calib   65
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1210,7 +1210,7 @@ mask   0
 trim   5
 calib   66
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1229,7 +1229,7 @@ mask   0
 trim   5
 calib   67
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1248,7 +1248,7 @@ mask   0
 trim   5
 calib   68
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1267,7 +1267,7 @@ mask   0
 trim   5
 calib   69
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1286,7 +1286,7 @@ mask   0
 trim   5
 calib   70
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1305,7 +1305,7 @@ mask   0
 trim   5
 calib   71
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1324,7 +1324,7 @@ mask   0
 trim   5
 calib   72
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1343,7 +1343,7 @@ mask   0
 trim   2
 calib   73
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1362,7 +1362,7 @@ mask   0
 trim   2
 calib   74
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1381,7 +1381,7 @@ mask   0
 trim   2
 calib   75
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1400,7 +1400,7 @@ mask   0
 trim   2
 calib   76
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1419,7 +1419,7 @@ mask   0
 trim   2
 calib   77
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1438,7 +1438,7 @@ mask   0
 trim   2
 calib   78
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1457,7 +1457,7 @@ mask   0
 trim   2
 calib   79
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1476,7 +1476,7 @@ mask   0
 trim   3
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1495,7 +1495,7 @@ mask   0
 trim   3
 calib   44
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1514,7 +1514,7 @@ mask   0
 trim   3
 calib   45
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1533,7 +1533,7 @@ mask   0
 trim   1
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1552,7 +1552,7 @@ mask   0
 trim   0
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1571,7 +1571,7 @@ mask   0
 trim   11
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1590,7 +1590,7 @@ mask   0
 trim   9
 calib   44
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1609,7 +1609,7 @@ mask   0
 trim   9
 calib   45
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1628,7 +1628,7 @@ mask   0
 trim   1
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1647,7 +1647,7 @@ mask   0
 trim   0
 calib   43
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1666,7 +1666,7 @@ mask   0
 trim   7
 calib   80
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1685,7 +1685,7 @@ mask   0
 trim   10
 calib   91
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1704,7 +1704,7 @@ mask   0
 trim   10
 calib   92
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1723,7 +1723,7 @@ mask   0
 trim   10
 calib   93
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1742,7 +1742,7 @@ mask   0
 trim   10
 calib   94
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1761,7 +1761,7 @@ mask   0
 trim   10
 calib   95
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1780,7 +1780,7 @@ mask   0
 trim   10
 calib   96
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1799,7 +1799,7 @@ mask   0
 trim   10
 calib   97
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1818,7 +1818,7 @@ mask   0
 trim   10
 calib   98
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1837,7 +1837,7 @@ mask   0
 trim   10
 calib   99
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1856,7 +1856,7 @@ mask   0
 trim   10
 calib   100
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1875,7 +1875,7 @@ mask   0
 trim   10
 calib   101
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1894,7 +1894,7 @@ mask   0
 trim   10
 calib   102
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1913,7 +1913,7 @@ mask   0
 trim   10
 calib   103
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1932,7 +1932,7 @@ mask   0
 trim   10
 calib   104
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1951,7 +1951,7 @@ mask   0
 trim   10
 calib   105
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1970,7 +1970,7 @@ mask   0
 trim   10
 calib   106
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -1989,7 +1989,7 @@ mask   0
 trim   10
 calib   107
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2008,7 +2008,7 @@ mask   0
 trim   10
 calib   108
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2027,7 +2027,7 @@ mask   0
 trim   10
 calib   109
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2046,7 +2046,7 @@ mask   0
 trim   10
 calib   110
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2065,7 +2065,7 @@ mask   0
 trim   10
 calib   111
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2084,7 +2084,7 @@ mask   0
 trim   10
 calib   112
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2103,7 +2103,7 @@ mask   0
 trim   10
 calib   113
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2122,7 +2122,7 @@ mask   0
 trim   10
 calib   114
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2141,7 +2141,7 @@ mask   0
 trim   10
 calib   115
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2160,7 +2160,7 @@ mask   0
 trim   10
 calib   116
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2179,7 +2179,7 @@ mask   0
 trim   10
 calib   117
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2198,7 +2198,7 @@ mask   0
 trim   10
 calib   125
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2217,7 +2217,7 @@ mask   0
 trim   10
 calib   126
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2236,7 +2236,7 @@ mask   0
 trim   10
 calib   127
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2254,7 +2254,7 @@ dac   28
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2272,7 +2272,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2290,7 +2290,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2308,7 +2308,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2326,7 +2326,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2345,7 +2345,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2364,7 +2364,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2382,7 +2382,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2400,7 +2400,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2418,7 +2418,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2437,7 +2437,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2456,7 +2456,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2475,7 +2475,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2494,7 +2494,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2513,7 +2513,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -2531,7 +2531,7 @@ dac   28
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2549,7 +2549,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2567,7 +2567,7 @@ dac   28
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2586,7 +2586,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2605,7 +2605,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2624,7 +2624,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2643,7 +2643,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2662,7 +2662,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2681,7 +2681,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2700,7 +2700,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2719,7 +2719,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2738,7 +2738,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2757,7 +2757,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2776,7 +2776,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2795,7 +2795,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2814,7 +2814,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2833,7 +2833,7 @@ dac   38
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2852,7 +2852,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2871,7 +2871,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2890,7 +2890,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2909,7 +2909,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2928,7 +2928,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2947,7 +2947,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2966,7 +2966,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -2985,7 +2985,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3004,7 +3004,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3023,7 +3023,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3042,7 +3042,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3061,7 +3061,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3080,7 +3080,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3099,7 +3099,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3118,7 +3118,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3137,7 +3137,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3156,7 +3156,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3175,7 +3175,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3194,7 +3194,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3213,7 +3213,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3232,7 +3232,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3251,7 +3251,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3270,7 +3270,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3289,7 +3289,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3308,7 +3308,7 @@ dac   37
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3327,7 +3327,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3346,7 +3346,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3365,7 +3365,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3384,7 +3384,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3403,7 +3403,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3422,7 +3422,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3441,7 +3441,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3460,7 +3460,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3479,7 +3479,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3498,7 +3498,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3517,7 +3517,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3536,7 +3536,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3555,7 +3555,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3574,7 +3574,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3593,7 +3593,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3612,7 +3612,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3631,7 +3631,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3650,7 +3650,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3669,7 +3669,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3688,7 +3688,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3707,7 +3707,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3726,7 +3726,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3745,7 +3745,7 @@ dac   28
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3764,7 +3764,7 @@ mask   0
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -3782,7 +3782,7 @@ dac   39
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3800,7 +3800,7 @@ dac   39
 mask   1
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3818,7 +3818,7 @@ dac   40
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3836,7 +3836,7 @@ dac   41
 mask   0
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3854,7 +3854,7 @@ dac   41
 mask   3
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3872,7 +3872,7 @@ dac   41
 mask   3
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3890,7 +3890,7 @@ dac   41
 mask   4
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3908,7 +3908,7 @@ dac   41
 mask   5
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3927,7 +3927,7 @@ mask   5
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -3945,7 +3945,7 @@ dac   41
 mask   5
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3963,7 +3963,7 @@ dac   41
 mask   5
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3981,7 +3981,7 @@ dac   41
 mask   5
 trim   11
 tbm   3
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -3999,7 +3999,7 @@ dac   41
 mask   6
 trim   11
 tbm   3
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4017,7 +4017,7 @@ dac   41
 mask   6
 trim   11
 tbm   4
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4035,7 +4035,7 @@ dac   41
 mask   6
 trim   11
 tbm   5
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4053,7 +4053,7 @@ dac   41
 mask   6
 trim   11
 tbm   6
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4071,7 +4071,7 @@ dac   41
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4089,7 +4089,7 @@ dac   41
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4107,7 +4107,7 @@ dac   41
 mask   6
 trim   11
 tbm   2
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4125,7 +4125,7 @@ dac   42
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4143,7 +4143,7 @@ dac   42
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4161,7 +4161,7 @@ dac   43
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4179,7 +4179,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4197,7 +4197,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4215,7 +4215,7 @@ dac   44
 mask   7
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4233,7 +4233,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4251,7 +4251,7 @@ dac   44
 mask   7
 trim   11
 tbm   3
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4269,7 +4269,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4287,7 +4287,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4305,7 +4305,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4323,7 +4323,7 @@ dac   46
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4341,7 +4341,7 @@ dac   44
 mask   8
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4359,7 +4359,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4377,7 +4377,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4395,7 +4395,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4413,7 +4413,7 @@ dac   44
 mask   7
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4431,7 +4431,7 @@ dac   44
 mask   7
 trim   11
 tbm   3
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4449,7 +4449,7 @@ dac   44
 mask   7
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4467,7 +4467,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4485,7 +4485,7 @@ dac   44
 mask   7
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4503,7 +4503,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -4521,7 +4521,7 @@ dac   47
 mask   9
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4539,7 +4539,7 @@ dac   44
 mask   7
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4557,7 +4557,7 @@ dac   44
 mask   10
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4575,7 +4575,7 @@ dac   44
 mask   11
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4593,7 +4593,7 @@ dac   44
 mask   12
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4611,7 +4611,7 @@ dac   44
 mask   13
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4629,7 +4629,7 @@ dac   44
 mask   14
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4647,7 +4647,7 @@ dac   44
 mask   15
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4665,7 +4665,7 @@ dac   44
 mask   16
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4683,7 +4683,7 @@ dac   44
 mask   17
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4701,7 +4701,7 @@ dac   44
 mask   18
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4719,7 +4719,7 @@ dac   44
 mask   19
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4737,7 +4737,7 @@ dac   44
 mask   20
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -4755,7 +4755,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -4773,7 +4773,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4791,7 +4791,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4809,7 +4809,7 @@ dac   44
 mask   6
 trim   11
 tbm   7
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4827,7 +4827,7 @@ dac   44
 mask   6
 trim   11
 tbm   8
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4845,7 +4845,7 @@ dac   44
 mask   6
 trim   11
 tbm   9
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4863,7 +4863,7 @@ dac   44
 mask   6
 trim   11
 tbm   10
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4881,7 +4881,7 @@ dac   44
 mask   6
 trim   11
 tbm   11
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4899,7 +4899,7 @@ dac   44
 mask   6
 trim   11
 tbm   12
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4917,7 +4917,7 @@ dac   44
 mask   6
 trim   11
 tbm   13
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4935,7 +4935,7 @@ dac   44
 mask   6
 trim   11
 tbm   13
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4953,7 +4953,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -4971,7 +4971,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -4989,7 +4989,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5007,7 +5007,7 @@ dac   44
 mask   6
 trim   11
 tbm   14
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5025,7 +5025,7 @@ dac   44
 mask   6
 trim   11
 tbm   14
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   11
@@ -5043,7 +5043,7 @@ dac   44
 mask   6
 trim   11
 tbm   14
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5062,7 +5062,7 @@ mask   6
 trim   11
 calib 33
 tbm   14
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -5080,7 +5080,7 @@ dac   44
 mask   6
 trim   11
 tbm   14
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5098,7 +5098,7 @@ dac   44
 mask   6
 trim   11
 tbm   15
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5116,7 +5116,7 @@ dac   44
 mask   6
 trim   11
 tbm   16
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5134,7 +5134,7 @@ dac   44
 mask   6
 trim   11
 tbm   15
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5152,7 +5152,7 @@ dac   44
 mask   6
 trim   11
 tbm   16
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5170,7 +5170,7 @@ dac   44
 mask   6
 trim   11
 tbm   15
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5188,7 +5188,7 @@ dac   44
 mask   6
 trim   11
 tbm   16
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5206,7 +5206,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   12
@@ -5224,7 +5224,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5242,7 +5242,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5260,7 +5260,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5278,7 +5278,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5296,7 +5296,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   13
@@ -5314,7 +5314,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   14
@@ -5332,7 +5332,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5350,7 +5350,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5368,7 +5368,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5386,7 +5386,7 @@ dac   44
 mask   6
 trim   11
 tbm   17
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5404,7 +5404,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5422,7 +5422,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5440,7 +5440,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   15
@@ -5458,7 +5458,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5476,7 +5476,7 @@ dac   44
 mask   6
 trim   11
 tbm   18
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5494,7 +5494,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5512,7 +5512,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5530,7 +5530,7 @@ dac   44
 mask   6
 trim   11
 tbm   19
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5549,7 +5549,7 @@ mask   6
 trim   11
 calib 33
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -5567,7 +5567,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5585,7 +5585,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5603,7 +5603,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   16
@@ -5621,7 +5621,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   17
@@ -5639,7 +5639,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5657,7 +5657,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5675,7 +5675,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   18
@@ -5693,7 +5693,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5711,7 +5711,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5729,7 +5729,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5747,7 +5747,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5765,7 +5765,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5783,7 +5783,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5801,7 +5801,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5819,7 +5819,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5837,7 +5837,7 @@ dac   44
 mask   6
 trim   11
 tbm   2
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5855,7 +5855,7 @@ dac   44
 mask   6
 trim   11
 tbm   2
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5873,7 +5873,7 @@ dac   44
 mask   6
 trim   11
 tbm   2
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5891,7 +5891,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -5909,7 +5909,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -5927,7 +5927,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5945,7 +5945,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5963,7 +5963,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -5981,7 +5981,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -5999,7 +5999,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -6017,7 +6017,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   19
@@ -6035,7 +6035,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   20
@@ -6053,7 +6053,7 @@ dac   44
 mask   6
 trim   11
 tbm   20
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -6071,7 +6071,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   8
@@ -6089,7 +6089,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   21
@@ -6108,7 +6108,7 @@ mask   6
 trim   11
 calib   9
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -6127,7 +6127,7 @@ mask   6
 trim   11
 calib   35
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -6146,7 +6146,7 @@ mask   6
 trim   11
 calib   14
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -6164,7 +6164,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -6182,7 +6182,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -6200,7 +6200,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   22
@@ -6218,7 +6218,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   23
@@ -6236,7 +6236,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   24
@@ -6254,7 +6254,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -6272,7 +6272,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   26
@@ -6290,7 +6290,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -6308,7 +6308,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -6326,7 +6326,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   22
@@ -6344,7 +6344,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   23
@@ -6362,7 +6362,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   24
@@ -6380,7 +6380,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -6398,7 +6398,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   26
@@ -6416,7 +6416,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6434,7 +6434,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6452,7 +6452,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6470,7 +6470,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -6488,7 +6488,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -6506,7 +6506,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   22
@@ -6524,7 +6524,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   23
@@ -6542,7 +6542,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   24
@@ -6560,7 +6560,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -6578,7 +6578,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   26
@@ -6596,7 +6596,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6614,7 +6614,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6632,7 +6632,7 @@ dac   49
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6650,7 +6650,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   10
@@ -6668,7 +6668,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   9
@@ -6686,7 +6686,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   22
@@ -6704,7 +6704,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   23
@@ -6722,7 +6722,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   24
@@ -6740,7 +6740,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -6758,7 +6758,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   26
@@ -6776,7 +6776,7 @@ dac   45
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6794,7 +6794,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6812,7 +6812,7 @@ dac   44
 mask   21
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6830,7 +6830,7 @@ dac   45
 mask   7
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6848,7 +6848,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   2
 portcardmap   0
 ttcciconfig   7
@@ -6867,7 +6867,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   3
 portcardmap   0
 ttcciconfig   7
@@ -6885,7 +6885,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   4
 portcardmap   0
 ttcciconfig   7
@@ -6903,7 +6903,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   5
 portcardmap   0
 ttcciconfig   7
@@ -6921,7 +6921,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   6
 portcardmap   0
 ttcciconfig   7
@@ -6939,7 +6939,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   7
 portcardmap   0
 ttcciconfig   7
@@ -6957,7 +6957,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -6975,7 +6975,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   6
 portcardmap   0
 ttcciconfig   7
@@ -6993,7 +6993,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   6
 portcardmap   0
 ttcciconfig   7
@@ -7011,7 +7011,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   6
 portcardmap   0
 ttcciconfig   7
@@ -7029,7 +7029,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7047,7 +7047,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7065,7 +7065,7 @@ dac   45
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7083,7 +7083,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7101,7 +7101,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7119,7 +7119,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7137,7 +7137,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7155,7 +7155,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7173,7 +7173,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7191,7 +7191,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7209,7 +7209,7 @@ dac   44
 mask   6
 trim   11
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7228,7 +7228,7 @@ mask   6
 trim   11
 calib   33
 tbm   1
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7247,7 +7247,7 @@ mask   6
 trim   11
 calib   33
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7265,7 +7265,7 @@ dac   44
 mask   6
 trim   11
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7283,7 +7283,7 @@ dac   44
 mask   6
 trim   11
 tbm   22
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7302,7 +7302,7 @@ mask   22
 trim   11
 calib   33
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7321,7 +7321,7 @@ mask   23
 trim   11
 calib   33
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7340,7 +7340,7 @@ mask   23
 trim   11
 calib   14
 tbm   23
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7359,7 +7359,7 @@ mask   23
 trim   11
 calib   14
 tbm   23
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7377,7 +7377,7 @@ dac   44
 mask   23
 trim   11
 tbm   23
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7395,7 +7395,7 @@ dac   44
 mask   23
 trim   11
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7413,7 +7413,7 @@ dac   44
 mask   23
 trim   11
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -7431,7 +7431,7 @@ dac   44
 mask   23
 trim   11
 tbm   23
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7450,7 +7450,7 @@ mask   23
 trim   11
 calib   33
 tbm   23
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7468,7 +7468,7 @@ dac   50
 mask   23
 trim   11
 tbm   24
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7487,7 +7487,7 @@ mask   23
 trim   11
 calib   33
 tbm   21
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7505,7 +7505,7 @@ dac   50
 mask   23
 trim   11
 tbm   25
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7523,7 +7523,7 @@ dac   51
 mask   23
 trim   11
 tbm   25
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7542,7 +7542,7 @@ mask   23
 trim   11
 calib   33
 tbm   25
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7560,7 +7560,7 @@ dac   51
 mask   23
 trim   11
 tbm   26
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7578,7 +7578,7 @@ dac   52
 mask   23
 trim   11
 tbm   26
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7597,7 +7597,7 @@ mask   23
 trim   11
 calib   33
 tbm   26
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -7615,7 +7615,7 @@ dac   53
 mask   23
 trim   11
 tbm   27
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7633,7 +7633,7 @@ dac   53
 mask   23
 trim   11
 tbm   28
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7651,7 +7651,7 @@ dac   53
 mask   23
 trim   11
 tbm   29
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7669,7 +7669,7 @@ dac   53
 mask   23
 trim   11
 tbm   30
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7687,7 +7687,7 @@ dac   53
 mask   23
 trim   11
 tbm   31
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7705,7 +7705,7 @@ dac   53
 mask   23
 trim   11
 tbm   32
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7723,7 +7723,7 @@ dac   53
 mask   23
 trim   11
 tbm   33
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7741,7 +7741,7 @@ dac   53
 mask   23
 trim   11
 tbm   34
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7759,7 +7759,7 @@ dac   53
 mask   23
 trim   11
 tbm   35
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7777,7 +7777,7 @@ dac   53
 mask   23
 trim   11
 tbm   36
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7795,7 +7795,7 @@ dac   53
 mask   23
 trim   11
 tbm   37
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7813,7 +7813,7 @@ dac   53
 mask   23
 trim   11
 tbm   38
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7831,7 +7831,7 @@ dac   53
 mask   23
 trim   11
 tbm   39
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7849,7 +7849,7 @@ dac   53
 mask   23
 trim   11
 tbm   40
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7867,7 +7867,7 @@ dac   53
 mask   23
 trim   11
 tbm   41
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7885,7 +7885,7 @@ dac   53
 mask   23
 trim   11
 tbm   42
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7903,7 +7903,7 @@ dac   53
 mask   23
 trim   11
 tbm   43
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7921,7 +7921,7 @@ dac   53
 mask   23
 trim   11
 tbm   44
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7957,7 +7957,7 @@ dac   53
 mask   23
 trim   11
 tbm   43
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7975,7 +7975,7 @@ dac   53
 mask   23
 trim   11
 tbm   43
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -7993,7 +7993,7 @@ dac   53
 mask   23
 trim   11
 tbm   45
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -8011,7 +8011,7 @@ dac   53
 mask   23
 trim   11
 tbm   46
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -8029,7 +8029,7 @@ dac   53
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -8048,7 +8048,7 @@ mask   23
 trim   11
 calib   9
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8067,7 +8067,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8086,7 +8086,7 @@ mask   23
 trim   11
 calib   14
 tbm   48
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8105,7 +8105,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8124,7 +8124,7 @@ mask   23
 trim   11
 calib   14
 tbm   49
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8143,7 +8143,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8162,7 +8162,7 @@ mask   23
 trim   11
 calib   33
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8181,7 +8181,7 @@ mask   23
 trim   11
 calib   33
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8200,7 +8200,7 @@ mask   23
 trim   11
 calib   33
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8219,7 +8219,7 @@ mask   23
 trim   11
 calib   33
 tbm   23
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8238,7 +8238,7 @@ mask   23
 trim   11
 calib   33
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8257,7 +8257,7 @@ mask   23
 trim   11
 calib   33
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8276,7 +8276,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8295,7 +8295,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8314,7 +8314,7 @@ mask   23
 trim   11
 calib   14   
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8333,7 +8333,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8352,7 +8352,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8371,7 +8371,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8390,7 +8390,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8409,7 +8409,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8428,7 +8428,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8447,7 +8447,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8466,7 +8466,7 @@ mask   23
 trim   11
 calib   9
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8485,7 +8485,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8504,7 +8504,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8523,7 +8523,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8542,7 +8542,7 @@ mask   23
 trim   11
 calib   9
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8560,7 +8560,7 @@ dac   69
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -8578,7 +8578,7 @@ dac   70
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -8596,7 +8596,7 @@ dac   71
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -8614,7 +8614,7 @@ dac   72
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -8632,7 +8632,7 @@ dac   73
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -8651,7 +8651,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8670,7 +8670,7 @@ mask   23
 trim   11
 calib   9 
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8689,7 +8689,7 @@ mask   23
 trim   11
 calib   9 
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8708,7 +8708,7 @@ mask   23
 trim   11
 calib   9
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8727,7 +8727,7 @@ mask   23
 trim   11
 calib   9
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8746,7 +8746,7 @@ mask   23
 trim   11
 calib   9
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8764,7 +8764,7 @@ dac   78
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -8783,7 +8783,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8802,7 +8802,7 @@ mask   23
 trim   11
 calib   35
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8821,7 +8821,7 @@ mask   23
 trim   11
 calib   35
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8839,7 +8839,7 @@ dac   78
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   25
@@ -8858,7 +8858,7 @@ mask   23
 trim   11
 calib   76
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8877,7 +8877,7 @@ mask   23
 trim   11
 calib   128
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8896,7 +8896,7 @@ mask   23
 trim   11
 calib   129
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -8914,7 +8914,7 @@ dac   78
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   27
@@ -8932,7 +8932,7 @@ dac   78
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   28
@@ -8950,7 +8950,7 @@ dac   78
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   29
@@ -8968,7 +8968,7 @@ dac   78
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -8986,7 +8986,7 @@ dac   79
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -9004,7 +9004,7 @@ dac   80
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -9022,7 +9022,7 @@ dac   81
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -9040,7 +9040,7 @@ dac   82
 mask   23
 trim   11
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   7
@@ -9059,7 +9059,7 @@ mask   23
 trim   11
 calib   130
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -9078,7 +9078,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -9097,7 +9097,7 @@ mask   23
 trim   11
 calib   14
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -9116,7 +9116,7 @@ mask   23
 trim   11
 calib   78
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -9135,7 +9135,7 @@ mask   23
 trim   11
 calib   131
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -9154,7 +9154,7 @@ mask   23
 trim   11
 calib   132
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
@@ -9173,7 +9173,7 @@ mask   23
 trim   11
 calib   78  
 tbm   47
-dcdc   0
+dcdc   1
 portcard   0
 portcardmap   0
 ttcciconfig   0
