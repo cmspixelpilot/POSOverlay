@@ -17,11 +17,11 @@ class SimpleSocket:
 
         if not host==None and not port==None:
             # initialize as a client
-            if not self.connect(timeout):
+           if not self.connect(timeout):
                 sys.exit(1)
             
         elif host==None and not port==None:
-            # implement a server on the given port
+            # implement a server on the given port  
             self.serverSocket = socket.socket ( socket.AF_INET, socket.SOCK_STREAM )
             self.serverSocket.bind(('',port))
             self.serverSocket.listen(5)
@@ -184,18 +184,22 @@ class SimpleSocket:
         return slurp
             
     def send(self,msg,msgType=' ',closeOnError=True):
+        # print "enter send. msg ", msg
         self.log=""
         totalsent = 0
         packet=self.packetFormat%(msgType,len(msg),msg)
         while totalsent < len(packet):
             try:
+                # print "***********trying to send" 
                 sent = self.socket.send(packet[totalsent:])
                 totalsent+= sent
+                # print "DEBUG  ************** sent ", sent," totalsent ", totalsent
                 if sent == 0:
                     if closeOnError: self.close(notifyServer=False)
                     return self
                     #raise RuntimeError,"socket connection broken"
             except socket.error:
+                # print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" 
                 print "connection to server died",closeOnError
                 if closeOnError: self.close(notifyServer=False)
                 return self

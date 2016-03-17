@@ -40,6 +40,8 @@ int initialize(PixelFEDInterface &fed1, HAL::VMEDevice &PixFEDCard) {
   // Setup from file
   string fileName("params_fed.dat"); // define the file name
   PixelFEDCard pixelFEDCard(fileName); // instantiate the FED settings(should be private)
+  //pixelFEDCard.DelayCh[1] = 0;
+  //pixelFEDCard.DelayCh[0] = 0;
   
   status = fed1.setupFromDB(pixelFEDCard);
   if (status == -1) {
@@ -74,7 +76,7 @@ int main(int argc, char *argv[]) {
   // -- FED base address
   unsigned long fedBase(0);
   // fedBase = 0x11000000; // window
-  fedBase = 0x10000000; // door
+  fedBase = 0x11000000; // door
   std::map<string, unsigned long> fedbases;
   fedbases["-1N"]=0x10000000;fedbases["-2N"]=0x11000000;fedbases["-3N"]=0x12000000;fedbases["-4N"]=0x13000000;
   fedbases["+4N"]=0x14000000;fedbases["+3N"]=0x15000000;fedbases["+2N"]=0x16000000;fedbases["+1N"]=0x17000000;
@@ -113,7 +115,7 @@ int main(int argc, char *argv[]) {
   cout << "0" << endl;
   HAL::CAENLinuxBusAdapter busAdapter( HAL::CAENLinuxBusAdapter::V2718 );
   cout << "1" << endl;
-  //  HAL::CAENLinuxBusAdapter busAdapter( HAL::CAENLinuxBusAdapter::V1718 );
+  //HAL::CAENLinuxBusAdapter busAdapter( HAL::CAENLinuxBusAdapter::V1718 );
   cout << "2" << endl;
   HAL::VMEAddressTableASCIIReader addressTableReader("FEDAddressMap.dat");
   cout << "3" << endl;
@@ -158,8 +160,8 @@ int main(int argc, char *argv[]) {
       if (eventNumber%NUM_PRINT == 0) 
 	cout <<" New event "<<eventNumber<<" "<< endl;					  
     } 
-    usleep(1000); //  about 20ms
-    
+    usleep(200000); //  about 20ms
+
     if (eventNumber==previousNumber) {
       cout<<" no new event"<<endl;
       continue;
@@ -167,7 +169,7 @@ int main(int argc, char *argv[]) {
     lock.acquire();
     eventNumber=fed1.readEventCounter();  // This is now the new event counter
     previousNumber=eventNumber;
-    
+
     for (int chan = chanMin; chan < (chanMax+1); ++chan) {  
       status = fed1.drainFifo1(chan, buffer, 4096); 
       fedScope.readBuffer(chan-1, buffer, eventNumber);

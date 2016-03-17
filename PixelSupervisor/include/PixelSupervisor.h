@@ -69,7 +69,7 @@
 #include "toolbox/task/TimerListener.h"
 #include "toolbox/TimeInterval.h"
 #include "xcept/Exception.h"
-#include "xmas/sensor/exception/Exception.h"
+#include "xmas/sensord/exception/Exception.h"
 
 // temporary DiagSystem wrapper
 #include "PixelSupervisor/include/DiagWrapper.h"

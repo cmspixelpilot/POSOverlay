@@ -1,0 +1,6 @@
+#!/bin/bash
+source setup.bsh
+
+
+echo "starting fed server"
+./digitalfed  -port 2006

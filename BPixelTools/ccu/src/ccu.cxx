@@ -440,20 +440,21 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     o<< setDoh ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, dohdeviceAddress, loop, tms, true, init_doh_gain0, true, init_doh_gain1, true, init_doh_gain2, true, init_doh_bias0, true, init_doh_bias1, true, init_doh_bias2);
     o<< setDoh ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, dohdeviceAddress, loop, tms, true, init_doh_gain0, true, init_doh_gain1, true, init_doh_gain2, true, init_doh_bias0, true, init_doh_bias1, true, init_doh_bias2);
     
+    //TO BE REPLACED BY POH INIT
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh1AdeviceAddress, loop, tms, true, init_aoh1a_gain0, true, init_aoh1a_gain1, true, init_aoh1a_gain2, true, init_aoh1a_bias0, true, init_aoh1a_bias1, true, init_aoh1a_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh1BdeviceAddress, loop, tms, true, init_aoh1b_gain0, true, init_aoh1b_gain1, true, init_aoh1b_gain2, true, init_aoh1b_bias0, true, init_aoh1b_bias1, true, init_aoh1b_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh2AdeviceAddress, loop, tms, true, init_aoh2a_gain0, true, init_aoh2a_gain1, true, init_aoh2a_gain2, true, init_aoh2a_bias0, true, init_aoh2a_bias1, true, init_aoh2a_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh2BdeviceAddress, loop, tms, true, init_aoh2b_gain0, true, init_aoh2b_gain1, true, init_aoh2b_gain2, true, init_aoh2b_bias0, true, init_aoh2b_bias1, true, init_aoh2b_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh3AdeviceAddress, loop, tms, true, init_aoh3a_gain0, true, init_aoh3a_gain1, true, init_aoh3a_gain2, true, init_aoh3a_bias0, true, init_aoh3a_bias1, true, init_aoh3a_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh3BdeviceAddress, loop, tms, true, init_aoh3b_gain0, true, init_aoh3b_gain1, true, init_aoh3b_gain2, true, init_aoh3b_bias0, true, init_aoh3b_bias1, true, init_aoh3b_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh4AdeviceAddress, loop, tms, true, init_aoh4a_gain0, true, init_aoh4a_gain1, true, init_aoh4a_gain2, true, init_aoh4a_bias0, true, init_aoh4a_bias1, true, init_aoh4a_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, aoh4BdeviceAddress, loop, tms, true, init_aoh4b_gain0, true, init_aoh4b_gain1, true, init_aoh4b_gain2, true, init_aoh4b_bias0, true, init_aoh4b_bias1, true, init_aoh4b_bias2);
   
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh1deviceAddress, loop, tms, true, init_aoh1a_gain0, true, init_aoh1a_gain1, true, init_aoh1a_gain2, true, init_aoh1a_bias0, true, init_aoh1a_bias1, true, init_aoh1a_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh2deviceAddress, loop, tms, true, init_aoh1b_gain0, true, init_aoh1b_gain1, true, init_aoh1b_gain2, true, init_aoh1b_bias0, true, init_aoh1b_bias1, true, init_aoh1b_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh3deviceAddress, loop, tms, true, init_aoh2a_gain0, true, init_aoh2a_gain1, true, init_aoh2a_gain2, true, init_aoh2a_bias0, true, init_aoh2a_bias1, true, init_aoh2a_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh4deviceAddress, loop, tms, true, init_aoh2b_gain0, true, init_aoh2b_gain1, true, init_aoh2b_gain2, true, init_aoh2b_bias0, true, init_aoh2b_bias1, true, init_aoh2b_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh5deviceAddress, loop, tms, true, init_aoh3a_gain0, true, init_aoh3a_gain1, true, init_aoh3a_gain2, true, init_aoh3a_bias0, true, init_aoh3a_bias1, true, init_aoh3a_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh6deviceAddress, loop, tms, true, init_aoh3b_gain0, true, init_aoh3b_gain1, true, init_aoh3b_gain2, true, init_aoh3b_bias0, true, init_aoh3b_bias1, true, init_aoh3b_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x11, poh7deviceAddress, loop, tms, true, init_aoh4a_gain0, true, init_aoh4a_gain1, true, init_aoh4a_gain2, true, init_aoh4a_bias0, true, init_aoh4a_bias1, true, init_aoh4a_bias2);
   
-  
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, poh1deviceAddress, loop, tms, true, init_aoh1a_gain0, true, init_aoh1a_gain1, true, init_aoh1a_gain2, true, init_aoh1a_bias0, true, init_aoh1a_bias1, true, init_aoh1a_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, poh2deviceAddress, loop, tms, true, init_aoh1b_gain0, true, init_aoh1b_gain1, true, init_aoh1b_gain2, true, init_aoh1b_bias0, true, init_aoh1b_bias1, true, init_aoh1b_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, poh3deviceAddress, loop, tms, true, init_aoh2a_gain0, true, init_aoh2a_gain1, true, init_aoh2a_gain2, true, init_aoh2a_bias0, true, init_aoh2a_bias1, true, init_aoh2a_bias2);
-      o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, poh4deviceAddress, loop, tms, true, init_aoh2b_gain0, true, init_aoh2b_gain1, true, init_aoh2b_gain2, true, init_aoh2b_bias0, true, init_aoh2b_bias1, true, init_aoh2b_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, aoh1AdeviceAddress, loop, tms, true, init_aoh1a_gain0, true, init_aoh1a_gain1, true, init_aoh1a_gain2, true, init_aoh1a_bias0, true, init_aoh1a_bias1, true, init_aoh1a_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, aoh1BdeviceAddress, loop, tms, true, init_aoh1b_gain0, true, init_aoh1b_gain1, true, init_aoh1b_gain2, true, init_aoh1b_bias0, true, init_aoh1b_bias1, true, init_aoh1b_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, aoh2AdeviceAddress, loop, tms, true, init_aoh2a_gain0, true, init_aoh2a_gain1, true, init_aoh2a_gain2, true, init_aoh2a_bias0, true, init_aoh2a_bias1, true, init_aoh2a_bias2);
+      // o << setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x13, aoh2BdeviceAddress, loop, tms, true, init_aoh2b_gain0, true, init_aoh2b_gain1, true, init_aoh2b_gain2, true, init_aoh2b_bias0, true, init_aoh2b_bias1, true, init_aoh2b_bias2);
   
  
       
@@ -468,6 +469,47 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   
  
   }
+
+
+ //************************************DCDCdisabletry
+  else if (tokens[0]=="disable"){
+
+    unsigned int dcdcAddress = 99;
+    if ( tokens.size()>2 && tokens[1]=="dcdc" ) 
+      dcdcAddress = atoi(tokens[2].c_str());
+    
+    if (dcdcAddress >= 0 && dcdcAddress <13) 
+      return DCDCdisable (fecAccess, fecAddress, ringAddress, ccuAddress, dcdcAddress, false) ;
+    //return DCDCenableTest (fecAccess, fecAddress, ringAddress, dcdcAddress, false) ;
+    else 
+      return "invalid DCDC address";
+ 
+  } 
+
+ //************************************power
+  else if (tokens[0]=="power"){
+    std::vector<std::string> v = {"all","none","L1","L4","L2","L3","L34","L12","L23","L14"}; 
+    unsigned int dcdcAddress = 99;
+    unsigned int i=0;
+    for(i=0;i<v.size();i++){
+      if ( tokens.size()==2 && tokens[1]==v[i] ) 
+	dcdcAddress =13-i;
+      //dcdcAddress = atoi(tokens[2].c_str());
+
+    }
+    
+    
+    if (dcdcAddress >= 0 && dcdcAddress <=13) 
+      return DCDCdisable (fecAccess, fecAddress, ringAddress, ccuAddress, dcdcAddress, false) ;
+    //return DCDCenableTest (fecAccess, fecAddress, ringAddress, dcdcAddress, false) ;
+    else     
+      return "invalid DCDC address";  
+ 
+  } 
+ 
+  //************************************SCANCCU
+
+
 
   //************************************DCDCENABLETES
   else if (tokens[0]=="enabletest"){
@@ -594,10 +636,25 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
       return testPIAResetfunctions ( fecAccess, fecAddress, ringAddress, ccuAddress, piaChannel, piaResetValue, 1, 10000, loop, tms );
     }
     else {
-      return string("not an option! options for piareset: [roc],[aoh],[doh],[res1],[res2]");
+      return string("not an option! options for piareset: [all],[roc],[aoh],[doh],[res1],[res2]");
     }
     
   }
+  //************************************ccu wich port crc register
+  //************************************
+   else if (tokens[0]=="get") {
+     // if (tokens.size() == 1){cout << "enter ccu address"<< endl;
+     //   return 0;}
+     // else{
+       //unsigned int ccun = strtol (tokens[1].c_str(),NULL,16);
+    //return displayCCUCRC(ccun);
+     return displayStatus(fecAccess, fecAddress, ringAddress );
+     //}
+   
+   }
+
+  //************************************
+  //************************************
   //************************************REDUNDNACY
   //************************************
   else if (tokens[0]=="redundancy") { // Ring A - B
@@ -660,6 +717,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     else {
       //printf ("%d %d %d\n", ccuAddresses[nbccu-1][0], ccuAddresses[nbccu-1][1], ccuAddresses[nbccu-1][2]);
       return testRedundancyRing ( fecAccess, fecAddress, ringAddress, ccuAddresses, nbccu) ;
+      //return scanRedundancyRing ( fecAccess, fecAddress, ringAddress, ccuAddresses, nbccu) ;
     }
     
   }
@@ -698,8 +756,9 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
       unsigned int AddressChannel = strtol (tokens[2].c_str(),NULL,16); 
       deviceAddress = strtol (tokens[3].c_str(),NULL,16); 
       if (tokens[4]=="read"){
-	return getI2CDevice ( fecAccess, l_fecAddress, l_ringAddress, l_ccuAddress, AddressChannel, deviceAddress, modeType, loop, tms) ;
-      }else{
+	return getI2CDevice ( fecAccess, l_fecAddress, l_ringAddress, l_ccuAddress, AddressChannel, deviceAddress, modeType, loop, tms) ;}
+      if(tokens[4]=="value"){return getI2CDevicevalue ( fecAccess, l_fecAddress, l_ringAddress, l_ccuAddress, AddressChannel, deviceAddress, modeType, loop, tms) ;}
+      else{
 	unsigned int value = strtol (tokens[4].c_str(),NULL,16);
 	string result=setI2CDevice ( fecAccess, l_fecAddress, l_ringAddress, l_ccuAddress, AddressChannel, deviceAddress, modeType, loop, tms, value ) ;
 	return result;
@@ -739,27 +798,30 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     os << readPll(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, plldeviceAddress, loop, tms) << endl;
     cout << readPll(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, plldeviceAddress, loop, tms) << endl;
     //aoh1a
-    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh1deviceAddress, loop, tms) << endl;
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh1deviceAddress, loop, tms) << endl;
+    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh1AdeviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh1AdeviceAddress, loop, tms) << endl;
     //aoh1b
-    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh2deviceAddress, loop, tms) << endl;
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh2deviceAddress, loop, tms) << endl; 
+    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh1BdeviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh1BdeviceAddress, loop, tms) << endl; 
     //aoh2a
-    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh3deviceAddress, loop, tms) << endl;
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh3deviceAddress, loop, tms) << endl;
+    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh2AdeviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh2AdeviceAddress, loop, tms) << endl;
     //aoh2b
-    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh4deviceAddress, loop, tms) << endl;
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh4deviceAddress, loop, tms) << endl;
+    os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh2BdeviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh2BdeviceAddress, loop, tms) << endl;
     if (channelAddress==0x11){
       //aoh3a
-      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh5deviceAddress, loop, tms) << endl;
-      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh5deviceAddress, loop, tms) << endl;
+      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh3AdeviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh3AdeviceAddress, loop, tms) << endl;
       //aoh3b
-      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh6deviceAddress, loop, tms) << endl;
-      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh6deviceAddress, loop, tms) << endl;
+      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh3BdeviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh3BdeviceAddress, loop, tms) << endl;
       //aoh4a
-      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh7deviceAddress, loop, tms) << endl;
-      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh7deviceAddress, loop, tms) << endl;
+      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh4AdeviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh4AdeviceAddress, loop, tms) << endl;
+      //aoh4b
+      os << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh4BdeviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh4BdeviceAddress, loop, tms) << endl;
     }
     //doh
     os << readDoh(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, dohdeviceAddress, loop, tms) << endl;
@@ -776,20 +838,22 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     //pll
     cout << readPll(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, plldeviceAddress, loop, tms) << endl;
     //aoh1a
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh1deviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh1AdeviceAddress, loop, tms) << endl;
     //aoh1b
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh2deviceAddress, loop, tms) << endl; 
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh1BdeviceAddress, loop, tms) << endl; 
     //aoh2a
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh3deviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh2AdeviceAddress, loop, tms) << endl;
     //aoh2b
-    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh4deviceAddress, loop, tms) << endl;
+    cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh2BdeviceAddress, loop, tms) << endl;
     if (channelAddress==0x11){
       //aoh3a
-      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh5deviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh3AdeviceAddress, loop, tms) << endl;
       //aoh3b
-      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh6deviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh3BdeviceAddress, loop, tms) << endl;
       //aoh4a
-      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, poh7deviceAddress, loop, tms) << endl;
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh4AdeviceAddress, loop, tms) << endl;
+      //aoh4b
+      cout << readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, aoh4BdeviceAddress, loop, tms) << endl;
     }
     //doh
     cout << readDoh(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, dohdeviceAddress, loop, tms) << endl;
@@ -999,7 +1063,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH1A
   else if (tokens[0]=="aoh1a"){
-    deviceAddress=poh1deviceAddress;
+    deviceAddress=aoh1AdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1059,7 +1123,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH1B
   else if (tokens[0]=="aoh1b"){
-    deviceAddress=poh2deviceAddress;
+    deviceAddress=aoh1BdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1119,7 +1183,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH2A
    else if (tokens[0]=="aoh2a"){
-    deviceAddress=poh3deviceAddress;
+    deviceAddress=aoh2AdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1179,7 +1243,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH2B  
   else if (tokens[0]=="aoh2b"){
-    deviceAddress=poh4deviceAddress;
+    deviceAddress=aoh2BdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1239,7 +1303,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH3A  
   else if (tokens[0]=="aoh3a"){
-    deviceAddress=poh5deviceAddress;
+    deviceAddress=aoh3AdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1299,7 +1363,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH3B  
   else if (tokens[0]=="aoh3b"){
-    deviceAddress=poh6deviceAddress;
+    deviceAddress=aoh3BdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1360,7 +1424,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************DEVICE
   //************************************AOH4A 
   else if (tokens[0]=="aoh4a"){
-    deviceAddress=poh7deviceAddress;
+    deviceAddress=aoh4AdeviceAddress;
     //READ 
     if ((tokens[1]=="read") || (tokens[1]=="r")) {
       return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
@@ -1417,6 +1481,67 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
       return string("not an option! options for aoh: [read],[set],[setall],[init],[i2c]");
     
   }
+  //************************************DEVICE
+  //************************************AOH4B 
+  else if (tokens[0]=="aoh4b"){
+    deviceAddress=aoh4BdeviceAddress;
+    //READ 
+    if ((tokens[1]=="read") || (tokens[1]=="r")) {
+      return readLaserdriver(fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms);
+    } 
+    //WRITE
+    //range for gain   = [0,1,2,3]
+    //range for bias = [0,127]
+    else if ((tokens[1]=="set") ||(tokens[1]=="s")) {
+      if ( tokens[2]=="g0" ) {
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, true, atoi (tokens[3].c_str()) , false, 0, false, 0, false, 0, false, 0, false, 0);
+      }
+      else if ( tokens[2]=="g1" ) {
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, false, 0, true, atoi (tokens[3].c_str()) , false, 0, false, 0, false, 0, false, 0);
+      }
+      else if ( tokens[2]=="g2" ) {
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, false, 0, false, 0, true, atoi (tokens[3].c_str()) , false, 0, false, 0, false, 0);
+      }
+      else if ( tokens[2]=="b0" ) {
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, false, 0, false, 0, false, 0, true, atoi (tokens[3].c_str()) , false, 0, false, 0);
+      }
+      else if ( tokens[2]=="b1" ) {
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, false, 0, false, 0, false, 0, false, 0, true, atoi (tokens[3].c_str()) , false, 0);
+      }
+      else if ( tokens[2]=="b2" ) {
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, false, 0, false, 0, false, 0, false, 0, false, 0, true, atoi (tokens[3].c_str()) );
+      }
+      else return string("not an option! options for aoh set: [g0],[g1],[g2],[b0],[b1],[b2]");
+    }
+    //WRITE ALL
+    else if ((tokens[1]=="setall") ||(tokens[1]=="sa")) { 
+
+      if ( tokens.size()>7) 
+	return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, true, atoi (tokens[2].c_str()), true, atoi (tokens[3].c_str()), true, atoi (tokens[4].c_str()), true, atoi (tokens[5].c_str()), true, atoi (tokens[6].c_str()), true, atoi (tokens[7].c_str()) );
+      else
+	return string("wrong number of parameters! aoh setall needs 6 parameters");
+    }
+    //INIT
+    else if ((tokens[1]=="init")) {
+      return setLaserdriver ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, loop, tms, true, init_aoh4b_gain0, true, init_aoh4b_gain1, true, init_aoh4b_gain2, true, init_aoh4b_bias0, true, init_aoh4b_bias1, true, init_aoh4b_bias2);
+    }
+    //I2C REGISTER
+    else if ((tokens[1]=="i2c") ) { 
+      if ( tokens.size()>3) {
+	if ( tokens[2]=="0" || tokens[2]=="1" || tokens[2]=="2" || tokens[2]=="3" || 
+	     tokens[2]=="r0" || tokens[2]=="r1" || tokens[2]=="r2" || tokens[2]=="r3" )
+	  return setI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress+atoi(tokens[2].c_str()), modeType, loop, tms, strtol (tokens[3].c_str(),NULL,16) ) ;
+	else 
+	  return string("not an option! options for aoh i2c: [r0],[r1],[r2],[r3]");
+      }
+      else 
+	return string("wrong number of parameters! aoh i2c needs 2 parameters");
+    }
+    else 
+      return string("not an option! options for aoh: [read],[set],[setall],[init],[i2c]");
+    
+  }
+ 
   //************************************DEVICE
   //************************************DOH 
   else if (tokens[0]=="doh"){
@@ -1574,11 +1699,11 @@ int main(int argc, char *argv[])
   // FEC Address and Ring Address
   unsigned int fecAddress = 0 ;
   unsigned int ringAddress = 0 ;
-  unsigned int channelAddress = 0x10 ; 
-  unsigned int ccuAddress = 0x6;
+  unsigned int channelAddress = 0x11 ; 
+  unsigned int ccuAddress = 0x7c;
   long loop = 1 ;
-  string sector = "-6P";
-  string group = "-6PL12";
+  string sector = "+1P";
+  string group = "+1PL12";
 
   readAddressMaps("./data/fec_ring_ccu_channel_group.txt");
   
@@ -1595,7 +1720,7 @@ int main(int argc, char *argv[])
   }
   else if ((argc > 1) && ((strcasecmp (argv[1],"-vmecaenpci") == 0))) { // If pci
     cout << "vmecaenpci mode " << endl; 
-    fecAddress = 9 ;
+    fecAddress = 21 ;
     ringAddress = 0x8 ;
   }
   else {

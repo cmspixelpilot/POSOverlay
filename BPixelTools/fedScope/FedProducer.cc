@@ -116,6 +116,7 @@ void FedProducer::fillBufferHist(int chan, uint32_t *buffer, int nevt) {
   for(int i = 0; i < 250; ++i) {
     unsigned long data = (buffer[i] & 0xffc00000)>>22; // analyze word
     fChannels[chan]->SetBinContent(i+1, static_cast<float>(data));
+    //if( chan == 1 ) std::cout << i << "	" << static_cast<float>(data) << std::endl;
     fH1->Fill(static_cast<float>(data));
     fChannelLevels[chan]->Fill(static_cast<float>(data));
   }
@@ -126,7 +127,22 @@ void FedProducer::fillBufferHist(int chan, uint32_t *buffer, int nevt) {
 
 }
 
+// ----------------------------------------------------------------------
+float FedProducer::fillBufferHist2(int chan, uint32_t *buffer, int nevt) {
+ 
+  float sum = 0;
+  int counter = 0;
+  for(int i = 0; i < 250; ++i) {
+    unsigned long data = (buffer[i] & 0xffc00000)>>22; // analyze word
+    sum+=static_cast<float>(data);
+    counter+=1;
+    //if( chan == 0 ) std::cout << i << "	" << static_cast<float>(data) << std::endl;
+  }
 
+  //std::cout << "MEAN : " << sum/counter << std::endl;
+  return sum/counter;
+
+}
 
 
 // ----------------------------------------------------------------------
@@ -141,6 +157,16 @@ void FedProducer::readBuffer(int channel, uint32_t *buffer, int nevt) {
   }
 }
 
+// ----------------------------------------------------------------------
+float FedProducer::readBuffer2(int channel, uint32_t *buffer, int nevt) {
+
+  //  cout << "===> nevt: " << nevt << " channel: " << channel;
+  return fillBufferHist2(channel, buffer, nevt);
+  TSocket *s;
+  if ((s = fMon->Select(20)) != (TSocket*)-1) {
+    HandleSocket(s);
+  }
+}
 
 // ----------------------------------------------------------------------
 void FedProducer::readFile(const char *filename) {

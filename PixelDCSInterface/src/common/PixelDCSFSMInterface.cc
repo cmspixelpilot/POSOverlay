@@ -498,7 +498,7 @@ void PixelDCSFSMInterface::Default(xgi::Input* in, xgi::Output* out) throw (xgi:
   //*out << "<meta http-equiv=\"refresh\" content=\"5\" >" << std::endl;
   //*out << "</head>" << std::endl;
 
-  xgi::Utils::getPageHeader(*out, "Pixel DCS FSM Interface", "");
+  // xgi::Utils::getPageHeader(*out, "Pixel DCS FSM Interface", "");
 
   *out << "<body onload=\"ajaxFunction()\">" << std::endl;
 

@@ -88,7 +88,7 @@ void PixelDCStoTrkFECDpInterface::Default (xgi::Input *in, xgi::Output *out) thr
 
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, httpPageHeader_, fsm_.getStateName(fsm_.getCurrentState()));
+  // xgi::Utils::getPageHeader(*out, httpPageHeader_, fsm_.getStateName(fsm_.getCurrentState()));
 
   // Rendering the State Machine GUI
 

@@ -301,7 +301,7 @@ void FedConsumer::DoConnectHost() {
 // ----------------------------------------------------------------------
 void FedConsumer::DoButton() {
   // Handle ALL requests except the initial socket connection request ...
-  
+
   if (0 == fSock || !fSock->IsValid()) {
     cout << "Error: socket not valid" << endl;
     return;

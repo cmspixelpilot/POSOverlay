@@ -15,13 +15,20 @@ then
 ## find which log file is which
 PIXSUP=`grep -c "PixelSupervisor::Initialize" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
 DCSINT=`grep -c "PixelDCSFSMInterface::Initialize" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
-FEC1=`grep -c "PixelFECSupervisor.instance(1)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
-FEC2=`grep -c "PixelFECSupervisor.instance(2)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+FEC1=`grep -c "FEC Crate=1" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+FEC2=`grep -c "FEC Crate=2" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
 TKFEC1=`grep -c "PixelTKFECSupervisor.instance(1)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
 TKFEC2=`grep -c "PixelTKFECSupervisor.instance(2)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
-FED1=`grep -c "PixelFEDSupervisor.instance(1)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
-FED2=`grep -c "PixelFEDSupervisor.instance(2)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
-FED3=`grep -c "PixelFEDSupervisor.instance(3)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+FED1=`grep -c "FEDID:15" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+FED2=`grep -c "FEDID:31" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+FED3=`grep -c "FEDID:39" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+ICI0=`grep -c "PixeliCISupervisor.instance(0)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+ICI1=`grep -c "PixeliCISupervisor.instance(1)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+ICI2=`grep -c "PixeliCISupervisor.instance(2)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+PI0=`grep -c "PixelPISupervisor.instance(0)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+PI1=`grep -c "PixelPISupervisor.instance(1)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+PI2=`grep -c "PixelPISupervisor.instance(2)" /tmp/xdaqjcPID*.log | awk -F: '// {if ($2>0) print $1;}' |head -n1`
+
 
 #move and rename log files
 if [ ! -z $PIXSUP ]
@@ -67,6 +74,36 @@ fi
 if [ ! -z $FED3 ]
 then
 mv --backup=numbered $FED3 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixelFEDSupervisor_3.log
+fi
+
+if [ ! -z $ICI0 ]
+then
+mv --backup=numbered $ICI0 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixeliCISupervisor_0.log
+fi
+
+if [ ! -z $ICI1 ]
+then
+mv --backup=numbered $ICI1 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixeliCISupervisor_1.log
+fi
+
+if [ ! -z $ICI2 ]
+then
+mv --backup=numbered $ICI2 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixeliCISupervisor_2.log
+fi
+
+if [ ! -z $PI0 ]
+then
+mv --backup=numbered $PI0 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixelPISupervisor_0.log
+fi
+
+if [ ! -z $PI1 ]
+then
+mv --backup=numbered $PI1 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixelPISupervisor_1.log
+fi
+
+if [ ! -z $PI2 ]
+then
+mv --backup=numbered $PI2 /nfshome0/pixelpro/TriDAS/pixel/PixelRun/Logs/Log_$timestamp/PixelPISupervisor_2.log
 fi
 fi
 

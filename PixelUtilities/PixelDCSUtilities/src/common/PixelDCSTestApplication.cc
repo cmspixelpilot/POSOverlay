@@ -74,7 +74,7 @@ void PixelDCSTestApplication::Default (xgi::Input *in, xgi::Output *out) throw (
 {
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, "Test-Program for Pixel DCS Supervisor");
+  // xgi::Utils::getPageHeader(*out, "Test-Program for Pixel DCS Supervisor");
   
   // Rendering Low Level GUI
   
