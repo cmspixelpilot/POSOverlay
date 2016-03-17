@@ -29,8 +29,10 @@ public:
   void randomSignal();
   void readFile(const char *filename);
   void readBuffer(int channel, uint32_t *buffer, int nevt = 0);
+  float readBuffer2(int channel, uint32_t *buffer, int nevt = 0);
   void fillHist(int iHist, double value);
   void fillBufferHist(int chan, uint32_t *buffer, int nevt = 0);
+  float fillBufferHist2(int chan, uint32_t *buffer, int nevt = 0);
 
 private:
   TServerSocket *fServ;      // server socket

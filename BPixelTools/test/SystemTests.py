@@ -1,22 +1,24 @@
-import sys,time,os, re
-#import sys,time,os, re, ROOT
+# import sys,time,os, re
+import sys,time,os, re, ROOT
 from datetime import date
 from time import sleep
 from Logger import Logger
-sockdir="/home/l_pixel/TriDAS/pixel/BPixelTools/tools/python"
+sockdir="/home/cmspixel/TriDAS/pixel/BPixelTools/tools/python"
+#sockdir="/home/l_pixel/TriDAS/pixel/BPixelTools/tools/python"
 if not sockdir in sys.path: sys.path.append(sockdir)
 from SimpleSocket import SimpleSocket
-#from ROOT import gStyle, TH2D, TCanvas, TGraph, TGraphErrors, TLegend, TF1, TLine,TPaveLabel,TFile
+from ROOT import *
 from array import *
 from math import *
+from operator import itemgetter
 hList=[None]
 gCanvases=[]
 ########################
 class SECTOR:
-   def __init__(self,name,fed,fedslot,ccu,pxfec,caen,log=None):
+   def __init__(self,name,fed,ccu,pxfec,caen,log=None):
+
       self.name=name
       self.fed=fed
-      self.fedslot=fedslot
       self.ccu=ccu
       self.pxfec=pxfec
       self.caen=caen
@@ -24,22 +26,118 @@ class SECTOR:
          self.log=log
       else:
          self.log=Logger()
-      self.group={}
-      self.group[1]=GROUP(fed, fedslot, ccu, pxfec, caen, name+"L12",0x11,self.log)
-      self.group[2]=GROUP(fed, fedslot, ccu, pxfec, caen, name+"L3", 0x13,self.log)
-      self.aoh={}
-      self.aoh[1]=AOH(fed, fedslot, ccu, name+"L12","aoh1",[12, 11, 10,  9,  8,  7],self.log)
-      self.aoh[2]=AOH(fed, fedslot, ccu, name+"L12","aoh2",[ 6,  5,  4,  3,  2,  1],self.log)
-      self.aoh[3]=AOH(fed, fedslot, ccu, name+"L12","aoh3",[24, 23, 22, 21, 20, 19],self.log)
-      self.aoh[4]=AOH(fed, fedslot, ccu, name+"L12","aoh4",[18, 17, 16, 15, 14, 13],self.log)
-      self.aoh[5]=AOH(fed, fedslot, ccu, name+"L3", "aoh1",[36, 35, 34, 33, 32, 31],self.log)
-      self.aoh[6]=AOH(fed, fedslot, ccu, name+"L3", "aoh2",[30, 29, 28, 27, 26, 25],self.log)
-      self.aohlist=range(1,7)
-      self.dohA=tDOH(ccu, "0x7e", "0x10",self.log)
-      self.dohB=tDOH(ccu, "0x7d", "0x10",self.log)
+      self.group=[]
+      self.group.append(GROUP(fed, ccu, pxfec, caen, name+"L12",0x11,self.log))
+      self.group.append(GROUP(fed, ccu, pxfec, caen, name+"L34", 0x13,self.log))
+      self.pll12=PLL( ccu, name+"L12",0x11,log)
+      self.pll34=PLL( ccu, name+"L34",0x13,log)
+      self.delay25_1=DELAY25(ccu,name+"L12",0x11,log)
+      self.delay25_2=DELAY25(ccu,name+"L34",0x13,log)
+      self.dohA=tDOH(ccu, "0x7b", "0x10",self.log)
+      self.dohB=tDOH(ccu, "0x7c", "0x10",self.log)
       self.resetDOH=[]
       self.resetAOH=[]
       self.resetROC=[]
+      self.poh={}
+      self.caengroup=["L14","L23"]
+      
+      # if self.name=="test":
+      #    self.poh[1] =POH(fed, ccu, name+"L12","poh1",[],log)
+      #    self.poh[2] =POH(fed, ccu, name+"L12","poh2",[],log)
+      #    self.poh[3] =POH(fed, ccu, name+"L34","poh1",[],log)
+      #    self.poh[4] =POH(fed, ccu, name+"L12","poh3",[],log)
+      #    self.poh[5] =POH(fed, ccu, name+"L34","poh2",[],log)
+      #    self.poh[6] =POH(fed, ccu, name+"L12","poh4",[],log)
+      #    self.poh[7] =POH(fed, ccu, name+"L12","poh5",[],log)
+      #    self.poh[8] =POH(fed, ccu, name+"L34","poh3",[],log)
+      #    self.poh[9] =POH(fed, ccu, name+"L12","poh6",[],log)
+      #    self.poh[10]=POH(fed, ccu, name+"L34","poh4",[],log)
+      #    self.poh[11]=POH(fed, ccu, name+"L34","poh5",[],log)
+      #    self.poh[12]=POH(fed, ccu, name+"L12","poh7",[],log)
+      #    self.poh[13]=POH(fed, ccu, name+"L34","poh6",[],log)
+      #    self.poh[14]=POH(fed, ccu, name+"L34","poh7",[],log)
+
+      if "1" in self.name or "8" in self.name:
+          self.pohlist=range(1,14)
+          self.poh[1] =POH(fed, ccu, name+"L12","poh1", 1, [None, 1, 2, 3, 4] ,log)
+          self.poh[2] =POH(fed, ccu, name+"L12","poh2", 1, [None, 5, 6, 7, 8] ,log)
+          self.poh[3] =POH(fed, ccu, name+"L34","poh1", 1, [None, 9, 10, 11, 12] ,log)
+          self.poh[4] =POH(fed, ccu, name+"L12","poh3", 2, [None, 1, 2, 3, 4] ,log)
+          self.poh[5] =POH(fed, ccu, name+"L34","poh2", 2, [None, 5, 6, 7, 8] ,log)
+          self.poh[6] =POH(fed, ccu, name+"L12","poh4", 2, [None, 9, 10, 11, 12] ,log)
+          self.poh[7] =POH(fed, ccu, name+"L12","poh5", 3, [None, 1, 2, 3, 4] ,log)
+          self.poh[8] =POH(fed, ccu, name+"L34","poh3", 3, [None, 5, 6, 7, 8] ,log)
+          self.poh[9] =POH(fed, ccu, name+"L12","poh6", 3, [None, 9, 10, 11, 12] ,log)
+          self.poh[10] =POH(fed, ccu, name+"L34","poh4", 4,  [None, 1, 2, 3, 4] ,log)
+          self.poh[11] =POH(fed, ccu, name+"L34","poh5", 4,  [None, 5, 6, 7, 8] ,log)
+          self.poh[12] =POH(fed, ccu, name+"L12","poh7", 4,  [None, 9, 10, 11, 12] ,log)
+          self.poh[13] =POH(fed, ccu, name+"L34","poh6", 5, [None, 1, 2, 3, 4] ,log)
+
+      for i in range(2,6) + range(7,8):
+         if str(i) in self.name:
+             self.pohlist=range(1,15)
+             self.poh[1] =POH(fed, ccu, name+"L12","poh1", 1,[None, 1, 2, 3, 4] ,log)
+             self.poh[2] =POH(fed, ccu, name+"L12","poh2", 1, [None, 5, 6, 7, 8] ,log)
+             self.poh[3] =POH(fed, ccu, name+"L34","poh1", 1, [None, 9, 10, 11, 12] ,log)
+             self.poh[4] =POH(fed, ccu, name+"L12","poh3", 2, [None, 1, 2, 3, 4] ,log)
+             self.poh[5] =POH(fed, ccu, name+"L34","poh2", 2, [None, 5, 6, 7, 8] ,log)
+             self.poh[6] =POH(fed, ccu, name+"L12","poh4", 2, [None, 9, 10, 11, 12] ,log)
+             self.poh[7] =POH(fed, ccu, name+"L12","poh5", 3, [None, 1, 2, 3, 4] ,log)
+             self.poh[8] =POH(fed, ccu, name+"L34","poh3", 3, [None, 5, 6, 7, 8] ,log)
+             self.poh[9] =POH(fed, ccu, name+"L12","poh6", 3, [None, 9, 10, 11, 12] ,log)
+             self.poh[10] =POH(fed, ccu, name+"L34","poh4", 4, [None, 1, 2, 3, 4] ,log)
+             self.poh[11] =POH(fed, ccu, name+"L34","poh5", 4, [None, 5, 6, 7, 8] ,log)
+             self.poh[12] =POH(fed, ccu, name+"L12","poh7", 4, [None, 9, 10, 11, 12] ,log)
+             self.poh[13] =POH(fed, ccu, name+"L34","poh6", 5, [None, 1, 2, 3, 4] ,log)
+             self.poh[14] =POH(fed, ccu, name+"L34","poh7", 5, [None, 5, 6, 7, 8] ,log)
+             
+
+      if "3" in self.name or "6" in self.name:
+         self.pohlist= range(1,7) + range(8,12) +range(13,15)
+         self.poh[1] =POH(fed, ccu, name+"L12","poh1", 1, [None, 1, 2, 3, 4] ,log)
+         self.poh[2] =POH(fed, ccu, name+"L12","poh2", 1, [None, 5, 6, 7, 8] ,log)
+         self.poh[3] =POH(fed, ccu, name+"L34","poh1", 1, [None, 9, 10, 11, 12] ,log)
+         self.poh[4] =POH(fed, ccu, name+"L12","poh3", 2, [None, 1, 2, 3, 4] ,log)
+         self.poh[5] =POH(fed, ccu, name+"L34","poh2", 2, [None, 5, 6, 7, 8] ,log)
+         self.poh[6] =POH(fed, ccu, name+"L12","poh4", 2, [None, 9, 10, 11, 12] ,log)
+         self.poh[7] =POH(fed, ccu, name+"L12","poh5", None, [None] ,log)
+         self.poh[8] =POH(fed, ccu, name+"L34","poh3", 3,[None, 1, 2, 3, 4] ,log)
+         self.poh[9] =POH(fed, ccu, name+"L12","poh6", 3,[None, 5, 6, 7, 8] ,log)
+         self.poh[10] =POH(fed, ccu, name+"L34","poh4", 3, [None, 9, 10, 11, 12] ,log)
+         self.poh[11] =POH(fed, ccu, name+"L34","poh5", 4, [None, 1, 2, 3, 4] ,log)
+         self.poh[12] =POH(fed, ccu, name+"L12","poh7", None, [None] ,log)
+         self.poh[13] =POH(fed, ccu, name+"L34","poh6", 4, [None, 5, 6, 7, 8] ,log)
+         self.poh[14] =POH(fed, ccu, name+"L34","poh7", 4, [None, 9, 10, 11, 12] ,log)
+         
+
+      #  self.name :
+      #self.pohlist=range(1,15)
+      
+      # self.pohlist=range(1,14)
+      # self.pohlist=range(1,7) + range(8,12)+ range(13,15)
+
+   def init_tube(self):
+
+    self.ccu.send("reset").readlines()
+    self.ccu.send("scanccu").readlines()
+    self.ccu.send("piareset all").readlines()
+
+    for gr in self.group:
+       self.ccu.send("group " + gr.name).readlines()
+       print "group " + gr.name
+       self.ccu.send("delay25 init").readlines()
+       self.ccu.send("pll reset").readlines()
+       self.ccu.send("pll init").readlines()
+       self.ccu.send("doh init").readlines()
+    for p in self.pohlist:
+       self.ccu.send("group " +self.poh[p].group).readlines()
+       print "group " +self.poh[p].group
+       self.ccu.send(self.poh[p].name+" init").readlines() # like this one
+       print self.poh[p].name+" init"
+    
+
+
+
 
    def Init(self):
       self.InitFEC()
@@ -53,7 +151,7 @@ class SECTOR:
    def InitFEC(self):
       self.ccu.send("sector "+self.name).readlines()
       self.ccu.send("reset").readlines()
-      print "Sector "+self.name+": FEC reset"
+      #print "Sector "+self.name+": FEC reset"
 
    def InitpxFEC(self):
       self.pxfec.send("cn "+self.name+"L12").readlines()
@@ -66,20 +164,233 @@ class SECTOR:
 
    def InitCAEN(self):
       print "init CAEN"
-      self.caen.send("group "+self.name+"L12").readlines()
-      
-      #self.caen.send("group -6PL12").readlines()
-      cnt=0
-      while not (self.IsCAENOn()):
-         cnt=cnt+1
-         print "Group "+self.name+"L12: switch CAEN On"
+      for i in self.caengroup:
+         self.caen.send("group "+self.name+i).readlines()
          self.caen.send("pon").readlines()
-         time.sleep(0.5)
-         if (cnt>5):
-            print "CAEN: Error when turning power on"
-            break
-      print "Group "+self.name+"L12: CAEN: power On"
+         if (self.IsCAENOn()):
+            print "Group "+self.name+ i+": CAEN: power On"
+         else:
+            print "group "+self.name+i+"CAEN: Error when turning power on"
 
+   def poweron(self):
+      print "ENABLING DCDC 0:13"
+     #  self.ccu.send("ccu" +ccuAddress).readlines()
+      self.ccu.send("power all").readlines()
+
+   def poweroff(self):
+      print "DISABLING DCDC 0:13"
+      # self.ccu.send("ccu" +ccuAddress).readlines()
+      self.ccu.send("power none").readlines()
+      
+
+   def VerifySectorDevicesProgramming(self):
+      #print "Verify Programming"
+      # self.ccu.send("ccu " + ccuAddress).readlines()
+      # print "test Delay25"
+      self.delay25_1.VerifyProgramming()
+      self.delay25_2.VerifyProgramming()
+      # print "test PLL"
+      self.pll12.VerifyProgramming()
+      self.pll34.VerifyProgramming()
+      # print "test TrDOH"
+      self.dohA.VerifyProgramming()
+      self.dohB.VerifyProgramming()
+      # print "test POH"
+      # self.pohlist=self.FindPOH()
+      for i in self.pohlist:
+         self.poh[i].VerifyProgramming()
+      #print "pohlist " 
+      #print self.pohlist 
+   
+
+   
+   def ResetAllandInitAll(self):
+     # print "test reset functionality for: pxDOH, trDOH, POH, PLL,Delay 25"
+      # print "Reset All, Pia Reset All. pxDoH reset"
+      self.ccu.send("reset").readlines()
+      self.ccu.send("piareset all").readlines()
+      self.ccu.send("pll reset").readlines()
+      self.ccu.send("delay25 reset").readlines()
+      # self.pxfec.send("cn reset doh").readlines()
+      # print "Initializing pll, delay25,doh and poh"
+      self.ccu.send("doh init").readlines()
+      self.ccu.send("pll init").readlines()
+      self.ccu.send("delay25 init").readlines()
+      for i in self.pohlist:
+         self.ccu.send("group "+ str(self.poh[i].group)).readlines()
+         self.ccu.send("poh"+ str(i) +" setall 3 3 3 3 40 40 40 40").readlines()
+         # sector
+   def GetSDARange(self, name,verbose=True):
+      self.InitFEC()
+      self.InitCAEN()
+      self.InitpxFEC()
+   
+      self.pxfec.send("cn +6PL12").readlines()
+      # v = self.Geti2cValues()
+      # print v
+      good=[]
+      for d2 in range (0,63,2): #scan SDA values
+         self.ccu.send("delay25 s d2 %d"%(d2)).readlines()
+         if (verbose): print "SDA: ", d2,
+         self.pxfec.send("cn reset roc").readlines()                #reset roc
+         self.pxfec.send("module 0:31 roc 0:15 Vdig 0").readlines() #avoid high digital currents
+         self.pxfec.send("module 0:31 roc 0:15 Vsf 0").readlines()  #avoid high digital currents
+         self.pxfec.send("module 0:31 roc 0:15 Vana 0").readlines() #set Vana=0
+         sleep(3)
+         self.caen.send("group "+ name).readlines()
+         print "group "+ name
+         ia0=self.caen.fquery("get ia")                                 
+         self.pxfec.send("module 0:31 roc 0:15 Vana 120").readlines()        #set Vana=120
+         sleep(3)
+         ia1=self.caen.fquery("get ia")
+         if (verbose): print "IA= ",ia0, ia1
+         if ia1-ia0>0.4 : good.append(d2)
+      print "SDA range: ", good
+      self.sdarange=good
+      return good
+
+
+
+
+
+   def SetPOHFEDchannel(self,file):
+      case=["Sector 1 8","Sector 2 4 5 7","Sector 3 6"]
+      if "1" in self.name or "8" in self.name:
+         self.pohlist=range(1,14)
+         whichcase=case[0]
+      for i in range(2,6) + range(7,8):
+         if str(i) in self.name:
+            self.pohlist=range(1,15)
+            whichcase=case[1]
+      if "3" in self.name or "6" in self.name:
+         self.pohlist= range(1,7) + range(8,12) +range(13,15)
+         whichcase=case[2]
+      fedchannelsvalue=[]
+      ok= None
+      print whichcase
+      for l in range(0,15):
+         fedchannelsvalue.append([])
+      for l in range(0,15):
+         fedchannelsvalue[l].append(None)
+      for line in file:
+         if ("Sector" in line) and (whichcase in line): ok=True
+         if ("Sector" in line) and (whichcase not in line): ok= None
+         if ("POH" in line) and ok:
+            useless,pohname,ribbon,fiber= line.split()
+            fedchannelsvalue[int(pohname[:-2])].append(int(fiber))
+       
+
+      print "fedchannelsvalue" 
+      for l in self.pohlist:
+         print fedchannelsvalue[l]
+         self.poh[l].fedchannels=fedchannelsvalue[l]
+  
+
+
+   def lazyprint(self,file):
+      case=["Sector 1 8","Sector 2 4 5 7","Sector 3 6"]
+      if "1" in self.name or "8" in self.name:
+         self.pohlist=range(1,14)
+         whichcase=case[0]
+      for i in range(2,6) + range(7,8):
+         if str(i) in self.name:
+            self.pohlist=range(1,15)
+            whichcase=case[1]
+      if "3" in self.name or "6" in self.name:
+         self.pohlist= range(1,7) + range(8,12) +range(13,15)
+         whichcase=case[2]
+      fedchannelsvalue=[]
+      whichcase=case[2]
+      ok= None
+      print whichcase
+      for l in range(0,15):
+         fedchannelsvalue.append([])
+      for l in range(0,15):
+         fedchannelsvalue[l].append(None)
+      for line in file:
+         if ("Sector" in line) and (whichcase in line): ok=True
+         if ("Sector" in line) and (whichcase not in line): ok= None
+         if ("POH" in line) and ok:
+            useless,pohname,ribbon,fiber= line.split()
+            fedchannelsvalue[int(pohname[:-2])].append(int(fiber))
+            
+      for l in range(0,15):  
+            print '# self.poh['+str(l)+'] =POH(fed, ccu, name+"L12","poh'+str(l)+'",' ,fedchannelsvalue[l],',log)'
+   
+
+
+
+
+
+
+
+
+   def GetSDARange1(self,verbose=True):
+      print "self.InitFEC()"
+      self.InitFEC()
+      print "self.CAEN()"
+      self.InitCAEN()
+      print "self.InitpxFEC()"
+      self.InitpxFEC()
+      value=[[],[],[],[]]
+      ia0=[0.0,0.0,0.0,0.0]
+      ia1=[0.0,0.0,0.0,0.0]
+      group=["L12","L34"]
+      caengroup=["L14","L23"]
+      for d2 in range (0,63,2): #scan SDA values
+
+         self.ccu.send("delay25 s d2 %d"%(d2)).readlines()
+         if (verbose): print "SDA: ", d2
+         for k in group:
+            self.ccu.send( "group " + self.name + k).readlines()
+            self.ccu.send("delay25 s d2 %d"%(d2)).readlines()
+            self.pxfec.send("cn " +self.name +k).readlines()
+            self.pxfec.send("cn reset roc").readlines()                #reset roc
+            self.pxfec.send("module 0:31 roc 0:15 Vdig 0").readlines() #avoid high digital currents
+            self.pxfec.send("module 0:31 roc 0:15 Vsf 0").readlines()  #avoid high digital currents
+            self.pxfec.send("module 0:31 roc 0:15 Vana 0").readlines() #set Vana=0
+            self.pxfec.send("cn reset roc").readlines()
+            sleep(0.5)
+            for l in caengroup:
+               self.caen.send("group "+ self.name +l).readlines()
+               if k== group[0] and l==caengroup[0]: # l12 && l14 ==l1
+                  ia0[0]=self.caen.fquery("get ia")
+               if k== group[0] and l==caengroup[1]: # l12 && l23 ==l2
+                  ia0[1]=self.caen.fquery("get ia")
+               if k== group[1] and l==caengroup[1]: # l34 && l23 ==l3
+                  ia0[2]=self.caen.fquery("get ia")
+               if k== group[1] and l==caengroup[0]: # l34 && l14 ==l4
+                  ia0[3]=self.caen.fquery("get ia")
+
+         for k in group:
+            self.pxfec.send("cn " +self.name +k).readlines()
+            self.pxfec.send("module 0:31 roc 0:15 Vana 120").readlines()        #set Vana=120
+            sleep(0.5)
+         for l in caengroup:
+               self.caen.send("group "+ self.name +l).readlines()
+               if k== group[0] and l==caengroup[0]: # l12 && l14 ==l1
+                  ia1[0]=self.caen.fquery("get ia")
+               if k== group[0] and l==caengroup[1]: # l12 && l23 ==l2
+                  ia1[1]=self.caen.fquery("get ia")
+               if k== group[1] and l==caengroup[1]: # l34 && l23 ==l3
+                  ia1[2]=self.caen.fquery("get ia")
+               if k== group[1] and l==caengroup[0]: # l34 && l14 ==l4
+                  ia1[3]=self.caen.fquery("get ia")
+
+         for l in range(0,4):
+            if ia1[l]-ia0[l]>0.5: value[l].append(d2)
+            print "Layer "+str(l+1)+" " + +str(ia1[l]) +" - " +str(ia0[l]) + " = " +  str(ia1[l]-ia0[l])
+            
+      print value
+      
+      good_L12=list(set(value[0]) and setset(value[1]))
+      good_L34=list(set(value[2]) and setset(value[3]))
+      print "SDA range: ", good
+      self.sdarange=good
+      return good
+
+
+        
    def IsCAENOn(self):
       for t in range(5):
          self.caen.send("group "+self.name+"L12").readlines()
@@ -112,7 +423,24 @@ class SECTOR:
       else:
          return False
 
-      
+   def SearchPOH(self): 
+         for i in range(1,15):
+            if (self.poh[i].writebias(1,20)  and self.poh[i].writegain(1,0)   ):
+               print "Sector"+self.name+":\t "+self.poh[i].name+" found"
+          #if self.log: self.log.ok("Group "+self.group+":\t "+self.name+": \t\tprogramming OK")
+          #self.programming=True
+            else:
+               print"Sector"+self.name+" :\t "+self.poh[i].name+" not found"
+
+   def FindPOH(self):
+       pohlist=[]
+       for i in range(1,15):
+            if (self.poh[i].writebias(1,20)  and self.poh[i].writegain(1,0)   ):
+               print "Sector"+self.name+":\t "+self.poh[i].name+" found"
+               pohlist.append(i)
+            else:
+               print"Sector"+self.name+" :\t "+self.poh[i].name+" not found"
+       return pohlist
       
    def mapAOH(self):
       print "mapping sector ",self.name
@@ -122,10 +450,17 @@ class SECTOR:
          self.aoh[a].findAll()
          print "aoh ",a,self.aoh[a].fedchannels[1:]
 
+   def mapPOH(self):
+      print "mapping sector ",self.name
+      for a in range(1,7):
+         self.poh[a].fedchannels=[None,0,0,0,0,0,0]
+      for a in self.pohlist:
+         self.poh[a].findAll()
+         print "poh ",a,self.poh[a].fedchannels[1:]
 
 
    def TestTriggerStatusFED(self):
-      # this is a method of SECTOR
+      # this is a method of SECTRO
       self.InitFED()
       #self.fed.send("fed %d"%self.fedslot).readlines()
       self.fed.send("fed %s"%self.name).readlines()
@@ -185,6 +520,18 @@ class SECTOR:
          #print "TestPIAResetDOH(): ERROR (programming delay25 failed)"
          self.log.error("TestPIAResetDOH(): ERROR (programming delay25 failed)")
          self.resetDOH.append(False)
+
+      self.ccu.send("pll set clk 1").readlines()
+      self.ccu.send("pll set clk 1").readlines()
+      
+      query="pll read"
+      regexp="-->Clock Phase   : %d"
+      v1 = self.ccu.iquery(query,regexp)
+      if not (v1==1):
+         #print "TestPIAResetDOH(): ERROR (programming delay25 failed)"
+         self.log.error("TestPIAResetDOH(): ERROR (programming pll failed)")
+         self.resetDOH.append(False)
+
 
       self.ccu.send("piareset doh").readlines() 
       v2 = self.ccu.iquery(query,regexp)
@@ -286,7 +633,7 @@ class SECTOR:
             f.write("L12   "+str(i)+"   "+str(j)+"     "+str(self.aoh[i].fedchannels[j])+'\n')
       for i in range (5,7):
          for j in range (1,7):
-            f.write("L3    "+str(i-4)+"   "+str(j)+"     "+str(self.aoh[i].fedchannels[j])+'\n')
+            f.write("L34    "+str(i-4)+"   "+str(j)+"     "+str(self.aoh[i].fedchannels[j])+'\n')
       f.write('\n')
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
@@ -322,7 +669,7 @@ class SECTOR:
       f.write('\n')
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
-      f.write("GROUP L3\n")
+      f.write("GROUP L34\n")
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
       f.write("HUB ADDRESSES\n")
       f.write("hub  (readout)\n")
@@ -383,7 +730,7 @@ class SECTOR:
             f.write("L12   "+str(i)+"   "+str(j)+"     "+str(self.aoh[i].fedchannels[j])+'\n')
       for i in range (5,7):
          for j in range (1,7):
-            f.write("L3    "+str(i-4)+"   "+str(j)+"     "+str(self.aoh[i].fedchannels[j])+'\n')
+            f.write("L34    "+str(i-4)+"   "+str(j)+"     "+str(self.aoh[i].fedchannels[j])+'\n')
       f.write('\n')
       f.write("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
@@ -407,7 +754,7 @@ class SECTOR:
       f.write('\n')
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
-      f.write("GROUP L3\n")
+      f.write("GROUP L34\n")
       f.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
       if (len(self.group[2].dohfiber)==0): f.write("-->DOH fiber test: not tested\n")
       elif (self.group[2].dohfiber[0]):    f.write("-->DOH fiber test: OK\n") 
@@ -440,14 +787,14 @@ class SECTOR:
       
 #################
 class GROUP:
-   def __init__(self, fed, fedslot, ccu, pxfec, caen, name, channel,log):
+   def __init__(self, fed, ccu, pxfec, caen, name, channel,log):
+
       self.fed=fed                            # fec access (SimpleCommand)
-      self.fedslot=fedslot                    # fed slot number
       self.ccu=ccu                            # ccu access (SimpleCommand)
       self.pxfec=pxfec                        # pxfec access (SimpleCommand)
       self.caen=caen                          # caen access (SimpleCommand) 
       self.name=name                          # 
-      self.channel=channel                    # 0x11 (L12), 0x13 (L3)
+      self.channel=channel                    # 0x11 (L12), 0x13 (L34)
       self.nmodules=0                         # number of modules (read in from file hubaddresses.txt)
       self.hubaddresses0=[]                   # hubaddresses (design)
       self.modules=[]                         # modules
@@ -459,7 +806,10 @@ class GROUP:
       self.nmaxrck=0                          # maximum number of modules at same RCK
       self.dohfiber=[]                        # result of test of DOH fiber
       self.log=log                            # message logger
-     
+      # self.group={}
+      # self.group[1]=GROUP(fed, fedslot, ccu, pxfec, caen, name+"L12",0x11,log)
+      # self.group[2]=GROUP(fed, fedslot, ccu, pxfec, caen, name+"L34",0x13,log)
+      
    def Init(self):
       self.InitFEC()
       if self.pxFEC: self.InitpxFEC()
@@ -469,11 +819,10 @@ class GROUP:
    def InitMB(self):
       if not self.ccu: return
       self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("doh setall 1 0 1 48 0 48").readlines()    # g0 g1 g2 b0 b1 b2
+      self.ccu.send("doh init").readlines()        # g0 g1 g2 b0 b1 b2
       self.ccu.send("pll reset").readlines()       #
-      self.ccu.send("pll set  8").readlines()      # make restart pll
-      self.ccu.send("pll setall 0 0").readlines()  # clk, trigger phase (what about CTR delay?)
-      self.ccu.send("delay25 setall %d %d %d %d %d"%(10|0x40,10|0x40,48|0x40,0|0x40,0|0x40)).readlines()  # RCK,CTR,SDA,RDA,CLK + enable bits
+      self.ccu.send("pll init").readlines()        # make restart pll
+      self.ccu.send("delay25 init").readlines()  # RCK,CTR,SDA,RDA,CLK + enable bits
       
    def InitFEC(self):
       self.ccu.send("group "+self.name).readlines()
@@ -511,7 +860,18 @@ class GROUP:
             print "Group "+self.name+": CAEN: Error when turning power on"
             break
       print "Group "+self.name+" CAEN: power On"
-            
+    
+   def poweron(self):
+      print "Powering on group "+self.name
+      # self.ccu.send("ccu "+ ccuAddress)
+      self.ccu.send("power "+ self.name[-3:])
+      
+   def poweroff(self):
+      print "Powering off group "+self.name
+      # self.ccu.send("ccu "+ ccuAddress)
+      self.ccu.send("power none")
+      
+        
    def pon(self):
       print "switch on LV group",self.name
       self.caen.send("group "+self.name).readlines()
@@ -603,9 +963,15 @@ class GROUP:
    
    #find the valid programming range by looking at the response of the power supply
    def GetSDARange(self,verbose=True):
+      print "fec"
       self.InitFEC()
+      print "caen"
       self.InitCAEN()
-      self.pxfec.send("cn %s"%self.name).readlines()
+      print "pxfec"
+      self.InitpxFEC()
+   
+      
+      self.pxfec.send("cn %s",self.name).readlines()
       v = self.Geti2cValues()
       print v
       good=[]
@@ -627,6 +993,71 @@ class GROUP:
       self.sdarange=good
       return good
    
+
+   def GetSDARange1(self,verbose=True):
+      print "fec"
+      self.InitFEC()
+      # print "caen"
+      #self.InitCAEN()
+      print "pxfec"
+      self.InitpxFEC()
+      
+      value=[[],[]]
+      ia0=[0.0,0.0]
+      ia1=[0.0,0.0]
+      caengroup=["L14","L23"]
+      k=1
+      print "caen"
+      for l in range(0,len(caengroup)):
+            print self.caen.send("group "+ self.name[:-3] +caengroup[l]).readlines()
+            print self.caen.send("pon").readlines()
+            if (self.IsCAENOn()):
+               print "Group "+ self.name[:-3] +caengroup[l]+": CAEN: power On"
+            else:
+               print "Group "+ self.name[:-3] +caengroup[l]+": CAEN: Error when turning power on"
+      
+      for d2 in range (0,63,2): #scan SDA values
+         
+         self.ccu.send("delay25 s d2 %d"%(d2)).readlines()
+         if (verbose): print "SDA: ", d2
+         self.ccu.send( "group " + self.name).readlines()
+         self.ccu.send("delay25 s d2 %d"%(d2)).readlines()
+         self.pxfec.send("cn " +self.name).readlines()
+         self.pxfec.send("cn reset roc").readlines()                #reset roc
+         self.pxfec.send("module 0:31 roc 0:15 Vdig 0").readlines() #avoid high digital currents
+         self.pxfec.send("module 0:31 roc 0:15 Vsf 0").readlines()  #avoid high digital currents
+         self.pxfec.send("module 0:31 roc 0:15 Vana 0").readlines() #set Vana=0
+         self.pxfec.send("cn reset roc").readlines()
+         sleep(0.5)
+         for l in range(0,len(caengroup)):
+            self.caen.send("group "+ self.name[:-3] +caengroup[l]).readlines()
+            ia0[l]=self.caen.fquery("get ia")
+               
+
+         
+         self.pxfec.send("cn " +self.name).readlines()
+         self.pxfec.send("module 0:31 roc 0:15 Vana 120").readlines()        #set Vana=120
+         sleep(0.5)
+         for l in range(0,len(caengroup)):
+            self.caen.send("group "+ self.name[:-3] +caengroup[l]).readlines()
+            ia1[l]=self.caen.fquery("get ia")
+      
+
+         for l in range(0,2):
+            if ia1[l]-ia0[l]>0.5: value[l].append(d2)
+            #print str(ia1[l]) +" - " +str(ia0[l]) + " = " +  str(ia1[l]-ia0[l])
+            
+      print value
+      
+      good=list(set(value[0]) and setset(value[1]))
+      print "SDA range: ", good
+      self.sdarange=good
+      return good
+
+
+
+
+
    #choose SDA value in SDA range
    def FindSDA(self):
       value=0
@@ -934,20 +1365,392 @@ class GROUP:
             map[d2,d3]=a
       return map
 
-   def ScanSDARDA(self):
-      self.InitFEC()
+
+   def GetSDARDA1(self,realmodule,mino=3):# x1-x2 min-max RDA scan range,y1-y2 min-max SDA scan range, both 0-63 
+      self.delay25.SendValues()
+      self.InitpxFEC()
+      temp=[]
+      memo=0
+      temp2=[]
+      rdasetting=[]
+      sdasetting=[]
+      count=0
+      counter=0
+      flipflop=True
+      validd2range=[]
+      validd2mean=[]
+      for d2 in range(0,64): # scan sda
+         temp.append([])
+         temp[d2].append(d2)
+         self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+         a= self.pxfec.aquery("cn scan hubs")
+         temp[d2].append(list(set(a)&set(realmodule)))
+      for i in temp:
+         print i
+         if len(i[1]) !=0:
+          validd2range.append(i[0])      
+      temp=sorted(validd2range)
+      print temp
+      if len(temp)>0:
+         for i in range(1,len(temp)):
+            if temp[i]-temp[i-1]>1 or i==len(temp)-1:
+               temp2=temp[memo:i]
+               memo=i
+               print temp2 ," sum ",sum(temp2), " len ",len(temp2)
+               print "mean ", sum(temp2)/len(temp2)
+               if len(temp2)>2:
+                  validd2mean.append(sum(temp2)/len(temp2))
+                  
+      print "d2value ",validd2mean
+      temp=[]
+      for i in realmodule:
+         temp.append([])
+      for d2 in validd2mean:    #scan Rda
+         
+         for d1 in range(0,64):
+            self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+            self.ccu.send("delay25 set d1 %d"%(d1)).readlines()
+            a= self.pxfec.aquery("cn scan hubs")
+            for i in set(a)&set(realmodule):
+               for k in range(0,len(realmodule)):
+                  if i==realmodule[k]:
+                      temp[k].append(d1)
+         for k in range(0,len(realmodule)):
+            for i in range(1,len(temp[k])):
+               if temp[k][i]-temp[k][i-1]>1 or i==len(temp[k])-1:
+                  temp2=temp[k][memo:i]
+                  memo=i
+                  print "module ",realmodule[k]
+                  print temp2 ," sum ",sum(temp2), " len ",len(temp2)
+                  print "mean ", sum(temp2)/len(temp2) 
+      ##############temp[[mean d2,d1,module1,module2..],[mean d2,d1,module1,module2..] ]
+            
+       
+
+
+   def GetSDARDA(self,realmodule,mino=3):# x1-x2 min-max RDA scan range,y1-y2 min-max SDA scan range, both 0-63 
+      self.delay25.SendValues()
+      self.InitpxFEC()
+      temp=[]
+      temp2=[]
+      todo=[]
+      rdasetting=[]
+      sdasetting=[]
+      count=0
+      counter=0
+      flipflop=True
+      for i in realmodule:
+         rdasetting.append([])
+      for d2 in range(0,64): # scan sda
+         for d1 in range(0,64):    #scan Rda
+            todo.append([])
+            todo[-1].append(d1)
+            todo[-1].append(d2)
+            #################################
+            # counter=counter+1
+            # if count ==64:
+            #    flipflop=False
+            #    count=count-1
+            #    print " ",100*counter/4096,"%",
+            # print" "
+            # if count ==0:
+            #    flipflop=True
+            # if count<64 and flipflop==True:
+            #    count=count+1
+            #    for n in range(0,count):
+            #       print "#",
+            # if count<64 and flipflop==False:
+            #    for n in range(0,count):
+            #       print "#",
+            #    count=count-1
+            #################################
+               
+
+            sendd1=self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+            sendd2=self.ccu.send("delay25 set d1 %d"%(d1)).readlines()
+            print send1
+            a= self.pxfec.aquery("cn scan hubs")
+            # print a
+            todo[-1].append(list(set(a)&set(realmodule)))
+            for i in set(a)&set(realmodule):
+               for k in range(0,len(realmodule)):
+                  if i==realmodule[k]:
+                     rdasetting[k].append(d1)
+            
+            for i in a:
+               if i not in temp:
+                  temp.append(i)
+            # print "diff ",set(realmodule)-set(a)
+         if len(set(realmodule)-set(temp))==0:
+            sdasetting.append(d2)
+            temp=[]
+            # print"d1(rda) ",d1, " HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+      print "###############################################################################################"
+      memo=0
+      temp=[]
+      for i in sdasetting:
+         if i not in temp:
+            temp.append(i)
+      temp=sorted(temp)
+      print temp
+      if len(temp)>0:
+         for i in range(1,len(temp)):
+            if temp[i]-temp[i-1]>1 or i==len(temp)-1:
+               temp2=temp[memo:i]
+               memo=i
+               print temp2 ," sum ",sum(temp2), " len ",len(temp2)
+               print "mean ", sum(temp2)/len(temp2)
+               # temp2=temp[i:] 
+               # print temp2 ," sum ",sum(temp2), " len ",len(temp2)
+               # print "mean ", sum(temp2)/len(temp2)
+               # break
+      print "###############################################################################################"
+      for k in  range(0,len(realmodule)):
+         print "realmodule ", realmodule[k]
+         memo=0
+         temp=[]
+         for i in rdasetting[k]:
+             if i not in temp:
+                temp.append(i)
+         temp=sorted(temp)
+         for i in range(1,len(temp)):
+             if temp[i]-temp[i-1]>1 or i==len(temp)-1:
+                temp2=temp[memo:i]
+                memo=i
+                print temp2 ," sum ",sum(temp2), " len ",len(temp2)
+                print "mean ", sum(temp2)/len(temp2)
+                # temp2=temp[i:]
+                # print temp2 ," sum ",sum(temp2), " len ",len(temp2)
+                # print "mean ", sum(temp2)/len(temp2)
+                # break
+                
+
+
+
+   def GetSDARDA2(self,realmodule,mino=3):# x1-x2 min-max RDA scan range,y1-y2 min-max SDA scan range, both 0-63 
+      self.delay25.SendValues()
+      self.InitpxFEC()
+      modulesdarda=[]
+      temp=[]
+      temp1=[]
+      temp2=[]
+      temp3=[]
+      memo=0
+      histo=[]
+      name="histo"
+      n=0
+      dummypoint=[]
+      for i in realmodule:
+            modulesdarda.append([]) 
+            # temp1.append([])
+            name= "module " + str(realmodule[n])
+            histo.append(TH2D( name , name , 64,0,63,64,0,63 ))
+            n=n+1
+      count=0
+      counter=0
+      flipflop=True
+      dummyrange=range(0,64)
+      for d2 in dummyrange: # scan sda
+         for d1 in dummyrange:    #scan Rda
+            counter =counter+1
+            #################################
+
+            # if count ==64:
+            #    flipflop=False
+            #    count=count-1
+            #    print " ",100*counter/4096,"%",
+            # print" "
+            # if count ==0:
+            #    flipflop=True
+            # if count<64 and flipflop==True:
+            #    count=count+1
+            #    for n in range(0,count):
+            #       print "#",
+            # if count<64 and flipflop==False:
+            #    for n in range(0,count):
+            #       print "#",
+            #    count=count-1
+            #################################
+               
+
+            self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+            self.ccu.send("delay25 set d1 %d"%(d1)).readlines()
+            a= self.pxfec.aquery("cn scan hubs")
+            print d1, " ", d2, " " , a
+            for i in set(a)&set(realmodule):
+               for k in range(0,len(realmodule)):
+                  if i==realmodule[k]:
+                     modulesdarda[k].append([d1,d2])
+                     histo[k].Fill(d1,d2,1)
+      n=0       
+      for i in modulesdarda:
+         
+         print "module ", realmodule[n]
+         
+         temp=sorted(i, key=itemgetter(0))
+         for i in range(1,len(temp)):
+             if temp[i][0]-temp[i-1][0]<2:
+                temp1.append(temp[i-1])
+                memo=i
+             if temp[i][0]-temp[i-1][0]>1 or i==len(temp)-1:
+                # print temp1     
+                temp4=[]
+                temp4=sorted(temp1, key=itemgetter(1))
+                temp1=[]
+                for i in range(1,len(temp4)):
+                   if temp4[i][1]-temp4[i-1][1]<2 :
+                      temp1.append(temp4[i])
+                      temp2.append(temp4[i][0])
+                      temp3.append(temp4[i][1])
+                      
+                   if temp4[i][1]-temp4[i-1][1]>1 or i==len(temp4)-1:
+                      print "temp2 ",temp2 
+                      print "temp3 ",temp3
+                      if len(temp2) >1:
+                         print "module ", realmodule[n],  " d1,d2 = ( " ,  sum(temp2)/len(temp2), " " ,sum(temp3)/len(temp3), " )"
+                         histo[n].Fill(sum(temp2)/len(temp2),sum(temp3)/len(temp3),10)
+                      else:
+                         print "module ", realmodule[k]," problem"
+                      temp1=[]
+                      temp2=[]
+                      temp3=[]
+                      # temp4=[]
+         n=n+1
+                      
+      return histo
+   #############################################################################################
+   
+
+   def GetSDARDA3(self,realmodule,):# x1-x2 min-max RDA scan range,y1-y2 min-max SDA scan range, both 0-63 
+      self.delay25.SendValues()
+      self.InitpxFEC()
+      modulesdarda=[]
+      temp=[]
+      temp1=[]
+      temp2=[]
+      temp3=[]
+      memo=0
+      histo=[]
+      name="histo"
+      n=0
+      dummypoint=[]
+      for i in realmodule:
+            modulesdarda.append([]) 
+            # temp1.append([])
+            name= "module " + str(realmodule[n])
+            histo.append(TH2D( name , name , 64,0,63,64,0,63 ))
+            n=n+1
+      count=0
+      counter=0
+      flipflop=True
+      dummyrange=range(40,60)
+      for d2 in dummyrange: # scan sda
+         for d1 in dummyrange:    #scan Rda
+            counter =counter+1
+            self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+            self.ccu.send("delay25 set d1 %d"%(d1)).readlines()
+            a= self.pxfec.aquery("cn scan hubs")
+            print d1, " ", d2, " " , a
+            for i in set(a)&set(realmodule):
+               for k in range(0,len(realmodule)):
+                  if i==realmodule[k]:
+                     modulesdarda[k].append([d1,d2])
+                     histo[k].Fill(d1,d2,1)
+      n=0       
+      for i in modulesdarda:
+         
+         print "module ", realmodule[n]
+         
+         temp=sorted(i, key=itemgetter(0))
+         for i in range(1,len(temp)):
+             if temp[i][0]-temp[i-1][0]<2:
+                temp1.append(temp[i-1])
+                memo=i
+             if temp[i][0]-temp[i-1][0]>1 or i==len(temp)-1:
+                # print temp1     
+                temp4=[]
+                temp4=sorted(temp1, key=itemgetter(1))
+                temp1=[]
+                for i in range(1,len(temp4)):
+                   if temp4[i][1]-temp4[i-1][1]<2 :
+                      temp1.append(temp4[i])
+                      temp2.append(temp4[i][0])
+                      temp3.append(temp4[i][1])
+                      
+                   if temp4[i][1]-temp4[i-1][1]>1 or i==len(temp4)-1:
+                      print "temp2 ",temp2 
+                      print "temp3 ",temp3
+                      if len(temp2) >1:
+                         print "module ", realmodule[n],  " d1,d2 = ( " ,  sum(temp2)/len(temp2), " " ,sum(temp3)/len(temp3), " )"
+                         histo[n].Fill(sum(temp2)/len(temp2),sum(temp3)/len(temp3),10)
+                      else:
+                         print "module ", realmodule[k]," problem"
+                      temp1=[]
+                      temp2=[]
+                      temp3=[]
+                      # temp4=[]
+         n=n+1
+                      
+      return histo
+   #############################################################################################
+   def ScanSDARDA(self,x1,x2,y1,y2):# x1-x2 min-max RDA scan range,y1-y2 min-max SDA scan range, both 0-63 
+      #self.InitFEC()
+      self.delay25.SendValues()
+      self.InitpxFEC()
+      map={}
+      max=(x2-x1)*(y2-y1)
+      n=1
+      for d1 in range(x1,x2):                                    #scan RDA 
+         for d2 in range(y1,y2):
+            self.ccu.send("delay25 set d1 %d"%(d1)).readlines()
+            self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+            stop=""
+            #stop= self.pxfec.send("cn "+ self.name + " module 0:31 roc 0:15 Vana 0").readlines()
+            #self.pxfec.send("cn reset roc").readlines()         #reset ROC
+            a=self.pxfec.aquery("cn scan hubs")                 #check status
+            print "SDA d2= ", d2, "RDA d1= ", d1, a
+            map[d2,d1]=a
+         # time.sleep(2)
+            if (stop ==['unknown ControlNetwork command '] ): 
+               print "GROUP "+ self.name + " UNKNOWN"
+               break
+      self.ccu.send("delay25 set d2 2").readlines()
+      self.ccu.send("delay25 set d1 0").readlines()
+      # print map
+      return map 
+   def ScanSDAClock(self):
+      #self.InitFEC()
       self.delay25.SendValues()
       self.InitpxFEC()
       map={}
       for d3 in range(0,63):                                    #scan RDA 
-         self.ccu.send("delay25 set d3 %d"%(d3)).readlines()
+         self.ccu.send("delay25 set d4 %d"%(d3)).readlines()
          for d2 in range(0,63):                                 #scan SDA
             self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
-            print "SDA = ", d2, "RDA = ", d3
+            #print "SDA = ", d2, "Clock = ", d3
             self.pxfec.send("cn reset roc").readlines()         #reset ROC
             a=self.pxfec.aquery("cn scan hubs")                 #check status
-            print a
-            map[d2,d3]=a
+            #print a
+            map[d2][d1]=a
+           # map[d2,d1]=a
+      self.ccu.send("delay25 set d2 48").readlines()
+      self.ccu.send("delay25 set d4 0").readlines()
+      return map  
+
+
+   def ScanSDA(self):
+      #self.InitFEC()
+      self.delay25.SendValues()
+      self.InitpxFEC()
+      map={}
+      
+      for d2 in range(0,63):                                 #scan SDA
+         self.ccu.send("delay25 set d2 %d"%(d2)).readlines()
+         print "SDA = ", d2
+         #self.pxfec.send("module 0:31 tbm disableclock").readlines()         #reset ROC
+         self.pxfec.send("module 0:31 roc 0:15 Vana 0").readlines()   
+         time.sleep(3)
+         self.pxfec.send("module 0:31 roc 0:15 Vana 255").readlines()   
       self.ccu.send("delay25 set d2 48").readlines()
       self.ccu.send("delay25 set d3 0").readlines()
       return map
@@ -957,15 +1760,16 @@ class GROUP:
       self.delay25.SendValues()
       self.InitpxFEC()
       map={}
-      for d3 in range(0,63):                                    #scan RDA
-         self.ccu.send("delay25 set d3 %d"%(d3)).readlines()
-         for d0 in range(0,63):
+      for d1 in range(0,63):                                    #scan RDA
+         self.ccu.send("delay25 set d1 %d"%(d1)).readlines()
+         #for d0 in range(0,63):
+         for d0 in range(0,1):
             self.ccu.send("delay25 set d0 %d"%(d0)).readlines() #scan RCK
-            print "RCK = ", d0, "RDA = ", d3
+            print "RCK = ", d0, "RDA = ", d1
             self.pxfec.send("cn reset roc").readlines()         #reset ROC
             a=self.pxfec.aquery("cn scan hubs")                 #check status
             print a
-            map[d3,d0]=a
+            map[d1,d0]=a
       self.ccu.send("delay25 set d0 0").readlines()
       self.ccu.send("delay25 set d3 0").readlines()
       return map
@@ -1069,175 +1873,21 @@ class GROUP:
  
 
 ########################################
-class PortCard:
-   def __init__(self, ccu, name, channel,log=None):
-      self.ccu=ccu                # ccu access (SimpleCommand)
-      self.name=name              # group name
-      self.channel=channel        # channel
-      self.RCK=0x20 #0x20+0x40(enable)  # RCK
-      self.CTR=0x00 #0x00+0x40(enable)  # CTR
-      self.SDA=0x18 #0x18+0x40(enable)  # SDA
-      self.RDA=0x16 #0x16+0x40(enable)  # RDA
-      self.clock=0x18 #0x18+0x40(enable)# clock
-      ##self.programming=False      # i2c programming
-      self.programming=True      # i2c programming
-      self.log=log                # message logger
-
-   def PrintValues(self):
-      self.log.ok(" RCK = 0x%x" %(self.RCK))
-      self.log.ok(" CTR = 0x%x" %(self.CTR))
-      self.log.ok(" SDA = 0x%x" %(self.SDA))
-      self.log.ok(" RDA = 0x%x" %(self.RDA))
-      self.log.ok(" clock = 0x%x" %(self.clock))
-
-
-   def SendSDA(self,value):
-      #set CCU
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d2 %d"%(value)).readlines()
-      verify=self.GetSDA()
-      if not verify==value:
-         #print "verification of delay25 SDA setting failed: wrote ",value," got ",verify
-         self.log.error("verification of delay25 SDA setting failed: wrote %d  , got %d"%(value,verify))
-         return False 
-      else:
-         return True
-    
-   def SendRCK(self,value):
-      #set CCU
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d1 %d"%(value)).readlines()
-      verify=self.GetRCK()
-      if not verify==value:
-         #print "verification of delay25 RCK setting failed: wrote ",value," got ",verify
-         if self.log: self.log.error("verification of delay25 RCK setting failed: wrote %d  got  %d"%(value,verify))
-         return False
-      else:
-         return True
-    
-   def SendCTR(self,value):
-      #set CCU
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d3 %d"%(value)).readlines()
-      verify=self.GetCTR()
-      if not verify==value:
-         #print "verification of delay25 CTR setting failed: wrote ",value," got ",verify
-         if self.log: self.log.error("verification of delay25 CTR setting failed: wrote %d  got  %d"%(value,verify))
-         return False
-      else:
-         return True
-    
-   def SendRDA(self,value):
-      #set CCU
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d0 %d"%(value)).readlines()
-      verify=self.GetRDA()
-      if not verify==value:
-         print "verification of delay25 RDA setting failed: wrote ",value," got ",verify
-         if self.log: self.log.error("verification of delay25 RDA setting failed: wrote %d  got  %d"%(value,verify))
-         return False
-      else:
-         return True
-    
-   def Sendclock(self,value):
-      #set CCU
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d4 %d"%(value)).readlines()
-      verify=self.Getclock()
-      if not verify==value:
-         print "verification of delay25 clock setting failed: wrote ",value," got ",verify
-         if self.log: self.log.error("verification of delay25 clock setting failed: wrote %d  got  %d"%(value,verify))
-         return False
-      else:
-         return True
-    
-
-   def GetRCK(self):
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      query="delay25 read"
-      regexp="-->Delay1 : %d"
-      r=self.ccu.iquery(query,regexp)
-      print "Delay25: RCK = ", r
-      return r
-
-   def GetCTR(self):
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      query="delay25 read"
-      regexp="-->Delay3 : %d"
-      r=self.ccu.iquery(query,regexp)
-      print "Delay25: CTR = ", r
-      return r
-
-   def GetSDA(self):
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      query="delay25 read"
-      regexp="-->Delay2 : %d"
-      r=self.ccu.iquery(query,regexp)
-      print "Delay25: SDA = ", r
-      return r
-
-   def GetRDA(self):
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      query="delay25 read"
-      regexp="-->Delay0 : %d"
-      r=self.ccu.iquery(query,regexp)
-      print "Delay25: RDA = ", r
-      return r
-
-   def Getclock(self):
-      self.ccu.send("group "+self.name).readlines()
-      self.ccu.send("reset").readlines()
-      query="delay25 read"
-      regexp="-->Delay4 : %d"
-      r=self.ccu.iquery(query,regexp)
-      print "Delay25: clock = ", r
-      return r
-
-   def GetValues(self):
-      value=[]
-      value.append(self.GetRCK())
-      value.append(self.GetCTR())
-      value.append(self.GetSDA())
-      value.append(self.GetRDA())
-      value.append(self.Getclock())
-      return value
-
-
-
-
-
-########################################
 class DELAY25:
    def __init__(self, ccu, name, channel,log=None):
       self.ccu=ccu                # ccu access (SimpleCommand)
       self.name=name              # group name
       self.channel=channel        # channel
-      self.RCK=0x20 #0x20+0x40(enable)  # RCK
-      self.CTR=0x28 #0x28+0x40(enable)  # CTR
-      self.SDA=0x1f #0x1f+0x40(enable)  # SDA
-      self.RDA=0x21 #0x21+0x40(enable)  # RDA
-      self.clock=0x20 #0x20+0x40(enable)# clock
-      ##self.programming=False      # i2c programming
-      self.programming=True      # i2c programming
+      self.RCK=0                  # RCK
+      self.CTR=10                 # CTR
+      self.SDA=4                 # SDA
+      self.RDA=0                  # RDA
+      self.clock=0                # clock
+      self.programming=False      # i2c programming
       self.log=log                # message logger
 
-   def PrintValues(self):
-      self.log.ok(" RCK = 0x%x" %(self.RCK))
-      self.log.ok(" CTR = 0x%x" %(self.CTR))
-      self.log.ok(" SDA = 0x%x" %(self.SDA))
-      self.log.ok(" RDA = 0x%x" %(self.RDA))
-      self.log.ok(" clock = 0x%x" %(self.clock))
-      
    def VerifyProgramming(self):
+      # print "our names ", self.name, self.channel
       if ( self.SendSDA(1) and self.SendRCK(2) and self.SendCTR(3) and self.SendRDA(4) and self.Sendclock(5) ):
          #print "Group "+self.name+":\tDELAY25: \tprogramming OK"
          if self.log: self.log.ok("Group "+self.name+":\tDELAY25: \tprogramming OK")
@@ -1281,7 +1931,7 @@ class DELAY25:
       #set CCU
       self.ccu.send("group "+self.name).readlines()
       self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d1 %d"%(value)).readlines()
+      self.ccu.send("delay25 s d3 %d"%(value)).readlines()
       verify=self.GetCTR()
       if not verify==value:
          #print "verification of delay25 CTR setting failed: wrote ",value," got ",verify
@@ -1294,7 +1944,7 @@ class DELAY25:
       #set CCU
       self.ccu.send("group "+self.name).readlines()
       self.ccu.send("reset").readlines()
-      self.ccu.send("delay25 s d3 %d"%(value)).readlines()
+      self.ccu.send("delay25 s d1 %d"%(value)).readlines()
       verify=self.GetRDA()
       if not verify==value:
          print "verification of delay25 RDA setting failed: wrote ",value," got ",verify
@@ -1330,16 +1980,16 @@ class DELAY25:
       query="delay25 read"
       regexp="-->Delay0 : %d"
       r=self.ccu.iquery(query,regexp)
-      print "Delay25: RCK = ", r
+      #print "Delay25: RCK = ", r
       return r
 
    def GetCTR(self):
       self.ccu.send("group "+self.name).readlines()
       self.ccu.send("reset").readlines()
       query="delay25 read"
-      regexp="-->Delay1 : %d"
+      regexp="-->Delay3 : %d"
       r=self.ccu.iquery(query,regexp)
-      print "Delay25: CTR = ", r
+      #print "Delay25: CTR = ", r
       return r
 
    def GetSDA(self):
@@ -1348,16 +1998,16 @@ class DELAY25:
       query="delay25 read"
       regexp="-->Delay2 : %d"
       r=self.ccu.iquery(query,regexp)
-      print "Delay25: SDA = ", r
+      #print "Delay25: SDA = ", r
       return r
 
    def GetRDA(self):
       self.ccu.send("group "+self.name).readlines()
       self.ccu.send("reset").readlines()
       query="delay25 read"
-      regexp="-->Delay3 : %d"
+      regexp="-->Delay1 : %d"
       r=self.ccu.iquery(query,regexp)
-      print "Delay25: RDA = ", r
+      #print "Delay25: RDA = ", r
       return r
 
    def Getclock(self):
@@ -1366,7 +2016,7 @@ class DELAY25:
       query="delay25 read"
       regexp="-->Delay4 : %d"
       r=self.ccu.iquery(query,regexp)
-      print "Delay25: clock = ", r
+      #print "Delay25: clock = ", r
       return r
 
    def GetValues(self):
@@ -1442,7 +2092,7 @@ class PLL:
       query="pll read"
       regexp="-->Clock Phase   : %d"
       r=self.ccu.iquery(query,regexp)
-      print "PLL: ClockPhase = ", r
+      #print "PLL: ClockPhase = ", r
       return r
 
    def GetTriggerDelay(self):
@@ -1451,7 +2101,7 @@ class PLL:
       query="pll read"
       regexp="-->Trigger Delay : %d"
       r=self.ccu.iquery(query,regexp)
-      print "PLL: TriggerDelay = ", r
+      #print "PLL: TriggerDelay = ", r
       return r
 
    def GetValues(self):
@@ -1595,7 +2245,7 @@ class tDOH:
       self.ccu.send("channel "+self.channel).readlines()
       self.ccu.send("reset").readlines()
       cmd="doh set b"+str(ch)+" %d"%bias
-      print cmd
+      # print cmd
       self.ccu.send(cmd).readlines()
       verify=self.readbias(ch)
       if not verify==bias:
@@ -1638,9 +2288,8 @@ class tDOH:
 
 #########################################
 class AOH:
-   def __init__(self, fed, fedslot, ccu, group,  name, fedchannels,log=None):
+   def __init__(self, fed, ccu, group,  name, fedchannels,log=None):
       self.fed=fed              # fec access (SimpleCommand)
-      self.fedslot=fedslot      # fed slot number
       self.ccu=ccu              # ccu/aoh access (SimpleCommand) 
       self.group=group          # group identifier
       self.sectorname=group[:3]
@@ -1648,7 +2297,7 @@ class AOH:
       layer=self.group[3:]
       if layer=="L12":
          self.logname=name
-      elif layer=="L3":
+      elif layer=="L34":
          self.logname="aoh"+str(int(name[-1])+4)
       else:
          self.logname="???????"
@@ -1656,38 +2305,43 @@ class AOH:
       self.fedchannels=self.fedchannelsdefault
       self.cmd=[None]                     # command templates , aohxx set [b/g]x [value]"
       self.aoh=[None]
-      for ch in range(3):
-         self.aoh.append(name+"a")
-         self.cmd.append(name+"a %s "+str(ch)+" %d")
-      for ch in range(3):
-         self.aoh.append(name+"b")
-         self.cmd.append(name+"b"+str(ch)+" %d")
+      for ch in range(5):
+         self.aoh.append(name)
+         self.cmd.append(name+" %s "+str(ch)+" %d")
       self.programming=False
       self.log=log
 
-   def VerifyProgramming(self):
+   def VerifyProgramming(self): 
       if ( self.writebias(1,11) and self.writebias(2,12) and self.writebias(3,13) and self.writebias(4,14) and self.writebias(5,15) and self.writebias(6,16) and
            self.writegain(1,0)  and self.writegain(2,1)  and self.writegain(3,2)  and self.writegain(4,0)  and self.writegain(5,1)  and self.writegain(6,2)  ):
-         #print "Group "+self.group+":\t "+self.name+": \t\tprogramming OK"
+         print "Group "+self.group+":\t "+self.name+": \t\tprogramming OK"
          if self.log: self.log.ok("Group "+self.group+":\t "+self.name+": \t\tprogramming OK")
          self.programming=True
       else:
-         #print "Group "+self.group+":\t "+self.name+": \t\tERROR in programming"
+         print "Group "+self.group+":\t "+self.name+": \t\tERROR in programming"
          if self.log: self.log.error("Group "+self.group+":\t "+self.name+": \t\tERROR in programming")
          #sys.exit(1)
 
    def readbias(self,ch):
       # ch 1..6
+      #print "readbias", ch
+      #print self.group
       self.ccu.send("group "+self.group).readlines()
       #self.ccu.send("reset").readlines()
       query=self.aoh[ch]+" read"
-      regexp="-->Bias channel "+str((ch-1)%3)+": %d"
-      return self.ccu.iquery(query,regexp)      
+      regexp="-->Bias channel "+str((ch-1)%4)+": %d"
+      #print query
+      #print regexp
+      #print self.ccu
+      return self.ccu.iquery(query,regexp) 
+      #result = self.ccu.iquery(query,regexp)    
+      #print result
+      #return result
       
    def writebias(self,ch,bias,verify=True):
       # AOH
       # ch 1..6, bias: 0..127
-      if not 1<=ch<=6 and 0<=bias<=127:
+      if not 1<=ch<=4 and 0<=bias<=127:
          print "invalid values in AOH.writebias(ch=%d,bias=%d)"%(ch,bias)
          return False
       self.ccu.send("group "+self.group).readlines()
@@ -1816,88 +2470,81 @@ class AOH:
       print oldvalues
       return data
 
-   
-   def getBiasRMSCurves(self,setbias=False):
+   def getBiasRMSCurves(self):
+      #print "start"
       data=[None]+[[] for ch in range(6)]
-      self.workingBias=7*[0]
       #self.fed.send("fed "+str(self.fedslot)).readlines()
-      self.fed.send("fed %s"%(self.sectorname)).readlines()
-      oldvalues=[self.readbias(ch) for ch in range(1,7)]
-      #print oldvalues
-      for ch in range(1,7): self.writebias(ch,0)  # will also set the group for the ccu
+      oldvalues=[self.readbias(ch) for ch in range(1,5)]
+      for ch in range(1,5): self.writebias(ch,0)  # will also set the group for the ccu
+      #print "wrote bias"
 
-      biasRange=range(10,41,1)
+      debug = 0
+      biasRange=range(0,60,30)
       nbp=0
       for bias in biasRange:
-##          for ch in range(1,7):
-##             #self.writebias(ch,bias,verify=False)
-##             cmd=self.aoh[ch]+" set b"+str((ch-1)%3)+" %d"%bias
-##             self.ccu.send(cmd).readlines()
-##          # ALTERNATIVE  CODE
-         g=3
-         self.ccu.send(self.name+"a setall %d %d %d %d %d %d"%(g,g,g,bias,bias,bias)).readlines()
-         self.ccu.send(self.name+"b setall %d %d %d %d %d %d"%(g,g,g,bias,bias,bias)).readlines()
-
-         wupp=self.fed.send("reset fifo; rms %d %d %d %d %d %d"%tuple(self.fedchannels[1:])).readlines()
+         if (debug>0):
+            print "setting bias: %i" %bias
+         for ch in range(1,5):
+            self.writebias(ch,bias,verify=False)
+            cmd=self.aoh[ch]+" set b"+str((ch-1)%4)+" %d"%bias
+            self.ccu.send(cmd).readlines()
+            
+         if (debug>0):
+            print "resetting fifo"
+         self.fed.send("reset fifo").readlines()
+         
+         if(debug>0):
+            print "reading rms"
          chsum=0
-         #print wupp
-         d=wupp[1].split()
-         for ch in range(1,7):
-            mean,rms=d[ch*2-2],d[ch*2-1]
+         for ch in range(1,5):
+            if self.fedchannels[ch]==0: continue
+            response=self.fed.query("rms %d"%self.fedchannels[ch])
+            #if (debug>0):
+            #   print response
+            channel,mean,rms,name=response.split()
             data[ch].append([bias,float(mean),float(rms),0.])
+            if (debug>0):
+               print mean," ",
             chsum+=float(mean)
-         self.ccu.send(self.name+"a setall 0 0 0 0 0 0; "+self.name+"b setall 0 0 0 0 0 0").readlines()
-
-##          self.fed.send("reset fifo").readlines()
-##          chsum=0
-##          for ch in range(1,7):
-##             if self.fedchannels[ch]==0: continue
-##             response=self.fed.query("rms %d"%self.fedchannels[ch])
-##             channel,mean,rms,name=response.split()
-##             data[ch].append([bias,float(mean),float(rms),0.])
-##             chsum+=float(mean)
-##             cmd=self.aoh[ch]+" set b"+str((ch-1)%3)+" %d"%0
-##             self.ccu.send(cmd).readlines()
-
-         #print "sum=",chsum
+            cmd=self.aoh[ch]+" set b"+str((ch-1)%4)+" %d"%0
+            self.ccu.send(cmd).readlines()
+         if (debug>0):
+            print "sum=",chsum
          nbp+=1
          if chsum>=(1023.*6): break
-      # end of bias scan
 
-      # restore old bias settings unless working point should be set
-      if not setbias:
-         for ch in range(1,7):
-            self.writebias(ch,oldvalues[ch-1])
+      for ch in range(1,5):
+         self.writebias(ch,oldvalues[ch-1])
+      self.fed.send("reset fifo").readlines()
 
       # calculate the slopes
-      for ch in range(1,7):
-         # skip missing channels
-         if self.fedchannels[ch]==0: continue
-         # also count data points with high noise or low slope and try to find a good working point
-         nslope,nnoise,b500=0,0,0
+      # for ch in range(1,5):
+      #    #print "AOH channel "+str(ch)
+      #    if self.fedchannels[ch]==0:
+      #       continue
+      #    # also count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    #print [data[ch][i][1] for i in range(nbp)]
+      #    # first point 
+      #    data[ch][0][3]=float(data[ch][1][1]-data[ch][0][1])/float(data[ch][1][0]-data[ch][0][0])
+      #    # intermediate points
+      #    for idx in range(1,nbp-1):
+      #       data[ch][idx][3]=0.5*float(data[ch][idx+1][1]-data[ch][idx-1][1])/float(data[ch][idx+1][0]-data[ch][idx-1][0])
+      #    # last point
+      #    data[ch][-1][3]=float(data[ch][-1][1]-data[ch][-2][1])/float(data[ch][-1][0]-data[ch][-2][0])
 
-         # first point 
-         data[ch][0][3]=float(data[ch][1][1]-data[ch][0][1])/float(data[ch][1][0]-data[ch][0][0])
-         # intermediate points
-         for idx in range(1,nbp-1):
-            data[ch][idx][3]=0.5*float(data[ch][idx+1][1]-data[ch][idx-1][1])/float(data[ch][idx+1][0]-data[ch][idx-1][0])
-         # last point
-         data[ch][-1][3]=float(data[ch][-1][1]-data[ch][-2][1])/float(data[ch][-1][0]-data[ch][-2][0])
-
-         # count data points with high noise or low slope and try to find a good working point
-         nslope,nnoise,b500=0,0,0
-         for idx in range(nbp):
-            if data[ch][idx][3]>30: nslope+=1
-            if data[ch][idx][2]>5.: nnoise+=1
-            if data[ch][idx][1]>500 and b500==0: b500=data[ch][idx][0]
-         if nslope<5: self.log.error(self.logname+"-"+str(ch)+" low slope")
-         if nnoise>5: self.log.error(self.logname+"-"+str(ch)+" noisy")
-         if b500>35:  self.log.error(self.logname+"-"+str(ch)+" high working point")
-         self.workingBias[ch]=b500
-         if setbias:
-            self.writebias(ch,b500)
-         
+      #    # count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    for idx in range(nbp):
+      #       if data[ch][idx][3]>30: nslope+=1
+      #       if data[ch][idx][2]>5.: nnoise+=1
+      #       if data[ch][idx][1]>500 and b500==0: b500=data[ch][idx][0]
+      #    if nslope<5: print self.name+"-"+str(ch)+" low slope"
+      #    if nnoise>5: print self.name+"-"+str(ch)+" noisy"
+      #    if b500>35:  print self.name+"-"+str(ch)+" high working point"
       return data
+
+   
 
 
    
@@ -1954,7 +2601,535 @@ class AOH:
 
       return oldvalue
   
+#########################################
+class POH:
+   def __init__(self, fed, ccu, group,  name, bundle, fedchannels,log):
+      self.fed=fed              # fec access (SimpleCommand)
+      self.ccu=ccu              # ccu/aoh access (SimpleCommand) 
+      self.group=group          # group identifier
+      self.sectorname=group[:34]
+      self.name=name            # aoh1/aoh2 for layer3, aoh1..4 for layer1&2
+      layer=self.group[34:]
+      if layer=="L12":
+         self.logname=name
+      elif layer=="L34":
+         self.logname="poh"+str(int(name[-1])+4)
+      else:
+         self.logname="???????"
+      self.bundle=bundle
+      self.fedchannelsdefault=fedchannels # the six fed channels for a0 a1 a2 b0 b1 b2
+      self.fedchannels=self.fedchannelsdefault
+      self.cmd=[None]                     # command templates , aohxx set [b/g]x [value]"
+      self.poh=[None]
+      for ch in range(5):
+         self.poh.append(name)
+         self.cmd.append(name+" %s "+str(ch)+" %d")
+      self.programming=False
+      self.log=log
+###
+# if ( self.writebias(0,30) and self.writebias(1,31) and self.writebias(2,32) and self.writegain(0,0) and self.writegain(1,1) and self.writegain(2,2)  ):
 
+###
+
+
+   def SearchPOH(self): 
+         if (self.writebias(1,20)  and self.writegain(1,0)   ):
+            print "Group "+self.group+":\t "+self.name+" found"
+          #if self.log: self.log.ok("Group "+self.group+":\t "+self.name+": \t\tprogramming OK")
+          #self.programming=True
+         else:
+            print "Group "+self.group+":\t "+self.name+" not found"
+         #if self.log: self.log.error("Group "+self.group+":\t "+self.name+": \t\tERROR in programming")
+         #sys.exit(1)
+
+
+
+
+   def VerifyProgramming(self): 
+      if ( self.writebias(1,20) and self.writebias(2,21) and self.writebias(3,29)  and self.writebias(4,30) and
+       self.writegain(1,0)  and self.writegain(2,1)  and self.writegain(3,2)    and self.writegain(4,3)  ):
+     
+         #print "Group "+self.group+":\t "+self.name+": \t\tprogramming OK"
+          if self.log: self.log.ok("Group "+self.group+":\t "+self.name+": \t\tprogramming OK")
+          self.programming=True
+      else:
+         #print "Group "+self.group+":\t "+self.name+": \t\tERROR in programming"
+         if self.log: self.log.error("Group "+self.group+":\t "+self.name+": \t\tERROR in programming")
+         #sys.exit(1)
+
+   def readbias(self,ch):
+      # ch 1..6
+      #print "readbias", ch
+      #print self.group
+      self.ccu.send("group "+self.group).readlines()
+      #self.ccu.send("reset").readlines()
+      query=self.poh[ch]+" read"
+      regexp="-->Bias channel "+str((ch-1)%4)+": %d"
+      #print query
+      #print regexp
+      #print self.ccu
+      return self.ccu.iquery(query,regexp) 
+      #for l in self.ccu.send(query).readlines():
+      #   print "answer ", l
+      #return 0
+      #result = self.ccu.iquery(query,regexp)    
+      #print result
+      #return result
+      
+   def writebias(self,ch,bias,verify=True):
+      # POH
+      # ch 1..6, bias: 0..127
+      if not 1<=ch<=4 and 0<=bias<=127:
+         print "invalid values in POH.writebias(ch=%d,bias=%d)"%(ch,bias)
+         return False
+      self.ccu.send("group "+self.group).readlines()
+      #self.ccu.send("reset").readlines()
+      cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%bias
+      #print cmd
+      self.ccu.send(cmd).readlines()
+      #for l in self.ccu.send(cmd).readlines()
+         #print l
+      if verify:
+         readvalue=self.readbias(ch)
+         if not readvalue==bias:
+            print "verification of bias setting failed: wrote ",bias," got ",readvalue
+            if self.log: self.log.error("verification of bias setting failed: wrote %d, got %d "%(bias,readvalue))
+            return False
+         else:
+            return True
+      else:
+         return True
+   
+
+         
+   def readgain(self,ch):
+      # ch 1..6
+      self.ccu.send("group "+self.group).readlines()
+      self.ccu.send("reset").readlines()
+      query=self.poh[ch]+" read"
+      regexp="-->Gain channel "+str((ch-1)%4)+": %d"
+      return self.ccu.iquery(query,regexp)      
+      
+   def writegain(self,ch,gain):
+      # ch 1..6, bias: 0..127
+      self.ccu.send("group "+self.group).readlines()
+      #self.ccu.send("reset").readlines()
+      cmd=self.poh[ch]+" set g"+str((ch-1)%4)+" %d"%gain
+      #print cmd
+      self.ccu.send(cmd).readlines(),
+      verify=self.readgain(ch)
+      if not verify==gain:
+         print "verification of gain setting failed: wrote ",gain," got ",verify
+         if self.log: self.log.error("verification of gain setting failed: wrote %d, got %d "%(bias,verify))
+         return False
+      else:
+         return True
+
+   def find(self,ch,verbose=False):
+      #self.fed.send("fed "+str(self.fedslot))#.readlines()
+      self.fed.send("fed %s"%(self.sectorname)).readlines()
+      if verbose: print "find aoh channel ",ch
+      oldvalue=self.readbias(ch)
+      self.writebias(ch,0)
+      #time.sleep(1.0)
+      self.fed.send("reset").readlines()
+      b0=self.fed.aquery("read","baselines = %s")
+      if verbose: print "b0=",b0
+      self.writebias(ch,127)
+      #time.sleep(1.0)
+      self.fed.send("reset").readlines()
+      b1=self.fed.aquery("read","baselines = %s")
+      self.writebias(ch,oldvalue)
+      diff=[b1[i]-b0[i] for i in range(36)]
+      if verbose: print "b1=",b1
+      dmax=max(diff)
+      if dmax>100:
+         fedch=diff.index(dmax)+1
+         if dmax<1000:
+            self.log.error("weak channel %s  %d"%(self.name,ch))
+         if verbose: print "fed channel is ",fedch
+         return fedch
+      else:
+         self.log.error("dead channel %s  %d"%(self.name,ch))
+         if verbose: print "no fed channel responded"
+         return 0
+
+   def findAll(self):
+      for ch in range(1,7):
+         self.fedchannels[ch]=self.find(ch)
+      if not self.fedchannels==self.fedchannelsdefault:
+         for i in range(1,7):
+            if self.fedchannels[i]==0: continue
+            if self.fedchannels[i]==self.fedchannelsdefault[i]: continue
+            self.log.error("non-standard fed channel map:  %s-%d  mapped to %d instead of %d"%(self.name,i,self.fedchannels[i],self.fedchannelsdefault[i]))
+
+
+   def getBiasCurve(self,ch):
+       data=[]
+       oldvalue=self.readbias(ch)
+       self.writebias(ch,0)
+       #time.sleep(4)
+       for bias in [8*x for x in range(16)]:
+          self.writebias(ch,bias)
+          #time.sleep(1.0)
+          l=self.fed.aquery("read","baselines = %s")
+          #time.sleep(1.0)
+          l=self.fed.aquery("read","baselines = %s")
+          print l
+          data.append((bias,l[self.fedchannels[ch]-1]))
+       self.writebias(ch,oldvalue)
+       return data
+
+    
+   def getBiasCurves(self):
+      data=[None]+[[] for ch in range(6)]
+      #self.fed.send("fed "+str(self.fedslot)).readlines()
+      self.fed.send("fed %s"%(self.sectorname)).readlines()
+      oldvalues=[self.readbias(ch) for ch in range(1,7)]
+      #print oldvalues
+      self.writebias(ch,0)
+      cnt=[0,0,0,0,0,0]
+      
+      for bias in [4*x for x in range(128/4)]:
+         for ch in range(1,7):
+            self.writebias(ch,bias)
+            
+         self.fed.send("reset fifo").readlines()
+         l=self.fed.aquery("read","baselines = %s")
+         print bias,l
+         for ch in range(1,7):
+            data[ch].append((bias,l[self.fedchannels[ch]-1]))
+            if (l[self.fedchannels[ch]-1]==1023):
+               cnt[ch-1]=cnt[ch-1]+1
+
+         if (cnt[0]>2 and cnt[1]>2 and cnt[2]>2 and cnt[3]>2 and cnt[4]>2 and cnt[5]>2): break
+
+      for ch in range(1,7):
+         self.writebias(ch,oldvalues[ch-1])
+      self.fed.send("reset fifo").readlines()
+
+      print oldvalues
+      return data
+   #POH
+   def getBiasRMSCurves(self):
+      #print "start"
+      data=[None]+[[] for ch in range(6)]
+      # self.fed.send("fed "+str(self.fedslot)).readlines()
+      
+      oldvalues=[self.readbias(ch) for ch in range(1,5)]
+      for ch in range(1,5): self.writebias(ch,0)  # will also set the group for the ccu
+      #print "wrote bias"
+      ##########################################################
+      list 
+      self.fed.send("set_offset_dac " + str(1) + " ").readlines()
+      ###########################################################################3    
+      debug = 0
+      biasRange=range(0,60,2)
+      nbp=0
+      for bias in biasRange:
+         # if (debug>0):
+         #    print "setting bias: %i" %bias
+         for ch in range(1,5):
+            self.writebias(ch,bias,verify=False)
+            #cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%bias
+            #self.ccu.send(cmd).readlines()
+            sleep(0.02)
+            
+         # if (debug>0):
+         #    print "resetting fifo"
+         self.fed.send("reset fifo").readlines()
+         
+         # if(debug>0):
+         #    print "reading rms"
+         chsum=0
+         for ch in range(1,5):
+            if self.fedchannels[ch]==0: continue
+            response=self.fed.query("rms %d"%self.fedchannels[ch])
+            # if (debug>0):
+            #    print "rms %d"%self.fedchannels[ch]
+            #    print response
+            channel,mean,rms,name=response.split()
+            data[ch].append([bias,float(mean),float(rms),0.])
+            # if (debug>0):
+            #    print mean," ",
+            chsum+=float(mean)
+            cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%0
+            self.ccu.send(cmd).readlines()
+         # if (debug>0):
+         #    print "sum=",chsum
+         nbp+=1
+         if chsum>=(1023.*6): break
+
+      for ch in range(1,5):
+         self.writebias(ch,oldvalues[ch-1])
+      self.fed.send("reset fifo").readlines()
+
+      # # calculate the slopes
+      # for ch in range(1,5):
+      #    #print "AOH channel "+str(ch)
+      #    if self.fedchannels[ch]==0:
+      #       continue
+      #    # also count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    #print [data[ch][i][1] for i in range(nbp)]
+      #    # first point 
+      #    data[ch][0][3]=float(data[ch][1][1]-data[ch][0][1])/float(data[ch][1][0]-data[ch][0][0])
+      #    # intermediate points
+      #    for idx in range(1,nbp-1):
+      #       data[ch][idx][3]=0.5*float(data[ch][idx+1][1]-data[ch][idx-1][1])/float(data[ch][idx+1][0]-data[ch][idx-1][0])
+      #    # last point
+      #    data[ch][-1][3]=float(data[ch][-1][1]-data[ch][-2][1])/float(data[ch][-1][0]-data[ch][-2][0])
+
+      #    # count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    #print "--------- channel ", ch
+      #    for idx in range(nbp):
+      #       if data[ch][idx][3]>30: nslope+=1
+      #       if data[ch][idx][2]>5.: nnoise+=1
+      #       if data[ch][idx][1]>500 and b500==0: b500=data[ch][idx][0]
+      #       #print "slope ", data[ch][idx][3], nslope 
+      #       #print "noise ", data[ch][idx][2], nnoise 
+      #       #print "bias  ", data[ch][idx][1], b500
+      #       #print " " 
+      #    if nslope<5: print self.name+"-"+str(ch)+" low slope"
+      #    if nnoise>5: print self.name+"-"+str(ch)+" noisy"
+      #    if b500>35:  print self.name+"-"+str(ch)+" high working point"
+      return data
+
+ 
+
+   def ScanDACoffset(self):
+      #print "start"
+      data=[None]+[[] for ch in range(4)]
+      # self.fed.send("fed "+str(self.fedslot)).readlines()
+      
+     # oldvalues=[self.readbias(ch) for ch in range(1,5)]
+      for ch in range(1,5): self.writebias(ch,0)  # will also set the group for the ccu
+      #print "wrote bias"
+
+      debug = 0
+      #DACRange=range(150,254,2)
+      DACRange=range(0,254,2)
+      #DACRange=range(0,15,1)
+      nbp=0
+      self.fed.send("set_opt_inadj 1  9").readlines()
+      for bias in DACRange:
+         #if (debug>0):
+         print "setting dac: %i" %bias
+         # for ch in range(1,5):
+         #    self.writebias(ch,bias,verify=False)
+         #    cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%bias
+         #    self.ccu.send(cmd).readlines()
+            
+         if (debug>0):
+            print "resetting fifo"
+         self.fed.send("reset fifo").readlines()
+         
+         if(debug>0):
+            print "reading rms"
+         chsum=0
+         for ch in range(1,5):
+            if self.fedchannels[ch]==0: continue
+            self.fed.send("set_offset_dac " + str(self.fedchannels[ch]) + " %d "%bias).readlines()
+            #self.fed.send("set_opt_inadj 1  %d "%bias).readlines()
+            #self.fed.send("set_opt_inadj 2  %d "%bias).readlines()
+            #self.fed.send("set_opt_inadj 3  %d "%bias).readlines()
+            #self.fed.send("reset fifo").readlines()
+            response=self.fed.query("rms %d"%self.fedchannels[ch])
+            #if (debug>0):
+            print response
+            channel,mean,rms,name=response.split()
+            data[ch].append([bias,float(mean),float(rms),0.])
+            if (debug>0):
+               print mean," ",
+            chsum+=float(mean)
+            #cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%0
+            #self.ccu.send(cmd).readlines()
+         if (debug>0):
+            print "sum=",chsum
+         nbp+=1
+         if chsum>=(1023.*6): break
+
+     # for ch in range(1,5):
+         #self.writebias(ch,oldvalues[ch-1])
+      self.fed.send("reset fifo").readlines()
+
+      # calculate the slopes
+      # for ch in range(1,5):
+      #    #print "AOH channel "+str(ch)
+      #    if self.fedchannels[ch]==0:
+      #       continue
+      #    # also count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    #print [data[ch][i][1] for i in range(nbp)]
+      #    # first point 
+      #    data[ch][0][3]=float(data[ch][1][1]-data[ch][0][1])/float(data[ch][1][0]-data[ch][0][0])
+      #    # intermediate points
+      #    for idx in range(1,nbp-1):
+      #       data[ch][idx][3]=0.5*float(data[ch][idx+1][1]-data[ch][idx-1][1])/float(data[ch][idx+1][0]-data[ch][idx-1][0])
+      #    # last point
+      #    data[ch][-1][3]=float(data[ch][-1][1]-data[ch][-2][1])/float(data[ch][-1][0]-data[ch][-2][0])
+
+      #    # count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    for idx in range(nbp):
+      #       if data[ch][idx][3]>30: nslope+=1
+      #       if data[ch][idx][2]>5.: nnoise+=1
+      #       if data[ch][idx][1]>500 and b500==0: b500=data[ch][idx][0]
+      #    if nslope<5: print self.name+"-"+str(ch)+" low slope"
+      #    if nnoise>5: print self.name+"-"+str(ch)+" noisy"
+      #    if b500>35:  print self.name+"-"+str(ch)+" high working point"
+         
+
+      return data
+
+
+
+
+   def ScanDACInputOffset(self):
+      #print "start"
+      data=[None]+[[] for ch in range(4)]
+      # self.fed.send("fed "+str(self.fedslot)).readlines()
+      
+     # oldvalues=[self.readbias(ch) for ch in range(1,5)]
+      for ch in range(1,5): self.writebias(ch,0)  # will also set the group for the ccu
+      #print "wrote bias"
+
+      debug = 0
+      #DACRange=range(150,254,2)
+      #DACRange=range(0,254,2)
+      DACRange=range(0,15,1)
+      nbp=0
+      for bias in DACRange:
+         #if (debug>0):
+         print "setting imput offset: %i" %bias
+         self.fed.send("set_opt_inadj 1  %i " %bias).readlines()
+         # for ch in range(1,5):
+         #    self.writebias(ch,bias,verify=False)
+         #    cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%bias
+         #    self.ccu.send(cmd).readlines()
+            
+         if (debug>0):
+            print "resetting fifo"
+         self.fed.send("reset fifo").readlines()
+         
+         if(debug>0):
+            print "reading rms"
+         chsum=0
+         for ch in range(1,5):
+            if self.fedchannels[ch]==0: continue
+            #self.fed.send("set_offset_dac " + str(self.fedchannels[ch]) + " %d "%bias).readlines()
+            #self.fed.send("set_opt_inadj 1  %d "%bias).readlines()
+            #self.fed.send("set_opt_inadj 2  %d "%bias).readlines()
+            #self.fed.send("set_opt_inadj 3  %d "%bias).readlines()
+            #self.fed.send("reset fifo").readlines()
+            response=self.fed.query("rms %d"%self.fedchannels[ch])
+            #if (debug>0):
+            print response
+            channel,mean,rms,name=response.split()
+            data[ch].append([bias,float(mean),float(rms),0.])
+            if (debug>0):
+               print mean," ",
+            chsum+=float(mean)
+            #cmd=self.poh[ch]+" set b"+str((ch-1)%4)+" %d"%0
+            #self.ccu.send(cmd).readlines()
+         if (debug>0):
+            print "sum=",chsum
+         nbp+=1
+         if chsum>=(1023.*6): break
+
+     # for ch in range(1,5):
+         #self.writebias(ch,oldvalues[ch-1])
+      self.fed.send("reset fifo").readlines()
+
+      # calculate the slopes
+      # for ch in range(1,5):
+      #    #print "AOH channel "+str(ch)
+      #    if self.fedchannels[ch]==0:
+      #       continue
+      #    # also count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    #print [data[ch][i][1] for i in range(nbp)]
+      #    # first point 
+      #    data[ch][0][3]=float(data[ch][1][1]-data[ch][0][1])/float(data[ch][1][0]-data[ch][0][0])
+      #    # intermediate points
+      #    for idx in range(1,nbp-1):
+      #       data[ch][idx][3]=0.5*float(data[ch][idx+1][1]-data[ch][idx-1][1])/float(data[ch][idx+1][0]-data[ch][idx-1][0])
+      #    # last point
+      #    data[ch][-1][3]=float(data[ch][-1][1]-data[ch][-2][1])/float(data[ch][-1][0]-data[ch][-2][0])
+
+      #    # count data points with high noise or low slope and try to find a good working point
+      #    nslope,nnoise,b500=0,0,0
+      #    for idx in range(nbp):
+      #       if data[ch][idx][3]>30: nslope+=1
+      #       if data[ch][idx][2]>5.: nnoise+=1
+      #       if data[ch][idx][1]>500 and b500==0: b500=data[ch][idx][0]
+      #    if nslope<5: print self.name+"-"+str(ch)+" low slope"
+      #    if nnoise>5: print self.name+"-"+str(ch)+" noisy"
+      #    if b500>35:  print self.name+"-"+str(ch)+" high working point"
+         
+
+      return data
+
+   
+
+
+  
+
+
+   
+   def setBiasFed(self,ch,target=500):
+      # tune the aoh bias to get a target FED reading for the baseline
+      #self.fed.send("fed "+str(self.fedslot)).readlines()
+      self.fed.send("fed %s"%(self.sectorname)).readlines()
+      oldvalue=self.readbias(ch)
+      bhigh,ahigh=127,1023
+      blow,alow=0,0
+      # start by finding  the mapping
+      self.writebias(ch,0)
+      self.fed.send("reset fifo").readlines()
+      b0=self.fed.aquery("read","baselines = %s")
+      self.writebias(ch,bhigh)
+      self.fed.send("reset fifo").readlines()
+      b1=self.fed.aquery("read","baselines = %s")
+      diff=[b1[i]-b0[i] for i in range(36)]
+      dmax=max(diff)
+      if dmax>100:
+         fedch=diff.index(dmax)+1
+         ahigh=b1[fedch-1]
+         self.fedchannels[ch]=fedch
+         #print "fed channel is ",fedch
+      else:
+         self.fedchannels[ch]=0
+         self.writebias(ch,oldvalue)
+         print "no fed channel found for ",self.name
+         if log: self.log.error("no fed channel found for "+self.name)
+         return oldvalue
+      
+      if b1[fedch-1]<target:
+         print "target ",target," cannot be reached, value at ",bhigh," = ",ahigh
+         self.writebias(ch,oldvalue)
+         return oldvalue
+      
+      # now tune bias with binary search (but beware of nonlinearities/jumps)
+
+      while bhigh-blow>1:
+         bias=int((bhigh+blow)/2)
+         cmd=self.aoh[ch]+" set b"+str((ch-1)%3)+" %d"%bias
+         self.ccu.send(cmd).readlines()
+
+         self.fed.send("reset fifo").readlines()
+         l=self.fed.iquery("read %d"%(fedch),"baseline =%d")
+         #print ch,bias,l
+         l=int(l)
+         if l>=target:
+            bhigh,ahigh=bias,l
+         if l<=target:
+            blow,alow=bias,l
+      #print self.name," channel ",ch," set to ",bias,"     fed channel ",fedch," adc=",l
+      if log: self.log.info(self.name+" channel "+str(ch)+" set to "+str(bias)+"     fed channel "+str(fedch)+" adc="+str(l))
+
+      return oldvalue
 
 ########################################
 class MODULE:
@@ -1966,6 +3141,9 @@ class MODULE:
       self.readout=readout         # readout status
       self.goodaddress=goodaddress # is hubaddress in design hubaddresses?
       self.log=log
+      self.rda=rda
+      self.sda=sda
+      self.channel=[]
            
    def GetTBMEventNumber(self):
       query="cn "+self.name+" module %d tbm readstackA"%(self.hubaddress)
@@ -2047,7 +3225,9 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
    #test FEC output B and first CCU input B
    #ccu.send("fec %s"%trfec).readlines()
    #ccu.send("ring %s"%ring).readlines()
-   ccu.send("cratereset").readlines()
+   ccu.send("reset").readlines()
+   ccu.send("piareset all").readlines()
+   #ccu.send("cratereset").readlines()
    ccu.send("redundancy fec a b").readlines()
    ccu.send("redundancy ccu 0x7e b a").readlines()
    ccu.send("scanccu")
@@ -2065,13 +3245,16 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
                
    print " "          
    if (nccu == 8 ):
-      print "FEC A B CCU 0x7e B A               : OK "
+      #print "FEC A B CCU 0x7e B A               : OK "
+      dummy=1
    else :
       print "FEC A B CCU 0x7e B A               : ERROR "
       passed=False
 
-   #test FEC output B and second CCU input B
-   ccu.send("cratereset").readlines()
+   # test FEC output B and second CCU input B
+   #ccu.send("cratereset").readlines()
+   ccu.send("reset").readlines()
+   ccu.send("piareset all").readlines()
    ccu.send("redundancy fec a b").readlines()
    ccu.send("redundancy ccu 0x7d b a").readlines()
    ccu.send("scanccu")
@@ -2089,7 +3272,8 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
                notbypassed = 1
           
    if (nccu == 7 and notbypassed ==0 ):
-      print "FEC A B CCU 0x7d B A               : OK "
+      #print "FEC A B CCU 0x7d B A               : OK "
+      dummy=1
    else :
       print "FEC A B CCU 0x7d B A               : ERROR "
 
@@ -2099,8 +3283,9 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
    for i in range (6):
       ccuAddressOutputB="0x%x"%(ccuAddress)
       ccuAddressInputB="0x%x"%(ccuAddress-2)
-    
-      ccu.send("cratereset").readlines()
+      ccu.send("reset").readlines()
+      ccu.send("piareset all").readlines()
+      # ccu.send("cratreset").readlines()
       ccu.send("redundancy ccu  %s  a b"%(ccuAddressOutputB)).readlines()
       ccu.send("redundancy ccu  %s  b a"%(ccuAddressInputB)).readlines()
       ccu.send("scanccu").readlines()
@@ -2120,14 +3305,17 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
                   notbypassed = 1
                         
       if (nccu == 7 and notbypassed ==0 ):
-         print "CCU %s A B CCU %s B A          : OK "%(ccuAddressOutputB, ccuAddressInputB)
+         #print "CCU %s A B CCU %s B A          : OK "%(ccuAddressOutputB, ccuAddressInputB)
+         dummy=1
       else :
          print "CCU %s A B CCU %s B A          : ERROR "%(ccuAddressOutputB, ccuAddressInputB)
          passed=False
       ccuAddress = ccuAddress-1
 
    #test FEC input B 
-   ccu.send("cratereset").readlines()
+   # ccu.send("cratereset").readlines()
+   ccu.send("reset").readlines()
+   ccu.send("piareset all").readlines()
    ccu.send("redundancy ccu 0x77 a b").readlines()
    ccu.send("redundancy ccu 0x76 a a").readlines()
    ccu.send("redundancy fec b a").readlines()
@@ -2145,13 +3333,16 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
                nccu = nccu + 1
           
    if (nccu == 9 ):
-      print "CCU 0x77 A B CCU 0x76 A A FEC B A  : OK "
+      #print "CCU 0x77 A B CCU 0x76 A A FEC B A  : OK "
+      dummy=1
    else :
       print "CCU 0x77 A B CCU 0x76 A A FEC B A  : ERROR "
 
 
    #test FEC input B with bypass of CCU 0x77 
-   ccu.send("cratereset").readlines()
+   # ccu.send("cratereset").readlines()
+   ccu.send("reset").readlines()
+   ccu.send("piareset all").readlines()
    ccu.send("redundancy ccu 0x78 a b").readlines()
    ccu.send("redundancy ccu 0x76 b a").readlines()
    ccu.send("redundancy ccu 0x76 b a").readlines()
@@ -2173,18 +3364,77 @@ def TestRedundancy(ccu,trfec=None,ring=None,verbose=False,log=None):
                notbypassed = 1
           
    if (nccu == 8 and notbypassed ==0 ):
-      print "CCU 0x78 A B CCU 0x76 B A FEC B A  : OK "
+      #print "CCU 0x78 A B CCU 0x76 B A FEC B A  : OK "
+      dummy=1
    else :
       print "CCU 0x78 A B CCU 0x76 B A FEC B A  : ERROR "
       passed=False
       
    #reset fec
-   ccu.send("cratereset").readlines()
+   # ccu.send("cratereset").readlines()
+   ccu.send("reset").readlines()
+   ccu.send("piareset all").readlines()
    if passed:
       log.ok("CCU redundancy test: OK")
    else:
       log.error("CCU redundancy test: FAILED")
+######################################################################
+def DCDCDisable(ccu,trfec=None,ring=None,verbose=False,log=None):
 
+   verbose = False 
+   # ccu.send("ccu "+ccuAddress).readlines()
+   ndcdcok = 0
+   for i in range (0,13):
+      ccu.send("disable  dcdc %s"%(i))
+      nok = 0
+      for s in ccu.readline():
+         if (verbose): print s
+         m1=re.match(".*Disable OK*",s)
+         #m2=re.match(".*Enable OK*",s)
+         if m1:
+            nok = nok + 1
+
+
+      if (nok==1):
+         print "DCDC dis %s:  OK"%(i)
+         ndcdcok = ndcdcok + 1
+      else:
+         print "DCDC %s: ERROR"%(i)
+      
+   # if (ndcdcok==13):
+   #    log.ok("DCDC enable test: OK")
+######################################################################
+
+def TestDCDCEnable(ccu,trfec=None,ring=None,verbose=False,log=None):
+
+   verbose = False 
+   # ccu.send("ccu "+ccuAddress).readlines()
+
+   ndcdcok = 0
+   for i in range (0,13):
+      ccu.send("enabletest dcdc %s"%(i))
+
+      nok = 0
+      for s in ccu.readline():
+         if (verbose): print s
+         m1=re.match(".*Disable OK*",s)
+         m2=re.match(".*Enable OK*",s)
+         if m1:
+            nok = nok + 1
+         if m2:
+            nok = nok + 1
+               
+      if (nok==2):
+         print "DCDC %s: OK"%(i)
+         ndcdcok = ndcdcok + 1
+      else:
+         print "DCDC %s: ERROR"%(i)
+
+  
+   # if (ndcdcok==13):
+   #    log.ok("DCDC enable test: OK")
+   # else:
+   #    log.error("DCDC enable test: FAILED")
 
 
 

@@ -722,7 +722,7 @@ Gl_setwidth(int w)
         gl_termw = w;
         gl_scroll = w / 3;
     } else {
-      gl_error((char *)"\n*** Error: minimum screen width is 21\n");
+      gl_error("\n*** Error: minimum screen width is 21\n");
     }
 }
 
@@ -1017,7 +1017,7 @@ gl_addchar(int c)
     int  i;
 
     if (gl_cnt >= BUF_SIZE - 1)
-      gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+      gl_error("\n*** Error: Getline(): input buffer overflow\n");
     if (gl_overwrite == 0 || gl_pos == gl_cnt) {
         for (i=gl_cnt; i >= gl_pos; i--)
             gl_buf[i+1] = gl_buf[i];
@@ -1041,7 +1041,7 @@ gl_yank()
         gl_mark = gl_pos;
         if (gl_overwrite == 0) {
 	  if (gl_cnt + len >= BUF_SIZE - 1)
-	    gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+	    gl_error("\n*** Error: Getline(): input buffer overflow\n");
             for (i=gl_cnt; i >= gl_pos; i--)
                 gl_buf[i+len] = gl_buf[i];
             for (i=0; i < len; i++)
@@ -1050,7 +1050,7 @@ gl_yank()
         } else {
             if (gl_pos + len > gl_cnt) {
 	      if (gl_pos + len >= BUF_SIZE - 1)
-		gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+		gl_error("\n*** Error: Getline(): input buffer overflow\n");
                 gl_buf[gl_pos + len] = 0;
             }
             for (i=0; i < len; i++)
@@ -1090,7 +1090,7 @@ gl_newline()
     int loc = gl_width - 5;     /* shifts line back to start position */
 
     if (gl_cnt >= BUF_SIZE - 1)
-      gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+      gl_error("\n*** Error: Getline(): input buffer overflow\n");
     if (Gl_out_hook) {
         change = Gl_out_hook(gl_buf);
         len = strlen(gl_buf);
@@ -1345,7 +1345,7 @@ hist_init()
 
     if (gl_savehist) return;
 
-    hist_buf[0] = (char *)"";
+    hist_buf[0] = "";
     for (i=1; i < HIST_SIZE; i++)
       hist_buf[i] = (char *)0;
 }
@@ -1507,7 +1507,7 @@ hist_save(const char *p)
         }
     }
     if (s == 0)
-        gl_error((char *)"\n*** Error: hist_save() failed on malloc\n");
+        gl_error("\n*** Error: hist_save() failed on malloc\n");
     return s;
 }
 

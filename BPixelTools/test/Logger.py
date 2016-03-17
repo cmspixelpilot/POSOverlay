@@ -13,15 +13,9 @@ class Logger:
    def info(self,msg):  self.logMsg(msg,0)
    def printMsg(self,msg,type):
       color=type
-      #if color<>0: os.system("tput setaf %d"%(color))
-      if color == 1:
-         print 'JMTERROR:',
-      elif color == 2:
-         print 'JMTOK:',
-      elif color != 0:
-         print 'JMT{%i}:' % color,
+      if color<>0: os.system("tput setaf %d"%(color))
       print msg
-      #if color<>0: os.system("tput setaf 0")
+      if color<>0: os.system("tput setaf 0")
       
    def printLog(self,title='message summary',level=1):
       if len(self.log)==0:

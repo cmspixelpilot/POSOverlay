@@ -1,7 +1,6 @@
 #!/bin/bash
 source setup.bsh
-#let PORT=${PORT_BASE}+1
-let PORT=${PORT_BASE}+2
+let PORT=${PORT_BASE}+1
 python2.6 ../tools/python/porttest.py $PORT
 
 if [ $? -eq 0 ] ; then

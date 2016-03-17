@@ -359,6 +359,7 @@ string getI2CDevice (FecAccess *fecAccess,
       o << endl 
 	<< "Read I2C Device (CCU 0x" << std::hex << (int)ccuAddress << ", channel 0x" << std::hex << (int)channelAddress << ", i2c address 0x" << std::hex << (int)deviceAddress << "):" << std::endl 
 	<< "---->  Value: 0x" << std::hex << (int)fecAccess->read(index) << endl;
+     
     }
     catch (FecExceptionHandler e) {
      
@@ -387,7 +388,77 @@ string getI2CDevice (FecAccess *fecAccess,
   return o.str() ;
 }
 
+///#######################################################################################################################
 
+string getI2CDevicevalue (FecAccess *fecAccess,
+		     tscType8 fecAddress,
+		     tscType8 ringAddress,
+		     tscType8 ccuAddress,
+		     tscType8 channelAddress,
+		     tscType8 deviceAddress,
+		     enumDeviceType modeType,
+		     long loop, unsigned long tms) {
+ 
+  std::ostringstream o;
+  std::ostringstream er;
+  keyType index ;
+  index = buildCompleteKey(fecAddress,ringAddress,ccuAddress,channelAddress,deviceAddress) ; 
+
+
+  try {
+    //create i2c access
+    fecAccess->addi2cAccess (index, 
+                             modeType,
+                             MODE_SHARE) ;
+  }
+  catch (FecExceptionHandler e) {
+ 
+    er << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+    
+    return er.str() ;
+
+  } 
+
+ 
+  for (long loopI = 0 ; (loopI < loop) || (loop < 0) ; loopI ++) {
+
+
+    try {
+
+      //read old value
+      o << std::hex << (int)fecAccess->read(index);
+   
+    }
+    catch (FecExceptionHandler e) {
+     
+      o << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+    }
+
+    // Wait
+    if ( (loop != 1) && (tms > 0) ) usleep (tms) ;
+  }
+
+  try {
+    //remove i2c access
+    fecAccess->removei2cAccess (index) ;
+  }
+  catch (FecExceptionHandler e) {
+  
+    er << endl << endl 
+       << "------------ Exception ----------" << std::endl << 
+      e.what() << std::endl << "---------------------------------" << std::endl;
+
+    return er.str();
+    }
+  
+  return o.str();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 /** 
  * <p>command: -device pll
  * \param fecAccess - FEC Access object
@@ -2126,28 +2197,23 @@ string setDoh ( FecAccess *fecAccess,
  * \warning before display all status, operations must be done on CCUs.
  * Only CCUs which supported already operations are displayed.
  */
-/*void displayStatus ( FecExceptionHandler *e, unsigned int count,
-                     FecAccess *fecAccess, FILE *stdchan ) {
+string displayStatus ( FecAccess *fecAccess ,
+		     tscType8 fecAddress,
+		     tscType8 ringAddress) {
 
+  std::ostringstream o;
   time_t timestamp = time(NULL) ;
-  errorType errorCode = 0 ;
-  keyType index = 0xFFFFFFFF ;
+  //errorType errorCode = 0 ;
+  //keyType index = 0xFFFFFFFF ;
   std::string dMsg = "No error";
-  static unsigned int errorCounter = 1 ;
+  static unsigned int errorCounter = 0 ;
 
-  if (e != NULL) {
 
-    timestamp = e->getTimeStamp() ;
-    errorCode = e->getErrorCode() ;
-    index = 0xFFFFFFFF ;
-    if (e->isHardwarePosition())
-      index = e->getHardwarePosition() ;
-    dMsg = e->getErrorDevelopperMessage ( ) ;
-  }
 
   try {
     
-    fprintf (stdchan_, "------------------------------------ Error %d\n", errorCounter) ;
+    if (errorCounter !=0) 
+      fprintf (stdchan_, "------------------------------------ Error %d\n", errorCounter) ;
     errorCounter ++ ;
 
     // Scan the PCI slot for device driver loaded
@@ -2155,28 +2221,28 @@ string setDoh ( FecAccess *fecAccess,
     
     if (fecSlotList != NULL) {
 
-      fprintf (stdchan, "timestamp=%ld\n", timestamp) ;
-      if (count != 0) 
-        fprintf (stdchan, "counter=%d\n", count) ;
+      fprintf (stdchan_, "timestamp=%ld\n", timestamp) ;
+   
 
-      if (e != NULL) {
-        fprintf (stdchan, "errorCode=%ld\n", errorCode) ;
-        fprintf (stdchan, "sourceErrorIndex=0x%04X\n", index) ;
-        fprintf (stdchan, "dMsg=\"%s\"\n", dMsg.c_str()) ;
-      }
+      // if (e != NULL) {
+      //   fprintf (stdchan_, "errorCode=%ld\n", errorCode) ;
+      //   fprintf (stdchan_, "sourceErrorIndex=0x%04X\n", index) ;
+      //   fprintf (stdchan_, "dMsg=\"%s\"\n", dMsg.c_str()) ;
+      // }
       
-      for (std::list<keyType>::iterator p=fecSlotList->begin() ; p!=fecSlotList->end() ; p++) {
+      // for (std::list<keyType>::iterator p=fecSlotList->begin() ; p!=fecSlotList->end() ; p++) {
         
-        keyType index = *p ;        
+        //keyType index = *p ; 
+	keyType index = buildFecRingKey(fecAddress,ringAddress) ;       
         FecRingDevice *fecDevice = fecAccess->getFecRingDevice ( index ) ;
         
-	fprintf (stdchan, "FEC %d ring %d\n", getFecKey(index), getRingKey(index)) ;
+	fprintf (stdchan_, "FEC %d ring %d\n", getFecKey(index), getRingKey(index)) ;
 
 	// FEC control/status registers
-	fprintf ( stdchan, "FEC_SR0=0x%04X\n", (tscType16)fecDevice->getFecRingSR0()) ;
-	fprintf ( stdchan, "FEC_SR1=0x%04X\n", fecDevice->getFecRingSR1()) ;
-	fprintf ( stdchan, "FEC_CR0=0x%04X\n", fecDevice->getFecRingCR0()) ;
-	fprintf ( stdchan, "FEC_CR1=0x%04X\n", fecDevice->getFecRingCR1()) ;
+	fprintf ( stdchan_, "FEC_SR0=0x%04X\n", (tscType16)fecDevice->getFecRingSR0()) ;
+	fprintf ( stdchan_, "FEC_SR1=0x%04X\n", fecDevice->getFecRingSR1()) ;
+	fprintf ( stdchan_, "FEC_CR0=0x%04X\n", fecDevice->getFecRingCR0()) ;
+	fprintf ( stdchan_, "FEC_CR1=0x%04X\n", fecDevice->getFecRingCR1()) ;
 
 	// For each CCU on that ring
 	std::list<keyType> *ccuList = fecDevice->getCcuList() ;
@@ -2200,23 +2266,23 @@ string setDoh ( FecAccess *fecAccess,
 	    //unsigned int CRF = fecAccess->getCcuCRF(indexCcu) ;
 	  
 	    unsigned int ccuAddress = getCcuKey (indexCcu) ;
-	    fprintf ( stdchan, "CCU_0x%02X_SRA=0x%04X\n", ccuAddress, SRA) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_SRB=0x%04X\n", ccuAddress, SRB) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_SRC=0x%04X\n", ccuAddress, SRC) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_SRD=0x%04X\n", ccuAddress, SRD) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_SRE=0x%04X\n", ccuAddress, SRE) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_SRF=0x%04X\n", ccuAddress, SRF) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_CRA=0x%04X\n", ccuAddress, CRA) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_CRB=0x%04X\n", ccuAddress, CRB) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_CRC=0x%04X\n", ccuAddress, CRC) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_CRD=0x%04X\n", ccuAddress, CRD) ; 
-	    fprintf ( stdchan, "CCU_0x%02X_CRE=0x%04X\n", ccuAddress, CRE) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_SRA=0x%04X\n", ccuAddress, SRA) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_SRB=0x%04X\n", ccuAddress, SRB) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_SRC=0x%04X\n", ccuAddress, SRC) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_SRD=0x%04X\n", ccuAddress, SRD) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_SRE=0x%04X\n", ccuAddress, SRE) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_SRF=0x%04X\n", ccuAddress, SRF) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_CRA=0x%04X\n", ccuAddress, CRA) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_CRB=0x%04X\n", ccuAddress, CRB) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_CRC=0x%04X\n", ccuAddress, CRC) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_CRD=0x%04X\n", ccuAddress, CRD) ; 
+	    fprintf ( stdchan_, "CCU_0x%02X_CRE=0x%04X\n", ccuAddress, CRE) ; 
 	  }
 	}
-      }
+	// }
     }
     else {
-      fprintf ( stdchan, "Unable to read the CCUs" ) ;
+      fprintf ( stdchan_, "Unable to read the CCUs" ) ;
     }
   }
   catch (FecExceptionHandler e) {
@@ -2226,7 +2292,9 @@ string setDoh ( FecAccess *fecAccess,
     std::cerr << e.what()  << std::endl ;
     std::cerr << "**************************************************" << std::endl ;
   }
-  }*/
+
+  return o.str();
+}
 
 
 
@@ -2498,6 +2566,269 @@ string crateReset ( FecAccess *fecAccess, bool testCrateReset,
 }
 
 //##################3
+
+
+//##############################################################################
+//##############################################################################
+//##############################################################################
+string DCDCdisable      (FecAccess   *fecAccess , 
+			 tscType8     fecAddress ,
+			 tscType8     ringAddress, 
+			 tscType8     ccuAddress,
+			 unsigned int dcdcAddress,
+			 bool         noBroadcast )  {
+ 
+  std::ostringstream o;
+  char textBuffer[ 4096 ];
+
+
+  /// This is the initCCUs method from Aachen software/// 
+  keyType ccuAddressKey = buildCompleteKey(fecAddress,ringAddress,ccuAddress,0,0) ; // Build the key
+  keyType ccuChannelKey;
+  tscType32 ccuCRE;
+  tscType16 ddr, piaData, piaIndex;
+  tscType16 piaChannel[ 4 ] = { 0x30, 0x31, 0x32, 0x33 };
+  tscType16 piaDDR[ 4 ]     = { 0x06, 0x39, 0x8E, 0x67 };
+
+  try {
+ 
+      fecAccess->setCcuCRE( ccuAddressKey, 0xF0000 );
+      ccuCRE = fecAccess->getCcuCRE( ccuAddressKey );
+
+      if( ccuCRE != 0xF0000 ) {
+        printf( "CCU 0x%02X: CRE=0x%05X (0xF0000)\n", ccuAddress, ccuCRE );
+        return o.str();
+      }
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        fecAccess->setPiaChannelDataReg( ccuChannelKey, 0 );
+      }
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+
+        fecAccess->setPiaChannelDDR( ccuChannelKey, piaDDR[ piaIndex ] );
+        ddr = fecAccess->getPiaChannelDDR( ccuChannelKey );
+
+        if( ddr != piaDDR[ piaIndex ] ) {
+          printf( "CCU 0x%02X DDR%c=0x%02X (0x%02X)\n", ccuAddress, 'A' + piaIndex, ddr, piaDDR[ piaIndex ] );
+          return o.str();
+        }
+      }
+
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        piaData = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];
+
+        if( piaData != 0 ) {
+          printf( "CCU 0x%02X PIA%c=0x%02X (0x00)\n", ccuAddress, 'A' + piaIndex, piaData );
+          return o.str();
+        }
+      }
+    
+  }
+  catch( FecExceptionHandler e ) {
+    sprintf( textBuffer, "\n------------<<<< Exception >>>>------------\n" );
+    sprintf( textBuffer, "%sAn error occurs during CCU Channels Enable\n", textBuffer );
+    sprintf( textBuffer, "%s-------------------------------------------\n", textBuffer );
+    sprintf( textBuffer, "%s%s\n", textBuffer, e.what().c_str( ) );
+    sprintf( textBuffer, "%s-------------------------------------------\n", textBuffer );
+
+    std::cerr << textBuffer;
+    exit( EXIT_FAILURE );
+  }
+
+  o << " CCU DCDC Converter Enable Test started " << std::endl;
+
+  tscType16 piaValue;
+  tscType16 piaInMask[ 4 ]  = { 0xC0, 0xC6, 0x71, 0x98 };
+  tscType16 piaENPattern[ 4 ], piaPGPattern[ 4 ];
+   tscType16 i, mask, retry;
+
+  char bitPattern[ 14 ] = { 0 };
+
+  bool pgError[ 4 ] = { false };
+  bool error, printed;
+
+  struct { tscType16 pia;
+           tscType16 bit; } en[ 13 ] = { { 2, 0x08 },   //ENC1_0
+                                         { 2, 0x80 },   //ENC1_1
+                                         { 3, 0x04 },   //ENC1_2
+                                         { 3, 0x01 },   //ENC1_3
+                                         { 3, 0x02 },   //ENC1_4
+                                         { 3, 0x20 },   //ENC1_5
+                                         { 3, 0x40 },   //ENC1_6
+                                         { 2, 0x04 },   //ENC2_1
+                                         { 2, 0x02 },   //ENC2_2
+                                         { 1, 0x20 },   //ENC2_3
+                                         { 1, 0x10 },   //ENC2_4
+                                         { 1, 0x08 },   //ENC2_5
+                                         { 1, 0x01 } }; //ENC2_6
+
+  struct { tscType16 pia;
+           tscType16 bit; } pg[ 13 ] = { { 1, 0x02 },   //PGC1_0
+                                         { 2, 0x01 },   //PGC1_1
+                                         { 2, 0x10 },   //PGC1_2
+                                         { 2, 0x40 },   //PGC1_3
+                                         { 3, 0x08 },   //PGC1_4
+                                         { 3, 0x10 },   //PGC1_5
+                                         { 3, 0x80 },   //PGC1_6
+                                         { 1, 0x80 },   //PGC2_1
+                                         { 2, 0x20 },   //PGC2_2
+                                         { 1, 0x40 },   //PGC2_3
+                                         { 1, 0x04 },   //PGC2_4
+                                         { 0, 0x40 },   //PGC2_5
+                                         { 0, 0x80 } }; //PGC2_6
+  
+  // std::string bitPatterns[ 14 ] = { "1111111111111", 
+  //                                   "1111111111110", 
+  // 				    "1111111111101", 
+  // 				    "1111111111011", 
+  // 				    "1111111110111", 
+  // 				    "1111111101111",
+  //                                   "1111111011111",
+  //                                   "1111110111111",
+  // 				    "1111101111111",
+  // 				    "1111011111111",
+  // 				    "1110111111111",
+  // 				    "1101111111111",
+  // 				    "1011111111111",
+  // 				    "0111111111111"};
+  
+  std::string bitPatterns[ 14 ] = { "1111111111111", //all on
+                                    "0000000000000", //all off
+  				    "1110000000000", //L1
+  				    "0001111000000", //L4
+  				    "0000000111000", //L2
+  				    "0000000000111", //L3
+                                    "0001110000111", //L34
+                                    "1110001111000", //L12
+  				    "0000001111111", //L23
+  				    "1111110000000", //L14
+  				    "1110111111111", //
+  				    "1101111111111", //
+  				    "1011111111111", //
+  				    "0111111111111"};
+
+
+  try {
+
+    for( int enPattern = 0x1FFF; enPattern >= 0; enPattern-- ) {
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        piaENPattern[ piaIndex ] = 0;
+        piaPGPattern[ piaIndex ] = 0;
+      }
+      
+      for( mask = 0x1000, i = 0; i < 13; i++, mask >>= 1 ){
+	if( enPattern & mask ) {
+	  piaENPattern[ en[ i ].pia ] |= en[ i ].bit;
+	  piaPGPattern[ pg[ i ].pia ] |= pg[ i ].bit;
+	  bitPattern[ i ] = '1';
+	}
+	else
+	  bitPattern[ i ] = '0';
+      }
+      
+      bool skip = true;
+      if( (std::string)bitPattern == bitPatterns[13-dcdcAddress] ) skip = false;
+      if( skip ) continue;
+
+      o << "Pattern " << bitPattern << std::endl;
+      printed = false;
+
+      for( piaIndex = 1; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        retry = 0;
+        do {
+          error = false;
+          fecAccess->setPiaChannelDataReg( ccuChannelKey, piaENPattern[ piaIndex ] );
+          piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaDDR[ piaIndex ];
+
+          if( piaValue != piaENPattern[ piaIndex ] ) {
+            if( !printed ) {
+              o << " Enable Selection = " << bitPattern << std::endl;
+              printed = true;
+            }
+
+          
+            error = true;
+            retry++;
+          }
+
+        } while( error && ( retry < 10 ) );
+      }
+
+      if( printed )
+        o << std::endl;
+
+      printed = false;
+      sleep( 1 );
+
+      int ngood=0;
+      for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
+        ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
+        piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaInMask[ piaIndex ];
+
+        if( piaValue != piaPGPattern[ piaIndex ] ) {
+          if( !printed ) {
+            o << " Enable Selection = " << bitPattern << std::endl;
+            printed = true;
+          }
+
+          pgError[ piaIndex ] = true;
+        }
+        else {
+          if( pgError[ piaIndex ] ) {
+            printf(  "Error for PIA%c\n", 'A' + piaIndex );
+	    
+	  }
+          else {
+	    ngood++;
+	  }
+        }
+
+        
+      }
+
+
+      if (ngood==4) {
+	o << "DCDC: Disable OK " << std::endl;
+      }   
+      else {
+	o << "DCDC: Disable ERROR " << std::endl;
+      }
+
+       return o.str();
+    }
+
+  
+  
+  //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////    
+    
+  }
+  catch( FecExceptionHandler e ) {
+    sprintf( textBuffer, "\n-------------<<<< Exception >>>>------------\n" );
+    sprintf( textBuffer, "%sAn error occurs during DCDC Converter Enable\n", textBuffer );
+    sprintf( textBuffer, "%s--------------------------------------------\n", textBuffer );
+    sprintf( textBuffer, "%s%s\n", textBuffer, e.what( ).c_str( ) );
+    sprintf( textBuffer, "%s--------------------------------------------\n", textBuffer );
+
+    std::cerr << textBuffer;
+    exit( EXIT_FAILURE );
+  }
+
+  return o.str();
+
+}
+
+
+			 
+//##############################################################################
+//##############################################################################
+//##############################################################################
+
 /**
 This method performs a test on the DC-DC converters
 */
@@ -2773,7 +3104,8 @@ string DCDCenableTest (  FecAccess   *fecAccess  ,
       for( piaIndex = 0; piaIndex < 4; piaIndex++ ) {
         ccuChannelKey = ccuAddressKey | setChannelKey( piaChannel[ piaIndex ] );
         piaValue = fecAccess->getPiaChannelDataReg( ccuChannelKey ) & piaInMask[ piaIndex ];
-
+	
+ 
         if( piaValue != piaPGPattern[ piaIndex ] ) {
           if( !printed ) {
             o << " Enable Selection = " << bitPattern << std::endl;
@@ -3121,7 +3453,7 @@ string testScanCCU ( FecAccess *fecAccess,
 	std::cout << std::hex << "FEC 0x" << (int)getFecKey(index) 
 	  << " Ring 0x" << (int)getRingKey(index) 
 	  << " CCU 0x" << (int)getCcuKey(index)
-	  << " found" << std::endl ;
+	  << " found" << std::endl  ;
       }
     }
     else {
@@ -4459,7 +4791,7 @@ string displayCCUCRB ( tscType8 CRB ) {
   if (CRB & 0x8)
     o << "\t\t(ENAL4) Enable ALARM4 interrupt" << std::endl ;
   
-  o << "\t\t(RTRY) Retry count: " << (((CRB & 0x3) == 0x3) ? 4 : CRB & 0x3) << std::endl ;
+   o << "\t\t(RTRY) Retry count: " << (((CRB & 0x3) == 0x3) ? 4 : CRB & 0x3) << std::endl ;
 
   return o.str();
 }
@@ -4468,15 +4800,29 @@ string displayCCUCRB ( tscType8 CRB ) {
  * <p>command: no directly accessisble
  * \param CCU control register C
  */
-string displayCCUCRC ( tscType8 CRC ) {
+string displayCCUCRC (tscType8 CRC ) {
   
   std::ostringstream o;
   
   o << "\t\tCCU control register C = 0x" << std::hex << (int)CRC << std::endl ;
   o << "\t\tInput " << (CRC & 0x1 ? 'B' : 'A') << " Ouput " << (CRC & 0x2 ? 'B' : 'A') << std::endl ;
-
   return o.str();
 }
+
+string displayCCUCRC1 ( FecAccess *fecAccess, 
+		       tscType8 CRC ) {
+  
+  std::ostringstream o;
+  
+  o << "\t\tCCU control register C = 0x" << std::hex << (int)CRC << std::endl ;
+  o << "\t\tInput " << (CRC & 0x1 ? 'B' : 'A') << " Ouput " << (CRC & 0x2 ? 'B' : 'A') << std::endl ;
+  tscType8 value = (CRC & 0xFE) | 0x01 ;
+  cout << fecAccess->getCcuCRC(CRC) << endl;
+  fecAccess->setCcuCRC (CRC, value) ;
+  cout << fecAccess->getCcuCRC(CRC) << endl;
+  return o.str();
+}
+
 
 /**
  * <p>command: no directly accessisble
@@ -4535,6 +4881,72 @@ string displayCCUCRE ( tscType32 CRE ) {
   else o << "\t\t- JTAG channel not enabled" << std::endl ;
 
   return o.str();
+}
+
+/** 
+ * <p>command: -statusCCU
+ * \param fecAccess - FEC Access object
+ * \param fecAddress - FEC slot
+ * \param ringAddress - ring slot
+ * \param ccuAddress - CCU address
+ * \param loop - a loop (if negative => for ever ^C needed to end the process)
+ * \param tms - time before two loop
+ * \warning if the access cannot be performed, the loop is not used
+ */
+string testCCU ( FecAccess *fecAccess,
+	      tscType8 fecAddress, 
+	      tscType8 ringAddress,
+	      tscType8 ccuAddress, 
+	      long loop, unsigned long tms ) {
+
+ std::ostringstream o;
+
+  keyType index = buildCompleteKey(fecAddress,ringAddress,ccuAddress,0,0);
+
+  try {
+
+    if (fecAccess->getFecRingDevice(index) != NULL) {
+
+      // tscType16 fecSR0 = fecAccess->getFecRingSR0 (index) ; displayFECSR0 (fecSR0) ;
+      // tscType16 fecSR1 = fecAccess->getFecRingSR1 (index) ; displayFECSR1 (fecSR1) ;
+      // tscType16 fecCR0 = fecAccess->getFecRingCR0 (index) ; displayFECCR0 (fecCR0) ;
+      //tscType16 CR1 = fecAccess->getFecRingCR1 (index) ; displayFECCR1 (fecCR1) ;    
+      
+      // Message
+      // if (! noGetchar_) {
+      //   std::cout << "Press <Enter> to continue" ;
+      //   getchar() ;
+      // }
+    
+      // Display all the status of the corresponding CCU
+      o << "Status for CCU 0x" << std::hex << (int)ccuAddress << std::endl ;
+      tscType8 SRA = fecAccess->getCcuSRA(index) ; displayCCUSRA(SRA) ;
+      tscType8 SRB = fecAccess->getCcuSRB(index) ; displayCCUSRB(SRB) ;
+      tscType8 SRC = fecAccess->getCcuSRC(index) ; displayCCUSRC(SRC) ;
+      tscType8 SRD = fecAccess->getCcuSRD(index) ; displayCCUSRD(SRD) ;
+      tscType32 SRE = fecAccess->getCcuSRE(index) ; displayCCUSRE(SRE) ;
+      tscType16 SRF = fecAccess->getCcuSRF(index) ; displayCCUSRF(SRF) ;
+      tscType8 CRA = fecAccess->getCcuCRA(index) ; displayCCUSRF(CRA) ;
+      tscType8 CRB = fecAccess->getCcuCRB(index) ; displayCCUCRA(CRB) ;
+      tscType8 CRC = fecAccess->getCcuCRC(index) ; displayCCUCRB(CRC) ;
+      tscType8 CRD = fecAccess->getCcuCRD(index) ; displayCCUCRC(CRD) ;
+      tscType32 CRE = fecAccess->getCcuCRE(index) ; displayCCUCRE(CRE) ;
+    }
+    else {
+      o << "No FEC device driver found" << std::endl ;
+    }
+  }
+  catch (FecExceptionHandler &e) {
+    
+    std::cerr << "*********** ERROR ********************************" << std::endl ; 
+    std::cerr << "An error occurs during hardware access" << std::endl ;
+    std::cerr << e.what()  << std::endl ;
+    std::cerr << "**************************************************" << std::endl ;
+
+      return o.str() ;
+  }  
+
+    return o.str() ;
 }
 
 
@@ -4633,6 +5045,141 @@ std::string testPIAResetfunctions (FecAccess *fecAccess,
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+string scanRedundancyRing ( FecAccess *fecAccess, 
+			    tscType8 fecAddress,
+			    tscType8 ringAddress,
+			    uint ccuAddresses[][3], 
+			    uint numberOfCCU ) { 
+
+  std::ostringstream o;
+  std::ostringstream er;
+  
+  keyType indexFecRing = buildFecRingKey(fecAddress,ringAddress) ;
+  
+  // Find the FECs
+  try {
+    // Scan the PCI slot for device driver loaded
+    fecAccess->getFecRingDevice (indexFecRing) ;
+  }
+  catch (FecExceptionHandler e) {  
+  
+
+    er << "*********** ERROR ********************************" << std::endl ; 
+    er << "Cannot find any FECs on the ring: " << e.what() << std::endl ; 
+    er << "**************************************************" << std::endl ;
+
+    return er.str();
+  }
+
+  // Ask to not initialise the Fec Device at the start point (FecRingDevice
+  // object creation
+  bool fecDeviceInit = fecAccess->getFecRingDeviceInit () ;
+  if (fecDeviceInit == true) fecAccess->setFecRingDeviceInit (false) ;
+
+  // disable the IRQ
+ 
+  o << "Disable the IRQ " << std::endl ;  
+  fecAccess->getFecRingDevice (indexFecRing)->setIRQ(false) ;
+
+  try {
+    //   FEC 0        CCU 0x10      CCU 0x18      CCU 0x7F
+    //         Input A
+    //            Ouput B
+    // { {0x0, 0, 1}, {0x10, 0, 0}, {0x18, 1, 0}, {0x7F, 0, 0} 
+                                     
+    for (unsigned int i = 0 ; i < numberOfCCU ; i++) {  
+
+      // FEC
+      if (ccuAddresses[i][0] == 0x0) {
+
+	// Retreive the CR0 value from cache
+	tscType32 fecCR0 = fecAccess->getFecRingCR0(indexFecRing) ;
+
+	// Make an or with the value => input
+	if (ccuAddresses[i][1] == 0) fecCR0 &= 0xFFEF ;
+	else
+	  fecCR0 = (fecCR0 & 0xFFEF) | 0x0010 ;
+
+	// Make an or with the value => output
+	if (ccuAddresses[i][2] == 0) fecCR0 &= 0xFFF7 ;
+	else
+	  fecCR0 = (fecCR0 & 0xFFF7) | 0x0008 ;
+	
+	try {
+	  fecAccess->setFecRingCR0 (indexFecRing, fecCR0) ;
+	}
+	catch (FecExceptionHandler e) { }
+
+      }
+      else { // CCU
+	      
+	keyType index = buildCompleteKey(fecAddress,ringAddress,ccuAddresses[i][0],0,0) ; 
+	
+	tscType32 CRC = 0 ;
+	
+	// Make an or with the value => input
+	if (ccuAddresses[i][1] == 0) CRC &= 0xFE ;
+	else
+	  CRC = (CRC & 0xFE) | 0x01 ;
+
+	// Make an or with the value => output
+	if (ccuAddresses[i][2] == 0) CRC &= 0xFD ;
+	else
+	  CRC = (CRC & 0xFD) | 0x02 ;
+
+	try {
+	  cout << fecAccess->getCcuCRC(index) << endl;
+	  fecAccess->setCcuCRC (index, CRC) ;
+	  cout << fecAccess->getCcuCRC(index) << endl;
+	}
+	catch (FecExceptionHandler e) { 
+	}
+      }
+    }
+
+    try {
+      // Twice ?
+      fecAccess->fecRingRelease( indexFecRing ) ;
+     
+      o << "FEC SR0 = 0x" << std::hex << fecAccess->getFecRingSR0( indexFecRing ) << std::endl ;
+    }
+    catch (FecExceptionHandler e) {
+    
+    }
+ 
+    
+  }
+  catch (FecExceptionHandler e) { 
+
+    o << "*********** ERROR ********************************" << std::endl ; 
+    o << "An error occurs during hardware access" << std::endl ;
+    o << e.what()  << std::endl ;
+    o << "**************************************************" << std::endl ;
+  }
+ 
+ 
+  // Initialise the Fec object or not at the start point
+  fecAccess->setFecRingDeviceInit (fecDeviceInit) ; 
+  
+  
+  // enable the IRQ
+ 
+  o << "Reenable the IRQ" << std::endl ;
+  fecAccess->getFecRingDevice (indexFecRing)->setIRQ(true) ; 
+
+ 
+  return o.str();
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /** This method is able to switch ring A to ring B for the FEC and 
  * each CCU
  * <p>command: -redundancy
@@ -4725,7 +5272,7 @@ string testRedundancyRing ( FecAccess *fecAccess,
 	  CRC = (CRC & 0xFD) | 0x02 ;
 
 	try {
-	  
+	   
 	  fecAccess->setCcuCRC (index, CRC) ;
 	  	  
 	}

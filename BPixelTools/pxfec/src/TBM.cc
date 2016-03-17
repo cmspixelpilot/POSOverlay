@@ -21,7 +21,8 @@ void TBM::Execute(SysCommand* command){
     } else if(command->Keyword("single")    ){
       setTBM(tbmB,4,0x03, 0x03);
     }
-    else if(command->Keyword("disablepkam") ){ setTBMs(0, 0x01, 0x01);}
+    else if(command->Keyword("disablepkam") ){ setTBMs(0, 0x01, 0x01);}  
+    else if(command->Keyword("disableclock") ){ setTBMs(0, 0x02, 0x02);}
     else if(command->Keyword("enablepkam") ){ setTBMs(0, 0x00, 0x01);}
     else if(command->Keyword("disableauto") ){setTBMs(0, 0x80, 0x80); }
     else if(command->Keyword("enableauto") ){ setTBMs(0, 0x00, 0x80);}
@@ -68,7 +69,7 @@ void TBM::Execute(SysCommand* command){
       }
     }
     else if(command->Keyword("readB")){ 
-      for (int reg=0; reg<5; reg++){ 
+      for (int reg=0; reg<8; reg++){ 
 	readTBM(tbmB,reg,data); 
       }
     }
@@ -110,7 +111,12 @@ int TBM::replace(const int oldValue, const int change, const int mask)
 int TBM::setTBM(const int tbmChannel, const int tbmRegister, const int value, const int mask){
   int * r;  // no need to allocate, will point to existing memory
   if (tbmChannel==tbmA && tbmRegister>=0 && tbmRegister<=7){
-    r= & tbmAReg[tbmRegister];
+    //if (mask==0)//fake read
+      r= & tbmAReg[tbmRegister];
+    //  else {//real read
+      //readTBM(tbmA,tbmRegister,*r); 
+    // r= & tbmAReg[tbmRegister];
+    // }
   }else if (tbmChannel==tbmB && tbmRegister>=0 && tbmRegister<=7){
     r= & tbmBReg[tbmRegister];
   }else{
@@ -129,8 +135,9 @@ int TBM::setTBM(const int tbmChannel, const int tbmRegister, const int value, co
 
 void TBM::setTBMs(const int tbmRegister, const int value, const int mask){
   // set both TBMs
-  setTBM(tbmA, tbmRegister, value);
-  if (tbmRegister<5){setTBM(tbmB, tbmRegister, value);}
+  setTBM(tbmA, tbmRegister, value, mask);
+  //if (tbmRegister<5){setTBM(tbmB, tbmRegister, value);}
+  setTBM(tbmB, tbmRegister, value, mask);
 }
 
 void TBM::setTBMDAC(const int DACAddress, const int value){
@@ -165,6 +172,7 @@ void TBM::setPLLDelayTBM(const int DACAddress, const int value){
   setTBM(tbmA, DACAddress+7, value);
 }
 
+
 // int TBM::readTBM(const int tbmChannel, const int tbmRegister, int& value){
 //   if (tbmChannel==tbmA && tbmRegister>=0 && tbmRegister<=7){
 //     value=tbmAReg[tbmRegister]; // as long as we can't really read
@@ -185,13 +193,13 @@ void TBM::setPLLDelayTBM(const int DACAddress, const int value){
 //###################################################
 int TBM::readTBM(const int tbmChannel, const int tbmRegister, int& value){
   if (tbmChannel==tbmA && tbmRegister>=0 && tbmRegister<=7){
-    for (int i=0; i< 3; i++){
+    for (int i=0; i< 1; i++){
       value=cn->interface->tbmread(cn->mfec, cn->channel, tbmChannel, hubaddress, 4, tbmRegister);
       //value=cn->interface->tbmread(cn->mfec, cn->channel, tbmChannel, hubaddress, 1, tbmRegister);
       //cout << "channel " << cn->channel <<  endl;
       cout << "hub " << hubaddress << ": TBM A register " << tbmRegister << ": " << value << endl; 
     }
-  }else if (tbmChannel==tbmB && tbmRegister>=0 && tbmRegister<=4){  
+  }else if (tbmChannel==tbmB && tbmRegister>=0 && tbmRegister<=7){  
     value=cn->interface->tbmread(cn->mfec, cn->channel, tbmChannel, hubaddress, 4, tbmRegister);
     cout << "hub " << hubaddress << ": TBM B register " << tbmRegister << ": " << value << endl;
   }else{
