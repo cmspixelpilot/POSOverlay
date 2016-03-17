@@ -45,6 +45,9 @@
 #if defined(BUSUSBFEC)
 #include "FecUsbRingDevice.h"
 #endif
+#if defined(BUSUTCAFEC)
+#include "FecUtcaRingDevice.h"
+#endif
 
 #include "HashTable.h"
 #include "ServerAccess.h"
@@ -143,6 +146,14 @@ void setFecType ( enumFecBusType fecBusType ) {
     maxFecSlot_ = FecUsbRingDevice::maxUsbFecSlot ;
     minFecRing_ = FecUsbRingDevice::minUsbFecRing ;
     maxFecRing_ = FecUsbRingDevice::maxUsbFecRing ;
+#endif
+    break;
+  case FECUTCA:
+#if defined(BUSUTCAFEC)
+    minFecSlot_ = FecUtcaRingDevice::minUtcaFecSlot ;
+    maxFecSlot_ = FecUtcaRingDevice::maxUtcaFecSlot ;
+    minFecRing_ = FecUtcaRingDevice::minUtcaFecRing ;
+    maxFecRing_ = FecUtcaRingDevice::maxUtcaFecRing ;
 #endif
     break;
   }
@@ -2490,7 +2501,7 @@ string crateReset ( FecAccess *fecAccess, bool testCrateReset,
 	  }
 
 	  // crate reset withtout reload the firmware
-	  FecVmeRingDevice::crateReset ( );
+	  FecVmeRingDevice::crateReset ( 0 );
 	  
 	  for (std::list<keyType>::iterator it = listFecKey.begin() ; it != listFecKey.end() ; it ++) {
 	    try {
@@ -3749,7 +3760,9 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 				  tscType8 fecAddress,
 				  tscType8 ringAddress,
 				  long loop, unsigned long tms) { 
-
+#ifdef PIXEL
+  return "JMTBAD 20140818 testScanPixelDevice nulled out due to equal addresses (plldeviceAddress, aoh4AdeviceAddress) used in switch statement...";
+#else
   std::ostringstream o;
   std::ostringstream er;
 
@@ -4112,6 +4125,7 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
   allCCUsPiaReset (fecAccess, fecAddress, ringAddress) ;
 
   return o.str() ;
+#endif
 }
 
 
@@ -6214,3 +6228,68 @@ std::string CtrlRegE (FecAccess *fecAccess,
   return o.str();
 }
 
+std::string pixDCDCCommand(FecAccess* fecAccess,
+			   tscType8 fecAddress,
+			   tscType8 ringAddress,
+			   tscType8 ccuAddressEnable,
+			   tscType8 ccuAddressPgood,
+			   tscType8 piaChannelAddress,
+			   bool turnOn,
+			   unsigned int portNumber) {
+
+  std::ostringstream ret;
+
+  keyType enableKey = buildCompleteKey(fecAddress, ringAddress, ccuAddressEnable, piaChannelAddress, 0);
+  keyType pgoodKey  = buildCompleteKey(fecAddress, ringAddress, ccuAddressPgood,  piaChannelAddress, 0);
+
+  try {
+    fecAccess->addPiaAccess(enableKey, MODE_SHARE); // JMTBAD use PiaChannelAccess
+    fecAccess->addPiaAccess(pgoodKey,  MODE_SHARE);
+
+    unsigned int bits    = 0x3 << (portNumber * 2);
+    unsigned int invBits = 0xFF ^ bits;
+
+    // Set just the two pins we want to input for pgood.
+    fecAccess->setPiaChannelDDR(pgoodKey, invBits & fecAccess->getPiaChannelDDR(pgoodKey));
+
+    // Sleep 5 ms before reading back the pgood bit.
+    usleep(5000);
+      
+    // Read the pgood bit to check state before doing anything.
+    unsigned int initPgoodVal = fecAccess->getPiaChannelDataReg(pgoodKey);
+    bool initPgood = ((initPgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
+    ret << "Initial pgoodVal = 0x" << std::hex << initPgoodVal << " = " << (initPgood ? "PGOOD" : "NOT PGOOD") << "\n";
+    if (turnOn + initPgood != 1) {
+      ret << " but asked to turn " << (turnOn ? "ON" : "OFF") << " ; bailing out!!!";
+    }
+    else {
+      // Set just the two pins we want to output for enable;
+      fecAccess->setPiaChannelDDR(enableKey, bits | fecAccess->getPiaChannelDDR(enableKey));
+      // and set the inverted bits in the data reg.
+      unsigned int initEnableVal = fecAccess->getPiaChannelDataReg(enableKey); // JMTBAD the two lines below ere using the pgood values???
+      if (turnOn)
+	fecAccess->setPiaChannelDataReg(enableKey, invBits & initEnableVal);
+      else
+	fecAccess->setPiaChannelDataReg(enableKey, bits    | initEnableVal);
+
+      // Sleep 5 ms before reading back the pgood bit.
+      usleep(5000);
+
+      // Read back the pgood bit and report status. 
+      unsigned pgoodVal = fecAccess->getPiaChannelDataReg(pgoodKey);
+      bool pgood = ((pgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
+      ret << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << "\n";
+      if (turnOn + pgood != 1) {
+	ret << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!";
+      }
+    }
+
+    fecAccess->removePiaAccess(enableKey);
+    fecAccess->removePiaAccess(pgoodKey);
+  }
+  catch (FecExceptionHandler e) {
+    ret << std::string("Exception caught when doing PIA access: ") + e.what();
+  }
+    
+  return ret.str();
+}

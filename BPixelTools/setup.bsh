@@ -1,14 +1,16 @@
 #!/bin/bash
 # common initializations for BPIXELTOOLS
-export PIXEL_HOME=${HOME}/build/
+#export PIXEL_HOME=${HOME}/build/
 export PORT_BASE=2000
 #export CAEN_PS=$PIXEL_HOME/CAEN_PS_cpp
 
-export TRIDAS_ROOT=${PIXEL_HOME}/TriDAS
+export TRIDAS_ROOT=~/TriDAS_XDAQ13
 export POSVERSION="pixel"
 
 export XDAQ_ROOT=/opt/xdaq
 
+export CACTUSINCLUDE=/opt/cactus/include
+export CACTUSLIB=/opt/cactus/lib/
 
 export INTERFACE=vmecaenpci
 export BPIXELTOOLS=${TRIDAS_ROOT}/${POSVERSION}/BPixelTools
@@ -16,4 +18,4 @@ export PIXEL_INCLUDE=${TRIDAS_ROOT}/${POSVERSION}
 # setenv FECSOFTWARE_ROOT=/home/l_pixel/FecSoftwareV3_0
 
 export PYTHONPATH=${PYTHONPATH}:${BPIXELTOOLS}/tools/python
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BPIXELTOOLS}/tools/lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BPIXELTOOLS}/tools/lib:$CACTUSLIB

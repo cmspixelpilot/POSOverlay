@@ -48,9 +48,9 @@ Copyright 2002 - 2003, Frederic DROUHIN - Universite de Haute-Alsace, Mulhouse-F
 #include "FecRingRegisters.h"
 
 const unsigned int init_delay25_delay0 = 28; //RCK
-const unsigned int init_delay25_delay1 = 0; //RDA
-const unsigned int init_delay25_delay2 = 53; //SDA
-const unsigned int init_delay25_delay3 = 8; //CTR
+const unsigned int init_delay25_delay1 = 10; //CTR
+const unsigned int init_delay25_delay2 = 4; //SDA
+const unsigned int init_delay25_delay3 = 0; //RDA
 const unsigned int init_delay25_delay4 = 0; //clk
 
 const unsigned int init_pll_clk = 0;
@@ -122,11 +122,11 @@ const unsigned int init_poh1_bias2 = 40;
 const unsigned int init_poh1_bias3 = 40;
 
 const unsigned int init_doh_gain0 = 1;
-const unsigned int init_doh_gain1 = 1;
-const unsigned int init_doh_gain2 = 1;
+const unsigned int init_doh_gain1 = 0;
+const unsigned int init_doh_gain2 = 0;
 const unsigned int init_doh_bias0 = 30;
-const unsigned int init_doh_bias1 = 30;
-const unsigned int init_doh_bias2 = 30;
+const unsigned int init_doh_bias1 = 25;
+const unsigned int init_doh_bias2 = 25;
 
 /** to set or the getchar, default false getchar are displayed
  */
@@ -622,6 +622,15 @@ std::string CtrlRegE (FecAccess *fecAccess,
 		     tscType8 ccuAddress,
 		    tscType8 channelAddress=0x30, 
 		    int value=0xFF);
+
+std::string pixDCDCCommand(FecAccess* fecAccess,
+			   tscType8 fecAddress,
+			   tscType8 ringAddress,
+			   tscType8 ccuAddressEnable,
+			   tscType8 ccuAddressPgood,
+			   tscType8 piaChannelAddress,
+			   bool turnOn,
+			   unsigned int portNumber);
 
 #endif
 

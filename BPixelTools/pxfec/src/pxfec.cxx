@@ -1,11 +1,7 @@
 #include "BPixelTools/pxfec/include/SysCommand.h"
 #include "BPixelTools/tools/include/VMELock.h"
-#include "PixelFECInterface/include/PixelFECInterface.h"
+#include "PixelPh1FECInterface/include/PixelPh1FECInterface.h"
 
-#include "VMEDevice.hh"
-#include "VMEAddressTable.hh"
-#include "VMEAddressTableASCIIReader.hh"
-#include "CAENLinuxBusAdapter.hh"
 
 #include <string>
 #include <iostream>
@@ -25,36 +21,69 @@ using namespace std;
 PixelFECInterface* pixelFECInterface[22]={0};
 ControlNetwork* cn[64]={0};
 
-HAL::VMEAddressTable *addressTablePtr = 0;
-HAL::CAENLinuxBusAdapter *busAdapter = 0;
-
-//--------------------------------------------------
+char * addressTablePtr;
 
 
-PixelFECInterface* initPixelFEC(int slot){
+PixelPh1FECInterface* initPixelFEC(int slot){
+    
+    unsigned long fecBase=0x08000000 * slot;
+    cout << fecBase << endl;
+    RegManager * pRegManager = new RegManager(addressTablePtr, 0);
+    
+    int dummy_vmeslot=0; unsigned int dummy_feccrate=0; unsigned int dummy_fecslot = 0;
+    PixelFECInterface* aFECInterface = new PixelFECInterface(pRegManager,dummy_vmeslot,dummy_feccrate,dummy_fecslot);
+    
+    cout<<"Init FEC in slot "<< slot <<endl;
+    
+    const bool glib = false;
+    
+    // tell the firmware explicitly to do all these actions. Arguments for all these functions are: mfec and set bit 0 or 1. There is no need for the fecchannel, it applied to both channels
 
-  unsigned long fecBase=0x08000000 * slot; 
-  HAL::VMEDevice * VMEPtr =new HAL::VMEDevice(*addressTablePtr, *busAdapter, fecBase);
+// JMT GLIB?
+//   aFECInterface->enableinternalclk();
+//    std::cout << "Switching to FCLKA" << std::endl;
+//    aFECInterface->disableinternalclk();
 
-  int dummy_vmeslot=0; unsigned int dummy_feccrate=0; unsigned int dummy_fecslot = 0;
-  PixelFECInterface* aFECInterface = new PixelFECInterface(VMEPtr,dummy_vmeslot,dummy_feccrate,dummy_fecslot);
+	if (glib)
+      aFECInterface->switchclk(0x10BA3071);
+	else
+      aFECInterface->switchclk(0xFF7CFFD8);
 
-  cout<<"Init FEC in slot "<< slot <<endl;
+    // disable AMC13 data
 
-  // Set the FEC to Pixel mode = 4
-  int ret = aFECInterface->setssid(4);  
-  if(ret != 4) {  // Error
-    cout<<"Error in setssid "<<hex<<ret<<dec<<endl;
-    return NULL;
-  }
-  cout<<"Set FEC to pixel mode "<<endl;
+//    int disableexttrigger_ = aFECInterface->disableexttrigger(1,1);
+//    cout <<"disableexttrigger_ " << disableexttrigger_ << endl;
+//
+//    int loopnormtrigger_ = aFECInterface->loopnormtrigger(1,1);
+//    cout <<"loopnormtrigger_ " << loopnormtrigger_ << endl;
+//
+//    int injectrstroc_ = aFECInterface->injectrstroc(1,1);
+//    cout <<"injectrstroc_ " << injectrstroc_ << endl;
+//
+//    int injectrsttbm_ = aFECInterface->injectrsttbm(1,1);
+//    cout <<"injectrsttbm_ " << injectrsttbm_ << endl;
+//
+//    // enable external AMC13 trigger again
+
+//    int disableexttrigger_ = aFECInterface->disableexttrigger(1,0);
+//    cout <<"disableexttrigger_ " << disableexttrigger_ << endl;
+
+  
+//   int calpix_ = aFECInterface->calpix(1,1,15, 7, 1,1,1,1, true);
+
+  	    
+//   int myData = 0; 
+//     int readbyte = aFECInterface->getByteHubCount(1, 1, 1, &myData);
+//
+//    cout <<"myData " << hex << myData << hex << " "<<readbyte << dec <<  endl;
 
 
-  unsigned long data = 0;
-  ret = aFECInterface->getversion(&data); //  
-  cout<<"mFEC Firmware Version "<<data<<endl;;
+cout <<"bla bla"<<endl;
+   
+    //   aFECInterface->haltest();
 
-  return aFECInterface;
+  cout <<" ---end of cunstructor--- " << endl;
+    return aFECInterface;
 }
 
 
@@ -93,8 +122,8 @@ int main(int argc, char **argv){
 
   // default configuration variables 
   int port=0;                      // port, 0= no port,    define with option -port
-  int VMEBoard=1; //CAEN interface   define with option -vmecaenpci or -vmecaenusb
-  string file="data/d.ini";        // init file            define with option -file
+  int VMEBoard=1; //CAEN interface   defisrc/pxfec.cxx:41:ne with option -vmecaenpci or -vmecaenusb
+  string file="data/d.ini.P-A-2-08";        // init file            define with option -file
 
 
   // parse command line arguments
@@ -124,23 +153,7 @@ int main(int argc, char **argv){
     }
   }
 
-
-  // Init VME  
-  cout<<" Use HAL, get busadapter "<<endl;
-  // Get the HAL bus adaptor
-  if(VMEBoard==1) 
-    //    busAdapter = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
-    busAdapter = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,0,0,HAL::CAENLinuxBusAdapter::A3818) ;
-
-  else if(VMEBoard==2) 
-    busAdapter = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb 
-  else {
-    cout<<" VME interface not chosen "<<VMEBoard<<endl;
-    exit(1);
-  }
-  HAL::VMEAddressTableASCIIReader reader("PFECAddressMap.dat");
-  addressTablePtr =
-    new HAL::VMEAddressTable( "PFEC address table", reader);
+  addressTablePtr = (char *) "file:///home/fectest/FEC_mTCA/pixel/BPiasdfasdfasdfaxelTools/pxfec/xml_files/ConnectionFile.xml";
 
   VMELock lock(1);
  

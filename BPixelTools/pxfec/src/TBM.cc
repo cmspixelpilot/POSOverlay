@@ -172,7 +172,6 @@ void TBM::setPLLDelayTBM(const int DACAddress, const int value){
   setTBM(tbmA, DACAddress+7, value);
 }
 
-
 // int TBM::readTBM(const int tbmChannel, const int tbmRegister, int& value){
 //   if (tbmChannel==tbmA && tbmRegister>=0 && tbmRegister<=7){
 //     value=tbmAReg[tbmRegister]; // as long as we can't really read
