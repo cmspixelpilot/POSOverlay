@@ -91,7 +91,7 @@ void PixelDCSCreateDataPoints::Default(xgi::Input* in, xgi::Output* out) throw (
 {
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir", "ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, httpPageHeader_);
+  // xgi::Utils::getPageHeader(*out, httpPageHeader_);
   
   // Rendering Low Level GUI
   

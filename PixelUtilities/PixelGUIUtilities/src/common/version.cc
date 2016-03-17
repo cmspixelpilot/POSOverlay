@@ -1,11 +1,11 @@
 #include "config/version.h"
 #include "xcept/version.h"
 #include "xdaq/version.h"
-#include "PixelDCSUtilities/version.h"
+#include "PixelGUIUtilities/version.h"
 
-GETPACKAGEINFO(PixelDCSUtilities)
+GETPACKAGEINFO(PixelGUIUtilities)
 
-void PixelDCSUtilities::checkPackageDependencies() throw (config::PackageInfo::VersionException) {
+void PixelGUIUtilities::checkPackageDependencies() throw (config::PackageInfo::VersionException) {
 
   CHECKDEPENDENCY(config);
   CHECKDEPENDENCY(xcept);
@@ -13,7 +13,7 @@ void PixelDCSUtilities::checkPackageDependencies() throw (config::PackageInfo::V
   
 }
 
-std::set<std::string, std::less<std::string> > PixelDCSUtilities::getPackageDependencies() {
+std::set<std::string, std::less<std::string> > PixelGUIUtilities::getPackageDependencies() {
   
   std::set<std::string, std::less<std::string> > dependencies;
   ADDDEPENDENCY(dependencies,config);
