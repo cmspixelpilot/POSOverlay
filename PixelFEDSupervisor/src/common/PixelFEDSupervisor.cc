@@ -384,7 +384,7 @@ std::string const msg_info_uom = "Access PixelFEDSupervisor";
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   HTML2XGI(out, htmlbase_+"/Head.htm");
   *out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, "Pixel Front End Driver Supervisor", fsm_.getStateName(fsm_.getCurrentState()));
+  // xgi::Utils::getPageHeader(*out, "Pixel Front End Driver Supervisor", fsm_.getStateName(fsm_.getCurrentState()));
 
 
   // Rendering the State Machine GUI
