@@ -1,1 +1,0 @@
-pixel_pi_config.txt
