@@ -1,10 +1,15 @@
+if [ "$(ls -1 | grep FecSoftwareV3_0)" != "FecSoftwareV3_0" ] || [ "$(ls -1 | grep pixel)" != "pixel" ] || [ "$(ls -1 | grep setenv.sh)" != "setenv.sh" ]; then
+    echo Please source this while cwd = the TriDAS directory you want to use
+    return 1
+fi
+
 # TriDAS setenv file
 export XDAQ_ROOT=/opt/xdaq
 export XDAQ_BASE=/opt/xdaq
 export XDAQ_OS=linux
 export XDAQ_PLATFORM=x86_64_slc6
 export ROOTSYS=~/root
-export BUILD_HOME=~/TriDAS_XDAQ13
+export BUILD_HOME=$(pwd)
 
 # the part below should usually not be touched
 export XDAQ_DOCUMENT_ROOT=$XDAQ_ROOT/htdocs
