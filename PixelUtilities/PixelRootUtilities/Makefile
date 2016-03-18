@@ -64,9 +64,6 @@ StaticLibrary=
 
 include $(XDAQ_ROOT)/config/Makefile.rules
 
-_all:
-	cd test; make; cd ..
-
 clean:
 	rm -rf *~ src/common/*~ include/*~
 

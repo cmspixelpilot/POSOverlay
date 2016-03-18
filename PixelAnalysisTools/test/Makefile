@@ -43,7 +43,7 @@ UserCCFlags = -O -Wno-deprecated -pg
 #Libraries= $(MainDir) $(ExtDir) xerces-c
 Libraries= $(MainDir) PixelConfigDBInterface SiPixelObjects PixelFEDDataTools PixelRootUtilities PixelXmlUtilities xerces-c\
            Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread pthread m dl \
-           occi nnz12 clntsh xcept toolbox log4cplus asyncresolv config uuid
+           occi nnz12 clntsh xcept toolbox log4cplus asyncresolv config uuid xdaq xoap xdata xgi cgicc peer log4cplus logxmlappender logudpappender mimetic
 #	   Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics pthread m dl Gui X3d Thread 
 
 include $(XDAQ_ROOT)/config/Makefile.rules
