@@ -1,14 +1,13 @@
 #include "ControlNetwork.h"
 #include "Module.h"
 #include "TBM.h"
-#include "PixelFECInterface/include/PixelFECInterface.h"
 #include "SysCommand.h"
 
 using namespace std;
 
 //extern void analyzeError(CVErrorCodes ret);
 
-ControlNetwork::ControlNetwork(PixelFECInterface *FECInterface, int fecSlot, int mfecNumber, int mfecChannel,string groupName){
+ControlNetwork::ControlNetwork(pos::PixelFECConfigInterface *FECInterface, int fecSlot, int mfecNumber, int mfecChannel,string groupName){
   interface=FECInterface;
   //unsigned long data = 0;
   //interface->getversion(&data); 

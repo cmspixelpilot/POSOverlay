@@ -18,7 +18,7 @@ using namespace std;
 //--------------------------------------------------
 // some global variables needed for access to vme stuff inside of "exec"
 //int32_t gBHandle=0;
-PixelFECInterface* pixelFECInterface[22]={0};
+pos::PixelFECConfigInterface* pixelFECInterface[22]={0};
 ControlNetwork* cn[64]={0};
 
 char * addressTablePtr;
@@ -31,7 +31,7 @@ PixelPh1FECInterface* initPixelFEC(int slot){
     RegManager * pRegManager = new RegManager(addressTablePtr, 0);
     
     int dummy_vmeslot=0; unsigned int dummy_feccrate=0; unsigned int dummy_fecslot = 0;
-    PixelFECInterface* aFECInterface = new PixelFECInterface(pRegManager,dummy_vmeslot,dummy_feccrate,dummy_fecslot);
+    PixelPh1FECInterface* aFECInterface = new PixelPh1FECInterface(pRegManager,dummy_vmeslot,dummy_feccrate,dummy_fecslot);
     
     cout<<"Init FEC in slot "<< slot <<endl;
     

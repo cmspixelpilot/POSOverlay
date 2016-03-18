@@ -15,7 +15,7 @@ MY_PROJECT_ROOT = $(shell pwd)
 
 
 INC = -I./include -I$(XDAQ_ROOT)/include  -I$(XDAQ_ROOT)/include/hal  -I$(PIXEL_INCLUDE) -I$(TOOL_DIR)/include -I$(TOOL_DIR) -I$(CACTUS_ROOT)/include
- 
+
 # XDAQ libraries needed for HAL
 LibraryDirs = \
         -L$(PIXEL_INCLUDE)/lib \
@@ -24,7 +24,7 @@ LibraryDirs = \
 	-L${MY_PROJECT_ROOT}/lib 
 
 
-Libraries=  -lPixelFECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -lxerces-c -lxcept -lconfig -ltoolbox -llog4cplus -lasyncresolv -luuid    \
+Libraries=  -lPixelPh1FECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -lxerces-c -lxcept -lconfig -ltoolbox -llog4cplus -lasyncresolv -luuid    \
                 -lpthread \
                 \
                 -lboost_filesystem \
@@ -35,7 +35,9 @@ Libraries=  -lPixelFECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -l
                 -lcactus_extern_pugixml \
                 -lcactus_uhal_log \
                 -lcactus_uhal_grammars \
-                -lcactus_uhal_uhal
+                -lcactus_uhal_uhal \
+		\
+		-lPixeluTCAUtilities
 
 LIBS = $(LibraryDirs) $(Libraries) -L$(TOOL_DIR)/lib -lSockets
 OBJ=objects
