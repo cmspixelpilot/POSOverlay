@@ -9179,3 +9179,22 @@ portcardmap   0
 ttcciconfig   0
 ltcconfig   0
 tkfecconfig   0
+
+key 499
+detconfig   7
+lowvoltagemap   0
+nametranslation   0
+fedconfig   0
+fecconfig   0
+fedcard   19
+dac   83
+mask   23
+trim   11
+calib 14
+tbm   47
+dcdc   1
+portcard   0
+portcardmap   0
+ttcciconfig   0
+ltcconfig   0
+tkfecconfig   0

@@ -1,7 +1,8 @@
 ConfigurationAliases
 hello 496 ;
 hello2 497 ;
-Physics     491 ;
+hello3 499 ;
+Physics     490 ;
 Physics_WBC167     487 ;
 Physics_WBC166     488 ;
 Physics_WBC165     489 ;
