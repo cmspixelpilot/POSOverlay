@@ -47,6 +47,7 @@ Packages=\
 	PixelPh1FECInterface \
 	PixelSupervisorConfiguration \
 	PixelCalibrations \
+        PixelFEDSupervisor \
         PixelMonitor   \
         PixelFEDMonitor \
 	PixelFECSupervisor \
