@@ -335,7 +335,7 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
     *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"" << refresh_delay << "; URL=/" << getApplicationDescriptor()->getURN() << "/Default\"/>" <<endl;
   }
   *out<<"</head>"<<std::endl;
-  xgi::Utils::getPageHeader(*out, "PixelSupervisor", fsm_.getStateName(fsm_.getCurrentState()));
+  // xgi::Utils::getPageHeader(*out, "PixelSupervisor", fsm_.getStateName(fsm_.getCurrentState()));
 
   std::set<std::string> allInputs=fsm_.getInputs();
   std::set<std::string> clickableInputs=fsm_.getInputs(fsm_.getCurrentState());

@@ -1,13 +1,13 @@
 #ifndef CONTROLNETWORK
 #define CONTROLNETWORK
 
-#include "PixelFECInterface/include/PixelFECInterface.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
 #include <string>
 #include "Module.h"
 
 class ControlNetwork{
  public:
-  PixelFECInterface *interface;
+  pos::PixelFECConfigInterface *interface;
   int mfec;
   int channel;
   int slot;// just informational
@@ -15,7 +15,7 @@ class ControlNetwork{
   Module* m[32];
 
  ControlNetwork(
-	       PixelFECInterface *FECInterface, 
+		pos::PixelFECConfigInterface *FECInterface, 
 	       int fecSlot,
 	       int mfecNumber, 
 	       int mfecChannel,

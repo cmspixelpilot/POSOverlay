@@ -133,6 +133,11 @@ namespace pos{
     virtual int rocreset(int mfec, int fecchannel, 
 			 int tbmchannel, int hubaddress)=0;		 
 
+    virtual int getfecctrlstatus(const int mfec, unsigned long *data) = 0;
+    virtual int getByteHubCount(const int mfec, const int channel, const int byte, int *data) = 0;
+    virtual int resetdoh(const int mfec, const int fecchannel) = 0;
+    virtual int testFiber(const int mfec, const int channel, int* rda, int * rck) = 0;
+    virtual int FullBufRDaDisable(const int mfec, const int disable) = 0;
 
     //virtual void setVCalDAC(std::string ROC, unsigned char dac)=0;
  

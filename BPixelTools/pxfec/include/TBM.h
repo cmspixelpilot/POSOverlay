@@ -14,7 +14,7 @@ class TBM
   int hubaddress;
   ControlNetwork * cn;
   int tbmAReg[8];
-  int tbmBReg[5];
+  int tbmBReg[8];
 
  public:
   TBM(const int aHubId, ControlNetwork *aCN);

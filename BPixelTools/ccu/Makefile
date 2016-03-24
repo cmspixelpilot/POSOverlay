@@ -13,23 +13,24 @@ INCLUDES=-I ./include \
          -I $(FECSOFTWARE_ROOT)/FecPciDeviceDriver/include \
          -I ${XDAQ_ROOT}/include\
          -I ${XDAQ_ROOT}/include/hal\
-	 -I ../tools/include
-
+	 -I ../tools/include\
+	 -I ${CACTUSINCLUDE} 
 #         -I $(FECSOFTWARE_ROOT)/ThirdParty/APIConsoleDebugger/include \
 
 
 LIBDIRS=\
 -L$(XDAQ_ROOT)/lib \
--L$(FECSOFTWARE_ROOT)/lib 
+-L$(FECSOFTWARE_ROOT)/lib \
+-L$(CACTUSLIB)
 
-Libraries = -lpthread -ldl -lxerces-c -lGenericHAL -lconfig -lxcept -lCAENLinuxBusAdapter -lCAENVME -lDeviceAccess -ltoolbox -llog4cplus -lasyncresolv -luuid
+Libraries = -lpthread -ldl -lxerces-c -lGenericHAL -lconfig -lxcept -lCAENLinuxBusAdapter -lCAENVME -lDeviceAccess -ltoolbox -llog4cplus -lasyncresolv -luuid -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal
 
 
 ccu:	src/ccu.cxx objects/ServerAccess.o ../tools/lib/libSockets.so
-	g++ $(CRAZYFLAGS) src/ccu.cxx objects/ServerAccess.o -o bin/ccu $(INCLUDES) -L../tools/lib -lSockets $(LIBDIRS) $(Libraries)
+	g++ $(CRAZYFLAGS) src/ccu.cxx -std=c++0x objects/ServerAccess.o -o bin/ccu $(INCLUDES) -L../tools/lib -lSockets $(LIBDIRS) $(Libraries)
 
 objects/ServerAccess.o: src/ServerAccess.cc include/ServerAccess.h
-	g++ $(CRAZYFLAGS) -c src/ServerAccess.cc -o $@ $(INCLUDES)
+	g++ $(CRAZYFLAGS) -c src/ServerAccess.cc -std=c++0x -o $@ $(INCLUDES)
 
 ../tools/lib/libSockets.so:
 	(cd ../tools; make; cd ../ccu)

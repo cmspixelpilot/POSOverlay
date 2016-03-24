@@ -110,7 +110,7 @@
     <xc:Application class="tcds::pi::PIController" id="505" instance="1" group="tcds" network="xmas" />
   </xc:Context>
 
-  <xc:Context id="8" url="http://cmspsx.cms:9923/">
+  <xc:Context id="8" url="http://psx-pix.cms:9923/">
     <xc:Application class="psx" id="30" network="local" group="dcs" instance="0" service="psx"/>
   </xc:Context>
 

@@ -1,20 +1,43 @@
-CFLAGS  = -Wall -g -m64 $(DEBUG)
+CFLAGS  = -Wall -std=c++0x -g -m64 $(DEBUG)
 LDFLAGS =  -m64
 SOFLAGS = -shared
 
 TOOL_DIR:=$(BPIXELTOOLS)/tools
+# The root folder for all the cactus
+CACTUS_ROOT = /opt/cactus
+
+# Set the project home directory to the current directory
+MY_PROJECT_ROOT = $(shell pwd)
+
 #PIXEL_INCLUDE:=$(PIXEL_INCLUDE)
 #PIXEL_INCLUDE=$(BUILD_HOME)/pixel
 
-INC = -I./include -I$(XDAQ_ROOT)/include  -I$(XDAQ_ROOT)/include/hal  -I$(PIXEL_INCLUDE) -I$(TOOL_DIR)/include -I$(TOOL_DIR)
- 
+
+
+INC = -I./include -I$(XDAQ_ROOT)/include  -I$(XDAQ_ROOT)/include/hal  -I$(PIXEL_INCLUDE) -I$(TOOL_DIR)/include -I$(TOOL_DIR) -I$(CACTUS_ROOT)/include
+
 # XDAQ libraries needed for HAL
 LibraryDirs = \
         -L$(PIXEL_INCLUDE)/lib \
-        -L$(XDAQ_ROOT)/lib 
+        -L$(XDAQ_ROOT)/lib \
+	-L${CACTUS_ROOT}/lib \
+	-L${MY_PROJECT_ROOT}/lib 
 
 
-Libraries=  -lPixelFECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -lxerces-c -lxcept -lconfig -ltoolbox -llog4cplus -lasyncresolv -luuid
+Libraries=  -lPixelPh1FECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -lxerces-c -lxcept -lconfig -ltoolbox -llog4cplus -lasyncresolv -luuid    \
+                -lpthread \
+                \
+                -lboost_filesystem \
+                -lboost_regex \
+                -lboost_system \
+                -lboost_thread \
+                \
+                -lcactus_extern_pugixml \
+                -lcactus_uhal_log \
+                -lcactus_uhal_grammars \
+                -lcactus_uhal_uhal \
+		\
+		-lPixeluTCAUtilities
 
 LIBS = $(LibraryDirs) $(Libraries) -L$(TOOL_DIR)/lib -lSockets
 OBJ=objects

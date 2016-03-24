@@ -12,7 +12,7 @@ from Logger import Logger
 
 # configuration
 fechost = 'localhost'      
-fecport =  2002    
+fecport =  2001  
 
 
 fedslot =  99
@@ -35,8 +35,8 @@ log=Logger()
 ccu.send("cratereset").readlines()
 ccu.send("reset").readlines()
 ccu.send("piareset all").readlines()
-fecring = '0x7'
-fecslot = 9
+fecring = '0x8'
+fecslot = 12
 print "fecring=",fecring
 print "fecslot=",fecslot
 tag="FEC %d ring %s :"%(fecslot,fecring)

@@ -188,7 +188,7 @@ void PixelMonitor::Default(xgi::Input * in, xgi::Output * out ) throw (xgi::exce
   // Auto-refresh.
   *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"" << REFRESH_DELAY << "; URL=Default\"/>" << std::endl;
   *out<<"</head>"<<std::endl;
-  xgi::Utils::getPageHeader(*out, "PixelMonitor", "Running");
+  // xgi::Utils::getPageHeader(*out, "PixelMonitor", "Running");
 
 
   *out<<"<body>"<<std::endl;

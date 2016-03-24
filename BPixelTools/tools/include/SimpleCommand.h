@@ -24,7 +24,7 @@ struct sector_t{
 struct group_t{
   int phi;  // +/-1 .. +/-8
   char z;   // P or N
-  int layer;  // [1,3]  1=1&2, 3=3
+  int layer;  // L14 and  L23
 };
 
 struct shell_t{

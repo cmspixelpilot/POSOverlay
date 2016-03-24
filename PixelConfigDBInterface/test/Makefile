@@ -11,7 +11,7 @@ Project=pixel
 Package=$(MainDir)/test
 PackageName=PixelConfigDBInterfacetest
 
-#Sources = MyTest.cc
+Sources = version.cc
 Executables= MyTest.cc PixelConfigDBCmd.cc
 
 IncludeDirs = \
@@ -28,7 +28,7 @@ UserCFlags =
 UserCCFlags = -O -Wno-deprecated 
 
 #Libraries= PixelConfigDataFormats PixelConfigDBInterface occi nnz10 clntsh
-Libraries= $(MainDir) $(ExtDir) occi nnz12 clntsh xcept xerces-c toolbox log4cplus uuid config asyncresolv
+Libraries= $(MainDir) $(ExtDir) occi nnz12 clntsh xcept xerces-c toolbox log4cplus uuid config asyncresolv xdaq xdata xoap xgi cgicc log4cplus mimetic logxmlappender logudpappender peer
 
 include $(XDAQ_ROOT)/config/Makefile.rules
 

@@ -1,27 +1,24 @@
-// $Id: version.cc,v 1.2 2007/10/05 09:03:10 veelken Exp $
-
-/*************************************************************************
- * Auxiliary header to define XDAQ internal versioning information       *
- * about PixelUtilities/PixelDCSUtilities package                        *
- * in the shared object library dynamically loaded by XDAQ at run-time   *
- *                                                                       *
- * Author: Christian Veelken, UC Davis			 	         *
- *                                                                       *
- * Last update: $Date: 2007/10/05 09:03:10 $ (UTC)                       *
- *          by: $Author: veelken $                                       *
- *************************************************************************/
-
-#include "version.h"
 #include "config/version.h"
+#include "xcept/version.h"
+#include "xdaq/version.h"
+#include "PixelDCSUtilities/version.h"
 
-GETPACKAGEINFO(PixelUtilities_PixelDCSUtilities)
+GETPACKAGEINFO(PixelDCSUtilities)
 
-std::set<std::string, std::less<std::string> > PixelUtilities_PixelDCSUtilities::getPackageDependencies()
-{
+void PixelDCSUtilities::checkPackageDependencies() throw (config::PackageInfo::VersionException) {
+
+  CHECKDEPENDENCY(config);
+  CHECKDEPENDENCY(xcept);
+  CHECKDEPENDENCY(xdaq);
+  
+}
+
+std::set<std::string, std::less<std::string> > PixelDCSUtilities::getPackageDependencies() {
+  
   std::set<std::string, std::less<std::string> > dependencies;
-  
-  ADDDEPENDENCY(dependencies, config); 
-  
+  ADDDEPENDENCY(dependencies,config);
+  ADDDEPENDENCY(dependencies,xcept);
+  ADDDEPENDENCY(dependencies,xdaq);
   return dependencies;
-}	
-	
+  
+}
