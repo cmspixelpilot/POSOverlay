@@ -8,7 +8,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelPh1FEDCard.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
-class PixelPh1FEDInterface {
+class PixelPh1FEDInterface : public PixelFEDInterface {
  public:
   struct FitelRegItem {
     uint8_t fAddress;
@@ -120,7 +120,6 @@ struct digfifo1 {
   uint32_t get_VMEFirmwareDate();
   uint32_t get_FirmwareDate(int);
   
-  bool loadFedIDRegister();
   bool setFedIDRegister(uint32_t value);
   uint32_t getFedIDRegister();
 

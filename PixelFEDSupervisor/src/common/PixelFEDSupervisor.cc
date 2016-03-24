@@ -485,7 +485,6 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   unsigned long vmeBaseAddress=atoi(vmeBaseAddress_string.c_str());
   //unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, vmeBaseAddress);
   PixelFEDInterface* iFED=FEDInterface_[vmeBaseAddress];
-  PixelPh1FEDCard fedCard=iFED->getPixelFEDCard();
 
   std::string url="/"+getApplicationDescriptor()->getURN();
 
@@ -539,8 +538,8 @@ void PixelFEDSupervisor::LowLevelCommands (xgi::Input *in, xgi::Output *out) thr
   *out<<"<h1> FED with Base Address 0x"<<std::hex<<vmeBaseAddress<<std::dec<<"</h1>"<<std::endl<<std::endl;
 
   // GUI for the FED Control and Mode Registers
-  unsigned int cReg=fedCard.Ccntrl;
-  unsigned int mReg=fedCard.modeRegister;
+  unsigned int cReg=iFED->getCardControlRegister();
+  unsigned int mReg=iFED->getCardModeRegister();
   std::string checked1, checked2;
   *out<<"<form name=\"input\" method=\"get\" action=\""<<url+"/LowLevelXgiHandler"<<"\" enctype=\"multipart/form-data\">"<<std::endl;
 
@@ -2274,7 +2273,7 @@ bool PixelFEDSupervisor::job_Configure ()
 				     theNameTranslation_,
 				     theDetectorConfiguration_);
        
-      FEDInterface_[vmeBaseAddress]->setupFromDB(*theFEDCard);
+      FEDInterface_[vmeBaseAddress]->setup(*theFEDCard);
       FEDInterface_[vmeBaseAddress]->resetSlink();
       FEDInterface_[vmeBaseAddress]->testTTSbits(0,0);
       FEDInterface_[vmeBaseAddress]->storeEnbableBits();
