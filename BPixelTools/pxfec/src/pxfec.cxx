@@ -122,7 +122,7 @@ int main(int argc, char **argv){
 
   // default configuration variables 
   int port=0;                      // port, 0= no port,    define with option -port
-  int VMEBoard=1; //CAEN interface   defisrc/pxfec.cxx:41:ne with option -vmecaenpci or -vmecaenusb
+  int VMEBoard=1; //CAEN interface   define with option -vmecaenpci or -vmecaenusb
   string file="data/d.ini.P-A-2-08";        // init file            define with option -file
 
 
