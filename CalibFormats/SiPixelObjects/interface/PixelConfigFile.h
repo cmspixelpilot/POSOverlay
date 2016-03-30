@@ -364,7 +364,7 @@ namespace pos{
     
       std::string fullpath=directory+"/"+dir+"/"+strversion+"/";
     
-      std::cout << "Directory for configuration data:"<<fullpath<<std::endl;
+      //std::cout << "Directory for configuration data:"<<fullpath<<std::endl;
 
       try {
     
@@ -697,7 +697,7 @@ namespace pos{
     
       std::string fullpath=directory+"/"+dir+"/"+strversion+"/";
     
-      std::cout << __LINE__ << mthn << "Directory for configuration data:"<<fullpath<<std::endl;
+      //std::cout << __LINE__ << mthn << "Directory for configuration data:"<<fullpath<<std::endl;
     
       if (typeid(data)==typeid(PixelTrimBase*)){
 	//std::cout << __LINE__ << mthn << "Will return PixelTrimBase" << std::endl;
