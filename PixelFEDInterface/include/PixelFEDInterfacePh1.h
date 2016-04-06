@@ -1,14 +1,15 @@
-#ifndef PixelPh1FEDInterface_h
-#define PixelPh1FEDInterface_h
+#ifndef PixelFEDInterface_PixelFEDInterfacePh1_h
+#define PixelFEDInterface_PixelFEDInterfacePh1_h
 
 #include <bitset>
 #include <map>
 #include <vector>
-    
+
+#include "PixelFEDInterface/include/PixelFEDInterfaceBase.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPh1FEDCard.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
-class PixelPh1FEDInterface : public PixelFEDInterface {
+class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
  public:
   struct FitelRegItem {
     uint8_t fAddress;
@@ -30,8 +31,8 @@ class PixelPh1FEDInterface : public PixelFEDInterface {
     return e;
   }
 
-  PixelPh1FEDInterface(RegManager*);
-  ~PixelPh1FEDInterface();
+  PixelFEDInterfacePh1(RegManager*);
+  ~PixelFEDInterfacePh1();
 
   void set_Printlevel(int level) { Printlevel = level; }
   int get_Printlevel() const { return Printlevel; }

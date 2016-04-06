@@ -1,7 +1,7 @@
-#ifndef PixelFEDInterface_PixelPh0FEDInterface_h
-#define PixelFEDInterface_PixelPh0FEDInterface_h
+#ifndef PixelFEDInterface_PixelFEDInterface_h
+#define PixelFEDInterface_PixelFEDInterface_h
 
-// The PixelPh0FEDInterface class for VME access to the pixel FED..
+// The PixelFEDInterface class for VME access to the pixel FED..
 // Uses HAL calls for VME, the direct CAEN access can be still used..
 // Will Johns & Danek Kotlinski, 3/06.
 //
@@ -22,18 +22,18 @@
 #endif //USE_HAL
 
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
-#include "PixelFEDInterface/include/PixelFEDInterface.h"
+#include "PixelFEDInterface/include/PixelFEDInterfaceBase.h"
 
 
-class PixelPh0FEDInterface : public PixelFEDInterface {
+class PixelFEDInterface : public PixelFEDInterfaceBase {
 
  public:
 
 
 #ifdef USE_HAL // Access VME with HAL
   
-  PixelPh0FEDInterface(const HAL::VMEDevice * const);
-  ~PixelPh0FEDInterface();
+  PixelFEDInterface(const HAL::VMEDevice * const);
+  ~PixelFEDInterface();
 
   // Generic FIFO2 access  
   int drainFifo2(std::string item, uint32_t offset, 
@@ -41,12 +41,10 @@ class PixelPh0FEDInterface : public PixelFEDInterface {
 
   void test(void);
 
-  void sendResets();
-
 #else // direct CAEN
 
-  PixelPh0FEDInterface(const uint32_t fedBase, long BHandle);
-  ~PixelPh0FEDInterface();
+  PixelFEDInterface(const uint32_t fedBase, long BHandle);
+  ~PixelFEDInterface();
   // Generic FIFO2 access  
   int drainFifo2(uint32_t VmeAddress, uint32_t *data); // generic
 
@@ -96,7 +94,6 @@ class PixelPh0FEDInterface : public PixelFEDInterface {
   void set_blk_ublk_thold(); // Load UB and B limits
   void set_blk_ublk_trans_thold(); // Load UB and B limits for safe transparent mode
   void set_data_levels();  // Load address levels
-  void toggle_chnls_offon();
   void set_chnls_onoff(); // Set Enable channles
   void set_chnls_onoff(int mode); // Enable/Disable channles
   void set_TBMmask(uint32_t mask); //Set common 8bit mask for TBM trlr
@@ -150,13 +147,12 @@ class PixelPh0FEDInterface : public PixelFEDInterface {
   void stop_testDAC();//send one VME trigger with finite testDAC lengthand LRES/CLRES 
 
 
-  int setControlRegister(const int value);
-  int loadControlRegister(void);
-  int getControlRegister(void);
+  bool setControlRegister(const int value);
+  bool loadControlRegister(void);
+  uint32_t getControlRegister(void);
 
-  int setFedIDRegister(const int value);
-  int loadFedIDRegister(void);
-  int getFedIDRegister(void);
+  bool setFedIDRegister(const int value);
+  uint32_t getFedIDRegister(void);
 
   int loadModeRegister();    // Load Mode Register from DB
   int setModeRegister(int value); // set the mode register to value.

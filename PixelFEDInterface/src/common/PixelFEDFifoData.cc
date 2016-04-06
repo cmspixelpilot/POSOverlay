@@ -5,8 +5,8 @@
 #include "PixelFEDInterface/include/PixelFEDFifoData.h"
 
 namespace {
-  //const bool PRINT = false;
-  const bool PRINT = true;
+  const bool PRINT = false;
+  //const bool PRINT = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////

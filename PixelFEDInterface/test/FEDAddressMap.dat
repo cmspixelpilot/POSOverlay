@@ -28,21 +28,6 @@ LRES		 	09     4   00a00000    ffffffff    0	1
 CLRES		 	09     4   00a00004    ffffffff    0	1 
 BrcstResetPls           09     4   008c8000    ffffffff    0    1 
 ResTTCrx                09     4   00a00038    ffffffff    0    1
-* Daughter Card
-TopDauCard_nConfig	09     4   001b8000    ffffffff    0    1
-BottomDauCard_nConfig	09     4   007b8000    ffffffff    0    1
-TopDauCard_pll		09     4   003c0000    ffffffff	   0	1
-BottomDauCard_pll	09     4   007c0000    ffffffff	   0	1
-TopDauCard_com 		09     4   001a8000    ffffffff	   0	1
-BottomDauCard_com	09     4   007a8000    ffffffff	   0	1
-TopDauCard_UpStatus	09     4   00158000    ffffffff	   1	0
-TopDauCard_DownStatus	09     4   00178000    ffffffff	   1	0
-BottomDauCard_UpStatus	09     4   00758000    ffffffff	   1	0
-BottomDauCard_DnStatus	09     4   00778000    ffffffff	   1	0
-TopDauCard_UpTempFifo	09     4   00348000    ffffffff	   1	0
-TopDauCard_DownTempFifo	09     4   00368000    ffffffff	   1	0
-BottomDauCard_UpTmpFifo	09     4   00748000    ffffffff	   1	0
-BottomDauCard_DnTmpFifo	09     4   00768000    ffffffff	   1	0
 * Opto receivers (in LAD_S)
 OptoRec1Par 	        09     4   00780000    ffffffff    0    1 
 OptoRec2Par 	        09     4   00788000    ffffffff    0    1
