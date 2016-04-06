@@ -34,13 +34,6 @@
 
 #endif //USE_HAL
 
-class TBMReadException: public std::exception {
-   public:
-	virtual const char* what() const throw() {
-		return "Failed to read from TBM";
-	}
-};
-
 class PixelFECInterface: public pos::PixelFECConfigInterface {
 
  public:

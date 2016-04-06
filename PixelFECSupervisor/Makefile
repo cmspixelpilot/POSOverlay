@@ -53,7 +53,7 @@ UserExecutableLinkFlags =
 DependentLibraryDirs =  $(BUILD_HOME)/pixel/lib \
                         $(XDAQ_ROOT)/lib	
 
-DependentLibraries = PixelPh1FECInterface SiPixelObjects PixelTestStandUtilities PixelGUIUtilities GenericHAL CAENVME CAENLinuxBusAdapter PixelDCSUtilities Pixelb2inUtilities occi nnz12 clntsh
+DependentLibraries = PixelFECInterface SiPixelObjects PixelTestStandUtilities PixelGUIUtilities GenericHAL CAENVME CAENLinuxBusAdapter PixelDCSUtilities Pixelb2inUtilities occi nnz12 clntsh
 
 
 ifeq ($(VMEDUMMY), yes)

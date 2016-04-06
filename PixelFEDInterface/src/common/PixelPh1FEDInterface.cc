@@ -4,7 +4,7 @@
 #include <time.h>
 //#include <unistd.h>
 
-#include "PixelPh1FEDInterface/include/PixelPh1FEDInterface.h"
+#include "PixelFEDInterface/include/PixelPh1FEDInterface.h"
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
 using namespace std;

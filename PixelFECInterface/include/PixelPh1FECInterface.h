@@ -1,5 +1,5 @@
-#ifndef PIXELFECINTERFACE_H
-#define PIXELFECINTERFACE_H
+#ifndef PIXELPH1FECINTERFACE_H
+#define PIXELPH1FECINTERFACE_H
 
 // The PixelPh1FECInterface class for VME access to the pixel FEC.
 // Uses HAL calls for VME, the direct CAEN access can be still used..
@@ -15,31 +15,7 @@
 #include <assert.h>
 
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
-#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h" // To do: give a correct path
-
-
-#define USE_UHAL  // to enable HAL use
-#define LINUX
-
-#ifdef USE_UHAL // Access VME with HALa
-
-#else // direct CAEN
-
-#define CSREG     12
-#define CH1OUT    0x0
-#define CH2OUT    0x10
-#define CONTROLREG 28
-/* SSID address */
-#define SSID 0x304
-
-#endif //USE_UHAL
-
-class TBMReadException: public std::exception {
-public:
-	virtual const char* what() const throw() {
-		return "Failed to read from TBM";
-	}
-};
+#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
 class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
     

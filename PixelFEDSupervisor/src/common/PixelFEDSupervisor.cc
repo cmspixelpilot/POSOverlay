@@ -256,8 +256,6 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
     datbase_=std::string(getenv("BUILD_HOME"))+"/pixel/PixelFEDInterface/dat/";  
   }
 
-  uTCAaddressTableFn_ = "file://" + std::string(build_home) + "/pixel/PixelFEDInterface/dat/address_table.xml";
-  
   crate_=this->getApplicationDescriptor()->getInstance();
   console_=new std::stringstream();
   eventNumber_=0;

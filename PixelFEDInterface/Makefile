@@ -24,11 +24,14 @@ include $(XDAQ_ROOT)/config/mfDefs.$(XDAQ_OS)
 Project=pixel
 Package=PixelFEDInterface
 
+CACTUS_ROOT = /opt/cactus
+
 Sources = $(wildcard src/common/*.cc)
 
 
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
+        $(CACTUS_ROOT)/include \
         $(XDAQ_ROOT)/include/hal \
         $(XDAQ_ROOT)/include
 #        /usr/local/CAEN/CAEN-VME/Linux/include 
@@ -39,10 +42,13 @@ LibraryDirs =
 #	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long -DLINUX
+UserCCFlags = -std=c++0x -g -O -Wno-long-long -DLINUX
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
+
+DependentLibraryDirs =  $(BUILD_HOME)/pixel/lib
+DependentLibraries = PixeluTCAUtilities
 
 # These libraries can be platform specific and
 # potentially need conditional processing

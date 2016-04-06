@@ -57,7 +57,7 @@ ROOTLibs =  -L$(shell root-config --libdir) \
 
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX -Wl,--no-undefined -DSETUP_TIF
+UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX -Wl,--no-undefined
 UserDynamicLinkFlags = $(ROOTLibs)
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
@@ -72,11 +72,10 @@ DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
 		       $(BUILD_HOME)/pixel/PixelSupervisorConfiguration/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelCalibrations/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelConfigDBInterface/lib/linux/x86 \
-		       $(BUILD_HOME)/pixel/PixelFEDInterface/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelUtilities/PixelTestStandUtilities/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelUtilities/PixelJobControlUtilities/lib/linux/x86
 
-DependentLibraries = SiPixelObjects PixelSupervisorConfiguration PixelCalibrations PixelConfigDBInterface occi nnz12 clntsh PixelFEDInterface Pixelb2inUtilities PixelTestStandUtilities PixelJobControlUtilities GenericHAL CAENLinuxBusAdapter xdaq2rc
+DependentLibraries = SiPixelObjects PixelSupervisorConfiguration PixelCalibrations PixelConfigDBInterface occi nnz12 clntsh Pixelb2inUtilities PixelTestStandUtilities PixelJobControlUtilities GenericHAL CAENLinuxBusAdapter xdaq2rc
 
 Libraries = 
 ExternalObjects = -L$(XDAQ_ROOT)/lib  -L/usr/lib

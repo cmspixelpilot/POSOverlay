@@ -197,6 +197,38 @@ unsigned int PixelFECConfig::crateFromFECNumber(unsigned int fecnumber) const{
 
 }
 
+std::string PixelFECConfig::typeFromFECNumber(unsigned int fecnumber) const {
+
+
+  std::string mthn = "[PixelFECConfig::typeFromFECNumber()]\t\t\t    " ;
+  for(unsigned int i=0;i<fecconfig_.size();i++){
+    if (fecconfig_[i].getFECNumber()==fecnumber) return fecconfig_[i].getType();
+  }
+
+  std::cout << __LINE__ << "]\t" << mthn << "Could not find FEC number: " << fecnumber << std::endl;
+
+  assert(0);
+
+  return 0;
+
+}
+
+std::string PixelFECConfig::URIFromFECNumber(unsigned int fecnumber) const {
+
+
+  std::string mthn = "[PixelFECConfig::URIFromFECNumber()]\t\t\t    " ;
+  for(unsigned int i=0;i<fecconfig_.size();i++){
+    if (fecconfig_[i].getFECNumber()==fecnumber) return fecconfig_[i].getURI();
+  }
+
+  std::cout << __LINE__ << "]\t" << mthn << "Could not find FEC number: " << fecnumber << std::endl;
+
+  assert(0);
+
+  return 0;
+
+}
+
 unsigned int PixelFECConfig::VMEBaseAddressFromFECNumber(unsigned int fecnumber) const{
 
     std::string mthn = "[PixelFECConfig::VMEBaseAddressFromFECNumber()]\t\t    " ;

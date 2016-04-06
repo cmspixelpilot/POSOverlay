@@ -74,7 +74,8 @@
 #include "PixelUtilities/PixelDCSUtilities/include/PixelPowerMap4603.h"
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
-#include "PixelPh1FECInterface/include/PixelPh1FECInterface.h"
+#include "PixelFECInterface/include/PixelFECInterface.h"
+#include "PixelFECInterface/include/PixelPh1FECInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelHdwAddress.h"
@@ -253,7 +254,7 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     std::set<std::string> powerCoordinatesRampingUp_;
 
     //For indexing based on VME address
-    typedef std::map<unsigned long, PixelPh1FECInterface*> FECInterfaceMap;
+    typedef std::map<unsigned long, pos::PixelFECConfigInterface*> FECInterfaceMap;
     FECInterfaceMap FECInterface;
     typedef std::map<unsigned long, HAL::VMEDevice*> VMEPtrMap;
     VMEPtrMap VMEPtr_;

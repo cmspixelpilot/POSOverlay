@@ -13,6 +13,7 @@
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
 
+#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 #include "PixelFECSupervisor/include/exception/Exception.h"
 #include "log4cplus/logger.h"
 #include "log4cplus/loggingmacros.h"
@@ -22,8 +23,6 @@
 // #include <toolbox/convertstring.h>
 
 using namespace pos;
-
-#define UTCA_XXX
 
 //#define USE_SEU_DETECT
 
@@ -180,12 +179,10 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
 
   const char* build_home = getenv("BUILD_HOME");
   assert(build_home != 0);
-  connectionFile_ = "file://" + std::string(build_home) + "/pixel/PixelPh1FECInterface/dat/connections.xml";
 
   crate_=this->getApplicationDescriptor()->getInstance();
 
   // Change for HAL d.k. 19/12/07
-#ifndef UTCA_XXX
 #ifdef USE_HAL
   busAdapter_ = (HAL::CAENLinuxBusAdapter*) 0;
   addressTablePtr_ = (HAL::VMEAddressTable*) 0;
@@ -194,7 +191,6 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
   aBHandle=0;
   Link=0;
 #endif // USE_HAL
-#endif
   
   theGlobalKey_=0;
   theLastGlobalKey_=-1;  // change from 0, -1 is a valid key 
@@ -2778,32 +2774,6 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
   
   cout << " transitionHaltedToConfiguring  " << endl;
 
-#ifndef UTCA_XXX  
-  try { //hardware access
-  // Get the VME Bus Adapter
-  #ifdef USE_HAL
-    // Change for HAL
-    //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
-    cout << " busAdapter before   " << endl;
-    busAdapter_  = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,
-						0,0, HAL::CAENLinuxBusAdapter::A3818);
-    cout << " busAdapter after   " << endl;
-    //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
-std::string const msg_trace_gfe = "Got a CAEN Linux Bus Adapter for the FEC";
- LOG4CPLUS_TRACE(sv_logger_,msg_trace_gfe);
-    // ASCII address table
-    HAL::VMEAddressTableASCIIReader reader(datbase_+"PFECAddressMap.dat");
-    addressTablePtr_=new HAL::VMEAddressTable( "PFEC address table", reader );
-  #else // USE_HAL
-std::string const msg_trace_gea = "PixelFECSupervisor::Configure - VMEBoard="+VMEBoard+" Device="+Device+" Link="+Link+" aBHandle="+aBHandle+" cvSuccess="+cvSuccess ;
- LOG4CPLUS_TRACE(sv_logger_,msg_trace_gea);
-  #endif // USE_HAL
-  }
-catch (...) { //FIXME maybe we should catch the actual type of exception that is thrown....    
-	XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught exception when getting FEC HAL BusAdapter");
-  }
-#endif
-
   //we need the detconfig next. But it is now loaded in the preconfigure step.
   //we need to ensure that it has been loaded
   while (true) {
@@ -2830,6 +2800,7 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
     unsigned int feccrate=theFECConfiguration_->crateFromFECNumber(fecnumber);
     unsigned int fecVMEBaseAddress=theFECConfiguration_->VMEBaseAddressFromFECNumber(fecnumber);
     unsigned int fecSlot=theFECConfiguration_->FECSlotFromFECNumber(fecnumber);
+    const std::string fectype = theFECConfiguration_->typeFromFECNumber(fecnumber);
     pclock_->give();    
 
     if (feccrate==crate_){
@@ -2837,25 +2808,55 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
       //there are globals used here, but they aren't used in preconfigure, so it is ok to leave them unlocked
 
       if(FECInterface.find(fecVMEBaseAddress)==FECInterface.end()) {           
-#ifdef UTCA_XXX
-        RegMgr_[fecVMEBaseAddress] = new RegManager;
-        RegMgr_[fecVMEBaseAddress]->fromURI("", "");
-	//RegMgr_[fecVMEBaseAddress]->setDebugPrints(true);
-	//RegMgr_[fecVMEBaseAddress]->setUniqueId("JMTFEC");
-       int dummy = 0;
-        PixelPh1FECInterface* tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], dummy, feccrate, fecSlot);
-#else
+        PixelFECConfigInterface* tempFECInterface = 0;
+        if (fectype == "uTCA") {
+          char boardid[32];
+          snprintf(boardid, 32, "FEC%02u", fecnumber);
+          RegMgr_[fecVMEBaseAddress] = new RegManager(boardid,
+                                                      theFECConfiguration_->URIFromFECNumber(fecnumber),
+                                                      datbase_ + "address_table.xml");
+          //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
+          //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
+          int dummy = 0;
+          tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], dummy, feccrate, fecSlot);
+        }
+        else {
+          if (busAdapter_ == 0) {
+            try { //hardware access
+              // Get the VME Bus Adapter
 #ifdef USE_HAL
-	VMEPtr_[fecVMEBaseAddress] =new HAL::VMEDevice(*addressTablePtr_, *busAdapter_, fecVMEBaseAddress);
-        int dummy=0;
-	PixelFECInterface* tempFECInterface=new PixelFECInterface(VMEPtr_[fecVMEBaseAddress],dummy,feccrate,fecSlot);
-#else
-	PixelFECInterface* tempFECInterface=new PixelFECInterface(fecVMEBaseAddress, aBHandle,feccrate,fecSlot);
+              // Change for HAL
+              //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718); //optical
+              cout << " busAdapter before   " << endl;
+              busAdapter_  = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V2718,
+                                                          0,0, HAL::CAENLinuxBusAdapter::A3818);
+              cout << " busAdapter after   " << endl;
+              //busAdapter_ = new HAL::CAENLinuxBusAdapter(HAL::CAENLinuxBusAdapter::V1718); //usb d.k. 3/07
+              std::string const msg_trace_gfe = "Got a CAEN Linux Bus Adapter for the FEC";
+              LOG4CPLUS_TRACE(sv_logger_,msg_trace_gfe);
+              // ASCII address table
+              HAL::VMEAddressTableASCIIReader reader(datbase_+"PFECAddressMap.dat");
+              addressTablePtr_=new HAL::VMEAddressTable( "PFEC address table", reader );
+#else // USE_HAL
+              std::string const msg_trace_gea = "PixelFECSupervisor::Configure - VMEBoard="+VMEBoard+" Device="+Device+" Link="+Link+" aBHandle="+aBHandle+" cvSuccess="+cvSuccess ;
+              LOG4CPLUS_TRACE(sv_logger_,msg_trace_gea);
 #endif // USE_HAL
-#endif // UTCA_XXX
+            }
+            catch (...) { //FIXME maybe we should catch the actual type of exception that is thrown....    
+              XCEPT_RAISE(toolbox::fsm::exception::Exception,"Caught exception when getting FEC HAL BusAdapter");
+            }
+          }
+
+#ifdef USE_HAL
+          VMEPtr_[fecVMEBaseAddress] =new HAL::VMEDevice(*addressTablePtr_, *busAdapter_, fecVMEBaseAddress);
+          int dummy=0;
+          tempFECInterface = new PixelFECInterface(VMEPtr_[fecVMEBaseAddress],dummy,feccrate,fecSlot);
+#else
+          tempFECInterface = new PixelFECInterface(fecVMEBaseAddress, aBHandle,feccrate,fecSlot);
+#endif
+        }
 
 	if (tempFECInterface==0) XCEPT_RAISE(toolbox::fsm::exception::Exception,"Could not create FECInterface");
-        tempFECInterface->setssid(4);
 	
         //save in the FECInterface map for later use
         FECInterface[fecVMEBaseAddress]=tempFECInterface;
@@ -2873,11 +2874,7 @@ catch (...) { //FIXME maybe we should catch the actual type of exception that is
 
       // If this is a BPix module, do this
       // FIXME hack!!!!
-#if defined SETUP_TIF
-      if (true) { //module_name->detsub()=='B') {  //BPIX
-#else
       if (module_name->detsub()=='B') {  //BPIX
-#endif
 	// set the bit to ignore the fullbuffRDa 
         FECInterface[fecVMEBaseAddress]->FullBufRDaDisable(module_firstHdwAddress.mfec(),1);
 	// disable the debug check 
@@ -3707,10 +3704,9 @@ void PixelFECSupervisor::deleteHardware()
   FECInterface.clear();  //clear the map of FECInterface pointers
   FECInterfaceByFECNumber_.clear();
 
-#ifdef UTCA_XXX
   for (RegMgrMap::iterator i=RegMgr_.begin();i!=RegMgr_.end(); i++)
     delete i->second;
-#else
+
 #ifdef USE_HAL
 
   for (VMEPtrMap::iterator i=VMEPtr_.begin();i!=VMEPtr_.end(); i++)
@@ -3719,21 +3715,21 @@ void PixelFECSupervisor::deleteHardware()
     }
   VMEPtr_.clear();  // clear the map of vme device pointers (used by FECInterface)
   if(busAdapter_==0) {
-std::string const msg_debug_cch = "PixelFECSupervisor::deleteHardware() called when busAdapter_==0";
- LOG4CPLUS_DEBUG(sv_logger_,msg_debug_cch);
+    std::string const msg_debug_cch = "PixelFECSupervisor::deleteHardware() called when busAdapter_==0";
+    LOG4CPLUS_DEBUG(sv_logger_,msg_debug_cch);
   }
   else {
     delete busAdapter_;
   }
   if(addressTablePtr_==0) {
-std::string const msg_debug_nvw = "PixelFECSupervisor::deleteHardware() called when addressTablePtr_==0";
- LOG4CPLUS_DEBUG(sv_logger_,msg_debug_nvw);
+    std::string const msg_debug_nvw = "PixelFECSupervisor::deleteHardware() called when addressTablePtr_==0";
+    LOG4CPLUS_DEBUG(sv_logger_,msg_debug_nvw);
   }
   else {
     delete addressTablePtr_;
   }
 #endif //USE_HAL
-#endif //UTCA_XXX
+
 }
 
 
@@ -4159,7 +4155,7 @@ bool PixelFECSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 		      match = match & (read_analog_output_gain==FECInterface[fecVMEBaseAddress]->tbmread(mfec, mfecchannel,tbmchannel, hubaddress, port, 7));
 	      }
 	}
-catch (TBMReadException e) {		// Add this to the list of bad channels and go to the next channel
+        catch (TBMReadException e) {		// Add this to the list of bad channels and go to the next channel
 		tbmReadbackBadChannels_.push_back(module_name->modulename());
 		continue;
 	}
