@@ -41,18 +41,7 @@ Packages=\
 	PixelUtilities/Pixelb2inUtilities \
 	PixelUtilities/PixeluTCAUtilities \
 	PixelUtilities/PixelJobControlUtilities \
-	PixelFEDInterface \
-	PixelPh1FEDInterface \
-	PixelFECInterface \
-	PixelPh1FECInterface \
-	PixelSupervisorConfiguration \
-	PixelCalibrations \
-	PixelFEDSupervisor \
-        PixelMonitor   \
-        PixelFEDMonitor \
-	PixelFECSupervisor \
-	PixelTKFECSupervisor \
-	PixelSupervisor \
+	PixelAMC13Controller \
 	PixelDCSInterface \
 	PixelHistoViewer \
 	PixelAnalysisTools \

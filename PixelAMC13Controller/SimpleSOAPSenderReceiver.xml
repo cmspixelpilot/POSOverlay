@@ -1,0 +1,14 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+
+    	<xc:Context url="http://mp72.lns.cornell.edu:1972">
+		
+                <xc:Application class="SimpleSOAPSender" id="50" instance="0" network="local"/>
+		<xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>
+
+                <xc:Application class="SimpleSOAPReceiver" id="51" instance="0" network="local"/>
+
+        </xc:Context>
+
+
+</xc:Partition>

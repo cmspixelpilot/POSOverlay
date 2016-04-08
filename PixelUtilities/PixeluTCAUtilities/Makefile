@@ -15,7 +15,7 @@ CACTUS_ROOT = /opt/cactus
 
 IncludeDirs = \
 	$(BUILD_HOME)/$(Project) \
-	$(CACTUS_ROOT)/include
+	$(CACTUS_ROOT)/include 
 
 LibraryDirs = 
 
@@ -33,7 +33,8 @@ DependentLibraries = \
 	cactus_extern_pugixml \
 	cactus_uhal_log \
 	cactus_uhal_grammars \
-	cactus_uhal_uhal
+	cactus_uhal_uhal \
+	cactus_amc13_amc13
 
 
 #UserDynamicLinkFlags = $(ROOTLibs)

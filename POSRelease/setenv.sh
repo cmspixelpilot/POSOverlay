@@ -8,8 +8,8 @@ export XDAQ_ROOT=/opt/xdaq
 export XDAQ_BASE=/opt/xdaq
 export XDAQ_OS=linux
 export XDAQ_PLATFORM=x86_64_slc6
-export ROOTSYS=~/root
-export BUILD_HOME=$(pwd)
+export ROOTSYS=/opt/root_v5.34.14.Linux-slc6_amd64-gcc4.4
+export BUILD_HOME=~/TriDAS_AMC13Devel
 
 # the part below should usually not be touched
 export XDAQ_DOCUMENT_ROOT=$XDAQ_ROOT/htdocs

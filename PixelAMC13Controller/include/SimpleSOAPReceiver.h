@@ -51,11 +51,9 @@ class SimpleSOAPReceiver: public xdaq::Application
 	{
                 printf("HELLO DAN\n");
 
-		XCEPT_DECLARE(xoap::exception::Exception, e1, "andrea e' innamorato di clara gaspar");
-		XCEPT_DECLARE_NESTED(xoap::exception::Exception, q, "quante volte viene lei" , e1);
-
-		XCEPT_RETHROW(xoap::exception::Exception, "pirlotto guarda il mio fault se e' giusto", q);
-
+		//XCEPT_DECLARE(xoap::exception::Exception, e1, "andrea e' innamorato di clara gaspar");
+		//XCEPT_DECLARE_NESTED(xoap::exception::Exception, q, "quante volte viene lei" , e1);
+		//XCEPT_RETHROW(xoap::exception::Exception, "pirlotto guarda il mio fault se e' giusto", q);
 
 		// reply to caller
 		
