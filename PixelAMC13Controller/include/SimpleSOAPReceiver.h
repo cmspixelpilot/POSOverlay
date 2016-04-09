@@ -26,6 +26,10 @@
 #include "xoap/SOAPBody.h"
 #include "xoap/Method.h"
 
+#include "PixelUtilities/PixeluTCAUtilities/include/Amc13Interface.h"
+#include "PixelUtilities/PixeluTCAUtilities/include/Amc13Description.h"
+
+
 struct Attribute { std::string name_; std::string value_; };
 typedef std::vector<Attribute> Attribute_Vector;
 
@@ -88,10 +92,39 @@ class SimpleSOAPReceiver: public xdaq::Application
           
                   }
 
+
                 printf("command was %s\n", commandName.c_str());
                 printf("parameters are:\n");
                 printf("0: %s\n", parameters[0].value_.c_str());
                 printf("1: %s\n", parameters[1].value_.c_str());
+
+		std::string cUri1 = "ipbusudp-2.0://192.168.3.253:50001";
+		std::string cAddressT1 = "file:///opt/cactus/etc/amc13/AMC13XG_T1.xml";
+
+		std::string cUri2 = "ipbusudp-2.0://192.168.3.252:50001";
+		std::string cAddressT2 = "file:///opt/cactus/etc/amc13/AMC13XG_T2.xml";
+
+		int bgoCommand = 0;
+		bool bgoRepeat = 0;
+		int bgoPrescale = 1;
+		int bgoBX = 64;
+
+		if (parameters[1].value_ == "CalSync")
+		  bgoCommand = 44;
+		if (parameters[1].value_ == "ResetROC")
+		  bgoCommand = 28;
+		if (parameters[1].value_ == "ResetTBM")
+		  bgoCommand = 20;
+
+		Amc13Description* fAmc13 = new Amc13Description();
+		fAmc13->setAMCMask({3});
+		fAmc13->addBGO(bgoCommand, bgoRepeat, bgoPrescale, bgoBX);
+
+		Amc13Interface* fAmc13Interface = new Amc13Interface(cUri1, cAddressT1, cUri2, cAddressT2);
+
+		fAmc13Interface->setAmc13Description(fAmc13);
+		fAmc13Interface->ConfigureAmc13();  
+		fAmc13Interface->FireBGO();
 
                 {
 		xoap::MessageReference reply = xoap::createMessage();

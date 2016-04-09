@@ -78,8 +78,16 @@ class SimpleSOAPSender: public xdaq::Application
 
 		std::string urlwa = "/";
                 urlwa += getApplicationDescriptor()->getURN();
-                urlwa += "/sendResetTBM";
+                urlwa += "/sendResetROC";
                 *out << cgicc::form().set("method","get").set("action", urlwa).set("enctype","multipart/form-data") << std::endl;
+                *out << cgicc::input().set("type", "submit").set("name", "send").set("value", "ResetROC");
+                *out << cgicc::p() << std::endl;
+                *out << cgicc::form() << std::endl;
+
+		std::string urltbm = "/";
+                urltbm += getApplicationDescriptor()->getURN();
+                urltbm += "/sendResetTBM";
+                *out << cgicc::form().set("method","get").set("action", urltbm).set("enctype","multipart/form-data") << std::endl;
                 *out << cgicc::input().set("type", "submit").set("name", "send").set("value", "ResetTBM");
                 *out << cgicc::p() << std::endl;
                 *out << cgicc::form() << std::endl;
