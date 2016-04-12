@@ -590,6 +590,9 @@ int PixelFEDInterfacePh1::reset() {
 void PixelFEDInterfacePh1::resetFED() {
 }
 
+void PixelFEDInterfacePh1::sendResets(unsigned which) {
+}
+
 void PixelFEDInterfacePh1::armOSDFifo(int channel, int rochi, int roclo) {
 }
 

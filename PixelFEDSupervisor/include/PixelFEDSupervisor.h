@@ -80,11 +80,9 @@
 //#include "CAENVMElib.h"  // CAEN library prototypes  NOT needed anymore? kme 10/05/06
 #include "VMEDevice.hh" 
 
-#include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
+class RegManager;
 
 #include "PixelSupervisorConfiguration/include/PixelFEDSupervisorConfiguration.h" 
-#include "PixelFEDInterface/include/PixelFEDInterface.h" 
-#include "PixelPh1FEDInterface/include/PixelPh1FEDInterface.h" 
 #include "PixelFEDInterface/include/PixelFEDFifoData.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelHdwAddress.h"
@@ -255,10 +253,29 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
 
   private:
 
+    typedef std::map<unsigned long, HAL::VMEDevice*> VMEPtrMap;
+    VMEPtrMap VMEPtr_;
     typedef std::map<unsigned long, RegManager*> RegMgrMap;
     RegMgrMap RegMgr_;
 
+    void createFEDVMEAccess();
     void deleteHardware();
+
+    #ifdef VMEDUMMY
+      HAL::VMEDummyBusAdapter *busAdapter_;
+    #else
+      HAL::CAENLinuxBusAdapter *busAdapter_; // pointer to VME bus
+    #endif
+
+    /**
+    * A pointer to the addressTable.
+    * The AddressTable is created dynamically during the
+    * configuration of the application, since the path to
+    * the file containing the table is a property (=parameter) of
+    * the XDAQ application. Therefore the VMEAddressTable cannot
+    * be instantiated in the constructor of this class.
+    */
+    HAL::VMEAddressTable *addressTablePtr_;
 
     std::map<unsigned short, FILE*> dataFile_;
     std::map<unsigned short, FILE*> dataFileT_;
@@ -282,9 +299,8 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
     xdaq::ApplicationDescriptor* PixelSupervisor_;
 
     std::string htmlbase_,datbase_;
-    std::string uTCAaddressTableFn_;
     std::string runType_;
-    uint32_t eventNumber_;
+    int eventNumber_;
     int countLoopsThisRun_;
 
     toolbox::BSem m_lock;

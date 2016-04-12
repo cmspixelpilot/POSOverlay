@@ -45,7 +45,6 @@ xoap::MessageReference PixelFEDCalibrationBase::endCalibration(xoap::MessageRefe
 
 unsigned int PixelFEDCalibrationBase::TransparentDataStart (uint32_t *buffer, int fed, int channel)
 {
-  assert(0);
   const unsigned int max=512;
 
   float B_mean=0, B_stddev=0, B_sum=0, B_squares=0;
@@ -96,23 +95,72 @@ void PixelFEDCalibrationBase::setFEDModeAndControlRegister(unsigned int mode,
 }
 
 void PixelFEDCalibrationBase::sendResets() {
-  cout << "No   PixelFEDCalibrationBase::sendResets \n";
+  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
+    iFED->second->sendResets();
+  }
 }
 
-
 void PixelFEDCalibrationBase::baselinecorr_off(){
-  cout << " No PixelFEDCalibrationBase::baselinecorr_off\n";
+
+  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
+    PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second); // JMTBAD I didn't like how all the dummy virtual functions in Base were coming out...
+    if (f) f->BaselineCorr_off();
+  }
 }
 
 void PixelFEDCalibrationBase::setSpecialDac(unsigned int mode){
-  cout << "No PixelFEDCalibrationBase::setSpecialDac \n";
+
+  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
+    PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second); 
+    if (f) f->set_SpecialDac(mode);
+  }
 }
 
 void PixelFEDCalibrationBase::fillTestDAC(xoap::MessageReference fillTestDACmsg){
-  cout << "No PixelFEDCalibrationBase::fillTestDAC\n";
+
+  if (theCalibObject_==0) {
+
+    std::cout<<"PixelFEDSupervisor::FillTestDAC - theCalibObject_ doesn't exist!"<<std::endl;
+    diagService_->reportError("The theCalibObject_ doesn't exist.", DIAGERROR);
+
+  } else {
+
+    std::vector<unsigned int> pulseTrain1(256), pulseTrain2(256), pulseTrain3(256);
+    PixelFEDTestDAC* testDACCalib=dynamic_cast<PixelFEDTestDAC*>(theCalibObject_);
+    assert(testDACCalib);
+    pulseTrain1=testDACCalib->dacs();
+    pulseTrain2=testDACCalib->dacs();
+    pulseTrain3=testDACCalib->dacs();
+    //for(unsigned int ii=0;ii<256;ii++){      
+    //  pulseTrain1[ii]=500;
+    //  if (ii<30&&ii>20)  pulseTrain1[ii]=300;
+    //}
+
+    pulseTrain2=pulseTrain1;
+    pulseTrain3=pulseTrain1;
+
+    for (unsigned int i=0; i<pulseTrain1.size(); ++i) {
+      std::cout<<"PixelFEDSupervisor::FillTestDAC. pulseTrain1["<<i<<"]="<<pulseTrain1[i]<<std::endl;
+    }
+
+    for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) {
+      PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second);
+      if (f) {
+        f->setup_testDAC(512);
+        f->fillDACRegister(pulseTrain1, pulseTrain2, pulseTrain3);
+      }
+    }
+
+  }
+
+
 }
 
 void PixelFEDCalibrationBase::setBlackUBTrans(){
-  cout << "No PixelFEDCalibrationBase::setBlackUBTrans\n";
+
+  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
+    PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second);
+    if (f) f->set_blk_ublk_trans_thold();
+  }
 }
 

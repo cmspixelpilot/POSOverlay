@@ -69,6 +69,7 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
   int reset(); // resets everything
   void resetFED(); // reset FED (LRES + CLRES + fake event,center OOS counters + error fifos)
+  void sendResets(unsigned which); // LRES + CLRES on old FED
 
   // arm OSD readback from roc; wait 31 triggers and call read
   void armOSDFifo(int channel, int rochi, int roclo);

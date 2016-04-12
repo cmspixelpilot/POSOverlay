@@ -64,6 +64,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   void resetFED(void); // reset FED (LRES)
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
 //int loadEEPROM(void);// Re-programs the EEPROMs via VME
+  void sendResets(unsigned); // LRES + CLRES
 
   // For Daughter Cards
   int resetDigFEDpll(void); // reset Piggy Board pll

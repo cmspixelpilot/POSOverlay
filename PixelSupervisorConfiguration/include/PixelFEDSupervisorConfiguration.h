@@ -33,13 +33,12 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelGlobalDelay25.h"
 #include "PixelFEDInterface/include/PixelFEDInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigFile.h"
-//#include "VMEDevice.hh" 
 
 #include "PixelSupervisorConfigurationBase.h"
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 #include "xdaq/Application.h"
 
-class PixelFEDInterface; 
+class PixelFEDInterfaceBase; 
 
 class PixelFEDSupervisorConfiguration : public PixelSupervisorConfigurationBase, public Pixelb2inCommander{
 
@@ -61,7 +60,7 @@ class PixelFEDSupervisorConfiguration : public PixelSupervisorConfigurationBase,
   pos::PixelCalibBase *theCalibObject_;
   pos::PixelGlobalDelay25 *theGlobalDelay25_;
 
-  typedef map <unsigned long, PixelFEDInterface*> FEDInterfaceMap;
+  typedef map <unsigned long, PixelFEDInterfaceBase*> FEDInterfaceMap;
   typedef map <unsigned long, std::stringstream*> FIFO;
   
   FEDInterfaceMap FEDInterface_;

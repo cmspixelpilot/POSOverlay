@@ -511,6 +511,18 @@ int PixelFEDInterface::reset(void) {
   return 0;
 }
 
+void PixelFEDInterface::sendResets(unsigned which) {
+  const uint32_t data = 0x80000000;
+  if (which & 1) {
+    vmeDevicePtr->write("LRES",data);
+    usleep(10);
+  }
+  if (which & 2) {
+    vmeDevicePtr->write("CLRES",data);
+    usleep(10);
+  }
+}
+
 void PixelFEDInterface::armDigFEDOSDFifo(int channel, int rochi, int roclo) {
   if (!hasPilotPiggy) {
     cerr << "!!! REFUSING TO armDigFEDOSDFifo on a non-pilot-piggy FED!";
@@ -4720,96 +4732,103 @@ int PixelFEDInterface::enableHisMemory(int enable) {
 // // returns a negative number with an error if there's a problem
 // //
 
- int PixelFEDInterface::spySlink64(uint64_t *data) {
-   //cout<<item<<" "<<hex<<offset<<dec<<" "<<length<<endl;
+int PixelFEDInterface::spySlink64(uint64_t *data) {
+  try {
+    //cout<<item<<" "<<hex<<offset<<dec<<" "<<length<<endl;
    
-   //drain the spy fifo 3up
-   //look through the words
-   //find header and trailer
-   //check data length
-   //drain spy fifo 3dn the correct number of words
-   //form data words
+    //drain the spy fifo 3up
+    //look through the words
+    //find header and trailer
+    //check data length
+    //drain spy fifo 3dn the correct number of words
+    //form data words
    
-   uint32_t mlength = 1024*4; // in bytes
-   uint32_t mbuffer[1024];
-   uint32_t moffset=0;
-   int mwdcnt=-1;
+    uint32_t mlength = 1024*4; // in bytes
+    uint32_t mbuffer[1024];
+    uint32_t moffset=0;
+    int mwdcnt=-1;
    
-   //drain whole spy fifo
-   vmeDevicePtr->readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+    //drain whole spy fifo
+    vmeDevicePtr->readBlock("RdSpyFifoUp",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
    
-   if(((mbuffer[0]&0xf0000000)>>28)!=0x5) {
-     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Slink Header Messed up!"<<endl;
-     if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Will dump the first 50 words in the buffer:"<<endl;
-     for(uint32_t i=0;i<50;i++) {
-       if(Printlevel&1)cout<<"mbuffer["<<i<<"]="<<hex<<mbuffer[i]<<dec<<endl;
-     }
-     return mwdcnt;
-   }
+    if(((mbuffer[0]&0xf0000000)>>28)!=0x5) {
+      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Slink Header Messed up!"<<endl;
+      if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Will dump the first 50 words in the buffer:"<<endl;
+      for(uint32_t i=0;i<50;i++) {
+        if(Printlevel&1)cout<<"mbuffer["<<i<<"]="<<hex<<mbuffer[i]<<dec<<endl;
+      }
+      return mwdcnt;
+    }
    
-   data[0]=(uint64_t)(mbuffer[0])<<32;
-   int pwdcnt=1;
+    data[0]=(uint64_t)(mbuffer[0])<<32;
+    int pwdcnt=1;
    
-   while((mwdcnt<0)&(pwdcnt<1024)) {
-     data[pwdcnt]=(uint64_t)(mbuffer[pwdcnt])<<32;
-     if(((mbuffer[pwdcnt]&0xf0000000)>>28)!=0xa) {pwdcnt++;}
-     else {mwdcnt=pwdcnt;}
-   }
+    while((mwdcnt<0)&(pwdcnt<1024)) {
+      data[pwdcnt]=(uint64_t)(mbuffer[pwdcnt])<<32;
+      if(((mbuffer[pwdcnt]&0xf0000000)>>28)!=0xa) {pwdcnt++;}
+      else {mwdcnt=pwdcnt;}
+    }
    
-   if(mwdcnt<0)
-     {cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" No trailer in 1024 words, Dumping diagnostics:"<<endl;
+    if(mwdcnt<0)
+      {cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" No trailer in 1024 words, Dumping diagnostics:"<<endl;
 
-   //drain whole other half of spy fifo
-   vmeDevicePtr->readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+        //drain whole other half of spy fifo
+        vmeDevicePtr->readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
 
-   cout<<"Dumping spy fifo-3 buffer"<<endl;
-    for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
-   cout<<"Dumping fifo state"<<endl;
-    dump_FifoStatus(getFifoStatus());
-   cout<<"Dumping TTS fifo"<<endl;
-       // Read TTS FIFO 
-    pwdcnt=drainTTSFifo(mbuffer); // Read TTS FIFOs
-     for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;
-   cout<<"Dumping spy fifo II's"<<endl;
-    for(int ix=1;ix<9;ix++){
-       pwdcnt=drainDataFifo2(ix,mbuffer);
-      cout<<" Spy fifo2, "<<ix<<" count = "<<pwdcnt<<endl; 
-     for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;}
-    cout<<"Dumping mini spy fifo I"<<endl;   
-     pwdcnt=drainSpyFifo1up(mbuffer);
-     cout<<"looking at spy fifo 1 up words= "<<pwdcnt<<endl;
-     for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;
+        cout<<"Dumping spy fifo-3 buffer"<<endl;
+        for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
+        cout<<"Dumping fifo state"<<endl;
+        dump_FifoStatus(getFifoStatus());
+        cout<<"Dumping TTS fifo"<<endl;
+        // Read TTS FIFO 
+        pwdcnt=drainTTSFifo(mbuffer); // Read TTS FIFOs
+        for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;
+        cout<<"Dumping spy fifo II's"<<endl;
+        for(int ix=1;ix<9;ix++){
+          pwdcnt=drainDataFifo2(ix,mbuffer);
+          cout<<" Spy fifo2, "<<ix<<" count = "<<pwdcnt<<endl; 
+          for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;}
+        cout<<"Dumping mini spy fifo I"<<endl;   
+        pwdcnt=drainSpyFifo1up(mbuffer);
+        cout<<"looking at spy fifo 1 up words= "<<pwdcnt<<endl;
+        for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;
 
-     pwdcnt=drainSpyFifo1dn(mbuffer);
-     cout<<"looking at spy fifo 1 dn words= "<<pwdcnt<<endl;
-     for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;
+        pwdcnt=drainSpyFifo1dn(mbuffer);
+        cout<<"looking at spy fifo 1 dn words= "<<pwdcnt<<endl;
+        for(int ij=0;ij<pwdcnt;ij++)cout<<hex<<mbuffer[ij]<<dec<<endl;
      
-     return mwdcnt;}
+        return mwdcnt;}
    
-   if(((mbuffer[mwdcnt]&0x00ffffff)-1)!=(uint32_t) mwdcnt) {
-     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Unpacked word count does not match actual";
-     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<".. mbuffer[mwdcnt]="<<dec<<(mbuffer[mwdcnt]&0x00ffffff)<<" and mwdcnt="<<(uint32_t)mwdcnt<<endl;
-     if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Will dump the first 50 words in the buffer:"<<endl;
-     for(uint32_t i=0;i<50;i++) {
-       if(Printlevel&1)cout<<"mbuffer["<<i<<"]="<<hex<<mbuffer[i]<<dec<<endl;
-     }
-     return -2;
-   }
+    if(((mbuffer[mwdcnt]&0x00ffffff)-1)!=(uint32_t) mwdcnt) {
+      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Unpacked word count does not match actual";
+      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<".. mbuffer[mwdcnt]="<<dec<<(mbuffer[mwdcnt]&0x00ffffff)<<" and mwdcnt="<<(uint32_t)mwdcnt<<endl;
+      if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Will dump the first 50 words in the buffer:"<<endl;
+      for(uint32_t i=0;i<50;i++) {
+        if(Printlevel&1)cout<<"mbuffer["<<i<<"]="<<hex<<mbuffer[i]<<dec<<endl;
+      }
+      return -2;
+    }
    
-   //unpack just as many words as we need
-   vmeDevicePtr->readBlock("RdSpyFifoDn",(uint32_t) (mwdcnt+1)*4,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
+    //unpack just as many words as we need
+    vmeDevicePtr->readBlock("RdSpyFifoDn",(uint32_t) (mwdcnt+1)*4,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
    
-   for(int i=0;i<mwdcnt+1;i++) {//	cout<<"data = "<<hex<<data[i]<<" mbuffer= "<<mbuffer[i]<<dec<<endl;
-     data[i]=(data[i] + mbuffer[i]);
-   }
+    for(int i=0;i<mwdcnt+1;i++) {//	cout<<"data = "<<hex<<data[i]<<" mbuffer= "<<mbuffer[i]<<dec<<endl;
+      data[i]=(data[i] + mbuffer[i]);
+    }
    
-   if(mwdcnt>0) {
-     return(mwdcnt+1);
-   } else {
-     return(mwdcnt);
-   }
-   
- } //end
+    if(mwdcnt>0) {
+      return(mwdcnt+1);
+    } else {
+      return(mwdcnt);
+    }
+
+  }
+  catch (HAL::HardwareAccessException& e) {
+    // JMTBAD instead of making all the calibration classes aware of HAL::HardwareAccessException... should consistently do this in other methods.
+    throw std::runtime_error("HAL::HardwareAccessException: " + e.what());
+  } 
+} //end
+
 ////////////////////////////////////////////////////////////////////////
 // // gets an event from the spy fifo 3's and forms an 64 bit slink data
 // // packet. Uses the header and trailer for checking data integrity
@@ -6002,4 +6021,34 @@ void PixelFEDInterface::resetFED(void) {
   vmeDevicePtr->write("SCWrResetPls",0x80000000 );
   vmeDevicePtr->write("SWrResetPls", 0x80000000 );
 
+}
+
+uint32_t PixelFEDInterface::getErrorReport(int ch) {
+  uint32_t d = 0;
+  vmeDevicePtr->read("LAD_C",&d,(0x080000+0x4*(1+ch)));
+  return d;
+}
+
+uint32_t PixelFEDInterface::getTimeoutReport(int ch) {
+  uint32_t d = 0;
+  vmeDevicePtr->read("LAD_C",&d,(0x088000+0x4*(1+ch)));
+  return d;
+}
+
+uint32_t PixelFEDInterface::getNumFakeEvents() {
+  uint32_t d = 0;
+  vmeDevicePtr->read("LAD_C",&d,0x098000);
+  return d;
+}
+
+uint32_t PixelFEDInterface::linkFullFlag() {
+  uint32_t d = 0;
+  vmeDevicePtr->read("RdEventCntr",&d);
+  return (d&0x40000000)>>30;
+}
+
+uint32_t PixelFEDInterface::numPLLLocks() {
+  uint32_t d = 0;
+  vmeDevicePtr->read("LAD_N",&d, 0x198000);
+  return (d&0xf8000000)>>27;
 }

@@ -1,10 +1,15 @@
 #ifndef PixelFEDInterface_PixelFEDInterfaceBase_h
 #define PixelFEDInterface_PixelFEDInterfaceBase_h
 
+#include <string>
+
 class PixelFEDInterfaceBase {
  public:
   PixelFEDInterfaceBase();
   virtual ~PixelFEDInterfaceBase();
+
+  virtual int id() = 0; // the fed number
+  virtual std::string type() = 0; // a unique string for the type of FED: Ph0, Ph0WPiggy, Ph1, etc...
 
   virtual void setPrintlevel(int level) = 0;
   virtual int getPrintlevel() const = 0;
@@ -17,6 +22,7 @@ class PixelFEDInterfaceBase {
   virtual void loadFPGA() = 0; // (re)Loads the FPGA with the program in the EEPROM
   virtual int reset() = 0; // resets everything    JMTBAD -> void
   virtual void resetFED() = 0; // reset FED (LRES + CLRES + fake event,center OOS counters + error fifos)
+  virtual void sendResets(unsigned which) = 0; // 1 = LRES 2 = CLRES 3 = both
 
   virtual void armOSDFifo(int channel, int rochi, int roclo) = 0;
   virtual uint32_t readOSDFifo(int channel) = 0;
@@ -65,7 +71,7 @@ class PixelFEDInterfaceBase {
   virtual int getXYCount() = 0;
   virtual void resetXYCount() = 0;
 
-  virtual int getNumFakeEvents() = 0;
+  virtual uint32_t getNumFakeEvents() = 0;
   virtual void resetNumFakeEvents() = 0;
 
   virtual int readEventCounter() = 0; // JMTBAD uint32_t
