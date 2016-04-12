@@ -86,10 +86,6 @@ unsigned int PixelFEDCalibrationBase::TransparentDataStart (uint32_t *buffer, in
 }
 
 
-void PixelFEDCalibrationBase::printIfSlinkHeaderMessedup_off() {
-  cout << "No   PixelFEDCalibrationBase::printIfSlinkHeaderMessedup_off \n";
-}
-
 void PixelFEDCalibrationBase::setFEDModeAndControlRegister(unsigned int mode, 
 							    unsigned int control){
 

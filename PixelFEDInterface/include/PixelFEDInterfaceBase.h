@@ -15,7 +15,7 @@ class PixelFEDInterfaceBase {
   virtual void printBoardInfo() = 0; // fedid, firmware dates, network config, etc.
 
   virtual void loadFPGA() = 0; // (re)Loads the FPGA with the program in the EEPROM
-  virtual void reset() = 0; // resets everything
+  virtual int reset() = 0; // resets everything    JMTBAD -> void
   virtual void resetFED() = 0; // reset FED (LRES + CLRES + fake event,center OOS counters + error fifos)
 
   virtual void armOSDFifo(int channel, int rochi, int roclo) = 0;
@@ -36,16 +36,17 @@ class PixelFEDInterfaceBase {
   virtual bool isNewEvent(uint32_t nTries) = 0;
   virtual int enableSpyMemory(const int enable) = 0;
 
-  virtual bool setFedIDRegister(uint32_t value) = 0;
-  virtual uint32_t getFedIDRegister() = 0;
+  virtual int setControlRegister(const int value) = 0; // JMTBAD uint32_t
+  virtual int loadControlRegister() = 0; // JMTBAD -> bool
+  virtual int getControlRegister() = 0; // JMTBAD uint32_t
 
-  virtual bool loadControlRegister() = 0;
-  virtual bool setControlRegister(uint32_t value) = 0;
-  virtual uint32_t getControlRegister() = 0;
+  virtual int setFedIDRegister(const int value) = 0; // JMTBAD ditto
+  virtual int loadFedIDRegister() = 0;
+  virtual int getFedIDRegister() = 0;
 
-  virtual bool loadModeRegister() = 0;
-  virtual bool setModeRegister(uint32_t value) = 0;
-  virtual uint32_t getModeRegister() = 0;
+  virtual int loadModeRegister() = 0; // JMTBAD ditto
+  virtual int setModeRegister(int value) = 0;
+  virtual int getModeRegister() = 0;
 
   virtual void setPrivateWord(uint32_t pword) = 0;
 
@@ -67,7 +68,7 @@ class PixelFEDInterfaceBase {
   virtual int getNumFakeEvents() = 0;
   virtual void resetNumFakeEvents() = 0;
 
-  virtual uint32_t readEventCounter() = 0;
+  virtual int readEventCounter() = 0; // JMTBAD uint32_t
   virtual uint32_t getFifoStatus() = 0;
   virtual uint32_t linkFullFlag() = 0;
   virtual uint32_t numPLLLocks() = 0;

@@ -12,8 +12,6 @@ class PixelTBMDelayCalibration : public PixelCalibrationBase {
   void endCalibration();
   virtual std::vector<std::string> calibrated();
 
-  bool ToggleChannels;
-  bool CycleScopeChannels;
   bool DelayBeforeFirstTrigger;
   bool DelayEveryTrigger;
 };

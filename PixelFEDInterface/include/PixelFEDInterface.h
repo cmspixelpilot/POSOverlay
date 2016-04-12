@@ -50,9 +50,8 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
 
 #endif // USE_HAL
 
-
   // These do not use VME access
-  int configFile(std::string fileName); // readin the DB parameters
+  void setPilotPiggy(bool s) { hasPilotPiggy = s; }
   int setupFromDB(std::string fileName); 
   int setupFromDB(pos::PixelFEDCard pfc); 
   int setup(void);  // run the setup 
@@ -66,6 +65,16 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
 //int loadEEPROM(void);// Re-programs the EEPROMs via VME
 
+  // For Daughter Cards
+  int resetDigFEDpll(void); // reset Piggy Board pll
+  int resetDigFEDreg(void); // reset Piggy Board register
+  void loadFPGADigFED(); // load fpga to piggy board
+  void readDigFEDStatus(bool verbose, bool override_timeout); // read status of the piggy board
+  void readDigFEDTempFifo(); 
+  void armDigFEDOSDFifo(int channel, int rochi, int roclo); // arm OSD readback from roc; wait 31 triggers and call read
+  uint32_t readDigFEDOSDFifo(int channel);
+  
+  
   int TTCRX_I2C_REG_READ( int Register_Nr); 
   int TTCRX_I2C_REG_WRITE( int Register_Nr, int Value); 
 
@@ -106,6 +115,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   int get_BaselineCorr(int chnl); //gets the current baseline corection value from the FED for a channel
    uint32_t get_FirmwareDate(int chip);
    uint32_t get_VMEFirmwareDate(void);
+   void get_PiggyFirmwareVer();
   // Cable Test Methods
   void testTTSbits(uint32_t data,int enable);
   int testSlink();
@@ -144,6 +154,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   int loadModeRegister();    // Load Mode Register from DB
   int setModeRegister(int value); // set the mode register to value.
   int getModeRegister(void) const {return pixelFEDCard.modeRegister;} // return ths mode register value
+
   int enableSpyMemory(int enable); // enable=1, enable spy memory, 0=disable
   void resetSlink();   // change name?
 
@@ -161,6 +172,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   int drainTripple(const int trip,uint32_t *data);
    
   // Read fifos for each channel
+  void drainDigTransFifo(const int chip, uint32_t* data);
   int drainFifo1(int chan,uint32_t *data); 
   int drain_transBuffer(int chan, uint32_t *data); 
   int drainFifo1(int chnl, uint32_t *data, 
@@ -168,6 +180,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   int drainDataFifo2(const int chip,uint32_t *data);
   int drainErrorFifo(const int chip,uint32_t *data);
   int drainTemperatureFifo(const int chip, uint32_t *data);
+  void drainTimestamp(const int chip, uint32_t* data);
 
   // Read fifos for all channel (overloded methods)
   int drainFifo1(uint32_t *data); 
@@ -190,6 +203,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   uint32_t getFifoStatus(void);
   void dump_FifoStatus(uint32_t fword);
   void set_Printlevel(int level);//0=critical only, 1=all error,2& =info, 4&param file info
+  int get_Printlevel() const { return Printlevel; }
   void set_TTslevels(void);//Sets adjustable TTs consecutive levels for OOS and ERR from Fedcard
   void set_TTslevels(int inmoos,int inmerr);//Sets adjustable TTs consecutive levels for OOS and ERR
                                         //puts values ioos and ierr into Fedcard
@@ -276,6 +290,8 @@ int FixBBB(int chan,uint32_t *data);
   
  private:
 
+  bool hasPilotPiggy; // JMTBAD zarlink vs fitel
+
   // Private variables
   // Channel access 
   uint32_t CHIP[5],CH_SubAddr[9];
@@ -298,6 +314,8 @@ int FixBBB(int chan,uint32_t *data);
 
   //printing
   int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
+
+  long long DauCards_lastStatusPoll;
   
 #ifdef USE_HAL  // Access VME with HAL
   const HAL::VMEDevice *const vmeDevicePtr;
@@ -364,6 +382,22 @@ int FixBBB(int chan,uint32_t *data);
   uint32_t I2C_ADDR_RW;
   uint32_t I2C_RD_DATA;
   uint32_t I2C_RD_STAT;
+  
+  // For Daughter Cards
+  uint32_t TopDauCard_nConfig;
+  uint32_t BottomDauCard_nConfig;
+  uint32_t TopDauCard_pll;
+  uint32_t BottomDauCard_pll;
+  uint32_t TopDauCard_com;
+  uint32_t BottomDauCard_com;
+  uint32_t TopDauCard_UpStatus;
+  uint32_t TopDauCard_DownStatus;
+  uint32_t BottomDauCard_UpStatus;
+  uint32_t BottomDauCard_DownStatus;
+  uint32_t TopDauCard_UpTempFifo;
+  uint32_t TopDauCard_DownTempFifo;
+  uint32_t BottomDauCard_UpTempFifo;
+  uint32_t BottomDauCard_DownTempFifo;
 
   // For the CAEN VME 
   long BHandle; // pointer to the device

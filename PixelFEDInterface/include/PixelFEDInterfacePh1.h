@@ -67,7 +67,7 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
   std::pair<bool, std::vector<double> > ReadADC( const uint8_t pFMCId, const uint8_t pFitelId);
 
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
-  void reset(); // resets everything
+  int reset(); // resets everything
   void resetFED(); // reset FED (LRES + CLRES + fake event,center OOS counters + error fifos)
 
   // arm OSD readback from roc; wait 31 triggers and call read
@@ -121,16 +121,17 @@ struct digfifo1 {
   uint32_t get_VMEFirmwareDate();
   uint32_t get_FirmwareDate(int);
   
-  bool setFedIDRegister(uint32_t value);
-  uint32_t getFedIDRegister();
+  int setControlRegister(const int value);
+  int loadControlRegister();
+  int getControlRegister();
 
-  bool loadControlRegister();
-  bool setControlRegister(uint32_t value);
-  uint32_t getControlRegister();
+  int setFedIDRegister(const int value);
+  int loadFedIDRegister();
+  int getFedIDRegister();
 
-  bool loadModeRegister();
-  bool setModeRegister(uint32_t value);
-  uint32_t getModeRegister();
+  int loadModeRegister();
+  int setModeRegister(int value);
+  int getModeRegister();
 
   void set_PrivateWord(uint32_t pword);
 
@@ -157,7 +158,7 @@ struct digfifo1 {
   int getNumFakeEvents();
   void resetNumFakeEvents();
 
-  uint32_t readEventCounter();
+  int readEventCounter();
   uint32_t getFifoStatus();
   uint32_t linkFullFlag();
   uint32_t numPLLLocks();

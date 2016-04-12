@@ -2235,9 +2235,11 @@ bool PixelFEDSupervisor::job_Configure ()
         //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
         //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
       
-        FEDInterface_[vmeBaseAddress]=new PixelPh1FEDInterface(RegMgr_[vmeBaseAddress]);
+        FEDInterface_[vmeBaseAddress]=new PixelFEDInterfacePh1(RegMgr_[vmeBaseAddress]);
 
         FEDInterface_[vmeBaseAddress]->set_fitel_fn_base(datbase_);
+      }
+      else if (fed type is pilot) {
       }
       else {
         assert(fedtype == "VME");
@@ -3001,7 +3003,6 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
       ttsTimer.stop();
 
 
-#ifndef PILOT_FED
       // Readout the baseline correction (Do this every time workloop is called)
       // loops over all FEDs
       blTimer.start();
@@ -3030,7 +3031,6 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	}
       } // if readBaselineCorr	
       blTimer.stop();
-#endif
 
       //cout<<" 4 "<<endl; // dk
 
@@ -3805,7 +3805,6 @@ std::string const msg_error_qvj = "PixelFEDSupervisor::ReadDataAndErrorFIFO -- R
  LOG4CPLUS_ERROR(sv_logger_,msg_error_qvj);
     }
 
-#ifndef PILOT_FED
     Attribute_Vector parameters(3);
     parameters[0].name_="VMEBaseAddress";
     parameters[1].name_="ShipTo";
@@ -3819,7 +3818,6 @@ std::string const msg_error_qvj = "PixelFEDSupervisor::ReadDataAndErrorFIFO -- R
 std::string const msg_error_bjx = "PixelFEDSupervisor::ReadDataAndErrorFIFO -- Reading baseline correction failed!";
  LOG4CPLUS_ERROR(sv_logger_,msg_error_bjx);
     }
-#endif
   }
 
   

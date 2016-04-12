@@ -579,10 +579,12 @@ std::pair<bool, std::vector<double> > PixelFEDInterfacePh1::ReadADC( const uint8
   return std::make_pair(success, cLTCValues);
 }
 
-void PixelFEDInterfacePh1::reset() {
+int PixelFEDInterfacePh1::reset() {
   // JMTBAD from fedcard
 
   //  setup(); // JMTBAD
+
+  return 0;
 }
 
 void PixelFEDInterfacePh1::resetFED() {
@@ -1030,52 +1032,52 @@ uint32_t PixelFEDInterfacePh1::get_FirmwareDate(int chip) {
   return iwrdat;
 }
 
-bool PixelFEDInterfacePh1::loadFedIDRegister() {
+int PixelFEDInterfacePh1::loadFedIDRegister() {
   if(Printlevel&1)cout<<"Load FEDID register from DB 0x"<<hex<<card.fedNumber<<dec<<endl;
   return setFedIDRegister(card.fedNumber);
 }
 
-bool PixelFEDInterfacePh1::setFedIDRegister(const uint32_t value) {
+int PixelFEDInterfacePh1::setFedIDRegister(const int value) {
   cout<<"Set FEDID register "<<hex<<value<<dec<<endl;
   // write here
-  uint32_t got = getFedIDRegister();
+  int got = getFedIDRegister();
   if (value != got) cout<<"soft FEDID = "<<value<<" doesn't match hard board FEDID = "<<got<<endl;
   return value == got;
 }
 
-uint32_t PixelFEDInterfacePh1::getFedIDRegister() {
+int PixelFEDInterfacePh1::getFedIDRegister() {
   return 0;
 }
 
-bool PixelFEDInterfacePh1::loadControlRegister() {
+int PixelFEDInterfacePh1::loadControlRegister() {
   if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Load Control register from DB 0x"<<hex<<card.Ccntrl<<dec<<endl;
   return setControlRegister(card.Ccntrl);
 }
 
-bool PixelFEDInterfacePh1::setControlRegister(uint32_t value) {
+int PixelFEDInterfacePh1::setControlRegister(const int value) {
   if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
   // write here
   card.Ccntrl=value; // stored this value   
   return false;
 }
 
-uint32_t PixelFEDInterfacePh1::getControlRegister() {
+int PixelFEDInterfacePh1::getControlRegister() {
   return 0;
 }
 
-bool PixelFEDInterfacePh1::loadModeRegister() {
+int PixelFEDInterfacePh1::loadModeRegister() {
   if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Load Mode register from DB 0x"<<hex<<card.Ccntrl<<dec<<endl;
   return setModeRegister(card.modeRegister);
 }
 
-bool PixelFEDInterfacePh1::setModeRegister(uint32_t value) {
+int PixelFEDInterfacePh1::setModeRegister(int value) {
   if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
   // write here
   card.modeRegister=value; // stored this value   
   return false;
 }
 
-uint32_t PixelFEDInterfacePh1::getModeRegister() {
+int PixelFEDInterfacePh1::getModeRegister() {
   return 0;
 }
 
@@ -1197,7 +1199,7 @@ int PixelFEDInterfacePh1::getNumFakeEvents() {
 void PixelFEDInterfacePh1::resetNumFakeEvents() {
 }
 
-uint32_t PixelFEDInterfacePh1::readEventCounter() {
+int PixelFEDInterfacePh1::readEventCounter() {
   return 0;
 }
 

@@ -55,8 +55,6 @@ class PixelFEDCalibrationBase : public PixelFEDSupervisorConfiguration,
 
   void setFEDModeAndControlRegister(unsigned int mode, unsigned int control);
 
-  void printIfSlinkHeaderMessedup_off();
-
   void baselinecorr_off();
 
   void setSpecialDac(unsigned int mode);

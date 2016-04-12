@@ -74,7 +74,8 @@ PixelFEDInterface::PixelFEDInterface(const HAL::VMEDevice * const vmeDeviceP ) :
 
   assert(N_num_SEU.size()==9);
 
-
+  hasPilotPiggy = false;
+  DauCards_lastStatusPoll = 0;
 }
 //////////////////////////////////////////////////////////////////////
 PixelFEDInterface::~PixelFEDInterface(void) {
@@ -169,6 +170,23 @@ PixelFEDInterface::PixelFEDInterface(const uint32_t fedBase, long aBHandle) {
   CH_SubAddr[6]= 0xf8000;  //FifoI ch7
   CH_SubAddr[7]= 0x118000; //FifoI ch8
   CH_SubAddr[8]= 0x138000; //FifoI ch9
+  
+  // New Addresses For Daughter Cards
+  TopDauCard_nConfig         = LAD_N+0x1b8000;
+  BottomDauCard_nConfig      = LAD_S+0x1b8000;
+  TopDauCard_pll             = LAD_NC+0x1c0000;
+  BottomDauCard_pll          = LAD_S+0x1c0000;
+  TopDauCard_com             = LAD_N+0x1a8000;
+  BottomDauCard_com          = LAD_S+0x1a8000;
+  TopDauCard_UpStatus        = LAD_N+0x158000;
+  TopDauCard_DownStatus      = LAD_N+0x178000;
+  BottomDauCard_UpStatus     = LAD_S+0x158000;
+  BottomDauCard_DnStatus     = LAD_S+0x178000;
+  TopDauCard_UpTempFifo      = LAD_NC+0x148000;
+  TopDauCard_DownTempFifo    = LAD_NC+0x168000;
+  BottomDauCard_UpTmpFifo    = LAD_S+0x148000;
+  BottomDauCard_DnTmpFifo    = LAD_S+0x168000;
+  DauCards_lastStatusPoll = 0;
 }
 //////////////////////////////////////////////////////////////////////
 PixelFEDInterface::~PixelFEDInterface(void) {
@@ -180,478 +198,142 @@ extern void analyzeError(CVErrorCodes ret); // Wills VME error analyzer.
 # endif // USE_HAL
 
 
-////////////////////////////////////////////////////////////////////////////
-// Read the configuration parameters from file
-int PixelFEDInterface::configFile(string fileName) {
-  int i;
-  int DEBUG=0;
-  int ijx,ijy;
-  if(Printlevel&4)DEBUG=1;
-  cout<<" Get setup parameters from file "<<fileName<<endl;
-  FILE *infile = fopen((fileName.c_str()),"r");
-  if (infile == NULL) {
-    cout<<"No parameter file!"<<fileName<<endl; 
-    return(-1);
-  }
-  
-  //Fed Base Address
-  unsigned long FEDBASE_0,fedNumber;//******************these need unsigned long**************
-  fscanf(infile,"FED Base address                         :%lx\n",
-	 &FEDBASE_0);
-  fscanf(infile,"FEDID Number                             :%lx\n",
-	 &fedNumber);
-  printf("FED Base address     :%lx\n",FEDBASE_0);
-  printf("FED ID number        :%ld\n",fedNumber);
+// Methods which use VME access
 
-  //if(FEDBASE != FEDBASE_0) cout<<" Inconsistent FED base address?"<<endl;
- 
-  // Number of ROCs
-  for(i=0;i<36;i++){
-    fscanf(infile,"Number of ROCs Chnl %d:%d \n",&ijx,&pixelFEDCard.NRocs[i]);
-    if(DEBUG==1)printf("Number of ROCs per Chnl %d:%d \n",ijx,pixelFEDCard.NRocs[i]);
+// Test Method for Piggy Board pll Reset
+int PixelFEDInterface::resetDigFEDpll(void) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO resetDigFEDpll on a non-pilot-piggy FED!";
+    return -1;
   }
 
-
-  //Settable optical input parameters
-  fscanf(infile,"Optical reciever 1  Capacitor Adjust(0-3):%d\n",&pixelFEDCard.opt_cap[0]);
-  fscanf(infile,"Optical reciever 2  Capacitor Adjust(0-3):%d\n",&pixelFEDCard.opt_cap[1]);
-  fscanf(infile,"Optical reciever 3  Capacitor Adjust(0-3):%d\n",&pixelFEDCard.opt_cap[2]);
-  fscanf(infile,"Optical reciever 1  Input Offset (0-15)  :%d\n",&pixelFEDCard.opt_inadj[0]);
-  fscanf(infile,"Optical reciever 2  Input Offset (0-15)  :%d\n",&pixelFEDCard.opt_inadj[1]);
-  fscanf(infile,"Optical reciever 3  Input Offset (0-15)  :%d\n",&pixelFEDCard.opt_inadj[2]);
-  fscanf(infile,"Optical reciever 1 Output Offset (0-3)   :%d\n",&pixelFEDCard.opt_ouadj[0]);
-  fscanf(infile,"Optical reciever 2 Output Offset (0-3)   :%d\n",&pixelFEDCard.opt_ouadj[1]);
-  fscanf(infile,"Optical reciever 3 Output Offset (0-3)   :%d\n",&pixelFEDCard.opt_ouadj[2]);
+  // This code is written for Pilot FED
+  // which has 2 daughter boards on it  
+  // with two adresses for pll reset
+  // LAD_S+0x1c0000 and LAD_NC+0x1c0000
+  // uses only bit=1
+  unsigned long data = 0x1; // data for reset
+#ifdef USE_HAL // Use HAL
   
-  if(DEBUG==1)printf("Optical reciever 1  Capacitor Adjust(0-3):%d\n",pixelFEDCard.opt_cap[0]);
-  if(DEBUG==1)printf("Optical reciever 2  Capacitor Adjust(0-3):%d\n",pixelFEDCard.opt_cap[1]);
-  if(DEBUG==1)printf("Optical reciever 3  Capacitor Adjust(0-3):%d\n",pixelFEDCard.opt_cap[2]);
-  if(DEBUG==1)printf("Optical reciever 1  Input Offset (0-15)   :%d\n",pixelFEDCard.opt_inadj[0]);
-  if(DEBUG==1)printf("Optical reciever 2  Input Offset (0-15)   :%d\n",pixelFEDCard.opt_inadj[1]);
-  if(DEBUG==1)printf("Optical reciever 3  Input Offset (0-15)   :%d\n",pixelFEDCard.opt_inadj[2]);
-  if(DEBUG==1)printf("Optical reciever 1 Output Offset (0-3)  :%d\n",pixelFEDCard.opt_ouadj[0]);
-  if(DEBUG==1)printf("Optical reciever 2 Output Offset (0-3)  :%d\n",pixelFEDCard.opt_ouadj[1]);
-  if(DEBUG==1)printf("Optical reciever 3 Output Offset (0-3)  :%d\n",pixelFEDCard.opt_ouadj[2]);
+  cout<<" --- resetDigFEDPll --- "<< endl;
+  //For North Piggy
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("TopDauCard_pll", data );
   
-  //input offset dac
-  for(int i=0;i<36;i++)fscanf(infile,"Offset DAC channel %d:%d\n",&ijx,&pixelFEDCard.offs_dac[i]);
-  if(DEBUG==1){for(int i=0;i<36;i++)printf("Offset DAC channel %d:%d\n",i+1,pixelFEDCard.offs_dac[i]);}
-  
-  //clock phases
-  fscanf(infile,"Clock Phase Bits ch   1-9:%x\n",& pixelFEDCard.clkphs1_9 );
-  fscanf(infile,"Clock Phase Bits ch 10-18:%x\n",&pixelFEDCard.clkphs10_18);
-  fscanf(infile,"Clock Phase Bits ch 19-27:%x\n",&pixelFEDCard.clkphs19_27);
-  fscanf(infile,"Clock Phase Bits ch 28-36:%x\n",&pixelFEDCard.clkphs28_36);
-  if(DEBUG==1)printf("Clock Phase Bits ch    1-9:%x\n",pixelFEDCard.clkphs1_9 );
-  if(DEBUG==1)printf("Clock Phase Bits ch  10-18:%x\n",pixelFEDCard.clkphs10_18 );
-  if(DEBUG==1)printf("Clock Phase Bits ch  19-27:%x\n",pixelFEDCard.clkphs19_27 );
-  if(DEBUG==1)printf("Clock Phase Bits ch  28-36:%x\n",pixelFEDCard.clkphs28_36 );
-  
-  //Blacks 
-  for(i=0;i<36;i++){
-    fscanf(infile,"Black HiThold ch %d:%d \n",&ijx,&pixelFEDCard.BlackHi[i]);
-    fscanf(infile,"Black LoThold ch %d:%d \n",&ijx,&pixelFEDCard.BlackLo[i]);
-    fscanf(infile,"ULblack Thold ch %d:%d \n",&ijx, &pixelFEDCard.Ublack[i]);
-    if(DEBUG==1)printf("Black HiThold ch %d:%d\n",ijx,pixelFEDCard.BlackHi[i]);
-    if(DEBUG==1)printf("Black LoThold ch %d:%d\n",ijx,pixelFEDCard.BlackLo[i]);
-    if(DEBUG==1)printf("ULblack Thold ch %d:%d\n",ijx, pixelFEDCard.Ublack[i]);
-  }
-  
-  //Channel delays
-  for(i=0;i<36;i++) {fscanf(infile,"Delay channel %d(0-15):%d\n",&ijx,&pixelFEDCard.DelayCh[i]);}
-  if(DEBUG==1){for(i=0;i<36;i++){printf("Delay channel %d(0-15):%d\n",i+1,pixelFEDCard.DelayCh[i]);}}
-  
-  //Signal levels
-  for(i=0;i<36;i++) {
-    fscanf(infile,"TBM level 0 Channel  %d:%d\n",&ijx,&pixelFEDCard.TBM_L0[i]);
-    fscanf(infile,"TBM level 1 Channel  %d:%d\n",&ijx,&pixelFEDCard.TBM_L1[i]);
-    fscanf(infile,"TBM level 2 Channel  %d:%d\n",&ijx,&pixelFEDCard.TBM_L2[i]);
-    fscanf(infile,"TBM level 3 Channel  %d:%d\n",&ijx,&pixelFEDCard.TBM_L3[i]);
-    fscanf(infile,"TBM level 4 Channel  %d:%d\n",&ijx,&pixelFEDCard.TBM_L4[i]);
-    if(DEBUG==1)printf("TBM level 0 Channel  %d:%d\n",ijx,pixelFEDCard.TBM_L0[i]);
-    if(DEBUG==1)printf("TBM level 1 Channel  %d:%d\n",ijx,pixelFEDCard.TBM_L1[i]);
-    if(DEBUG==1)printf("TBM level 2 Channel  %d:%d\n",ijx,pixelFEDCard.TBM_L2[i]);
-    if(DEBUG==1)printf("TBM level 3 Channel  %d:%d\n",ijx,pixelFEDCard.TBM_L3[i]);
-    if(DEBUG==1)printf("TBM level 4 Channel  %d:%d\n",ijx,pixelFEDCard.TBM_L4[i]);
+  //For South Piggy
+  data=0x1;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
     
-    for(int j=0;j<pixelFEDCard.NRocs[i];j++) {
-      fscanf(infile,"ROC%d level 0 Channel  %d :%d\n",&ijy,&ijx,&pixelFEDCard.ROC_L0[i][j]);
-      fscanf(infile,"ROC%d level 1 Channel  %d :%d\n",&ijy,&ijx,&pixelFEDCard.ROC_L1[i][j]);
-      fscanf(infile,"ROC%d level 2 Channel  %d :%d\n",&ijy,&ijx,&pixelFEDCard.ROC_L2[i][j]);
-      fscanf(infile,"ROC%d level 3 Channel  %d :%d\n",&ijy,&ijx,&pixelFEDCard.ROC_L3[i][j]);
-      fscanf(infile,"ROC%d level 4 Channel  %d :%d\n",&ijy,&ijx,&pixelFEDCard.ROC_L4[i][j]);
-      if(DEBUG==1)printf("ROC%d level 0 Channel  %d :%d\n",ijy,ijx,pixelFEDCard.ROC_L0[i][j]);
-      if(DEBUG==1)printf("ROC%d level 1 Channel  %d :%d\n",ijy,ijx,pixelFEDCard.ROC_L1[i][j]);
-      if(DEBUG==1)printf("ROC%d level 2 Channel  %d :%d\n",ijy,ijx,pixelFEDCard.ROC_L2[i][j]);
-      if(DEBUG==1)printf("ROC%d level 3 Channel  %d :%d\n",ijy,ijx,pixelFEDCard.ROC_L3[i][j]);
-      if(DEBUG==1)printf("ROC%d level 4 Channel  %d :%d\n",ijy,ijx,pixelFEDCard.ROC_L4[i][j]);
-    }
-      
-    fscanf(infile,"TRLR level 0 Channel %d:%d\n",&ijx,&pixelFEDCard.TRL_L0[i]);
-    fscanf(infile,"TRLR level 1 Channel %d:%d\n",&ijx,&pixelFEDCard.TRL_L1[i]);
-    fscanf(infile,"TRLR level 2 Channel %d:%d\n",&ijx,&pixelFEDCard.TRL_L2[i]);
-    fscanf(infile,"TRLR level 3 Channel %d:%d\n",&ijx,&pixelFEDCard.TRL_L3[i]);
-    fscanf(infile,"TRLR level 4 Channel %d:%d\n",&ijx,&pixelFEDCard.TRL_L4[i]);
-    if(DEBUG==1)printf("TRLR level 0 Channel %d:%d\n",ijx,pixelFEDCard.TRL_L0[i]);
-    if(DEBUG==1)printf("TRLR level 1 Channel %d:%d\n",ijx,pixelFEDCard.TRL_L1[i]);
-    if(DEBUG==1)printf("TRLR level 2 Channel %d:%d\n",ijx,pixelFEDCard.TRL_L2[i]);
-    if(DEBUG==1)printf("TRLR level 3 Channel %d:%d\n",ijx,pixelFEDCard.TRL_L3[i]);
-    if(DEBUG==1)printf("TRLR level 4 Channel %d:%d\n",ijx,pixelFEDCard.TRL_L4[i]);
+#else  // Use direct CAEN 
+  //For North Piggy
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
   }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+
+  //For South Piggy
+  data=0x1;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+#endif // USE_HAL
   
-  
-  //These bits turn off(1) and on(0) channels
-  fscanf(infile,"Channel Enbable bits chnls 1-9  (on = 0):%x\n",
-	 &pixelFEDCard.Ncntrl);
-  fscanf(infile,"Channel Enbable bits chnls 10-18(on = 0):%x\n",
-	 &pixelFEDCard.NCcntrl);
-  fscanf(infile,"Channel Enbable bits chnls 19-27(on = 0):%x\n",
-	 &pixelFEDCard.SCcntrl);
-  fscanf(infile,"Channel Enbable bits chnls 28-36(on = 0):%x\n",
-	 &pixelFEDCard.Scntrl);
-  if(DEBUG==1)
-    printf("Channel Enbable bits chnls 1-9  (on = 0):%x\n",pixelFEDCard.Ncntrl);
-  if(DEBUG==1)
-    printf("Channel Enbable bits chnls 10-18(on = 0):%x\n",pixelFEDCard.NCcntrl);
-  if(DEBUG==1)
-    printf("Channel Enbable bits chnls 19-27(on = 0):%x\n",pixelFEDCard.SCcntrl);
-  if(DEBUG==1)
-    printf("Channel Enbable bits chnls 28-36(on = 0):%x\n",pixelFEDCard.Scntrl);
-  
-  //These are delays to the TTCrx
-  fscanf(infile,"TTCrx Coarse Delay Register 2:%d\n",&pixelFEDCard.CoarseDel);
-  fscanf(infile,"TTCrc      ClkDes2 Register 3:%x\n",&pixelFEDCard.ClkDes2);
-  fscanf(infile,"TTCrc Fine Dlay ClkDes2 Reg 1:%d\n",&pixelFEDCard.FineDes2Del);
-
-  if(DEBUG==1)printf("TTCrx Coarse Delay Register 2:%d\n",pixelFEDCard.CoarseDel);
-  if(DEBUG==1)printf("TTCrc	   ClkDes2 Register 3:%x\n",pixelFEDCard.ClkDes2);
-  if(DEBUG==1)printf("TTCrc Fine Dlay ClkDes2 Reg 1:%d\n",pixelFEDCard.FineDes2Del);
-
-
-  // Control register
-  fscanf(infile,"Center Chip Control Reg:%x\n",&pixelFEDCard.Ccntrl);
-  printf("Control Reg:0x%x\n",pixelFEDCard.Ccntrl);
-  fscanf(infile,"Initial Slink DAQ mode:%d\n",&pixelFEDCard.modeRegister);
-  printf("Mode Reg:%d\n",pixelFEDCard.modeRegister);
-
-   //These bits set ADC Gain/Range 1Vpp(0) and 2Vpp(1) for channels
-  fscanf(infile,"Channel ADC Gain bits chnls  1-12(1Vpp = 0):%x\n",
-         &pixelFEDCard.Nadcg);
-  fscanf(infile,"Channel ADC Gain bits chnls 13-20(1Vpp = 0):%x\n",
-         &pixelFEDCard.NCadcg);
-  fscanf(infile,"Channel ADC Gain bits chnls 21-28(1Vpp = 0):%x\n",
-         &pixelFEDCard.SCadcg);
-  fscanf(infile,"Channel ADC Gain bits chnls 29-36(1Vpp = 0):%x\n",
-         &pixelFEDCard.Sadcg);
-  if(DEBUG)
-    printf("Channel ADC Gain bits chnls  1-12(1Vpp = 0):%x\n",pixelFEDCard.Nadcg);
-  if(DEBUG)
-    printf("Channel ADC Gain bits chnls 13-20(1Vpp = 0):%x\n",pixelFEDCard.NCadcg);
-  if(DEBUG)
-    printf("Channel ADC Gain bits chnls 21-28(1Vpp = 0):%x\n",pixelFEDCard.SCadcg);
-  if(DEBUG)
-    printf("Channel ADC Gain bits chnls 29-36(1Vpp = 0):%x\n",pixelFEDCard.Sadcg);
-    
-       //These bits set Baseline adjustment value (common by FPGA)//can turn on by channel
-  fscanf(infile,"Channel Baseline Enbable chnls 1-9  (on = (0x1ff<<16)+):%x\n",
-         &pixelFEDCard.Nbaseln);
-  fscanf(infile,"Channel Baseline Enbable chnls 10-18(on = (0x1ff<<16)+):%x\n",
-         &pixelFEDCard.NCbaseln);
-  fscanf(infile,"Channel Baseline Enbable chnls 19-27(on = (0x1ff<<16)+):%x\n",
-         &pixelFEDCard.SCbaseln);
-  fscanf(infile,"Channel Baseline Enbable chnls 28-36(on = (0x1ff<<16)+):%x\n",
-         &pixelFEDCard.Sbaseln);
-  if(DEBUG)
-    printf("Channel Baseline Enbable chnls 1-9  (on = (0x1ff<<16)+):%x\n",pixelFEDCard.Nbaseln);
-  if(DEBUG)
-    printf("Channel Baseline Enbable chnls 10-18(on = (0x1ff<<16)+):%x\n",pixelFEDCard.NCbaseln);
-  if(DEBUG)
-    printf("Channel Baseline Enbable chnls 19-27(on = (0x1ff<<16)+):%x\n",pixelFEDCard.SCbaseln);
-  if(DEBUG)
-    printf("Channel Baseline Enbable chnls 28-36(on = (0x1ff<<16)+):%x\n",pixelFEDCard.Sbaseln);
-
-       //These bits set TBM trailer mask (common by FPGA) 
-  fscanf(infile,"TBM trailer mask chnls 1-9  (0xff = all masked):%x\n",
-         &pixelFEDCard.N_TBMmask);
-  fscanf(infile,"TBM trailer mask chnls 10-18(0xff = all masked):%x\n",
-         &pixelFEDCard.NC_TBMmask);
-  fscanf(infile,"TBM trailer mask chnls 19-27(0xff = all masked):%x\n",
-         &pixelFEDCard.SC_TBMmask);
-  fscanf(infile,"TBM trailer mask chnls 28-36(0xff = all masked):%x\n",
-         &pixelFEDCard.S_TBMmask);
-  if(DEBUG)
-    printf("TBM trailer mask chnls 1-9  (0xff = all masked):%x\n",pixelFEDCard.N_TBMmask);
-  if(DEBUG)
-    printf("TBM trailer mask chnls 10-18(0xff = all masked):%x\n",pixelFEDCard.NC_TBMmask);
-  if(DEBUG)
-    printf("TBM trailer mask chnls 19-27(0xff = all masked):%x\n",pixelFEDCard.SC_TBMmask);
-  if(DEBUG)
-    printf("TBM trailer mask chnls 28-36(0xff = all masked):%x\n",pixelFEDCard.S_TBMmask);
-
-       //These bits set the Private fill/gap word value (common by FPGA) 
-  fscanf(infile,"Private 8 bit word chnls 1-9  :%x\n",
-         &pixelFEDCard.N_Pword);
-  fscanf(infile,"Private 8 bit word chnls 10-18:%x\n",
-         &pixelFEDCard.NC_Pword);
-  fscanf(infile,"Private 8 bit word chnls 19-27:%x\n",
-         &pixelFEDCard.SC_Pword);
-  fscanf(infile,"Private 8 bit word chnls 28-36:%x\n",
-         &pixelFEDCard.S_Pword);
-  if(DEBUG)
-    printf("Private 8 bit word chnls 1-9  :%x\n",pixelFEDCard.N_Pword);
-  if(DEBUG)
-    printf("Private 8 bit word chnls 10-18:%x\n",pixelFEDCard.NC_Pword);
-  if(DEBUG)
-    printf("Private 8 bit word chnls 19-27:%x\n",pixelFEDCard.SC_Pword);
-  if(DEBUG)
-    printf("Private 8 bit word chnls 28-36:%x\n",pixelFEDCard.S_Pword);
-
-       //These bit sets the special dac mode for random triggers 
-  fscanf(infile,"Special Random testDAC mode (on = 0x1, off=0x0):%x\n",
-         &pixelFEDCard.SpecialDac);
-  if(DEBUG)
-    printf("Special Random testDAC mode (on = 0x1, off=0x0):%x\n",pixelFEDCard.SpecialDac);
-
-      //These bits set the number of Out of consecutive out of sync events until a TTs OOs 
-  fscanf(infile,"Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:%d\n",
-         &pixelFEDCard.Ooslvl);
-  if(DEBUG)
-    printf("Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:%d\n",pixelFEDCard.Ooslvl);
-
-      //These bits set the number of Empty events until a TTs Error 
-  fscanf(infile,"Number of Consecutive (max 1023) Empty events till TTs ERR set:%d\n",
-         &pixelFEDCard.Errlvl);
-  if(DEBUG)
-    printf("Number of Consecutive (max 1023) Empty events till TTs ERR set:%d\n",pixelFEDCard.Errlvl);
-
-      //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 N
-  fscanf(infile,"N Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
-         &pixelFEDCard.Nfifo1Bzlvl);
-  if(DEBUG)
-    printf("N Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",pixelFEDCard.Nfifo1Bzlvl);
-
-      //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 NC
-  fscanf(infile,"NC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
-         &pixelFEDCard.NCfifo1Bzlvl);
-  if(DEBUG)
-    printf("NC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",pixelFEDCard.NCfifo1Bzlvl);
-
-      //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 SC
-  fscanf(infile,"SC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
-         &pixelFEDCard.SCfifo1Bzlvl);
-  if(DEBUG)
-    printf("SC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",pixelFEDCard.SCfifo1Bzlvl);
-
-      //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 S
-  fscanf(infile,"S Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
-         &pixelFEDCard.Sfifo1Bzlvl);
-  if(DEBUG)
-    printf("S Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",pixelFEDCard.Sfifo1Bzlvl);
-
-      //These bits set the Almost Full level in fifo-3, Almost full = TTs WARN in fifo-3
-  fscanf(infile,"Fifo-3 almost full level,sets TTs WARN (max 8191):%d\n",
-         &pixelFEDCard.fifo3Wrnlvl);
-  if(DEBUG)
-    printf("Fifo-3 almost full level,sets TTs WARN (max 8191):%d\n",pixelFEDCard.fifo3Wrnlvl);
-
-  fscanf(infile,"FED Master delay 0=0,1=32,2=48,3=64:%d\n",&pixelFEDCard.FedTTCDelay);
-  if(DEBUG)
-    printf("FED Master delay 0=0,1=32,2=48,3=64:%d\n",pixelFEDCard.FedTTCDelay);
-
-  fscanf(infile,"TTCrx Register 0 fine delay ClkDes1:%d\n",&pixelFEDCard.FineDes1Del);
-  if(DEBUG)
-    printf("TTCrx Register 0 fine delay ClkDes1:%d\n",pixelFEDCard.FineDes1Del);
-
-  int checkword=0;
-  fscanf(infile,"Params FED file check word:%d\n",
-	 &checkword);
-  if(checkword!=90508&&checkword!=91509&&checkword!=20211) cout <<  "FEDID: "                   << fedNumber 
-								<< " Params FED File read error. Checkword read " << checkword
-								<<" check word expected 090508 or 91509 or 20211"          << endl;
-  assert((checkword==90508)|(checkword==91509)|(checkword==20211));
-  
-  
-  //These bits set the hit limit in fifo-1 for an event
-				
-				if(checkword==20211){
-
-
-  //These bits set the hit limit in fifo-1 for an event
-  fscanf(infile,"N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.N_hitlimit);
-  if(DEBUG)
-    printf("N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.N_hitlimit);    
-  fscanf(infile,"NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.NC_hitlimit);
-  if(DEBUG)
-    printf("NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.NC_hitlimit);
-  fscanf(infile,"SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.SC_hitlimit);
-  if(DEBUG)
-    printf("SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.SC_hitlimit);
-  fscanf(infile,"S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.S_hitlimit);
-  if(DEBUG)
-    printf("S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.S_hitlimit);
-      //These bits allow a ROC to be skipped (1/fpga)
-      
-  fscanf(infile,"Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.N_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.N_testreg);
-  fscanf(infile,"Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.NC_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.NC_testreg);
-  fscanf(infile,"Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.SC_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.SC_testreg);
-  fscanf(infile,"Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.S_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.S_testreg);
-
-  fscanf(infile,"Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",&pixelFEDCard.BusyWhenBehind);
-  if(DEBUG)
-    printf("Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",pixelFEDCard.BusyWhenBehind);
-				
- fscanf(infile,"D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):%x\n",&pixelFEDCard.FeatureRegister);
-	  if(DEBUG)
-    printf("D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):%x\n",pixelFEDCard.FeatureRegister);	 
-		 
- fscanf(infile,"Limit for fifo-2 almost full (point for the TTS flag):%x\n",&pixelFEDCard.FIFO2Limit);
-	  if(DEBUG)
-    printf("Limit for fifo-2 almost full (point for the TTS flag):%x\n",pixelFEDCard.FIFO2Limit);	 
-		 
- fscanf(infile,"Limit for consecutive timeout OR OOSs:%d\n",&pixelFEDCard.TimeoutOROOSLimit);
-	  if(DEBUG)
-    printf("Limit for consecutive timeout OR OOSs:%d\n",pixelFEDCard.TimeoutOROOSLimit);	 
-		 
- fscanf(infile,"Turn off filling of lastdac fifos(exc 1st ROC):%d\n",&pixelFEDCard.LastDacOff);
-	  if(DEBUG)
-    printf("Turn off filling of lastdac fifos(exc 1st ROC):%d\n",pixelFEDCard.LastDacOff);	 
-		 
- fscanf(infile,"Number of simulated hits per ROC for internal generator:%d\n",&pixelFEDCard.SimHitsPerRoc);
-	  if(DEBUG)
-    printf("Number of simulated hits per ROC for internal generator:%d\n",pixelFEDCard.SimHitsPerRoc);	 
-
- fscanf(infile,"Miniumum hold time for busy (changing definition):%d\n",&pixelFEDCard.BusyHoldMin);
-	  if(DEBUG)
-    printf("Miniumum hold time for busy (changing definition):%d\n",pixelFEDCard.BusyHoldMin);	 
-		 
- fscanf(infile,"Trigger Holdoff in units of 25us(0=none):%d\n",&pixelFEDCard.TriggerHoldoff);
-	  if(DEBUG)
-    printf("Trigger Holdoff in units of 25us(0=none):%d\n",pixelFEDCard.TriggerHoldoff);	 
-		 
- fscanf(infile,"Spare fedcard input 1:%d\n",&pixelFEDCard.SPARE1);
-	  if(DEBUG)
-    printf("Spare fedcard input 1:%d\n",pixelFEDCard.SPARE1);	 
- fscanf(infile,"Spare fedcard input 2:%d\n",&pixelFEDCard.SPARE2);
-	  if(DEBUG)
-    printf("Spare fedcard input 2:%d\n",pixelFEDCard.SPARE2);	 
- fscanf(infile,"Spare fedcard input 3:%d\n",&pixelFEDCard.SPARE3);
-	  if(DEBUG)
-    printf("Spare fedcard input 3:%d\n",pixelFEDCard.SPARE3);	 
- fscanf(infile,"Spare fedcard input 4:%d\n",&pixelFEDCard.SPARE4);
-	  if(DEBUG)
-    printf("Spare fedcard input 4:%d\n",pixelFEDCard.SPARE4);	 
- fscanf(infile,"Spare fedcard input 5:%d\n",&pixelFEDCard.SPARE5);
-	  if(DEBUG)
-    printf("Spare fedcard input 5:%d\n",pixelFEDCard.SPARE5);	 
- fscanf(infile,"Spare fedcard input 6:%d\n",&pixelFEDCard.SPARE6);
-	  if(DEBUG)
-    printf("Spare fedcard input 6:%d\n",pixelFEDCard.SPARE6);	 
- fscanf(infile,"Spare fedcard input 7:%d\n",&pixelFEDCard.SPARE7);
-	  if(DEBUG)
-    printf("Spare fedcard input 7:%d\n",pixelFEDCard.SPARE7);	 
- fscanf(infile,"Spare fedcard input 8:%d\n",&pixelFEDCard.SPARE8);
-	  if(DEBUG)
-    printf("Spare fedcard input 8:%d\n",pixelFEDCard.SPARE8);	 
- fscanf(infile,"Spare fedcard input 9:%d\n",&pixelFEDCard.SPARE9);
-	  if(DEBUG)
-    printf("Spare fedcard input 9:%d\n",pixelFEDCard.SPARE9);	 
- fscanf(infile,"Spare fedcard input 10:%d\n",&pixelFEDCard.SPARE10);
-	  if(DEBUG)
-    printf("Spare fedcard input 10:%d\n",pixelFEDCard.SPARE10);
-			 
-               }else if(checkword==91509){
-  
-    //These bits set the hit limit in fifo-1 for an event
-  fscanf(infile,"N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.N_hitlimit);
-  if(DEBUG)
-    printf("N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.N_hitlimit);    
-  fscanf(infile,"NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.NC_hitlimit);
-  if(DEBUG)
-    printf("NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.NC_hitlimit);
-  fscanf(infile,"SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.SC_hitlimit);
-  if(DEBUG)
-    printf("SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.SC_hitlimit);
-  fscanf(infile,"S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&pixelFEDCard.S_hitlimit);
-  if(DEBUG)
-    printf("S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",pixelFEDCard.S_hitlimit);
-      //These bits allow a ROC to be skipped (1/fpga)
-      
-  fscanf(infile,"Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.N_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 1-9, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.N_testreg);
-  fscanf(infile,"Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.NC_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 10-18, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.NC_testreg);
-  fscanf(infile,"Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.SC_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 19-27, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.SC_testreg);
-  fscanf(infile,"Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",&pixelFEDCard.S_testreg);
-  if(DEBUG)
-    printf("Skip a ROC in ch 28-36, bits 10-5 chnl, bits 0-4 ROC-1:%d\n",pixelFEDCard.S_testreg);
-
-  pixelFEDCard.BusyWhenBehind=8;
-  pixelFEDCard.FeatureRegister=0x1;    
-  pixelFEDCard.FIFO2Limit=0x1c00;         
-  pixelFEDCard.TimeoutOROOSLimit=200;   
-  pixelFEDCard.LastDacOff=0;           
-  pixelFEDCard.SimHitsPerRoc=0;        
-  pixelFEDCard.BusyHoldMin=0;
-  pixelFEDCard.TriggerHoldoff=0;           
-  pixelFEDCard.SPARE1=0;                
-  pixelFEDCard.SPARE2=0;                
-  pixelFEDCard.SPARE3=0;             
-  pixelFEDCard.SPARE4=0;                
-  pixelFEDCard.SPARE5=0;                
-  pixelFEDCard.SPARE6=0;                
-  pixelFEDCard.SPARE7=0;                
-  pixelFEDCard.SPARE8=0;                
-  pixelFEDCard.SPARE9=0; 	        	   
-  pixelFEDCard.SPARE10=0;     
-
-				         } else {
-    
-    pixelFEDCard.N_hitlimit=192;	
-    pixelFEDCard.NC_hitlimit=192;
-    pixelFEDCard.SC_hitlimit=192;
-    pixelFEDCard.S_hitlimit=192;
-
-    pixelFEDCard.N_testreg=0;
-    pixelFEDCard.NC_testreg=0;
-    pixelFEDCard.SC_testreg=0;
-    pixelFEDCard.S_testreg=0;
-
-    pixelFEDCard.BusyWhenBehind=8;
-    pixelFEDCard.FeatureRegister=0x1;    
-    pixelFEDCard.FIFO2Limit=0x1c00;         
-    pixelFEDCard.TimeoutOROOSLimit=200;   
-    pixelFEDCard.LastDacOff=0;           
-    pixelFEDCard.SimHitsPerRoc=0;        
-    pixelFEDCard.BusyHoldMin=0;
-    pixelFEDCard.TriggerHoldoff=0;           
-    pixelFEDCard.SPARE1=0;                
-    pixelFEDCard.SPARE2=0;                
-    pixelFEDCard.SPARE3=0;             
-    pixelFEDCard.SPARE4=0;                
-    pixelFEDCard.SPARE5=0;                
-    pixelFEDCard.SPARE6=0;                
-    pixelFEDCard.SPARE7=0;                
-    pixelFEDCard.SPARE8=0;                
-    pixelFEDCard.SPARE9=0; 	        	   
-    pixelFEDCard.SPARE10=0;     }
-
-  fclose(infile);
   return(0);
 }
 
-// Methods which use VME access
+// Test Method for Piggy Board register Reset
+int PixelFEDInterface::resetDigFEDreg(void) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO resetDigFEDreg on a non-pilot-piggy FED!";
+    return -1;
+  }
+
+  // This code is written for Pilot FED
+  // which has 2 daughter boards on it  
+  // with two adresses for pll reset
+  // LAD_S+0x1c0000 and LAD_NC+0x1c0000
+  // uses only bit=2
+  unsigned long data = 0x2; // data for reset
+#ifdef USE_HAL // Use HAL
+  
+  cout<<" --- resetDigFEDreg --- "<< endl;
+  //For North Piggy
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("TopDauCard_pll", data );
+  
+  //For South Piggy
+  data=0x2;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+  usleep(200);
+  data=0x0;
+  vmeDevicePtr->write("BottomDauCard_pll", data );
+  
+#else  // Use direct CAEN 
+  //For North Piggy
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll register "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for North Daughter Board Pll register "<<hex<<TopDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+
+  //For South Piggy
+  data=0x2;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll register "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+  usleep(200);
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_pll,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<" Error in write for South Daughter Board Pll register "<<hex<<BottomDauCard_pll<<" "<<ret<<" "<<data<<dec<<endl;
+    analyzeError(ret);
+    return -1;
+  }
+#endif // USE_HAL
+  
+  return(0);
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 // General reset, resets everything there is to reset.
@@ -659,8 +341,10 @@ int PixelFEDInterface::reset(void) {
   uint32_t data = 0x0; // data for reseta 
 
   cout<<" In reset() "<<endl;
-  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
-  BaselineCorr_off();
+  if (!hasPilotPiggy) {
+    if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
+    BaselineCorr_off();
+  }
 
   // do the reset 
   //data=0x0;    
@@ -739,8 +423,13 @@ int PixelFEDInterface::reset(void) {
   vmeDevicePtr->write("ResetPls", data );
   usleep(10);
 
-
-
+  if (hasPilotPiggy) {
+    cout << " pilotFED resets  "  << endl;
+    resetDigFEDpll();
+    usleep(200000);
+    resetDigFEDreg();
+    usleep(200000);
+  }
 
   // Reset LRES
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting LRES"<<endl;
@@ -816,10 +505,376 @@ int PixelFEDInterface::reset(void) {
   wdcnt=drainTemperatureFifo(buffer);
   wdcnt=drainTTSFifo(buffer);
   wdcnt=drainFifo1(buffer);
+  if (hasPilotPiggy) for(int i=1;i<9;i+=6) drainDigTransFifo(i,buffer);
   for(int i=1;i<9;i++)wdcnt=drainDataFifo2(i,buffer);
   wdcnt=drainDataFifo3(buffer);
   return 0;
 }
+
+void PixelFEDInterface::armDigFEDOSDFifo(int channel, int rochi, int roclo) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO armDigFEDOSDFifo on a non-pilot-piggy FED!";
+    return;
+  }
+
+  const int chip = (channel - 1)/9;
+  const unsigned offset = (channel % 9) * 0x20000 + 0x8000;
+  const uint32_t data = ((rochi & 0x1F) << 5) | (roclo & 0x1F);
+  //std::cout << "armDigFEDOSDFifo chip = " << chip << " offset = 0x" << std::hex << offset << std::dec << " data = 0x" << std::hex << data << std::dec << std::endl;
+#ifdef USE_HAL
+  vmeDevicePtr->write(FPGAName[chip], data, HAL::HAL_NO_VERIFY, offset);
+#else
+#error armDigFEDOSDFifo not implemented for direct CAEN VME access
+#endif
+}
+
+uint32_t PixelFEDInterface::readDigFEDOSDFifo(int channel) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO readDigFEDOSDFifo on a non-pilot-piggy FED!";
+    return 0;
+  }
+
+  const int chip = (channel - 1)/9;
+  const unsigned offset = (channel % 9) * 0x20000 + 0x8000;
+  uint32_t data;
+  //std::cout << "readDigFEDOSDFifo chip = " << chip << " offset = 0x" << std::hex << offset << std::dec;
+#ifdef USE_HAL
+  vmeDevicePtr->read(FPGAName[chip], &data, offset);
+#else
+#error readDigFEDOSDFifo not implemented for direct CAEN VME access
+#endif
+  //std::cout << " data = 0x" << std::hex << data << std::dec << std::endl;
+  return data;
+}
+
+void PixelFEDInterface::readDigFEDTempFifo(){
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO readDigFEDTempFifo on a non-pilot-piggy FED!";
+    return;
+  }
+
+  //uint32_t data = 0x80000000;
+  uint32_t d, i;
+#ifdef USE_HAL // Use HAL
+    
+  printf("\n\n\nTEMP FIFO Sup\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("BottomDauCard_UpTmpFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO Sdown\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("BottomDauCard_DnTmpFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCup\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("TopDauCard_UpTempFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCdown\n\n");
+  for(i=0;i<256;i++)  { 
+    vmeDevicePtr->read("TopDauCard_DownTempFifo",&d);
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+#else // Use direct CAEN
+  
+  printf("\n\n\nTEMP FIFO Sup\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_UpTmpFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO Sdown\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,BottomDauCard_DnTmpFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCup\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,TopDauCard_UpTempFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+  printf("\n\n\nTEMP FIFO NCdown\n\n");
+  for(i=0;i<256;i++)  { 
+    ret = CAENVME_ReadCycle(BHandle,TopDauCard_DownTempFifo,&d,am,dw);
+    if(ret != cvSuccess) {
+      cout<<"Error in read "<<hex<<ret<<" "<<d<<dec<<endl;
+      analyzeError(ret);   
+    }
+    if(d) { 
+      printf("%x\n",d); 
+      printf("CH#:%2d",((d>>26)&0x3f));
+      if(((d>>21)&0x1f)== 31) printf("  TBM_H_status:%4x\n",((d>>1)&0xff00)+(d&0xff));
+      if(((d>>21)&0x1f)== 30) printf("  TBM_T_status:%4x\n",((d>>4)&0xff00)+(d&0xff));    
+    }
+  }	
+  
+#endif // Use HAL  
+  
+}
+
+void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO readDigFEDStatus on a non-pilot-piggy FED!";
+    return;
+  }
+
+  if (!override_timeout) {
+    timeval t;
+    int s = gettimeofday(&t, 0);
+    if (s != 0) {
+      perror("problem w gettimeofday in readDigFEDStatus");
+      return;
+    }
+    long long tt = t.tv_sec*1000000 + t.tv_usec;
+    if (tt - DauCards_lastStatusPoll < 12000000) // 24 * 0.5 sec
+      return;
+    DauCards_lastStatusPoll = tt;
+  }
+
+  uint32_t d;
+  size_t i;
+  const size_t Npoll = 48;
+  const size_t Nkeep = 24;
+
+  int lock[19] = {0};
+  std::vector<int> phases[19];
+  double means[19] = {0.};
+  double rmses[19] = {0.};
+  for (int j = 1; j <= 18; ++j)
+    phases[j].assign(Npoll, 0);
+
+#ifdef USE_HAL
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHup    CH#1 / 2  CH#3 / 4  CH#5 / 6  \n\n") ;
+  for(i=0;i<Npoll;i++)  {
+    vmeDevicePtr->read("LAD_N", &d, 0x158000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[1][i] = d&0x7;
+    int b = phases[2][i] = (d>>8)&0x7;
+    int c = phases[3][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
+    }
+    means[1] += a;
+    means[2] += b;
+    means[3] += c;
+    if (va == 'v') ++lock[1];
+    if (vb == 'v') ++lock[2];
+    if (vc == 'v') ++lock[3];
+  }
+
+  if (verbose) printf("\n\n\nPIGGYstatus NORTHdown  CH#7 / 8  CH#9 /10  CH#11/12    \n\n");
+  for(i=0;i<Npoll;i++)  {
+    vmeDevicePtr->read("LAD_N", &d, 0x178000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[4][i] = d&0x7;
+    int b = phases[5][i] = (d>>8)&0x7;
+    int c = phases[6][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
+    }
+    means[4] += a;
+    means[5] += b;
+    means[6] += c;
+    if (va == 'v') ++lock[4];
+    if (vb == 'v') ++lock[5];
+    if (vc == 'v') ++lock[6];
+  }
+
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHup    CH#25/26  CH#27/28  CH#29/30      \n\n") ;
+  for(i=0;i<Npoll;i++)  {
+    vmeDevicePtr->read("LAD_S", &d, 0x158000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[13][i] = d&0x7;
+    int b = phases[14][i] = (d>>8)&0x7;
+    int c = phases[15][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
+    }
+    means[13] += a;
+    means[14] += b;
+    means[15] += c;
+    if (va == 'v') ++lock[13];
+    if (vb == 'v') ++lock[14];
+    if (vc == 'v') ++lock[15];
+  }
+
+  if (verbose) printf("\n\n\nPIGGYstatus SOUTHdown  CH#31/32  CH#33/34  CH#35/36      \n\n") ;
+  for(i=0;i<Npoll;i++)  {
+    vmeDevicePtr->read("LAD_S", &d, 0x178000);
+    if (i >= Nkeep)
+      continue;
+
+    int a = phases[16][i] = d&0x7;
+    int b = phases[17][i] = (d>>8)&0x7;
+    int c = phases[18][i] = (d>>16)&0x7;
+    char va = 118-(d&0x8);
+    char vb = 118-((d>>8)&0x8);
+    char vc = 118-((d>>16)&0x8);
+    if (verbose) {
+      printf("                       ");printf("%c %1d",va,a);
+      printf("        ");printf("%c %1d",vb,b);
+      printf("        ");printf("%c %1d",vc,c);
+    }
+    means[16] += a;
+    means[17] += b;
+    means[18] += c;
+    if (va == 'v') ++lock[16];
+    if (vb == 'v') ++lock[17];
+    if (vc == 'v') ++lock[18];
+  }
+#else
+  assert(0);
+#endif
+
+  printf("FEDID:%lu phase stats:\n", pixelFEDCard.fedNumber);
+  for (int j = 1; j <= 18; ++j) {
+    if (j == 3 || (j >= 6 && j <= 12) || j == 15 || j == 18)
+      continue;
+    means[j] /= Npoll;
+    for (size_t k = 0; k < Npoll; ++k)
+      rmses[j] += pow(phases[j][k] - means[j], 2);
+    rmses[j] /= (Npoll - 1);
+    rmses[j] = sqrt(rmses[j]);
+    printf("ch %2i/%2i: #locks: %2i/%2lu  mean %4.1f rms %6.4f\n", j*2-1, j*2, lock[j], Nkeep, means[j], rmses[j]);
+  }
+
+  fflush(stdout);
+}
+
+void PixelFEDInterface::loadFPGADigFED(){
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO loadFPGADigFED on a non-pilot-piggy FED!";
+    return;
+  }
+
+  uint32_t data = 0x0; // data for reseta 
+  
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Loading FPGA's from Program EEPROMs"<<endl;
+  data=0x80;
+#ifdef USE_HAL // Use HAL
+  
+  cout<< " --- loadFPGADigFED --- " << endl;
+  vmeDevicePtr->write("TopDauCard_nConfig", data );
+  usleep(10000);
+  data=0x0;
+  vmeDevicePtr->write("TopDauCard_nConfig", data );
+  usleep(1000);
+  
+  data=0x10;
+  vmeDevicePtr->write("BottomDauCard_nConfig", data );
+  usleep(10000);
+  data=0x0;
+  vmeDevicePtr->write("BottomDauCard_nConfig", data );
+  
+    
+#else // Use direct CAEN
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_nConfig,&data,am,dw);
+  usleep(10000); 
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,TopDauCard_nConfig,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+  
+  data=0x10;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_nConfig,&data,am,dw);
+  usleep(10000); //min is 40us in manual to initiate
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+  data=0x0;
+  ret = CAENVME_WriteCycle(BHandle,BottomDauCard_nConfig,&data,am,dw);
+  if(ret != cvSuccess) {  // Error
+    cout<<"Error in write "<<hex<<ret<<" "<<data<<dec<<endl;
+      analyzeError(ret); 
+  }
+#endif // Use HAL
+}//end
+
+
+
 /////////////////////////////////////////////////////////////////
 // Load the FPGAs -----------------------------------------------
 // Takes the programs in the EEPROM memory and loads it in FPGAs
@@ -840,6 +895,13 @@ int PixelFEDInterface::reset(void) {
   data=0x0;
   vmeDevicePtr->write("nCONFIG", data );
   usleep(1000000); //10ms in example programs, extra time now for clock
+
+  if (hasPilotPiggy) {  
+    cout << " pilotFED load fpga  "<< endl;
+    loadFPGADigFED();
+  }
+
+  if (!hasPilotPiggy) {
 //new sequence for v4
 // load test constants
 // setup for VME trigger and testDAC
@@ -864,14 +926,17 @@ dac0[255]=0;//make sure any leftover testDAC setting is 0
 int mlength=256;//overkill-currently shuts off setDAC after stop bit
 fillDACRegisterLength(dac0,dac0,dac0,mlength);
 usleep(100);
+}
 
 resetSlink();
 setModeRegister(0x1);
 
 generateVMETrigger();
 
+if (!hasPilotPiggy) {
 uint32_t fbufr[1024];
 drainFifo1(fbufr);
+}
 
 data=0x80000000;
  vmeDevicePtr->write("LRES",data);
@@ -1026,8 +1091,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
   uint32_t d;
   int  i2c_addr,i2c_nbytes;
 
-  if(Printlevel&1) cout<<" 1 "<<endl;
-
   uint32_t ds =  0x2;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1039,8 +1102,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
-  if(Printlevel&1) cout<<" 2 "<<endl;
-
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1052,8 +1113,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
-  if(Printlevel&1) cout<<" 3 "<<endl;
-
   //I2C PAYLOAD 
   ds =  Register_Nr;
 #ifdef USE_HAL // Use HAL
@@ -1066,8 +1125,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
-  if(Printlevel&1) cout<<" 4 "<<endl;
-
   i2c_addr=7*2; 
   i2c_nbytes=1;
   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
@@ -1082,8 +1139,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
-  if(Printlevel&1) cout<<" 5 "<<endl;
-
 #ifdef USE_HAL // Use HAL
     vmeDevicePtr->read("I2C_RD_STAT",&d);
 #else  // Use direct CAEN 
@@ -1101,8 +1156,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
   if((d&0xff)==4)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: I2C_WBYTE NOT ACKNOWLEDGED !!"<<endl;
   if((d&0xff)==8)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: I2C_LBYTE NOT ACKNOWLEDGED !!"<<endl;
  
-  if(Printlevel&1) cout<<" 6 "<<endl;
-
   //RESET I2C STATE MACHINE
   ds =  0x2;
 #ifdef USE_HAL // Use HAL
@@ -1116,8 +1169,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
   
-  if(Printlevel&1) cout<<" 7 "<<endl;
-
   ds =  0x0;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_RES",ds);
@@ -1130,8 +1181,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);
  
-  if(Printlevel&1) cout<<" 8 "<<endl;
-
   ds =  Value;
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->write("I2C_LOAD",ds);
@@ -1144,8 +1193,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);//
    
-  if(Printlevel&1) cout<<" 9 "<<endl;
-
    i2c_addr=7*2+1; i2c_nbytes=1;
   ds =  (i2c_nbytes<<8)+(i2c_addr<<1)+0;
 #ifdef USE_HAL // Use HAL
@@ -1162,8 +1209,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
   //printf("%x\n",(i2c_nbytes<<8)+(i2c_addr<<1)+0 );
   usleep(300);
  
-  if(Printlevel&1) cout<<" 10 "<<endl;
-
 #ifdef USE_HAL // Use HAL
   vmeDevicePtr->read("I2C_RD_STAT",&d);
 #else  // Use direct CAEN 
@@ -1175,8 +1220,6 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 #endif // USE_HAL
   usleep(1000);//
  
-  if(Printlevel&1) cout<<" 11 "<<endl;
-
   
   if((d&0xff)==1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: BUS BUSY !!"<<endl;
   if((d&0xff)==2)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" ERROR: I2C_ADDR NOT ACKNOWLEDGED !!"<<endl ;
@@ -1189,14 +1232,7 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 // Read the file with the FED setup parameters.
 // Download these parameters to the FED. 
 int PixelFEDInterface::setupFromDB(string fileName) {
-  int status = 0;
-  cout<<" read setup parameters from file "<<fileName<<endl;
-  status = configFile(fileName);
-  if(status!=0) return(-1);
-
-  status = setup();
- 
-  return status;
+  return setupFromDB(PixelFEDCard(fileName));
 }
 /////////////////////////////////////////////////////////////////////////
 // Read the file with the FED setup parameters.
@@ -1242,52 +1278,61 @@ int PixelFEDInterface::setup(void) {
 
   loadFedIDRegister();
 
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Optical reciever parameters"<<endl;
-  set_opto_params();
+  if (!hasPilotPiggy) {
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Optical reciever parameters"<<endl;
+    set_opto_params();
 
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Clock Phases"<<endl;
-  setPhases();  // Set all phases from DB
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Clock Phases"<<endl;
+    setPhases();  // Set all phases from DB
+  }
 
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Number of Rocs for each Channel"<<endl;
   set_chnl_nrocs();  // Set #Rocs from DB
- 
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting black, ultra-black Thresholds"<<endl;
-  set_blk_ublk_thold();
+
+  if (!hasPilotPiggy) {
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting black, ultra-black Thresholds"<<endl;
+    set_blk_ublk_thold();
      
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ROC, Header, Trailer level thresholds"<<endl;
-  set_data_levels();
-                                                                                
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ROC, Header, Trailer level thresholds"<<endl;
+    set_data_levels();
+  }
+
   // This is controls if a channel is on or off
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Turning on all all channels for Normal Running"<<endl;
   set_chnls_onoff(); //transfer control now handled by VME-trigger
- 
-  //Offset DAC V2:
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting the Offset DACs"<<endl;
-  set_offset_dacs();
+
+  if (!hasPilotPiggy) {
+    //Offset DAC V2:
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting the Offset DACs"<<endl;
+    set_offset_dacs();
   
-  //ADC Gain Registers
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ADC GAIN values"<<endl;
-  set_adc_1v2v();
+    //ADC Gain Registers
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting ADC GAIN values"<<endl;
+    set_adc_1v2v();
+  }
 
   //make sure testDAC is not sending extra data
   stop_testDAC();//This also loads Control and Mode registers in the central chip!
 
-  //Baseline Restoration Registers
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
-  set_BaselineCorr();
-  
+  if (!hasPilotPiggy) {
+    //Baseline Restoration Registers
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
+    set_BaselineCorr();
+  }
+
   //TTs levels for warning and busy
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Values for TTs Warn and Busy Levels"<<endl;
   set_TTslevels();
 
-  //TTs levels for warning and busy
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Almost Full Values for fifo-1 and fifo-3"<<endl;
   set_Fifolevels();
-  
-  //Baseline Restoration Registers
-  if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
-  set_BaselineCorr();
-  
+
+  if (!hasPilotPiggy) {
+    //Baseline Restoration Registers
+    if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Baseline values"<<endl;
+    set_BaselineCorr();
+  }
+
   //FED Master Delay
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.FedTTCDelay<<" Setting FED Master Delay"<<endl;
   set_FEDTTCDelay();
@@ -1303,12 +1348,12 @@ int PixelFEDInterface::setup(void) {
 
 
   
-  //Roc Skips
+  // Roc Skips / testregs
   if(Printlevel&2) 
-  {cout<<"FEDID:"<<pixelFEDCard.N_testreg<<" N Roc Skip"<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.NC_testreg<<" NC Roc Skip"<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.SC_testreg<<" SC Roc Skip"<<endl;
-  cout<<"FEDID:"<<pixelFEDCard.S_testreg<<" S Roc Skip"<<endl;}
+  {cout<<"FEDID:"<<pixelFEDCard.N_testreg<<" N Roc Skip / testreg"<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.NC_testreg<<" NC Roc Skip / testreg"<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.SC_testreg<<" SC Roc Skip / testreg"<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.S_testreg<<" S Roc Skip / testreg"<<endl;}
   set_ROCskip();
 
 
@@ -1356,6 +1401,11 @@ int PixelFEDInterface::setup(void) {
 // Test DAC is 256 words long.
 void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const dac2,
 					const int *const dac3) const {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO fillDACRegister on a pilot-piggy FED!";
+    return;
+  }
+
   uint32_t TestData[256];
 
   // Compose DACs
@@ -1401,6 +1451,11 @@ void PixelFEDInterface::fillDACRegister(const int *const dac1, const int *const 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Fill the DAC test array and load it
 void PixelFEDInterface::fillDACRegister() const {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO fillDACRegister on a pilot-piggy FED!";
+    return;
+  }
+
   const uint32_t V_OFFSET=100; // 100; 
   const uint32_t UB =50;
   //const uint32_t B = 300;
@@ -1463,6 +1518,11 @@ void PixelFEDInterface::fillDACRegister() const {
 void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R, 
 					vector <uint32_t> pulseTrain_G, 
 					vector <uint32_t> pulseTrain_B) const {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO fillDACRegister on a pilot-piggy FED!";
+    return;
+  }
+
   uint32_t compositePulseTrain[256];
   
   for (int i=0;i<256;++i) {
@@ -1495,6 +1555,11 @@ void PixelFEDInterface::fillDACRegister(vector <uint32_t> pulseTrain_R,
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::fillDACRegister2(void) const {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO fillDACRegister2 on a pilot-piggy FED!";
+    return;
+  }
+
   //const uint32_t V_OFFSET=100; // 100;
   //const uint32_t UB =50;
   //const uint32_t B = 300;
@@ -1610,7 +1675,11 @@ void PixelFEDInterface::fillDACRegisterLength(const int *const dac1, const int *
 }
 // Read FIFOs
 /////////////////////////////////////////////////////////////////////////////////
-  void PixelFEDInterface::setup_testDAC(int pedestal){//pre-load the testDAC with a pedestal value
+void PixelFEDInterface::setup_testDAC(int pedestal){//pre-load the testDAC with a pedestal value
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO setup_testDAC on a pilot-piggy FED!";
+    return;
+  }
 
 uint32_t value = 0x0e;
 vmeDevicePtr->write("CtrlReg",value);
@@ -1669,8 +1738,39 @@ if(status<0)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error Setting Mode Word! s
 
 }
 
+void PixelFEDInterface::drainDigTransFifo(const int chip, uint32_t* data) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO drainDigTransFifo on a non-pilot-piggy FED!";
+    return;
+  }
+    
+  std::string chipname;
+  if      (chip == 1) chipname = "BLAD_N";
+  else if (chip == 3) chipname = "BLAD_NC";
+  else if (chip == 5) chipname = "BLAD_SC";
+  else if (chip == 7) chipname = "BLAD_S";
+  else
+    return;
 
+  vmeDevicePtr->readBlock(chipname, 1024, (char*)data, HAL::HAL_NO_INCREMENT, 0x20000);
+}
 
+void PixelFEDInterface::drainTimestamp(const int chip, uint32_t* data) {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO drainTimestamp on a non-pilot-piggy FED!";
+    return;
+  }
+
+  std::string chipname;
+  if      (chip == 1) chipname = "BLAD_N";
+  else if (chip == 3) chipname = "BLAD_NC";
+  else if (chip == 5) chipname = "BLAD_SC";
+  else if (chip == 7) chipname = "BLAD_S";
+  else
+    return;
+
+  vmeDevicePtr->readBlock(chipname, 1024, (char*)data, HAL::HAL_NO_INCREMENT, 0x40000);
+}
 
 //////////////////////////////////////////////////////////////////////
 // Read transparent data from FIFO1 for all channels.
@@ -1757,9 +1857,11 @@ if(((data[960]&0xff)==0xff)&&((data[959]&0xff)!=0xff)){count+=961;} else
 {cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Warning:Transparent buffer Bad or MisAligned! channel ="<<chnl<<endl;
 return 1000;}
 
+if (!hasPilotPiggy) {
 //cout<<" call fixBBB "<<chnl<<endl; 
 //int newstatus = FixBBB(chnl,data);
  FixBBB(chnl,data);
+}
 
   return count;
 }
@@ -2710,6 +2812,11 @@ void PixelFEDInterface::resetSlink() {
 } // end
 ////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_opto_params() {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_opto_params on a pilot-piggy FED!";
+    return;
+  }
+
   //form opto word from params
   uint32_t data = (pixelFEDCard.opt_cap[0]<<6)+pixelFEDCard.opt_inadj[0]+(pixelFEDCard.opt_ouadj[0]<<4);
   if(Printlevel&2) cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Write OptoRec1Par :"<<hex<<pixelFEDCard.opt_cap[0]<<" "<<pixelFEDCard.opt_ouadj[0]<<" "
@@ -2760,6 +2867,10 @@ void PixelFEDInterface::set_opto_params() {
 // Set the OFFSET DACs
 // Offsets are 8bit so the range is 0-255.
 void PixelFEDInterface::set_offset_dacs() {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_offset_dacs on a pilot-piggy FED!";
+    return;
+  }
 
   for(int ix=0;ix<12;ix++){
     // data for Offset
@@ -2819,6 +2930,11 @@ void PixelFEDInterface::set_offset_dacs() {
 
 ///////////////////////////////////////////////////////////////////////////
   int PixelFEDInterface::setPhases(const int channel, int delay) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO setPhases on a pilot-piggy FED!";
+      return -1;
+    }
+
     // Select the +- clock phase 
     //uint32_t data = 0; //
 
@@ -2917,6 +3033,11 @@ void PixelFEDInterface::set_offset_dacs() {
   }
 ///////////////////////////////////////////////////////////////////////////////////
 int PixelFEDInterface::setPhases(void) {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO setPhases on a pilot-piggy FED!";
+    return -1;
+  }
+
   // Select the +- clock phase 
   set_clock_phases();
   // Select the phase values
@@ -2925,6 +3046,10 @@ int PixelFEDInterface::setPhases(void) {
 }
 ///////////////////////////////////////////////////////////////////////////
   int PixelFEDInterface::setClockDelayAndPhase(int chan, int delay, int phase) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO setClockDelayAndPhase on a pilot-piggy FED!";
+      return -1;
+    }
 
     assert(chan>0);
     assert(chan<=36);
@@ -2987,6 +3112,10 @@ else return(-1);
 
 ///////////////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_clock_phases() {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_clock_phases on a pilot-piggy FED!";
+    return;
+  }
 /* a 9 bit number, 1 bit for each of 9 channels in each of 4 chips
 1=on   means use negative clock edge    
 0=off        use positive clock edge
@@ -3056,6 +3185,10 @@ for now all set to negative clock edge
 //   controlled on the center chip, and we are setting delays
 //   for each input channel 1-36 		    
  void PixelFEDInterface::set_chnl_delays() {
+   if (hasPilotPiggy) {
+     cerr << "!!! REFUSING TO set_chnl_delays on a pilot-piggy FED!";
+     return;
+   }
 
    for(int channel=1;channel<37;channel++) {
 
@@ -3082,6 +3215,10 @@ for now all set to negative clock edge
 //////////////////////////////////////////////////////////////////////////////////
 //Load UB and B thresholds for each channel & ROC
 void PixelFEDInterface::set_blk_ublk_thold() {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_blk_ublk_thold on a pilot-piggy FED!";
+    return;
+  }
   
   for(int chip_nr=0;chip_nr<4;chip_nr++) {
     for(int channel=1;channel<10;channel++) {
@@ -3121,6 +3258,10 @@ void PixelFEDInterface::set_blk_ublk_thold() {
 //////////////////////////////////////////////////////////////////////////////////
 //Load B thresholds to 1000 and 999, UB to 300 for each channel
 void PixelFEDInterface::set_blk_ublk_trans_thold() {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO set_blk_ublk_trans_thold on a pilot-piggy FED!";
+      return;
+    }
 
 	//cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"Seeting Black for safe transparent mode"<<endl; 
   for(int chip_nr=0;chip_nr<4;chip_nr++) {
@@ -3189,6 +3330,10 @@ void PixelFEDInterface::set_chnl_nrocs() {
 /////////////////////////////////////////////////////////////////////////////
 // Set the address levels for TBM and all ROCs
 void PixelFEDInterface::set_data_levels() {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_data_levels on a pilot-piggy FED!";
+    return;
+  }
 
   for(int chip_nr=0;chip_nr<4;chip_nr++) {  // loop over FPGs
     for(int channel=1;channel<10;channel++) {   // loop over channels
@@ -3523,31 +3668,32 @@ void PixelFEDInterface::set_SpecialDac(uint32_t mode) {
 // for the front FPGA's
 //Bits 32-24 used to mask TBM trialer bits
 //Bits 23-16 the private word that gets put in gap and fill words
+//Bits 11-8 the channel for spy scope
 //1st bit in N FPGA is used for a special DAC mode for random trigs  
 
 void PixelFEDInterface::set_MODE_front() {
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Setting Mode REG in Front FPGA's "<<endl;
 
   uint32_t data = 
-(pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24); 
+    (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_ScopeCh&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("NWrModeReg",data);
 
 
-  data = ((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.NC_ScopeCh&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("NCWrModeReg",data);
 
 
-  data = ((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.SC_ScopeCh&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("SCWrModeReg",data);
 
 
-  data = ((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.S_ScopeCh&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
 
   if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   vmeDevicePtr->write("SWrModeReg",data);
@@ -3563,29 +3709,32 @@ void PixelFEDInterface::get_MODE_front() {
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Printing Mode REG in Front FPGA's "<<endl;
 
   uint32_t data = 
-(pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24); 
+    (pixelFEDCard.SpecialDac&0x1)|((pixelFEDCard.N_ScopeCh&0xF)<<8)|((pixelFEDCard.N_Pword&0xff)<<16)|((pixelFEDCard.N_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Special Dac   0x"<<hex<<(pixelFEDCard.SpecialDac&0x1)<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Scope Ch 0x"<<hex<<(pixelFEDCard.N_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Private word  0x"<<hex<<(pixelFEDCard.N_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North TBM trlr mask 0x"<<hex<<(pixelFEDCard.N_TBMmask&0xff)<<dec<<endl;
 
-
-  data = ((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.NC_ScopeCh&0xF)<<8)|((pixelFEDCard.NC_Pword&0xff)<<16)|((pixelFEDCard.NC_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center Scope Ch 0x"<<hex<<(pixelFEDCard.NC_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center Private word  0x"<<hex<<(pixelFEDCard.NC_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" North Center TBM trlr mask 0x"<<hex<<(pixelFEDCard.NC_TBMmask&0xff)<<dec<<endl;
 
-  data = ((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.SC_ScopeCh&0xF)<<8)|((pixelFEDCard.SC_Pword&0xff)<<16)|((pixelFEDCard.SC_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center Scope Ch 0x"<<hex<<(pixelFEDCard.SC_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center Private word  0x"<<hex<<(pixelFEDCard.SC_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Center TBM trlr mask 0x"<<hex<<(pixelFEDCard.SC_TBMmask&0xff)<<dec<<endl;
 
-  data = ((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
+  data = ((pixelFEDCard.S_ScopeCh&0xF)<<8)|((pixelFEDCard.S_Pword&0xff)<<16)|((pixelFEDCard.S_TBMmask&0xff)<<24);
 
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South FPGA Mode REG 0x"<<hex<<data<<dec<<endl;
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Scope Ch 0x"<<hex<<(pixelFEDCard.S_ScopeCh&0xf)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South Private word  0x"<<hex<<(pixelFEDCard.S_Pword&0xff)<<dec<<endl;
   cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" South TBM trlr mask 0x"<<hex<<(pixelFEDCard.S_TBMmask&0xff)<<dec<<endl;
 
@@ -3595,7 +3744,11 @@ void PixelFEDInterface::get_MODE_front() {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 int PixelFEDInterface::get_adc_1v2v(int chnl) {
-  
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO get_adc_1v2v on a pilot-piggy FED!";
+    return -1;
+  }
+
   // bracket logic:
   // (1<<((((chnl%2)+chnl)/2)-1))
   // each bit controls 2 adc channels. E.g.
@@ -3637,6 +3790,10 @@ int PixelFEDInterface::get_adc_1v2v(int chnl) {
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 // IMPORTANT!!! each adc has 2 channels
 void PixelFEDInterface::set_adc_1v2v(int mode,int chnl) {
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_adc_1v2v on a pilot-piggy FED!";
+    return;
+  }
 
 if((chnl<1) | (chnl>36)){
     cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of range "<<endl;
@@ -3672,6 +3829,10 @@ if(mode==0)pixelFEDCard.Sadcg  =pixelFEDCard.Sadcg&(0xf ^ (1<<((((chnl-28)%2+(ch
 // This bits control the range of the ADC
 // 0 - means adc is set 1Vpp, 1 - adc set 2Vpp
 void PixelFEDInterface::set_adc_1v2v(int mode) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO set_adc_1v2v on a pilot-piggy FED!";
+      return;
+    }
 
   if(mode==1) {  // keep data in fifo1
 
@@ -3701,6 +3862,10 @@ void PixelFEDInterface::set_adc_1v2v(int mode) {
 // This bits control if the data is trasfered from FIFO1 to FIFO2
 // 0 - means data is transfered, 1 - data is not transfered.
 void PixelFEDInterface::set_adc_1v2v() {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO set_adc_1v2v on a pilot-piggy FED!";
+      return;
+    }
 
   //cout<<" ADC GAIN Set "<<hex<<pixelFEDCard.Nadcg<<" "<<pixelFEDCard.NCadcg
   //    <<" "<<pixelFEDCard.SCadcg<<" "<<pixelFEDCard.Sadcg<<dec<<endl;
@@ -3723,6 +3888,10 @@ void PixelFEDInterface::set_adc_1v2v() {
 /////////////////////////////////////////////////////////////////////////
 //This Method turns on the Baseline Adjustment for a whole fed
   void PixelFEDInterface::BaselineCorr_on(){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO BaselineCorr_on on a pilot-piggy FED!";
+      return;
+    }
 
 //cout<<"PixelFEDInterface::BaselineCorr_on() ENTERED!!!"<<endl;
 
@@ -3743,6 +3912,10 @@ set_BaselineCorr(4,data);
 /////////////////////////////////////////////////////////////////////////
 //Turn off Baseline correction (whole fed)
   void PixelFEDInterface::BaselineCorr_off(){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO BaselineCorr_off on a pilot-piggy FED!";
+      return;
+    }
 
 if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" PixelFEDInterface::BaselineCorr_off() ENTERED!!!"<<endl;
 
@@ -3767,6 +3940,10 @@ data=0x80000000;
 /////////////////////////////////////////////////////////////////////////
 //get Baseline correction (single channel, but bits are common!)
 uint32_t PixelFEDInterface::get_BaselineCorrVal(int chnl){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO get_BaselineCorrVal on a pilot-piggy FED!";
+      return -1;
+    }
 
 uint32_t data=0xffffffff;
 
@@ -3797,6 +3974,10 @@ return data;
 /////////////////////////////////////////////////////////////////////////
 //Turn on Baseline correction (single channel)
   void PixelFEDInterface::BaselineCorr_on(int chnl){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO BaselineCorr_on on a pilot-piggy FED!";
+      return;
+    }
 
 //cout<<"PixelFEDInterface::BaselineCorr_on(int "<<chnl<<") ENTERED!!!"<<endl;
 
@@ -3829,6 +4010,11 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Channel out of (1-36)range!! Passed ch
 /////////////////////////////////////////////////////////////////////////
 //Turn off Baseline correction (single channel)
   void PixelFEDInterface::BaselineCorr_off(int chnl){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO BaselineCorr_off on a pilot-piggy FED!";
+      return;
+    }
+
 //cout<<"PixelFEDInterface::BaselineCorr_off(int "<<chnl<<") ENTERED!!!"<<endl;
 
  if((chnl>0)&(chnl<10)){
@@ -3864,6 +4050,10 @@ uint32_t data=0x80000000;
 /////////////////////////////////////////////////////////////////////////
 //Set the baseline correction value for an FPGA (1-4)  10 bits max!
   void PixelFEDInterface::set_BaselineCorr(int chip,uint32_t value){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO set_BaselineCorr on a pilot-piggy FED!";
+      return;
+    }
 
 //    cout<<"PixelFEDInterface::set_BaselineCorr(int "<<chip<<", uint32_t 0x"<<hex <<value<< dec << ") ENTERED!!!"<<endl;
 
@@ -3888,6 +4078,10 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Chip must be 1(NORTH),  2(NORTH CENTER
 /////////////////////////////////////////////////////////////////////////
 //Set the baseline corection values from the database
   void PixelFEDInterface::set_BaselineCorr(){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO set_BaselineCorr on a pilot-piggy FED!";
+      return;
+    }
 
 //cout<<"PixelFEDInterface::set_BaselineCorr() ENTERED!!"<<endl;
 
@@ -3908,6 +4102,10 @@ value = pixelFEDCard.Sbaseln;
 /////////////////////////////////////////////////////////////////////////////
 //This method dumps the current value of the baseline adjustment
 void PixelFEDInterface::dump_BaselineCorr() {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO dump_BaselineCorr on a pilot-piggy FED!";
+      return;
+    }
 
 //cout<<"PixelFEDInterface::dump_BaselineCorr() ENTERED!!"<<endl;
 
@@ -3982,6 +4180,11 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Baseline Adjust for Channel "<<dec<<i+
 //This method gets all the current values of the baseline adjustment
 //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
 void PixelFEDInterface::get_BaselineCorr(int * blstat) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO get_BaselineCorr on a pilot-piggy FED!";
+      return;
+    }
+
 uint32_t iwrdat;
 vmeDevicePtr->read("NRdBaseL321",&iwrdat);
 blstat[0]=(iwrdat&0x3ff);
@@ -4044,6 +4247,10 @@ if(blstat[ij]&0x200)blstat[ij]=-1*(((~blstat[ij])&0x1ff)+1);
 //This method gets the current value of the baseline adjustment for a single channel
 //10 bit words are in 2's compliment for negative, see dump_BaselineCorr
 int PixelFEDInterface::get_BaselineCorr(int chnl) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO get_BaselineCorr on a pilot-piggy FED!";
+      return -1;
+    }
 
 uint32_t iwrdat;
 int blstat=0;
@@ -4144,6 +4351,24 @@ cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" VME FPGA (update via jtag pins only) f
 
 return iwrdat;
 }//end
+
+void PixelFEDInterface::get_PiggyFirmwareVer() {
+  if (!hasPilotPiggy) {
+    cerr << "!!! REFUSING TO get_PiggyFirmwareVer on a pilot-piggy FED!";
+    return;
+  }
+
+  uint32_t du, dd;
+  vmeDevicePtr->read("LAD_N", &du, 0x158000);
+  vmeDevicePtr->read("LAD_N", &dd, 0x178000);
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" N Piggy version: ";
+  printf("%1x%1x%1x%1x%1x%1x\n", (dd>>20)&0xf, (dd>>12)&0xf, (dd>>4)&0xf, (du>>20)&0xf, (du>>12)&0xf, (du>>4)&0xf);
+  vmeDevicePtr->read("LAD_S", &du, 0x158000);
+  vmeDevicePtr->read("LAD_S", &dd, 0x178000);
+  cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" S Piggy version: ";
+  printf("%1x%1x%1x%1x%1x%1x\n", (dd>>20)&0xf, (dd>>12)&0xf, (dd>>4)&0xf, (du>>20)&0xf, (du>>12)&0xf, (du>>4)&0xf);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Read BX counter
 int PixelFEDInterface::readBXCounter() {
@@ -4181,6 +4406,11 @@ int PixelFEDInterface::readBXCounter() {
 // // 20 23 26 29 32 35 <-channel of middle 8 bit counter in word for triplet number
 // // 21 24 27 30 33 36 <-channel of highest 8 bit counter in word for triplet number
  int PixelFEDInterface::selectTripple(const int trip) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO selectTripple on a pilot-piggy FED!";
+      return -1;
+    }
+
    uint32_t loctrip;                                                                                                                            
    if((trip<1)||(trip>12)){
      cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Error: Tripplet request "<<dec<<trip<<" out of bounds, must be 1-12"
@@ -4222,6 +4452,10 @@ int PixelFEDInterface::readBXCounter() {
 //////////////////////////////////////////////////////////////////////
 // Read expects 1st Roc to be #1
  int PixelFEDInterface::drainHisRoc(const int trip,const int Roc, uint32_t *data){
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO drainHisRoc on a pilot-piggy FED!";
+      return -1;
+    }
 
    uint32_t offset = (Roc-1)*4;
    //const uint32_t length = 104; //number of double columns(26) *bytes(4) for block reads - wait for v4!
@@ -4289,6 +4523,11 @@ for(int j=27;j<33;j++){vmeDevicePtr->read("ROCHisMemDn",&locdata);}//DC 27 - 31 
 // // drain all the Double Columns in all rocs  for a particular tripple
 // // 
  int PixelFEDInterface::drainTripple(const int trip, uint32_t *pnt) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO drainTripple on a pilot-piggy FED!";
+      return -1;
+    }
+
    int status=0;
    
    if((trip<1)||(trip>12)){
@@ -4411,6 +4650,11 @@ for(int j=0;j<(int)cycles;j++){*pnt=data[j];pnt++;}
 // particular fed
 // 
  int PixelFEDInterface::drainHisMemory(uint32_t *data) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO drainHisMemory on a pilot-piggy FED!";
+      return -1;
+    }
+
    int status=0;
    int count=0;
    for(int trip=1;trip<13;trip++){
@@ -4450,6 +4694,11 @@ int PixelFEDInterface::enableHisMemory(int enable) {
 ////////////////////////////////////////////////////////////////////////////
 // Clear the histogrammming memories
  void PixelFEDInterface::clear_hismem(void) {
+    if (hasPilotPiggy) {
+      cerr << "!!! REFUSING TO clear_hismem on a pilot-piggy FED!";
+      return;
+    }
+
    uint32_t data = 0x1; // Toggle???
    
 #ifdef USE_HAL // Use HAL
@@ -5271,7 +5520,15 @@ data = (pixelFEDCard.S_hitlimit&0x3ff)+(12<<16);
 //
 void PixelFEDInterface::set_ROCskip(void)
 {
-
+  if (hasPilotPiggy) {
+    uint32_t offset = 0x1a8000;
+    std::cout << "set_ROCskip " << std::hex << pixelFEDCard.N_testreg << " " << pixelFEDCard.NC_testreg << " " << pixelFEDCard.SC_testreg << " " << pixelFEDCard.S_testreg << std::dec << std::endl;
+    vmeDevicePtr->write(FPGAName[0], pixelFEDCard.N_testreg,  HAL::HAL_NO_VERIFY, offset);
+    vmeDevicePtr->write(FPGAName[1], pixelFEDCard.NC_testreg, HAL::HAL_NO_VERIFY, offset);
+    vmeDevicePtr->write(FPGAName[2], pixelFEDCard.SC_testreg, HAL::HAL_NO_VERIFY, offset);
+    vmeDevicePtr->write(FPGAName[3], pixelFEDCard.S_testreg,  HAL::HAL_NO_VERIFY, offset);
+    return;
+  }
 
 //Check data words
  if((pixelFEDCard.N_testreg&0x7e0)>0){
@@ -5341,6 +5598,11 @@ data = (pixelFEDCard.S_testreg&0xfff);
 
 ////////////////////////////////////////////////////////////////////////
 int PixelFEDInterface::set_ROCskip(int chnl, int roc){
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO set_ROCskip(chnl,roc) on a pilot-piggy FED!";
+    return -1;
+  }
+
 ////////////////////////////////////////////////////////////////////////
 //These bits allow a ROC to be skipped (1/fpga) if the ROC puts out
 //BBB instead of UlB B LD, this method checks the input and updates
@@ -5404,8 +5666,12 @@ int PixelFEDInterface::get_FeatureReg(void)
 return pixelFEDCard.FeatureRegister;	
 }
 ///////////////////////////////////////////////////////////////////////				
-int PixelFEDInterface::FixBBB(int chan,uint32_t *data)
-{ //bbb
+int PixelFEDInterface::FixBBB(int chan,uint32_t *data) { //bbb
+  if (hasPilotPiggy) {
+    cerr << "!!! REFUSING TO FixBBB on a pilot-piggy FED!";
+    return -1;
+  }
+
 //if((pixelFEDCard.fedNumber==38)&&chan==4){
 //cout<<"BBB entered channel "<<dec<<((pixelFEDCard.N_testreg&0x7e0)>>5)<<" trans channel "<<chan<<hex<<" testreg 0x"<<pixelFEDCard.N_testreg<<dec<<endl;}
 
