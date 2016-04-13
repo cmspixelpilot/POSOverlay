@@ -74,7 +74,7 @@ DependentLibraryDirs = $(BUILD_HOME)/pixel/PixelSupervisorConfiguration/lib/$(XD
 	$(BUILD_HOME)/pixel/lib \
 	$(XDAQ_ROOT)/lib
 
-DependentLibraries = PixelSupervisorConfiguration SiPixelObjects PixelConfigDBInterface tstoreclient PixelDCSUtilities PixelFEDDataTools PixelRootUtilities PixelXmlUtilities
+DependentLibraries = PixelSupervisorConfiguration SiPixelObjects PixelConfigDBInterface tstoreclient PixelDCSUtilities PixelFEDDataTools PixelRootUtilities PixelXmlUtilities PixelFEDInterface
 
 Libraries =
 ExternalObjects = -L$(ENV_CMS_TK_ONLINE_ROOT)/lib \
