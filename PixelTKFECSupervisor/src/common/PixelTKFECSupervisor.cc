@@ -1678,7 +1678,7 @@ std::string const msg_trace_oym = "stateConfiguring -- configure portcards";
 		if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After carteReset");
 		
 	      }
-	      else if (type == "uTCA") {
+	      else if (type == "CTA") {
 		std::string dummyConnections = "file://";
 		dummyConnections += getenv("ENV_CMS_TK_ONLINE_ROOT");
 		dummyConnections += "/generic/config/connections.xml";
