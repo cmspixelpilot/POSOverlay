@@ -108,7 +108,7 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
     std::string dummy;
 
     getline(in, dummy); // skip the column headings
-
+      
     do {
 	
 	std::string TKFECID;
@@ -117,7 +117,10 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
 	unsigned int address;
 	std::string uri;
 
-	in >> TKFECID >> std::dec >> crate >> type;
+	in >> TKFECID;
+        in >> crate;
+        in >> type;
+
 	if (type=="VME" || type=="PCI")
 	{
 		in >> std::hex>> address >>std::dec ;
@@ -126,8 +129,6 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
 	  in >> uri;
 	  address = 0;
 	}
-    else
-      assert(0);
 
 	if (!in.eof() ){
 	    //std::cout << TKFECID <<" "<< crate << " "  

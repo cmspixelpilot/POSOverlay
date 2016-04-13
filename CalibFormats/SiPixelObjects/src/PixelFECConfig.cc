@@ -112,10 +112,10 @@ PixelFECConfig::PixelFECConfig(std::string filename):
     std::string line;
 
     while (getline(in, line)) {
-      if (line.find_first_not_of(" \t") == std::string::npos) continue;
+      if (line[0] == '#' || line.find_first_not_of(" \t") == std::string::npos) continue;
       std::vector<std::string> tokens = tokenize(line, true);
       if (tokens.size() == 0) continue; // a comment line
-      assert(tokens.size() == 3 || tokens.size() == 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
+      assert(tokens.size() >= 3 && tokens.size() <= 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
 
       const unsigned fednumber        = strtoul(tokens[0].c_str(), 0, 10);
       const unsigned crate            = strtoul(tokens[1].c_str(), 0, 10);
@@ -126,6 +126,10 @@ PixelFECConfig::PixelFECConfig(std::string filename):
 
       if (tokens.size() == 3) {
 	tmp.setType("VME");
+      }
+      else if (tokens.size() == 4) {
+        assert(tokens[3] == "VME");
+        tmp.setType("VME");
       }
       else {
 	tmp.setType(tokens[3]);
@@ -252,7 +256,7 @@ void PixelFECConfig::writeASCII(std::string dir) const {
 
   std::vector< PixelFECParameters >::const_iterator i=fecconfig_.begin();
 
-  out <<" #FEC number     crate     vme base address     type    URI" <<endl;
+  out <<"#FEC number     crate     vme base address     type    URI" <<endl;
   for(;i!=fecconfig_.end();++i){
     out << i->getFECNumber()<<"               "
         << i->getCrate()<<"         "
