@@ -87,6 +87,8 @@ xoap::MessageReference PixelFEDBaselineCalibrationNew::execute(xoap::MessageRefe
     
     unsigned int fednumber=fedsAndChannels_[ifed].first;
     unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+    PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+    assert(fed);
     
     for (unsigned int ichannel=0; ichannel<fedsAndChannels_[ifed].second.size(); ++ichannel) {
       uint32_t buffer[pos::fifo1TranspDepth];
@@ -107,7 +109,7 @@ xoap::MessageReference PixelFEDBaselineCalibrationNew::execute(xoap::MessageRefe
       else {
 	timer.start();
 	if (debug) cout<<"Reading buffer"<<endl;;
-	int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+	int status = fed->drain_transBuffer(channel, buffer);
 	if (status<0){
 	  diagService_->reportError("Could not drain FIFO 1 in transparent mode!!",DIAGWARN);
 	  //	SendError(PixelSupervisor_,"PixelFEDSupervisor",theFEDConfiguration_->crate_,"[PixelFEDBaselineCalibrationNew::execute] Could not drain FIFO 1 in transparent mode!");
@@ -142,7 +144,7 @@ xoap::MessageReference PixelFEDBaselineCalibrationNew::execute(xoap::MessageRefe
       // FEDInterface_[vmeBaseAddress]->dump_BaselineCorr();
       // cout << "End baseline correction for vmeBaseAddress " << vmeBaseAddress << endl;
       
-      int baselinecorrection=FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel);
+      int baselinecorrection=fed->get_BaselineCorr(channel);
       
       if (baselinecorrection!=0) {
 	cout<<"[PixelFEDBaselineCalibrationNew::execute] Baseline Adjust for Channel "<<channel<<" is non-zero: "<<baselinecorrection<<endl;
@@ -407,7 +409,7 @@ xoap::MessageReference PixelFEDBaselineCalibrationNew::execute(xoap::MessageRefe
       }
     }
 
-    FEDInterface_[vmeBaseAddress]->setupFromDB(fedCard);
+    FEDInterface_[vmeBaseAddress]->setup(fedCard);
     FEDInterface_[vmeBaseAddress]->sendResets(1);
     //FEDInterface_[vmeBaseAddress]->BaselineCorr_off();
   }

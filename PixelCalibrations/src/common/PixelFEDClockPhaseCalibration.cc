@@ -254,18 +254,20 @@ xoap::MessageReference PixelFEDClockPhaseCalibration::execute(xoap::MessageRefer
     if (fedcrate==crate_){
       
       unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+      PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+      assert(fed);
       std::set<unsigned int>::iterator i_channel=i_fedsAndChannels->second.begin();
       
       for (;i_channel!=i_fedsAndChannels->second.end();++i_channel){
 	
 	uint32_t buffer[pos::fifo1TranspDepth];
 	unsigned int channel=*i_channel;
-	unsigned int buffersize=FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+	unsigned int buffersize=fed->drain_transBuffer(channel, buffer);
 	
 	//We have to turn off the base line correction as otherwise
 	//the correction gets confused by the invalide delay and phase
 	//settings
-	int baselinecor=FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel);
+	int baselinecor=fed->get_BaselineCorr(channel);
 	assert(baselinecor==0);
 
 	if (buffersize!=pos::fifo1TranspDataLength) {
@@ -337,7 +339,7 @@ xoap::MessageReference PixelFEDClockPhaseCalibration::execute(xoap::MessageRefer
 
   //FIXME is this really needed???
   for (FEDInterfaceMap::iterator i = FEDInterface_.begin(); i != FEDInterface_.end(); ++i)
-    i->sendResets(1);
+    i->second->sendResets(1);
 
 
   xoap::MessageReference reply = MakeSOAPMessageReference("ClockPhaseCalibrationDone");

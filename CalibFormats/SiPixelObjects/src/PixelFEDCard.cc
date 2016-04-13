@@ -7,6 +7,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
 
 #include <cassert>
+#include <cstring>
 #include <sstream>
 #include <map>
 #include <stdexcept>
@@ -26,6 +27,7 @@ PixelFEDCard::PixelFEDCard():
 // Read configuration from DB
 PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" "," "," ")
 {
+  assert(0);
   std::string mthn = "[PixelFEDCard::PixelFEDCard()]\t\t    " ;
   vector<string> ins = tableMat[0];
   map<string , int > colM;
@@ -111,10 +113,6 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
     NORTHCENTER_PWORD	      NOT NULL NUMBER(38)	     NC_Pword					
     SOUTH_PWORD 	      NOT NULL NUMBER(38)	     S_Pword					
     SOUTHCENTER_PWORD	      NOT NULL NUMBER(38)	     SC_Pword					
-    NORTH_SCOPECH 	      NOT NULL NUMBER(38)	     N_ScopeCh
-    NORTHCENTER_SCOPECH    NOT NULL NUMBER(38)	     NC_ScopeCh
-    SOUTH_SCOPECH 	      NOT NULL NUMBER(38)	     S_ScopeCh
-    SOUTHCENTER_SCOPECH    NOT NULL NUMBER(38)	     SC_ScopeCh
     SPECDAC		      NOT NULL NUMBER(38)	     SpecialDac 				
     OOS_LVL		      NOT NULL NUMBER(38)	     Ooslvl					
     ERR_LVL		      NOT NULL NUMBER(38)	     Errlvl					
@@ -209,10 +207,6 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
   colNames.push_back("NORTHCENTER_PWORD"       ); 
   colNames.push_back("SOUTH_PWORD"	       ); 
   colNames.push_back("SOUTHCENTER_PWORD"       ); 
-  colNames.push_back("NORTH_SCOPECH"        );
-  colNames.push_back("NORTHCENTER_SCOPECH"  );
-  colNames.push_back("SOUTH_SCOPECH"        );
-  colNames.push_back("SOUTHCENTER_SCOPECH"  );
   colNames.push_back("SPECDAC"    	       ); 
   colNames.push_back("OOS_LVL"    	       ); 
   colNames.push_back("ERR_LVL"    	       ); 
@@ -323,12 +317,6 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
       SC_Pword     	= atoi(tableMat[1][colM["SOUTHCENTER_PWORD"]	   ].c_str()) ;
       S_Pword      	= atoi(tableMat[1][colM["SOUTH_PWORD"]      	   ].c_str()) ;
       
-      //Bits (1st 4) used to set the channel you want to read in spy fifo2
-      N_ScopeCh      = atoi(tableMat[1][colM["NORTH_SCOPECH"]      ].c_str()) ;
-      NC_ScopeCh     = atoi(tableMat[1][colM["NORTHCENTER_SCOPECH"]].c_str()) ;
-      SC_ScopeCh     = atoi(tableMat[1][colM["SOUTHCENTER_SCOPECH"]].c_str()) ;
-      S_ScopeCh      = atoi(tableMat[1][colM["SOUTH_SCOPECH"]      ].c_str()) ;
-
       Nbaseln      	= atoi(tableMat[1][colM["NORTH_BADJ"]       	   ].c_str()) ;
       NCbaseln     	= atoi(tableMat[1][colM["NORTHCENTER_BADJ"] 	   ].c_str()) ;
       SCbaseln     	= atoi(tableMat[1][colM["SOUTHCENTER_BADJ"] 	   ].c_str()) ;
@@ -403,6 +391,7 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
   Ccntrl_original=Ccntrl;
   modeRegister_original=modeRegister;
 
+  cntrl_utca_original = cntrl_utca;
 
   Ncntrl_original=Ncntrl;
   NCcntrl_original=NCcntrl;
@@ -650,9 +639,50 @@ PixelFEDCard::PixelFEDCard(string fileName):
   FILE *infile = fopen((fileName.c_str()),"r");
   if (infile == NULL)  throw std::runtime_error("Failed to open FED Card parameter file: "+fileName); 
 
-  //Fed Base Address
-  fscanf(infile,"FED Base address                         :%lx\n",
+  size_t linelen = 0;
+  char* line = 0;
+  getline(&line, &linelen, infile);
+
+  if (strcmp(line, "Type: VMEPiggy") == 0) {
+    type = VMEPiggy;
+
+    //Bits (1st 4) used to set the channel you want to read in spy fifo2
+    fscanf(infile,"N  Scope channel(0-8):%x\n", &N_ScopeCh);
+    fscanf(infile,"NC Scope channel(0-8):%x\n", &NC_ScopeCh);
+    fscanf(infile,"SC Scope channel(0-8):%x\n", &SC_ScopeCh);
+    fscanf(infile,"S  Scope channel(0-8):%x\n", &S_ScopeCh);
+    if (localDEBUG) {
+      printf("N  Scope channel(0-8):%x\n",N_ScopeCh);
+      printf("NC Scope channel(0-8):%x\n",NC_ScopeCh);
+      printf("SC Scope channel(0-8):%x\n",SC_ScopeCh);
+      printf("S  Scope channel(0-8):%x\n",S_ScopeCh);
+    }
+
+    getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
+  }
+  else if (strcmp(line, "Type: CTA") == 0) {
+    type = CTA;
+
+    fscanf(infile, "Control bits: %llx\n", (unsigned long long*)&cntrl_utca);
+    if (localDEBUG) printf("Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
+
+    fscanf(infile, "Transparent+scope channel: %x\n", &TransScopeCh);
+    if (localDEBUG) printf("Transparent+scope channel: %x\n", TransScopeCh);
+
+    fscanf(infile, "PACKET_NB: %x\n", &PACKET_NB);
+    if (localDEBUG) printf("PACKET_NB: %x\n", PACKET_NB);
+
+    getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
+  }
+  else {
+    // VME files don't have to start with Type: line and won't have extra lines for new params -- jump straight to the sscanf.
+  }
+
+  //Fed Base Address = unique key for non-VME
+  sscanf(line,"FED Base address                         :%lx\n",
          &FEDBASE_0);
+  free(line);
+
   fscanf(infile,"FEDID Number                             :%lx\n",
          &fedNumber);
 
@@ -664,7 +694,8 @@ PixelFEDCard::PixelFEDCard(string fileName):
  
   // Number of ROCs
   int ijx=0;
-  for(int i=0;i<36;i++){
+  int nrocsmax = type == CTA ? 48 : 36;
+  for(int i=0;i<nrocsmax;i++){
   ijx=i+1;
     fscanf(infile,"Number of ROCs Chnl %d:%d \n",&ijx,&NRocs[i]);
     if(localDEBUG)printf("Number of ROCs per Chnl %d:%d \n",ijx,NRocs[i]);
@@ -879,24 +910,6 @@ PixelFEDCard::PixelFEDCard(string fileName):
     printf("Private 8 bit word chnls 19-27:%x\n",SC_Pword);
   if(localDEBUG)
     printf("Private 8 bit word chnls 28-36:%x\n",S_Pword);
-
-      //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fscanf(infile,"N  Scope channel(0-8):%x\n",
-         &N_ScopeCh);
-  fscanf(infile,"NC Scope channel(0-8):%x\n",
-         &NC_ScopeCh);
-  fscanf(infile,"SC Scope channel(0-8):%x\n",
-         &SC_ScopeCh);
-  fscanf(infile,"S  Scope channel(0-8):%x\n",
-         &S_ScopeCh);
-  if(localDEBUG)
-    printf("N  Scope channel(0-8):%x\n",N_ScopeCh);
-  if(localDEBUG)
-    printf("NC Scope channel(0-8):%x\n",NC_ScopeCh);
-  if(localDEBUG)
-    printf("SC Scope channel(0-8):%x\n",SC_ScopeCh);
-  if(localDEBUG)
-    printf("S  Scope channel(0-8):%x\n",S_ScopeCh);
 
        //These bit sets the special dac mode for random triggers 
   fscanf(infile,"Special Random testDAC mode (on = 0x1, off=0x0):%x\n",
@@ -1148,6 +1161,7 @@ PixelFEDCard::PixelFEDCard(string fileName):
   Ccntrl_original=Ccntrl;
   modeRegister_original=modeRegister;
 
+  cntrl_utca_original = cntrl_utca;
 
   Ncntrl_original=Ncntrl;
   NCcntrl_original=NCcntrl;
@@ -1166,6 +1180,7 @@ PixelFEDCard::PixelFEDCard(string fileName):
 // Added by Dario (March 26th 2008)
 void PixelFEDCard::clear(void) 
 {
+  type = 0;
   FEDBASE_0 = 0 ;
   fedNumber = 999 ;
   for(int i=0;i<36;i++){
@@ -1283,7 +1298,25 @@ void PixelFEDCard::writeASCII(std::string dir) const{
     cout<< __LINE__ << "]\t" << mthn << "Could not open file: " << filename << " for writing" << endl; 
     return;
   }
-  
+
+  if (type == VMEPiggy) {
+    fprintf(outfile, "Type: VMEPiggy\n");
+
+    //Bits (1st 4) used to set the channel you want to read in spy fifo2
+    fprintf(outfile,"N  Scope channel(0-8):%x\n", N_ScopeCh);
+    fprintf(outfile,"NC Scope channel(0-8):%x\n", NC_ScopeCh);
+    fprintf(outfile,"SC Scope channel(0-8):%x\n", SC_ScopeCh);
+    fprintf(outfile,"S  Scope channel(0-8):%x\n", S_ScopeCh);
+  }
+  else if (type == CTA) {
+    fprintf(outfile, "Type: CTA\n");
+    fprintf(outfile, "Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
+    fprintf(outfile, "Transparent+scope channel: %x\n", TransScopeCh);
+    fprintf(outfile, "PACKET_NB: %x\n", PACKET_NB);
+  }
+  else
+    fprintf(outfile, "Type: VME\n");
+
   //Fed Base Address
   fprintf(outfile,"FED Base address                         :0x%lx\n",
          FEDBASE_0);
@@ -1292,7 +1325,8 @@ void PixelFEDCard::writeASCII(std::string dir) const{
 
   // Number of ROCs
   int ijx=0;
-  for(int i=0;i<36;i++){
+  int nrocsmax = type == CTA ? 48 : 36;
+  for(int i=0;i<nrocsmax;i++){
   ijx=i+1;
     fprintf(outfile,"Number of ROCs Chnl %d:%d\n",ijx,NRocs[i]);
 }
@@ -1418,16 +1452,6 @@ void PixelFEDCard::writeASCII(std::string dir) const{
          SC_Pword);
   fprintf(outfile,"Private 8 bit word chnls 28-36:0x%x\n",
          S_Pword);
-
-       //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fprintf(outfile,"N  Scope channel(0-8):%x\n",
-	 N_ScopeCh);
-  fprintf(outfile,"NC Scope channel(0-8):%x\n",
-	 NC_ScopeCh);
-  fprintf(outfile,"SC Scope channel(0-8):%x\n",
-	 SC_ScopeCh);
-  fprintf(outfile,"S  Scope channel(0-8):%x\n",
-	 S_ScopeCh);
 
        //These bit sets the special dac mode for random triggers 
   fprintf(outfile,"Special Random testDAC mode (on = 0x1, off=0x0):0x%x\n",
@@ -1703,6 +1727,7 @@ void PixelFEDCard::writeXMLHeader(pos::PixelConfigKey key, int version, std::str
 //=============================================================================================
 void PixelFEDCard::writeXML( std::ofstream *out) const 
 {
+  assert(0);
   std::string mthn = "[PixelFEDCard::writeXML()]\t\t\t    " ;
 
   *out << "  <DATA>"                                                                              	  << std::endl ;
@@ -1808,6 +1833,7 @@ void PixelFEDCard::writeXML( std::ofstream *fedstream,
                              std::ofstream *rocstream,
                              std::ofstream *tbmstream) const 
 {
+  assert(0);
   std::string mthn = "[PixelFEDCard::writeXML()]\t\t\t    " ;
 
   for(int i=0;i<36;i++)
@@ -2182,6 +2208,9 @@ void PixelFEDCard::writeXML(pos::PixelConfigKey key, int version, std::string pa
 
 //=============================================================================================
 uint64_t PixelFEDCard::enabledChannels() {
+  if (type == CTA)
+    return ~cntrl_utca;
+
   uint64_t channels=0;
 // return a 64-bit word with low 36 bits set if a channel is enabled
 // if bits are set in the control registers, transfer of data from 
@@ -2194,12 +2223,12 @@ uint64_t PixelFEDCard::enabledChannels() {
 }
 
 bool PixelFEDCard::useChannel(unsigned int iChannel){
-  assert(iChannel>0&&iChannel<37);
+  assert(iChannel>0 && iChannel<(type == CTA ? 49 : 37));
   return (enabledChannels()>>(iChannel-1))&0x1LL;
 } 
 
 void PixelFEDCard::setChannel(unsigned int iChannel, bool mode){
-  assert(iChannel>0&&iChannel<37);
+  assert(iChannel>0 && iChannel<(type == CTA ? 49 : 37));
   long long mask=enabledChannels();
   long long bit=0x1LL<<(iChannel-1);
   if (mode) {
@@ -2210,17 +2239,23 @@ void PixelFEDCard::setChannel(unsigned int iChannel, bool mode){
     mask=mask&bit;
   }
   mask=~mask;
-  Ncntrl=(Ncntrl&  0xffff0000LL) | (mask&  0x1ffLL);
-  mask=mask>>9;
-  NCcntrl=(NCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
-  mask=mask>>9;
-  SCcntrl=(SCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
-  mask=mask>>9;
-  Scntrl=(Scntrl&  0xffff0000LL) | (mask&  0x1ffLL);
- 
+
+  if (type == CTA) {
+    cntrl_utca = mask;
+  }
+  else {
+    Ncntrl=(Ncntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+    mask=mask>>9;
+    NCcntrl=(NCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+    mask=mask>>9;
+    SCcntrl=(SCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+    mask=mask>>9;
+    Scntrl=(Scntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+  } 
 }  
 
 void PixelFEDCard::restoreBaselinAndChannelMasks(){
+  cntrl_utca = cntrl_utca_original;
 
   Ncntrl=Ncntrl_original;
   NCcntrl=NCcntrl_original;
@@ -2242,10 +2277,3 @@ void PixelFEDCard::restoreControlAndModeRegister(){
   modeRegister=modeRegister_original;
 
 }
-
-/* Emacs specific customization
-   ;;; Local Variables:     ***
-   ;;; indent-tabs-mode:nil ***
-   ;;; c-set-style:gnu      ***
-   ;;; End:                 ***
-*/

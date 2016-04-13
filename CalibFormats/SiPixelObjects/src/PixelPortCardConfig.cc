@@ -25,6 +25,7 @@ using namespace pos;
 //added by Umesh
 PixelPortCardConfig::PixelPortCardConfig(vector < vector< string> >  &tableMat):PixelConfigBase(" "," "," ")
 {
+  assert(0);
   string mthn = "]\t[PixelPortCardConfig::PixelPortCardConfig()]\t\t    " ;
   map<string , int > colM;
   vector<string> colNames;
@@ -1420,6 +1421,7 @@ void PixelPortCardConfig::writeXML(std::ofstream *outstream,
                                    std::ofstream *out1stream,
                                    std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelPortCardConfig::writeXML()]\t\t\t    " ;
 
 

@@ -25,8 +25,6 @@ PixelFEDTBMDelayCalibration::PixelFEDTBMDelayCalibration(const PixelFEDSuperviso
 
 void PixelFEDTBMDelayCalibration::initializeFED() {
   setFEDModeAndControlRegister(0x8, 0x30010);
-  printIfSlinkHeaderMessedup_off();
-  sendResets();
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::MessageReference msg) {
@@ -127,7 +125,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
-    PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
+    PixelFEDInterfaceBase* iFED = FEDInterface_[vmeBaseAddress];
 
     uint32_t fifoStatus = 0;
     const int MaxChans = 37;    

@@ -1,9 +1,5 @@
 #ifndef PixelConfigurationVerifier_h
 #define PixelConfigurationVerifier_h
-
-// JMTBAD this should be done by the fed card class itself
-
-
 /*! \file CalibFormats/SiPixelObjects/interface/PixelConfigurationVerifier.h
 *   \brief This class performs various tests to make sure that configurations are consistent
 *
@@ -14,7 +10,6 @@
 #include <string>
 #include <cassert>
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
-#include "CalibFormats/SiPixelObjects/interface/PixelPh1FEDCard.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelNameTranslation.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDetectorConfig.h"
 
@@ -37,10 +32,6 @@ namespace pos{
     //Warning messages are printed if a mismatch is found
     //and the fedcards are modified.
     void checkChannelEnable(PixelFEDCard *theFEDCard,
-			    PixelNameTranslation *theNameTranslation,
-			    PixelDetectorConfig *theDetConfig);
- 
-    void checkChannelEnable(PixelPh1FEDCard *theFEDCard,
 			    PixelNameTranslation *theNameTranslation,
 			    PixelDetectorConfig *theDetConfig);
  

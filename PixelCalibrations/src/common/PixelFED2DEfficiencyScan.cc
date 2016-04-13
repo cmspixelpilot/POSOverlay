@@ -58,7 +58,7 @@ xoap::MessageReference PixelFED2DEfficiencyScan::execute(xoap::MessageReference 
 
       //cout<<" crate/fed "<<fedcrate<<" "<<fednumber<<endl;
 
-      PixelFEDInterface* iFED=FEDInterfaceFromFEDnumber_[fednumber];
+      PixelFEDInterfaceBase* iFED=FEDInterfaceFromFEDnumber_[fednumber];
       
       uint64_t buffer64[fifo3Depth];
       int status=iFED->spySlink64(buffer64);

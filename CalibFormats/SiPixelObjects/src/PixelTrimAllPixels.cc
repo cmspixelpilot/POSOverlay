@@ -221,6 +221,7 @@ void PixelTrimAllPixels::generateConfiguration(PixelFECConfigInterface* pixelFEC
 					       PixelNameTranslation* trans,
 					       const PixelMaskBase& pixelMask) const{
 
+  bool printOnce=true; // print only one message per module
   for(unsigned int i=0;i<trimbits_.size();i++){
 
     std::vector<unsigned char> trimAndMasks(4160);
@@ -228,14 +229,17 @@ void PixelTrimAllPixels::generateConfiguration(PixelFECConfigInterface* pixelFEC
     int n=i;
     // Recover the misligned mask and trim rocs (roc order!). A temporary fix.
     if( (trimbits_[i].name().roc()) != (pixelMask.getMaskBits(i).name().roc()) ) { // wrong roc
-      std::cout<<" Wrong ROC for masks "<<i<<" "
-	       <<trimbits_[i].name()<<" "<<trimbits_[i].name().roc()<<" "
-	       <<pixelMask.getMaskBits(i).name()<<" "<<pixelMask.getMaskBits(i).name().roc()<<std::endl;
+
+      if(printOnce) std::cout<<" Wrong ROC for masks "<<i<<" "
+			     <<trimbits_[i].name()<<" "<<trimbits_[i].name().roc()<<" "
+			     <<pixelMask.getMaskBits(i).name()<<" "
+			     <<pixelMask.getMaskBits(i).name().roc()<<" ";
  
       for(unsigned int j=0;j<trimbits_.size();j++) {
 	if( pixelMask.getMaskBits(j).name() == trimbits_[i].name() ) {
 	  n=j;
-	  std::cout<<" found right roc "<<pixelMask.getMaskBits(j).name()<<std::endl;
+	  if(printOnce) std::cout<<" found right roc "<<pixelMask.getMaskBits(j).name()<<std::endl;
+	  printOnce=false;
 	  break;
 	}
 	if(j==(trimbits_.size()-1) ) std::cout<<" right roc not found "<<std::endl;

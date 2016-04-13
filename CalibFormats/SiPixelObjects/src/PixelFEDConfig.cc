@@ -164,13 +164,15 @@ PixelFEDConfig::PixelFEDConfig(std::string filename):
       PixelFEDParameters tmp;
       tmp.setFEDParameters(fednumber, crate, vme_base_address);
 
-      if (tokens.size() == 3 || tokens[3] != "uTCA") {
+      if (tokens.size() == 3) {
 	tmp.setType("VME");
       }
       else {
-	tmp.setType("uTCA");
+	tmp.setType(tokens[3]);
         tmp.setURI(tokens[4]);
       }
+
+      assert(tmp.getType() == "VME" || tmp.getType() == "VMEPiggy" || tmp.getType() == "CTA");
 
       fedconfig_.push_back(tmp); 
     }

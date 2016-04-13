@@ -59,6 +59,8 @@ xoap::MessageReference PixelFEDBaselineCalibrationWithTestDACs::execute(xoap::Me
   ++iteration;
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) {
+    PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(iFED->second);
+    assert(fed);
 
     unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, iFED->first);
 
@@ -71,7 +73,7 @@ xoap::MessageReference PixelFEDBaselineCalibrationWithTestDACs::execute(xoap::Me
       unsigned int channel=*ichannel;
 
       uint32_t buffer1[pos::fifo1TranspDepth], buffer[pos::fifo1TranspDepth-13];
-      int status=iFED->second->drain_transBuffer(channel, buffer1);
+      int status=fed->drain_transBuffer(channel, buffer1);
       for (unsigned int i=0; i<pos::fifo1TranspDepth-13; ++i) {
         buffer[i]=buffer1[i+13];
       }
@@ -85,7 +87,7 @@ xoap::MessageReference PixelFEDBaselineCalibrationWithTestDACs::execute(xoap::Me
       decodedRawData.drawToFile(tbmSignalFilename);
       std::stringstream *tbmSignal=new std::stringstream("~");      
 
-      int baselinecorrection=iFED->second->get_BaselineCorr(channel);
+      int baselinecorrection=fed->get_BaselineCorr(channel);
       //cout<<"Baseline Adjust for Channel "<<channel<<" is "<<baselinecorrection<<endl;
       assert(baselinecorrection==0);
 
@@ -224,7 +226,8 @@ xoap::MessageReference PixelFEDBaselineCalibrationWithTestDACs::execute(xoap::Me
   } // feds
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) {
-
+    PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(iFED->second);
+    assert(fed);
     unsigned int fednumber=theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_, iFED->first);
     PixelFEDCard fedCard=iFED->second->getPixelFEDCard();
 
@@ -261,10 +264,10 @@ xoap::MessageReference PixelFEDBaselineCalibrationWithTestDACs::execute(xoap::Me
       }
     }
 
-    iFED->second->setPixelFEDCard(fedCard);
-    iFED->second->set_opto_params();
-    iFED->second->set_offset_dacs();
-    iFED->second->BaselineCorr_off();
+    fed->setPixelFEDCard(fedCard);
+    fed->set_opto_params();
+    fed->set_offset_dacs();
+    fed->BaselineCorr_off();
   }
 
   if (replyString=="FEDBaselineCalibrationWithTestDACsDone") {

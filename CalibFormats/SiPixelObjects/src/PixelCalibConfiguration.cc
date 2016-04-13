@@ -25,6 +25,7 @@ using namespace std;
 PixelCalibConfiguration::PixelCalibConfiguration(std::vector< std::vector<std::string> > & tableMat):
 						 PixelCalibBase(), PixelConfigBase("","","") 
 {
+  assert(0);
   std::string mthn = "[PixelCalibConfiguration::PixelCalibConfiguration()]\t    " ;
   std::map<std::string , int > colM;
   std::vector<std::string > colNames;
@@ -82,7 +83,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::vector< std::vector<std::s
   
   if (tmp=="Mode:"){
     in >> mode_;
-//    std::cout << __LINE__ << "]\t" << mthn << "mode=" << mode_ << std::endl;
+    //	std::cout << __LINE__ << "]\t" << mthn << "mode=" << mode_ << std::endl;
     in >>tmp;
   } else {
     mode_="FEDChannelOffsetPixel";
@@ -1938,6 +1939,7 @@ void PixelCalibConfiguration::writeXML( std::ofstream *outstream,
                                 	std::ofstream *out1stream,
                                 	std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelCalibConfiguration::writeXML()]\t\t    " ;
   
 
@@ -1963,3 +1965,4 @@ void PixelCalibConfiguration::writeXMLTrailer(std::ofstream *outstream,
   std::cout << __LINE__ << "]\t" << mthn << "Data written "   						  << std::endl ;
 
 }
+

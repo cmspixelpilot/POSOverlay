@@ -62,7 +62,7 @@ xoap::MessageReference PixelFEDCalDelCalibration::execute(xoap::MessageReference
 
       unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
  
-      PixelFEDInterface* iFED=FEDInterface_[vmeBaseAddress];
+      PixelFEDInterfaceBase* iFED=FEDInterface_[vmeBaseAddress];
 
       uint64_t buffer64[fifo3Depth];
       int status=iFED->spySlink64(buffer64);

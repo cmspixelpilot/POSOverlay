@@ -94,12 +94,6 @@ void PixelFEDCalibrationBase::setFEDModeAndControlRegister(unsigned int mode,
   }
 }
 
-void PixelFEDCalibrationBase::sendResets() {
-  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
-    iFED->second->sendResets();
-  }
-}
-
 void PixelFEDCalibrationBase::baselinecorr_off(){
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 

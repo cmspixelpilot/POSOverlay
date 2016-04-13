@@ -9,23 +9,23 @@
 
 using namespace std;
 
-PixelFEDInterfacePh1::PixelFEDInterfacePh1(RegManager* const rm)
-  : Printlevel(1),
-    regManager(rm),
+PixelFEDInterfacePh1::PixelFEDInterfacePh1(RegManager* const rm, const std::string& datbase)
+  : regManager(rm),
+    fitel_fn_base(datbase),
     slink64calls(0)
 {
-  num_SEU.assign(96, 0);
+  num_SEU.assign(48, 0);
 }
 
 PixelFEDInterfacePh1::~PixelFEDInterfacePh1() {
 }
 
 int PixelFEDInterfacePh1::setup(const string& fn) {
-  setPixelFEDCard(pos::PixelPh1FEDCard(fn));
+  setPixelFEDCard(pos::PixelFEDCard(fn));
   return setup();
 }
 
-int PixelFEDInterfacePh1::setup(pos::PixelPh1FEDCard& c) {
+int PixelFEDInterfacePh1::setup(pos::PixelFEDCard c) {
   setPixelFEDCard(c);
   return setup();
 }
@@ -47,12 +47,12 @@ int PixelFEDInterfacePh1::setup() {
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
-    {"pixfed_ctrl_regs.PACKET_NB", card.packet_nb}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
+    {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
-    {"pixfed_ctrl_regs.TBM_MASK_1", card.cntrl_1},
-    {"pixfed_ctrl_regs.TBM_MASK_2", card.cntrl_2},
-    {"pixfed_ctrl_regs.TBM_MASK_3", card.cntrl_3},
-    {"fe_ctrl_regs.fifo_config.channel_of_interest", card.TransScopeCh},
+    {"pixfed_ctrl_regs.TBM_MASK_1", pixelFEDCard.cntrl_utca & 0xFFFFFFFFULL},
+    {"pixfed_ctrl_regs.TBM_MASK_2", pixelFEDCard.cntrl_utca & (0xFFFFFFFFULL << 32)},
+    {"pixfed_ctrl_regs.TBM_MASK_3", 0xFFFFFFFF},
+    {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"pixfed_ctrl_regs.TRIGGER_SEL", 0},
     {"pixfed_ctrl_regs.data_type", 0}, // 2 = fake data?
     {"fe_ctrl_regs.decode_reg_reset", 1}, // init FE spy fifos etc JMTBAD take out if this doesn't work any more
@@ -1011,33 +1011,15 @@ bool PixelFEDInterfacePh1::isNewEvent(uint32_t nTries) {
 
 int PixelFEDInterfacePh1::enableSpyMemory(const int enable) {
   // card.modeRegister ?
-  return setModeRegister(card.modeRegister);
+  return setModeRegister(pixelFEDCard.modeRegister);
 }
 
-uint32_t PixelFEDInterfacePh1::get_VMEFirmwareDate() {
-  uint32_t iwrdat=0;
-  // read here
-  cout<<"FEDID:"<<card.fedNumber<<" VME FPGA (update via jtag pins only) firmware date d/m/y "
-      <<dec<<((iwrdat&0xff000000)>>24)<<"/"
-      <<dec<<((iwrdat&0xff0000)>>16)<<"/"
-      <<dec<<((((iwrdat&0xff00)>>8)*100)+(iwrdat&0xff))<<endl;
-  return iwrdat;
-}
-
-uint32_t PixelFEDInterfacePh1::get_FirmwareDate(int chip) {
-  uint32_t iwrdat=0;
-  if(chip != 1) return 0;
-  //read here
-  cout<<"FEDID:"<<card.fedNumber<<" FPGA firmware date d/m/y "
-      <<dec<<((iwrdat&0xff000000)>>24)<<"/"
-      <<dec<<((iwrdat&0xff0000)>>16)<<"/"
-      <<dec<<((((iwrdat&0xff00)>>8)*100)+(iwrdat&0xff))<<endl;
-  return iwrdat;
+void PixelFEDInterfacePh1::printBoardInfo() {
 }
 
 int PixelFEDInterfacePh1::loadFedIDRegister() {
-  if(Printlevel&1)cout<<"Load FEDID register from DB 0x"<<hex<<card.fedNumber<<dec<<endl;
-  return setFedIDRegister(card.fedNumber);
+  if(Printlevel&1)cout<<"Load FEDID register from DB 0x"<<hex<<pixelFEDCard.fedNumber<<dec<<endl;
+  return setFedIDRegister(pixelFEDCard.fedNumber);
 }
 
 int PixelFEDInterfacePh1::setFedIDRegister(const int value) {
@@ -1053,14 +1035,14 @@ int PixelFEDInterfacePh1::getFedIDRegister() {
 }
 
 int PixelFEDInterfacePh1::loadControlRegister() {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Load Control register from DB 0x"<<hex<<card.Ccntrl<<dec<<endl;
-  return setControlRegister(card.Ccntrl);
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Control register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
+  return setControlRegister(pixelFEDCard.Ccntrl);
 }
 
 int PixelFEDInterfacePh1::setControlRegister(const int value) {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
   // write here
-  card.Ccntrl=value; // stored this value   
+  pixelFEDCard.Ccntrl=value; // stored this value   
   return false;
 }
 
@@ -1069,14 +1051,14 @@ int PixelFEDInterfacePh1::getControlRegister() {
 }
 
 int PixelFEDInterfacePh1::loadModeRegister() {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Load Mode register from DB 0x"<<hex<<card.Ccntrl<<dec<<endl;
-  return setModeRegister(card.modeRegister);
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Mode register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
+  return setModeRegister(pixelFEDCard.modeRegister);
 }
 
 int PixelFEDInterfacePh1::setModeRegister(int value) {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
   // write here
-  card.modeRegister=value; // stored this value   
+  pixelFEDCard.modeRegister=value; // stored this value   
   return false;
 }
 
@@ -1105,7 +1087,7 @@ bool PixelFEDInterfacePh1::checkFEDChannelSEU() {
   // Note: since N_enbable_expected is bitset<9>, this only compares the first 9 bits
   if (enbable_current != enbable_expected && enbable_current != enbable_last) {
     foundSEU = true;
-    cout << "Detected FEDChannel SEU in FED " << card.fedNumber << endl;
+    cout << "Detected FEDChannel SEU in FED " << pixelFEDCard.fedNumber << endl;
     cout << "Expected " << enbable_expected << " Found " << enbable_current << " Last " << enbable_last << endl;
     incrementSEUCountersFromEnbableBits(num_SEU, enbable_current, enbable_last);
   }
@@ -1129,7 +1111,7 @@ bool PixelFEDInterfacePh1::checkSEUCounters(int threshold) {
     Otherwise, return false
   */
   bool return_val = false;
-  cout << "Checking for more than " << threshold << " SEUs in FED " << card.fedNumber << endl;
+  cout << "Checking for more than " << threshold << " SEUs in FED " << pixelFEDCard.fedNumber << endl;
   cout << "Channels with too many SEUs: ";
   for (size_t i=0; i<48; i++)
     {
@@ -1141,7 +1123,7 @@ bool PixelFEDInterfacePh1::checkSEUCounters(int threshold) {
     }
   if (return_val) {
     cout << ". Disabling." << endl;
-    cout << "Setting runDegraded flag for FED " << card.fedNumber << endl;
+    cout << "Setting runDegraded flag for FED " << pixelFEDCard.fedNumber << endl;
     runDegraded_ = true;
   } else cout << endl;
   return return_val;
@@ -1160,7 +1142,7 @@ void PixelFEDInterfacePh1::resetEnbableBits() {
 }
 
 void PixelFEDInterfacePh1::storeEnbableBits() {
-  enbable_expected = masks_to_enbable(card.cntrl_1, card.cntrl_2, card.cntrl_3);
+  enbable_expected = pixelFEDCard.cntrl_utca;
   enbable_last = enbable_expected;
 }
 
@@ -1169,7 +1151,7 @@ void PixelFEDInterfacePh1::resetSEUCountAndDegradeState(void) {
   // reset the state back to running 
   runDegraded_ = false;
   // clear the count flag
-  num_SEU.assign(96, 0);
+  num_SEU.assign(48, 0);
   // reset the expected state to default
   storeEnbableBits();
 }
@@ -1195,7 +1177,7 @@ int PixelFEDInterfacePh1::getXYCount() {
 void PixelFEDInterfacePh1::resetXYCount() {
 }
 
-int PixelFEDInterfacePh1::getNumFakeEvents() {
+uint32_t PixelFEDInterfacePh1::getNumFakeEvents() {
   return 0;
 }
 

@@ -461,7 +461,8 @@ void PixelFEDROCDelay25Calibration::readAssignLastDAC(unsigned int passedRunNumb
   for(i_FED = 0; i_FED < fedsAndChannels_.size(); ++i_FED){                                                       //loop to iterate through FED interfaces
     unsigned int fedNumber = fedsAndChannels_[i_FED].first;
     uint32_t vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fedNumber);
-    PixelFEDInterface *fed_interface = FEDInterface_[vmeBaseAddress];
+    PixelFEDInterface *fed_interface = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+    assert(fed_interface);
     uint32_t buffer[1024];
     unsigned int numWords = fed_interface->drainLastDACFifo(buffer);
     LastDACFIFODecoder lastDACInfo(buffer, numWords);

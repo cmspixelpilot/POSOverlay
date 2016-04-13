@@ -760,12 +760,14 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
   for (unsigned int ifed=0; ifed<fedsAndChannels_.size(); ++ifed) {
     unsigned int  fedNumber      = fedsAndChannels_[ifed].first;
     unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fedNumber);
+    PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+    assert(fed);
 
     for (unsigned int ichannel=0; ichannel<fedsAndChannels_[ifed].second.size(); ++ichannel) {
       uint32_t buffer[pos::fifo1TranspDepth];
       unsigned int  channel = fedsAndChannels_[ifed].second[ichannel];
-      
-      int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+
+      int status = fed->drain_transBuffer(channel, buffer);
       if (status!=(int)pos::fifo1TranspDataLength) {  // if error 
 	std::cout<<"PixelFEDSupervisor::AddressLevelCalibrationWithPixels -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode status="<<status<<std::endl;
 
@@ -778,7 +780,7 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	//outfile<<WRITE_LENGTH<<" "<<channel<<" "<<fedNumber<<" "
 	//    <<FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel)<<endl;
 	cout<<" dump len="<<WRITE_LENGTH<<" "<<channel<<" "<<fedNumber<<" "
-	    <<FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel)<<endl;
+	    <<fed->get_BaselineCorr(channel)<<endl;
 	for(int i=0;i<WRITE_LENGTH;++i) {
 	  int data = (buffer[i]  & 0xffc00000)>>22; // analyze word
 	  //outfile<<data<<" "<<i<<" "<<hex<<buffer[i]<<dec<<endl;
@@ -816,7 +818,7 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	//Pushing back FED Automatic Baseline Correction values into containers
 	Moments *baselineCorrectionOfChannel=&(baselineCorrection[vmeBaseAddress][channel]);
 
-	int baselinecor=FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel);
+	int baselinecor=fed->get_BaselineCorr(channel);
 	//std::cout << "channel="<<channel<<" correction="<<baselinecor<<std::endl;
 	
 	baselineCorrectionOfChannel->push_back(baselinecor);

@@ -523,7 +523,7 @@ void PixelFEDInterface::sendResets(unsigned which) {
   }
 }
 
-void PixelFEDInterface::armDigFEDOSDFifo(int channel, int rochi, int roclo) {
+void PixelFEDInterface::armOSDFifo(int channel, int rochi, int roclo) {
   if (!hasPilotPiggy) {
     cerr << "!!! REFUSING TO armDigFEDOSDFifo on a non-pilot-piggy FED!";
     return;
@@ -540,7 +540,7 @@ void PixelFEDInterface::armDigFEDOSDFifo(int channel, int rochi, int roclo) {
 #endif
 }
 
-uint32_t PixelFEDInterface::readDigFEDOSDFifo(int channel) {
+uint32_t PixelFEDInterface::readOSDFifo(int channel) {
   if (!hasPilotPiggy) {
     cerr << "!!! REFUSING TO readDigFEDOSDFifo on a non-pilot-piggy FED!";
     return 0;
@@ -679,7 +679,7 @@ void PixelFEDInterface::readDigFEDTempFifo(){
   
 }
 
-void PixelFEDInterface::readDigFEDStatus(bool verbose, bool override_timeout) {
+void PixelFEDInterface::readPhases(bool verbose, bool override_timeout) {
   if (!hasPilotPiggy) {
     cerr << "!!! REFUSING TO readDigFEDStatus on a non-pilot-piggy FED!";
     return;
@@ -927,7 +927,7 @@ void PixelFEDInterface::loadFPGADigFED(){
 std::string filnam(getenv("BUILD_HOME"));
 filnam+="/pixel/PixelFEDInterface/dat/";
 filnam+="params_fed.dat";
-setupFromDB(filnam);
+setup(filnam);
 
 uint32_t value = 0x0e;
 int status = setControlRegister(value);
@@ -1243,14 +1243,14 @@ int PixelFEDInterface::TTCRX_I2C_REG_WRITE( int Register_Nr, int Value) {
 ///////////////////////////////////////////////////////////////////////
 // Read the file with the FED setup parameters.
 // Download these parameters to the FED. 
-int PixelFEDInterface::setupFromDB(string fileName) {
-  return setupFromDB(PixelFEDCard(fileName));
+int PixelFEDInterface::setup(const string& fileName) {
+  return setup(PixelFEDCard(fileName));
 }
 /////////////////////////////////////////////////////////////////////////
 // Read the file with the FED setup parameters.
 // Download these parameters to the FED. 
 //int PixelFEDInterface::setupFromDB(PixelFEDCard pfc) : pixelFEDCard(pfc) {
-int PixelFEDInterface::setupFromDB(PixelFEDCard pfc) {
+int PixelFEDInterface::setup(PixelFEDCard pfc) {
   pixelFEDCard = pfc;
   cout<<" Setup from the parameter structure "<< endl;
   int status = setup();
@@ -2549,6 +2549,10 @@ int PixelFEDInterface::setModeRegister(int mode) {
 
   return 0;
 } // end
+////////////////////////////////////////////////////////////////////////////
+int PixelFEDInterface::getModeRegister() {
+   return pixelFEDCard.modeRegister;
+}
 ////////////////////////////////////////////////////////////////////////////
 // 
 // I am not sure what this does?
@@ -4825,7 +4829,7 @@ int PixelFEDInterface::spySlink64(uint64_t *data) {
   }
   catch (HAL::HardwareAccessException& e) {
     // JMTBAD instead of making all the calibration classes aware of HAL::HardwareAccessException... should consistently do this in other methods.
-    throw std::runtime_error("HAL::HardwareAccessException: " + e.what());
+    throw std::runtime_error("HAL::HardwareAccessException: " + std::string(e.what()));
   } 
 } //end
 
@@ -5303,11 +5307,6 @@ bool PixelFEDInterface::isNewEvent(uint32_t nTries)
 
   return eventExists;
 }
-////////////////////////////////////////////////////////////////////////
-void PixelFEDInterface::set_Printlevel(int level)
-{Printlevel=level;
-cout<<"FEDID:"<<pixelFEDCard.fedNumber<<"Setting Print level ="<<Printlevel<<endl;}
-
 ////////////////////////////////////////////////////////////////////////
 void PixelFEDInterface::set_TTslevels(void)
 {
@@ -5820,13 +5819,13 @@ void PixelFEDInterface::resetXYCount() {
   return;
 }
 
-int PixelFEDInterface::getNumFakeEvents() {
+uint32_t PixelFEDInterface::getNumFakeEvents() {
   /*
   Read out the counter which keeps track of how many fake events the FED has sent.
   */
   uint32_t output=0;
   vmeDevicePtr->read("LAD_C",&output,0x098000);
-  return (int)output;
+  return output;
 }
 
 void PixelFEDInterface::resetNumFakeEvents() {
@@ -6035,12 +6034,6 @@ uint32_t PixelFEDInterface::getTimeoutReport(int ch) {
   return d;
 }
 
-uint32_t PixelFEDInterface::getNumFakeEvents() {
-  uint32_t d = 0;
-  vmeDevicePtr->read("LAD_C",&d,0x098000);
-  return d;
-}
-
 uint32_t PixelFEDInterface::linkFullFlag() {
   uint32_t d = 0;
   vmeDevicePtr->read("RdEventCntr",&d);
@@ -6051,4 +6044,10 @@ uint32_t PixelFEDInterface::numPLLLocks() {
   uint32_t d = 0;
   vmeDevicePtr->read("LAD_N",&d, 0x198000);
   return (d&0xf8000000)>>27;
+}
+
+void PixelFEDInterface::printBoardInfo() {
+  get_VMEFirmwareDate();
+  for(int i=0;i<5;i++)
+    get_FirmwareDate(i);
 }

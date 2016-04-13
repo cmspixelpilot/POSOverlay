@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "PixelFEDInterface/include/PixelFEDInterfaceBase.h"
-#include "CalibFormats/SiPixelObjects/interface/PixelPh1FEDCard.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
 class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
@@ -20,31 +20,13 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
 
   typedef std::map < std::string, FitelRegItem > FitelRegMap;
 
-  typedef std::bitset<96> enbable_t;
-  enbable_t masks_to_enbable(uint32_t m1, uint32_t m2, uint32_t m3) {
-    enbable_t e = 0;
-    enbable_expected |= m3;
-    enbable_expected <<= 32;
-    enbable_expected |= m2;
-    enbable_expected <<= 32;
-    enbable_expected |= m1;
-    return e;
-  }
+  typedef std::bitset<48> enbable_t;
 
-  PixelFEDInterfacePh1(RegManager*);
+  PixelFEDInterfacePh1(RegManager*, const std::string&);
   ~PixelFEDInterfacePh1();
 
-  void set_Printlevel(int level) { Printlevel = level; }
-  int get_Printlevel() const { return Printlevel; }
-
-  pos::PixelPh1FEDCard& getPixelFEDCard() { return card; }
-  void setPixelFEDCard(const pos::PixelPh1FEDCard& c) { card = c; }
-
-  void set_fitel_fn_base(const std::string& b) { fitel_fn_base = b; }
-
   int setup(const std::string& fileName); 
-  int setup(pos::PixelPh1FEDCard& pfc); 
-  int setupFromDB(pos::PixelPh1FEDCard& pfc) { return setup(pfc); }
+  int setup(pos::PixelFEDCard pfc); 
   int setup();  // run the setup 
 
   std::string getBoardType();
@@ -119,8 +101,7 @@ struct digfifo1 {
   bool isNewEvent(uint32_t nTries=100000);
   int enableSpyMemory(const int enable);
 
-  uint32_t get_VMEFirmwareDate();
-  uint32_t get_FirmwareDate(int);
+  void printBoardInfo();
   
   int setControlRegister(const int value);
   int loadControlRegister();
@@ -156,7 +137,7 @@ struct digfifo1 {
   int getXYCount();
   void resetXYCount();
 
-  int getNumFakeEvents();
+  uint32_t getNumFakeEvents();
   void resetNumFakeEvents();
 
   int readEventCounter();
@@ -172,10 +153,7 @@ struct digfifo1 {
   int TTCRX_I2C_REG_WRITE(int Register_Nr, int Value);
 
  private:
-  int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
   RegManager* const regManager;
-
-  pos::PixelPh1FEDCard card;
 
   enum { FMC0_Fitel0, FMC0_Fitel1, FMC1_Fitel0, FMC1_Fitel1, nFitels};
   FitelRegMap fRegMap[nFitels];

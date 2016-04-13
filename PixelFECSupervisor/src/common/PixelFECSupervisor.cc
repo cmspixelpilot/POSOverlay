@@ -2809,7 +2809,8 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
 
       if(FECInterface.find(fecVMEBaseAddress)==FECInterface.end()) {           
         PixelFECConfigInterface* tempFECInterface = 0;
-        if (fectype == "uTCA") {
+        if (fectype == "GLIB" || fectype == "CTA") {
+          assert(fectype == "CTA"); // JMTBAD support GLIB
           char boardid[32];
           snprintf(boardid, 32, "FEC%02u", fecnumber);
           RegMgr_[fecVMEBaseAddress] = new RegManager(boardid,

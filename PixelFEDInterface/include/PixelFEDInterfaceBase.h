@@ -2,19 +2,24 @@
 #define PixelFEDInterface_PixelFEDInterfaceBase_h
 
 #include <string>
+#include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
 
 class PixelFEDInterfaceBase {
  public:
   PixelFEDInterfaceBase();
   virtual ~PixelFEDInterfaceBase();
 
-  virtual int id() = 0; // the fed number
-  virtual std::string type() = 0; // a unique string for the type of FED: Ph0, Ph0WPiggy, Ph1, etc...
+//  virtual int id() = 0; // the fed number
+//  virtual std::string type() = 0; // a unique string for the type of FED: Ph0, Ph0WPiggy, Ph1, etc...
+//
+  pos::PixelFEDCard& getPixelFEDCard() { return pixelFEDCard; }
+  void setPixelFEDCard(pos::PixelFEDCard aPixelFEDCard) { pixelFEDCard = aPixelFEDCard; }
 
-  virtual void setPrintlevel(int level) = 0;
-  virtual int getPrintlevel() const = 0;
+  virtual void setPrintlevel(int level) { Printlevel = level; }
+  virtual int getPrintlevel() const { return Printlevel; }
 
   virtual int setup(const std::string& fileName) = 0; 
+  virtual int setup(pos::PixelFEDCard pfc) = 0;
   virtual int setup() = 0;
 
   virtual void printBoardInfo() = 0; // fedid, firmware dates, network config, etc.
@@ -29,10 +34,10 @@ class PixelFEDInterfaceBase {
 
   virtual void readPhases(bool verbose, bool override_timeout) = 0;
 
-  virtual int drainTransparentFifo(uint32_t* data) = 0;
-  virtual int drainSpyFifo(uint32_t* data) = 0;
-  virtual int drainFifo1(uint32_t* data) = 0;
-  virtual int drainTBMFifo(uint32_t* data) = 0;
+  //virtual int drainTransparentFifo(uint32_t* data) = 0;
+  //virtual int drainSpyFifo(uint32_t* data) = 0;
+  //virtual int drainFifo1(uint32_t* data) = 0;
+  //virtual int drainTBMFifo(uint32_t* data) = 0;
   virtual int drainErrorFifo(uint32_t* data) = 0;
   virtual int drainTemperatureFifo(uint32_t* data) = 0;
   virtual int drainTTSFifo(uint32_t *data) = 0;
@@ -54,7 +59,7 @@ class PixelFEDInterfaceBase {
   virtual int setModeRegister(int value) = 0;
   virtual int getModeRegister() = 0;
 
-  virtual void setPrivateWord(uint32_t pword) = 0;
+  virtual void set_PrivateWord(uint32_t pword) = 0;
 
   virtual void resetSlink() = 0;
 
@@ -78,13 +83,17 @@ class PixelFEDInterfaceBase {
   virtual uint32_t getFifoStatus() = 0;
   virtual uint32_t linkFullFlag() = 0;
   virtual uint32_t numPLLLocks() = 0;
-  virtual uint32_t getFifoFillLevel() = 0;
-  virtual uint64_t getSkippedChannels() = 0;
+  //virtual uint32_t getFifoFillLevel() = 0;
+  //virtual uint64_t getSkippedChannels() = 0;
   virtual uint32_t getErrorReport(int ch) = 0;
   virtual uint32_t getTimeoutReport(int ch) = 0;
 
   virtual int TTCRX_I2C_REG_READ(int Register_Nr) = 0;
   virtual int TTCRX_I2C_REG_WRITE(int Register_Nr, int Value) = 0;
+
+ protected:
+  pos::PixelFEDCard pixelFEDCard;
+  int Printlevel;
 };
 
 #endif

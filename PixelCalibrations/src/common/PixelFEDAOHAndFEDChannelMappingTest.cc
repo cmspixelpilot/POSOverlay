@@ -73,7 +73,9 @@ void PixelFEDAOHAndFEDChannelMappingTest::MeasureBlackLevel(unsigned int fednumb
 	unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
 	
 	uint32_t buffer[pos::fifo1TranspDepth]; // problem on a 64-bit machine?
-	int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(fedchannel, buffer);
+        PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+        assert(f);
+	int status = f->drain_transBuffer(fedchannel, buffer);
 	if (status<0) {
 		std::cout<<"PixelFEDAOHAndFEDChannelMappingTest::execute() -- Could not drain FIFO 1 of FED Channel "<<fedchannel<<" in transparent mode!"<<std::endl;
 		diagService_->reportError("PixelFEDAOHAndFEDChannelMappingTest::execute() -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);

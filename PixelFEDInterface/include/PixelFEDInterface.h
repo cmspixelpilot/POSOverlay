@@ -21,7 +21,6 @@
 #include "CAENVMElib.h"  // CAEN library prototypes
 #endif //USE_HAL
 
-#include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
 #include "PixelFEDInterface/include/PixelFEDInterfaceBase.h"
 
 
@@ -51,13 +50,11 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
 #endif // USE_HAL
 
   // These do not use VME access
-  void setPilotPiggy(bool s) { hasPilotPiggy = s; }
-  int setupFromDB(std::string fileName); 
-  int setupFromDB(pos::PixelFEDCard pfc); 
-  int setup(void);  // run the setup 
+  void setPilotPiggy() { hasPilotPiggy = true; }
 
-  pos::PixelFEDCard& getPixelFEDCard() {return pixelFEDCard;} // return (a reference) to the current pixelFEDCard settings (private data)
-  void setPixelFEDCard(pos::PixelFEDCard aPixelFEDCard) {pixelFEDCard=aPixelFEDCard;}
+  int setup(const std::string& fileName); 
+  int setup(pos::PixelFEDCard pfc); 
+  int setup(void);  // run the setup 
 
   // Use VME access
   int reset(void); // reset FED (LRES)
@@ -70,10 +67,10 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   int resetDigFEDpll(void); // reset Piggy Board pll
   int resetDigFEDreg(void); // reset Piggy Board register
   void loadFPGADigFED(); // load fpga to piggy board
-  void readDigFEDStatus(bool verbose, bool override_timeout); // read status of the piggy board
+  void readPhases(bool verbose, bool override_timeout); // read status of the piggy board
   void readDigFEDTempFifo(); 
-  void armDigFEDOSDFifo(int channel, int rochi, int roclo); // arm OSD readback from roc; wait 31 triggers and call read
-  uint32_t readDigFEDOSDFifo(int channel);
+  void armOSDFifo(int channel, int rochi, int roclo); // arm OSD readback from roc; wait 31 triggers and call read
+  uint32_t readOSDFifo(int channel);
   
   
   int TTCRX_I2C_REG_READ( int Register_Nr); 
@@ -114,6 +111,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   void dump_BaselineCorr(); //dumps the baseline corection values from the database and the FED
   void get_BaselineCorr(int * values); //gets the current 36 baseline corection values from the FED
   int get_BaselineCorr(int chnl); //gets the current baseline corection value from the FED for a channel
+  void printBoardInfo(); // fedid, firmware dates, network config, etc.
    uint32_t get_FirmwareDate(int chip);
    uint32_t get_VMEFirmwareDate(void);
    void get_PiggyFirmwareVer();
@@ -154,7 +152,7 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
 
   int loadModeRegister();    // Load Mode Register from DB
   int setModeRegister(int value); // set the mode register to value.
-  int getModeRegister(void) const {return pixelFEDCard.modeRegister;} // return ths mode register value
+  int getModeRegister(void);
 
   int enableSpyMemory(int enable); // enable=1, enable spy memory, 0=disable
   void resetSlink();   // change name?
@@ -203,8 +201,6 @@ class PixelFEDInterface : public PixelFEDInterfaceBase {
   int PwordSlink64(uint64_t *data,const int length, uint32_t &totword);
   uint32_t getFifoStatus(void);
   void dump_FifoStatus(uint32_t fword);
-  void set_Printlevel(int level);//0=critical only, 1=all error,2& =info, 4&param file info
-  int get_Printlevel() const { return Printlevel; }
   void set_TTslevels(void);//Sets adjustable TTs consecutive levels for OOS and ERR from Fedcard
   void set_TTslevels(int inmoos,int inmerr);//Sets adjustable TTs consecutive levels for OOS and ERR
                                         //puts values ioos and ierr into Fedcard
@@ -259,7 +255,7 @@ int FixBBB(int chan,uint32_t *data);
   void resetXYCount();
   
   // Fake event mechanism
-  int getNumFakeEvents();
+  uint32_t getNumFakeEvents();
   void resetNumFakeEvents();
   
   // Check for channels that don't match FEDCard
@@ -274,6 +270,11 @@ int FixBBB(int chan,uint32_t *data);
   void resetSEUCountAndDegradeState(void);
   bool runDegraded(void) {return runDegraded_;}
   
+  uint32_t getErrorReport(int ch);
+  uint32_t getTimeoutReport(int ch);
+  uint32_t linkFullFlag();
+  uint32_t numPLLLocks();
+
  private:
 
   // Private methods
@@ -312,9 +313,6 @@ int FixBBB(int chan,uint32_t *data);
   uint32_t lastErrorValue[8];
   uint32_t lastDACValue[8];
   uint32_t lastTTS;
-
-  //printing
-  int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
 
   long long DauCards_lastStatusPoll;
   

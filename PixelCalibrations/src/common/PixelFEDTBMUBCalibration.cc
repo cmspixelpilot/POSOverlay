@@ -95,6 +95,8 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 		{
 			unsigned int fednumber=fedsAndChannels[ifed].first;
 			unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+                        PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                        assert(fed);
 
 			for (unsigned int ichannel=0; ichannel<fedsAndChannels[ifed].second.size(); ++ichannel)
 			{
@@ -103,7 +105,7 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 
 				std::vector<PixelROCName> ROCsOnThisChannel=theNameTranslation_->getROCsFromFEDChannel(fednumber, channel);
 
-				int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+				int status = fed->drain_transBuffer(channel, buffer);
 				if (status<0) {
 				  std::cout<<"PixelFEDTBMUBCalibration::execute() -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode!"<<std::endl;
 				  diagService_->reportError("PixelFEDTBMUBCalibration::execute() -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
@@ -338,6 +340,8 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 			// Now change DACs to the recommended values.
 			for ( std::set<PixelTBMDACScanInfo::TBMDAC>::const_iterator dac_itr = scanInfo.DACsToScan().begin(); dac_itr != scanInfo.DACsToScan().end(); dac_itr++ )
 			{
+                          assert(0); // JMTBAD OLDDACS
+#if 0
 				bits8 new_dac_value = (bits8)(scanInfo.scanValue( *dac_itr, new_scanStep_value )+0.5); // round to the nearest integer
 				new_TBMDAC_values[*dac_itr].push_back(new_dac_value);
 				if      ( *dac_itr == PixelTBMDACScanInfo::kAnalogInputBias )
@@ -356,6 +360,7 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 					TBMSettingsForThisModule->setAnalogOutputGain( new_dac_value );
 				}
 				else assert(0);
+#endif
 			}
 
 			// Write out new file.
