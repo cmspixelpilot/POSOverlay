@@ -51,7 +51,7 @@ void Amc13Interface::ConfigureAmc13()
         {
 	  this->configureBGO(cIndex, uint8_t((*it)->fCommand), uint16_t((*it)->fBX), uint16_t((*it)->fPrescale), (*it)->fRepeat);
 	  this->enableBGO(cIndex);
-	  std::cout << "Configured & enabling BGO Channel " << cIndex << " : Command: " << (*it)->fCommand << " BX: " << (*it)->fBX << " Prescale: " << (*it)->fPrescale << " Repetetive: " << (*it)->fRepeat << std::endl;
+	  std::cout << "Configured & enabling BGO Channel " << cIndex << " : Command: " << (*it)->fCommand << " BX: " << (*it)->fBX << " Prescale: " << (*it)->fPrescale << " Repetitive: " << (*it)->fRepeat << std::endl;
 	  cIndex++;
         }
     }
@@ -226,7 +226,7 @@ void Amc13Interface::configureBGO(int pChan, uint8_t pCommand, uint16_t pBX, uin
 
 void Amc13Interface::enableBGO(int pChan)
 {
-  char tmp[32];
+  //char tmp[32];
 
   if ( pChan < 0 || pChan > 3)
     {
@@ -235,8 +235,8 @@ void Amc13Interface::enableBGO(int pChan)
       throw e;
     }
 
-  snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE");
-  fAMC13->write( amc13::AMC13Simple::T1, tmp, 1);
+  //  snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE");
+  //fAMC13->write( amc13::AMC13Simple::T1, tmp, 1);
 
   // Edit by Georg Auzinger, not in official AMC13 SW package but required
   fAMC13->write( amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_BGO", 1);
