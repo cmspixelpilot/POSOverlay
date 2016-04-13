@@ -6,12 +6,9 @@
 
 class PixelFEDInterfaceBase {
  public:
-  PixelFEDInterfaceBase();
-  virtual ~PixelFEDInterfaceBase();
+  PixelFEDInterfaceBase() {}
+  virtual ~PixelFEDInterfaceBase() {}
 
-//  virtual int id() = 0; // the fed number
-//  virtual std::string type() = 0; // a unique string for the type of FED: Ph0, Ph0WPiggy, Ph1, etc...
-//
   pos::PixelFEDCard& getPixelFEDCard() { return pixelFEDCard; }
   void setPixelFEDCard(pos::PixelFEDCard aPixelFEDCard) { pixelFEDCard = aPixelFEDCard; }
 
