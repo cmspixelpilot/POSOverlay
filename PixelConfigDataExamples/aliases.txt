@@ -1,5 +1,5 @@
 ConfigurationAliases
-hello 496 ;
+hello 500 ;
 hello2 497 ;
 hello3 499 ;
 Physics     490 ;
@@ -182,6 +182,7 @@ PHRange     76   ;
 Gain99By3     77   ;
 GainBy3     495   ;
 GainBy3_PH  498   ;
+GainBy3_test_algo 502   ;
 TTCPeriodicL1A     15   ;
 TTCPeriodicCalSync     16   ;
 TTCPeriodicReset     17   ;
