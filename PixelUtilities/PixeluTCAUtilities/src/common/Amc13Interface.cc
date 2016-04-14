@@ -217,11 +217,21 @@ void Amc13Interface::configureBGO(int pChan, uint8_t pCommand, uint16_t pBX, uin
   snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ORBIT_PRESCALE");
   fAMC13->write( amc13::AMC13Simple::T1, tmp, pPrescale);
 
-  snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE_SINGLE");
-  if ( !pRepeat)
+  //  snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE_SINGLE");
+  if ( !pRepeat) {
+    snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE_SINGLE"); 
     fAMC13->write( amc13::AMC13Simple::T1, tmp, 1);
-  else
-    fAMC13->write( amc13::AMC13Simple::T1, tmp, 0);
+
+    snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE");
+    fAMC13->write( amc13::AMC13Simple::T1, tmp, 0); 
+  }
+  else {
+    snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE_SINGLE");
+    fAMC13->write( amc13::AMC13Simple::T1, tmp, 0); 
+
+    snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE"); 
+    fAMC13->write( amc13::AMC13Simple::T1, tmp, 1);
+  }
 }
 
 void Amc13Interface::enableBGO(int pChan)

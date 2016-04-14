@@ -6,8 +6,13 @@
                 <xc:Application class="SimpleSOAPSender" id="50" instance="0" network="local"/>
 		<xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>
 
-                <xc:Application class="SimpleSOAPReceiver" id="51" instance="0" network="local"/>
-
+                <xc:Application class="SimpleSOAPReceiver" id="51" instance="0" network="local">
+		  <properties xmlns="urn:xdaq-application:SimpleSOAPReceiver" xsi:type="soapenc:Struct">
+		    <BGORepeat xsi:type="xsd:boolean">true</BGORepeat>
+		    <BGOPrescale xsi:type="xsd:integer">2</BGOPrescale>
+		    <BGOBX xsi:type="xsd:integer">64</BGOBX>
+		  </properties>
+		</xc:Application>
         </xc:Context>
 
 
