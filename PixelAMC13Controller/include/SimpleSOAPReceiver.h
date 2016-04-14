@@ -28,6 +28,7 @@
 
 #include "xdata/Boolean.h"
 #include "xdata/Integer.h"
+#include "xdata/String.h"
 
 #include "PixelUtilities/PixeluTCAUtilities/include/Amc13Interface.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/Amc13Description.h"
@@ -44,6 +45,11 @@ class SimpleSOAPReceiver: public xdaq::Application
 	
 	XDAQ_INSTANTIATOR();
 
+	xdata::String cUri1;
+	xdata::String cAddressT1;
+	xdata::String cUri2;
+	xdata::String cAddressT2;
+	
 	int bgoCommand;
 	xdata::Boolean bgoRepeat;
 	xdata::Integer bgoPrescale;

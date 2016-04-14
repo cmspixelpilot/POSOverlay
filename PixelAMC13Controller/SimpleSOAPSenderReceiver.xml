@@ -8,9 +8,13 @@
 
                 <xc:Application class="SimpleSOAPReceiver" id="51" instance="0" network="local">
 		  <properties xmlns="urn:xdaq-application:SimpleSOAPReceiver" xsi:type="soapenc:Struct">
+		    <Uri1 xsi:type="xsd:string">ipbusudp-2.0://192.168.3.253:50001</Uri1>
+		    <AddressT1 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
+		    <Uri2 xsi:type="xsd:string">ipbusudp-2.0://192.168.3.252:50001</Uri2>
+		    <AddressT2 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
 		    <BGORepeat xsi:type="xsd:boolean">true</BGORepeat>
 		    <BGOPrescale xsi:type="xsd:integer">2</BGOPrescale>
-		    <BGOBX xsi:type="xsd:integer">64</BGOBX>
+		    <BGOBX xsi:type="xsd:integer">48</BGOBX>
 		  </properties>
 		</xc:Application>
         </xc:Context>
