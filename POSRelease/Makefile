@@ -41,6 +41,7 @@ Packages=\
 	PixelUtilities/Pixelb2inUtilities \
 	PixelUtilities/PixeluTCAUtilities \
 	PixelUtilities/PixelJobControlUtilities \
+	PixelAMC13Controller \
 	PixelFEDInterface \
 	PixelFECInterface \
 	PixelSupervisorConfiguration \
