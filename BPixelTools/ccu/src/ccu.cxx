@@ -35,7 +35,7 @@ using std::endl;
 #include <string>
 #include <time.h>
 
-
+#include "uhal/uhal.hpp"
 
 #include "ServerAccess.h"
 #include "SimpleCommand.h"
@@ -1815,6 +1815,8 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
 
 int main(int argc, char *argv[])
 {
+  uhal::setLogLevelTo(uhal::Debug());
+
   VMELock lock(1);
   lock.acquire();
 
