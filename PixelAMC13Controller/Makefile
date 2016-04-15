@@ -23,7 +23,7 @@ include $(XDAQ_ROOT)/config/mfDefs.$(XDAQ_OS)
 Project=pixel
 Package=PixelAMC13Controller
 
-Sources=SimpleSOAPReceiver.cc SimpleSOAPSender.cc
+Sources=PixelAMC13Controller.cc SimpleSOAPSender.cc
 
 CACTUS_ROOT = /opt/cactus
 
