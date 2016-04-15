@@ -117,7 +117,7 @@ class SimpleSOAPSender: public xdaq::Application
 
 		try
 		{	
-			xdaq::ApplicationDescriptor * d = getApplicationContext()->getDefaultZone()->getApplicationDescriptor("SimpleSOAPReceiver", 0);
+			xdaq::ApplicationDescriptor * d = getApplicationContext()->getDefaultZone()->getApplicationDescriptor("PixelAMC13Controller", 0);
 			xdaq::ApplicationDescriptor * o = this->getApplicationDescriptor();
 			xoap::MessageReference reply = getApplicationContext()->postSOAP(msg, *o,  *d);
                         std::vector<xoap::SOAPElement> bodyList = reply->getSOAPPart().getEnvelope().getBody().getChildElements();
