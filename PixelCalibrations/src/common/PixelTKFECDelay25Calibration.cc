@@ -56,7 +56,7 @@ xoap::MessageReference PixelTKFECDelay25Calibration::execute(xoap::MessageRefere
     //Check whether we compare all modules
     runCompare_ = false;
     string type = portcardConfig_->gettype();
-    if((type == "pilt" || type=="fpix") && allModules_) {
+    if((type == "pilt" || type=="fpix" || type=="phase1") && allModules_) {
       cout << "This is an FPix portcard with allModules_=true." << endl;
       cout << "The optimal point will take into account results from all modules." << endl;
       runCompare_=true;

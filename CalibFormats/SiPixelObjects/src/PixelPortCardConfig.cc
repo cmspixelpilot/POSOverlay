@@ -402,7 +402,7 @@ PixelPortCardConfig::PixelPortCardConfig(std::string filename):
   if ( dummy == "Type:" ) // read in the type, defaulting to "fpix" if not specified
   {
     in >> type_;
-    assert( type_ == "fpix" || type_ == "bpix" || type_ == "pilt" );
+    assert( type_ == "fpix" || type_ == "bpix" || type_ == "pilt" || type_ == "phase1" );
     in >> dummy;
   }
   else
@@ -696,6 +696,47 @@ void PixelPortCardConfig::fillNameToAddress()
 		nameToAddress_[PortCardSettingNames::k_DOH_Ch1Bias_Data] = PortCardSettingNames::k_fpix_DOH_Ch1Bias_Data_address;
 		nameToAddress_[PortCardSettingNames::k_DOH_Gain_SEU]     = PortCardSettingNames::k_fpix_DOH_Gain_SEU_address;
 	}
+        else if ( type_ == "phase1" ) {
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias1] = PortCardSettingNames::k_phase1_bPOH_Bias1_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias2] = PortCardSettingNames::k_phase1_bPOH_Bias2_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias3] = PortCardSettingNames::k_phase1_bPOH_Bias3_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias4] = PortCardSettingNames::k_phase1_bPOH_Bias4_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias5] = PortCardSettingNames::k_phase1_bPOH_Bias5_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias6] = PortCardSettingNames::k_phase1_bPOH_Bias6_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Bias7] = PortCardSettingNames::k_phase1_bPOH_Bias7_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Gain123] = PortCardSettingNames::k_phase1_bPOH_Gain123_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Gain4] = PortCardSettingNames::k_phase1_bPOH_Gain4_address;
+          nameToAddress_[PortCardSettingNames::k_bPOH_Gain567] = PortCardSettingNames::k_phase1_bPOH_Gain567_address;
+
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias1] = PortCardSettingNames::k_phase1_tPOH_Bias1_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias2] = PortCardSettingNames::k_phase1_tPOH_Bias2_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias3] = PortCardSettingNames::k_phase1_tPOH_Bias3_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias4] = PortCardSettingNames::k_phase1_tPOH_Bias4_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias5] = PortCardSettingNames::k_phase1_tPOH_Bias5_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias6] = PortCardSettingNames::k_phase1_tPOH_Bias6_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Bias7] = PortCardSettingNames::k_phase1_tPOH_Bias7_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Gain123] = PortCardSettingNames::k_phase1_tPOH_Gain123_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Gain4] = PortCardSettingNames::k_phase1_tPOH_Gain4_address;
+          nameToAddress_[PortCardSettingNames::k_tPOH_Gain567] = PortCardSettingNames::k_phase1_tPOH_Gain567_address;
+
+          // JMT don't make separate set of constants for rest of registers yet since they are the same in pilot system as in fpix.
+          nameToAddress_[PortCardSettingNames::k_PLL_CTR1] = PortCardSettingNames::k_fpix_PLL_CTR1_address;
+          nameToAddress_[PortCardSettingNames::k_PLL_CTR2] = PortCardSettingNames::k_fpix_PLL_CTR2_address;
+          nameToAddress_[PortCardSettingNames::k_PLL_CTR3] = PortCardSettingNames::k_fpix_PLL_CTR3_address;
+          nameToAddress_[PortCardSettingNames::k_PLL_CTR4or5] = PortCardSettingNames::k_fpix_PLL_CTR4or5_address;
+
+          nameToAddress_[PortCardSettingNames::k_Delay25_RDA] = PortCardSettingNames::k_phase1_Delay25_RDA_address;
+          nameToAddress_[PortCardSettingNames::k_Delay25_RCL] = PortCardSettingNames::k_phase1_Delay25_RCL_address;
+          nameToAddress_[PortCardSettingNames::k_Delay25_SDA] = PortCardSettingNames::k_phase1_Delay25_SDA_address;
+          nameToAddress_[PortCardSettingNames::k_Delay25_TRG] = PortCardSettingNames::k_phase1_Delay25_TRG_address;
+          nameToAddress_[PortCardSettingNames::k_Delay25_SCL] = PortCardSettingNames::k_phase1_Delay25_SCL_address;
+          nameToAddress_[PortCardSettingNames::k_Delay25_GCR] = PortCardSettingNames::k_phase1_Delay25_GCR_address;
+
+          nameToAddress_[PortCardSettingNames::k_DOH_Ch0Bias_CLK] = PortCardSettingNames::k_fpix_DOH_Ch0Bias_CLK_address;
+          nameToAddress_[PortCardSettingNames::k_DOH_Dummy] = PortCardSettingNames::k_fpix_DOH_Dummy_address;
+          nameToAddress_[PortCardSettingNames::k_DOH_Ch1Bias_Data] = PortCardSettingNames::k_fpix_DOH_Ch1Bias_Data_address;
+          nameToAddress_[PortCardSettingNames::k_DOH_Gain_SEU] = PortCardSettingNames::k_fpix_DOH_Gain_SEU_address;
+        }
 	else if ( type_ == "bpix" )
 	{
 		nameToAddress_[PortCardSettingNames::k_AOH1_Bias1] = PortCardSettingNames::k_bpix_AOH1_Bias1_address;

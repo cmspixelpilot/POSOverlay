@@ -156,6 +156,52 @@ namespace pos{
     const unsigned int k_pilt_POH_Gain4_address   = k_pilt_POH_base + k_POH_Gain4_offset;
     const unsigned int k_pilt_POH_Gain567_address = k_pilt_POH_base + k_POH_Gain567_offset;
 
+    // Phase1
+    const std::string k_bPOH_Bias1 = "bPOH_Bias1";
+    const std::string k_bPOH_Bias2 = "bPOH_Bias2";
+    const std::string k_bPOH_Bias3 = "bPOH_Bias3";
+    const std::string k_bPOH_Bias4 = "bPOH_Bias4";
+    const std::string k_bPOH_Bias5 = "bPOH_Bias5";
+    const std::string k_bPOH_Bias6 = "bPOH_Bias6";
+    const std::string k_bPOH_Bias7 = "bPOH_Bias7";
+    const std::string k_bPOH_Gain123 = "bPOH_Gain123";
+    const std::string k_bPOH_Gain4 = "bPOH_Gain4";
+    const std::string k_bPOH_Gain567 = "bPOH_Gain567";
+    const std::string k_tPOH_Bias1 = "tPOH_Bias1";
+    const std::string k_tPOH_Bias2 = "tPOH_Bias2";
+    const std::string k_tPOH_Bias3 = "tPOH_Bias3";
+    const std::string k_tPOH_Bias4 = "tPOH_Bias4";
+    const std::string k_tPOH_Bias5 = "tPOH_Bias5";
+    const std::string k_tPOH_Bias6 = "tPOH_Bias6";
+    const std::string k_tPOH_Bias7 = "tPOH_Bias7";
+    const std::string k_tPOH_Gain123 = "tPOH_Gain123";
+    const std::string k_tPOH_Gain4 = "tPOH_Gain4";
+    const std::string k_tPOH_Gain567 = "tPOH_Gain567";
+    //bottom POH
+    const unsigned int k_phase1_bPOH_base = 0x10;
+    const unsigned int k_phase1_bPOH_Bias1_address = k_phase1_bPOH_base + k_POH_Bias1_offset;
+    const unsigned int k_phase1_bPOH_Bias2_address = k_phase1_bPOH_base + k_POH_Bias2_offset;
+    const unsigned int k_phase1_bPOH_Bias3_address = k_phase1_bPOH_base + k_POH_Bias3_offset;
+    const unsigned int k_phase1_bPOH_Bias4_address = k_phase1_bPOH_base + k_POH_Bias4_offset;
+    const unsigned int k_phase1_bPOH_Bias5_address = k_phase1_bPOH_base + k_POH_Bias5_offset;
+    const unsigned int k_phase1_bPOH_Bias6_address = k_phase1_bPOH_base + k_POH_Bias6_offset;
+    const unsigned int k_phase1_bPOH_Bias7_address = k_phase1_bPOH_base + k_POH_Bias7_offset;
+    const unsigned int k_phase1_bPOH_Gain123_address = k_phase1_bPOH_base + k_POH_Gain123_offset;
+    const unsigned int k_phase1_bPOH_Gain4_address = k_phase1_bPOH_base + k_POH_Gain4_offset;
+    const unsigned int k_phase1_bPOH_Gain567_address = k_phase1_bPOH_base + k_POH_Gain567_offset;
+    //top POH
+    const unsigned int k_phase1_tPOH_base = 0x30;
+    const unsigned int k_phase1_tPOH_Bias1_address = k_phase1_tPOH_base + k_POH_Bias1_offset;
+    const unsigned int k_phase1_tPOH_Bias2_address = k_phase1_tPOH_base + k_POH_Bias2_offset;
+    const unsigned int k_phase1_tPOH_Bias3_address = k_phase1_tPOH_base + k_POH_Bias3_offset;
+    const unsigned int k_phase1_tPOH_Bias4_address = k_phase1_tPOH_base + k_POH_Bias4_offset;
+    const unsigned int k_phase1_tPOH_Bias5_address = k_phase1_tPOH_base + k_POH_Bias5_offset;
+    const unsigned int k_phase1_tPOH_Bias6_address = k_phase1_tPOH_base + k_POH_Bias6_offset;
+    const unsigned int k_phase1_tPOH_Bias7_address = k_phase1_tPOH_base + k_POH_Bias7_offset;
+    const unsigned int k_phase1_tPOH_Gain123_address = k_phase1_tPOH_base + k_POH_Gain123_offset;
+    const unsigned int k_phase1_tPOH_Gain4_address = k_phase1_tPOH_base + k_POH_Gain4_offset;
+    const unsigned int k_phase1_tPOH_Gain567_address = k_phase1_tPOH_base + k_POH_Gain567_offset;
+
     // PLL
     const std::string k_PLL_CTR1 = "PLL_CTR1";
     const std::string k_PLL_CTR2 = "PLL_CTR2";
@@ -197,7 +243,16 @@ namespace pos{
     const unsigned int k_Delay25_CR3_offset = 0x3;
     const unsigned int k_Delay25_CR4_offset = 0x4;
     const unsigned int k_Delay25_CR5_offset = 0x5;
-    
+
+    // Delay25 phase1
+    const unsigned int k_phase1_Delay25_base = 0x40;
+    const unsigned int k_phase1_Delay25_RDA_address = k_phase1_Delay25_base + k_Delay25_CR0_offset;
+    const unsigned int k_phase1_Delay25_RCL_address = k_phase1_Delay25_base + k_Delay25_CR1_offset;
+    const unsigned int k_phase1_Delay25_SDA_address = k_phase1_Delay25_base + k_Delay25_CR2_offset;
+    const unsigned int k_phase1_Delay25_TRG_address = k_phase1_Delay25_base + k_Delay25_CR3_offset;
+    const unsigned int k_phase1_Delay25_SCL_address = k_phase1_Delay25_base + k_Delay25_CR4_offset;
+    const unsigned int k_phase1_Delay25_GCR_address = k_phase1_Delay25_base + k_Delay25_CR5_offset;
+
     // Delay25 fpix
     const unsigned int k_fpix_Delay25_base = 0x30;
     const unsigned int k_fpix_Delay25_RDA_address = k_fpix_Delay25_base + k_Delay25_CR0_offset;
