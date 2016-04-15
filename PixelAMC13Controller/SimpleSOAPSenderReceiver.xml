@@ -12,7 +12,8 @@
 		    <AddressT1 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
 		    <Uri2 xsi:type="xsd:string">ipbusudp-2.0://192.168.3.252:50001</Uri2>
 		    <AddressT2 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
-		    <BGORepeat xsi:type="xsd:boolean">true</BGORepeat>
+		    <AMCMask xsi:type="xsd:string">1,2</AMCMask>
+		    <BGORepeat xsi:type="xsd:boolean">false</BGORepeat>
 		    <BGOPrescale xsi:type="xsd:integer">2</BGOPrescale>
 		    <BGOBX xsi:type="xsd:integer">48</BGOBX>
 		  </properties>
