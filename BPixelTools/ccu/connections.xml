@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connections>
+	<connection id="board" uri="chtcp-2.0://cmsuppixch:10203?target=pilottkfec:50001" address_table="file:///home/fectest/TriDAS_XDAQ13/FecSoftwareV3_0/generic/config/address_mfec.xml" />
+</connections>
+
