@@ -9,35 +9,8 @@ PixelFECParameters::PixelFECParameters()
 fecnumber_=0;
 crate_=0;
 vmebaseaddress_=0;
-
-}
-
-PixelFECParameters::~PixelFECParameters()
-{
-
-}
-
-
-unsigned int PixelFECParameters::getFECNumber() const{
-
-  
-    return fecnumber_;
-
-}
-
-
-unsigned int PixelFECParameters::getCrate() const{
-
-    
-    return crate_;
-
-}
-
-
-unsigned int PixelFECParameters::getVMEBaseAddress() const{
-
-    
-    return vmebaseaddress_;
+ type_="VME";
+ uri_="";
 
 }
 
@@ -46,25 +19,6 @@ void PixelFECParameters::setFECParameters( unsigned int fecnumber , unsigned int
 fecnumber_ = fecnumber;
 crate_ = crate;
 vmebaseaddress_ =vmebaseaddress;
-
-}
-
-void PixelFECParameters::setFECNumber(unsigned int fecnumber) {
-
-fecnumber_ = fecnumber;
-
-}
-
-
-void PixelFECParameters::setCrate(unsigned int crate) {
-
-crate_=crate;
-
-}
-
-void PixelFECParameters::setVMEBaseAddress(unsigned int vmebaseaddress){
-
-vmebaseaddress_=vmebaseaddress;
 
 }
 

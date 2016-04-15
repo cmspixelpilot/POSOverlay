@@ -286,13 +286,8 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   configurationTimer_.setName("PixelSupervisorConfigurationTimer");
 
   // Check infospace for TCDS/TTC running
-#ifdef SETUP_TIF
   useTCDS_ = false;
   useTTC_  = true;
-#else
-  useTCDS_ = true;
-  useTTC_  = false;
-#endif
   TTCSupervisorApplicationName_="ttc::TTCciControl"; // pixel::ici::PixeliCISupervisor
   if (useTCDS_) TTCSupervisorApplicationName_="pixel::tcds::PixeliCISupervisor";
   LTCSupervisorApplicationName_="";

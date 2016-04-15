@@ -1,26 +1,14 @@
-/* PixelPh1FECInterface.cc - This is the implementation of the PixelPh1FECInterface
- doroshenko@physics.rutgers.edu and stone@physics.rutgers.edu 5-11-07
- */
-
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
 #include <sstream>
 #include <cstdlib>
 
-/* comment out next line to turn off block transfer */
-//#define BLOCKTRANSFER  // -> do we need to keep uHal block transfer? Check with pixel people!!!
-
-#include "PixelPh1FECInterface/include/PixelPh1FECInterface.h"
-
-#define ret_error(ret) \
-if (ret!=0) { \
-cout << "Return value:"<<ret<<" in "<<__FILE__<<" on line "<<dec<<__LINE__<<endl; \
-}
+#include "PixelFECInterface/include/PixelPh1FECInterface.h"
+#include "PixelFECInterface/include/TBMReadException.h"
 
 using namespace std;
 using namespace pos;
-
 
 namespace {
     const bool PRINT = false;
@@ -28,7 +16,6 @@ namespace {
 
 //--------------------------------------------------------------------------
 // Here comes the constructor -- with two versions, one for HAL, one for CAEN
-#ifdef USE_UHAL
 PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
                                      const int vmeslot,
                                      unsigned int fecCrate,
@@ -82,25 +69,6 @@ int PixelPh1FECInterface::getStatus(void) {
     valword value;
     value = pRegManager->ReadReg("STATUS");
     if (PRINT) cout<<"Get FEC status "<<value.value()<<endl;
-    return value;
-}
-//---------------------------------------------------------------
-// This sets up the Trigger FPGA configuration register (SSID) to
-// PIXELS (100)
-int PixelPh1FECInterface::setssid(const int ssid) {
-    
-    valword value;
-    value = pRegManager->ReadReg("CONFIG00");
-    if (PRINT) cout << "Set SSID in Trigger FPGA to:"<<hex<<ssid<<dec<<endl;
-    pRegManager->WriteReg("SSID", ssid);
-    value = pRegManager->ReadReg("SSID");
-    
-    if (value.value() != (unsigned long) ssid) {
-        cout << "\nERROR PixelPh1FECInterface SSID unable to change: " <<
-        value.value() << ", " << endl;
-        return -1;
-    }
-    
     return value;
 }
 //--------------------------------------------------------------------------
@@ -538,11 +506,6 @@ void PixelPh1FECInterface::outputwordhal(const char *halname, unsigned int data)
     cout << "value from read function " << value << endl;
 }
 
-
-
-
-
-// This function is invoked if the BLOCKTRANSFER defined
 void PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std::vector<uint32_t> wordcont) {
  
     const string names[2][1] = {
@@ -897,17 +860,6 @@ int PixelPh1FECInterface::getByteHubCount(const int mfec, const int channel,
     
     return ret;
 }
-
-
-
-#endif // ENDIF CAEN
-
-///////////////////////////////////////////////////////////////////
-// Here are some routines in common to both HAL and CAEN
-
-
-
-
 
 // Set the debug flag
 

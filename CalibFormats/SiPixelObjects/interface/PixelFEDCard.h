@@ -23,17 +23,25 @@ namespace pos{
 *
 *  The structure which holds all the informations needed to setup 
 *  a pixel FED. Danek Kotlinski 18/4/06
+*
+*  This class can describe both the VME and uTCA FED. Making a separate class
+*  or a class hierarchy seemed too cumbersome when looking at how many
+*  places it is used w/o encapsulation besides PixelFEDInterface.
+*  VME-only params are ignored by PixelFEDInterfacePh1 and vice-versa.
+*  Arrays of constants per channel can now go up to 48. The last 16 are just ignored for VME.
+*  Where the arrays of constants are not applicable to uTCA, they remain 36 long... let's make it maximally confusing.
+*  JMTBAD this isn't great. Please make only the Interfaces know about the different fed cards, then have all the access go through them.
 */
   class PixelFEDCard : public PixelConfigBase{
 
   public:
     
     //Return true or false depending on if iChannel is used
-    //iChannel=1..36
+    //iChannel=1..48 if type == CTA else 1..36
     bool useChannel(unsigned int iChannel);
 
     //Set iChannel enable to mode
-    //iChannel=1..36
+    //iChannel=1..48 if type == CTA else 1..36
     void setChannel(unsigned int iChannel, bool mode);
 
     void restoreBaselinAndChannelMasks();
@@ -65,9 +73,11 @@ namespace pos{
     virtual void writeXMLTrailer(std::ofstream *fedstream,
 				 std::ofstream *recostream,
 				 std::ofstream *tbmstream) const ;
-    uint64_t enabledChannels();  // returns 64-bit integer mask 35..0
+    uint64_t enabledChannels();  // returns 64-bit integer mask 47..0
 
-
+    enum { VME, VMEPiggy, CTA };
+    int type;
+    
     //Settable optical input parameters (one for each 12-receiver)
     int opt_cap[3];   // Capacitor adjust
     int opt_inadj[3]; // DC-input offset
@@ -95,7 +105,12 @@ namespace pos{
       ROC_L4[36][26];
 
     //These bits turn off(1) and on(0) channels
+    //For VME, lower 9 bits of each are used.
     unsigned int Ncntrl,NCcntrl,SCcntrl,Scntrl;
+
+    // This one for uTCA. Assumes we won't do 96-ch fed.
+    uint64_t cntrl_utca;
+    uint64_t cntrl_utca_original;
 
     //The values as read from file so that they can be restored after
     //calibration
@@ -124,7 +139,7 @@ namespace pos{
     int modeRegister; // "ModeReg" in LAD_C
   
     //Number of ROCS per FED channel
-    int NRocs[36];
+    int NRocs[48];
 
     //Control Regs for setting ADC 1Vpp and 2Vpp
     unsigned int Nadcg,NCadcg,SCadcg,Sadcg;
@@ -144,8 +159,11 @@ namespace pos{
     //data Regs adjustable hit limits in fifo1s by fpga
     int N_hitlimit,NC_hitlimit,SC_hitlimit,S_hitlimit;
     
-    //testregs
+    // data Regs to skip bad ROCs by fpga in old fed, testregs in fed with piggy
     unsigned int N_testreg,NC_testreg,SC_testreg,S_testreg;
+
+    // channel you want transparent/scope fifo for in uTCA fed.
+    unsigned TransScopeCh;
     
     //The values as read from file so that they can be restored after
     //calibration
@@ -155,8 +173,10 @@ namespace pos{
     int Ccntrl_original;
     int modeRegister_original;
 
-    //VME base address 
+    //VME base address  = a unique id in the case of uTCA  JMTBAD redundant with fedNumber...
     unsigned long FEDBASE_0, fedNumber;
+
+    unsigned PACKET_NB;
 
     // Most recent additions requested by Will and Danek (Dario)
     int BusyHoldMin       ;

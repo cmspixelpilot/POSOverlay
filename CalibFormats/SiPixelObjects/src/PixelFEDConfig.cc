@@ -152,10 +152,10 @@ PixelFEDConfig::PixelFEDConfig(std::string filename):
     std::string line;
 
     while (getline(in, line)) {
-      if (line.find_first_not_of(" \t") == std::string::npos) continue;
+      if (line[0] == '#' || line.find_first_not_of(" \t") == std::string::npos) continue;
       std::vector<std::string> tokens = tokenize(line, true);
       if (tokens.size() == 0) continue; // a comment line
-      assert(tokens.size() == 3 || tokens.size() == 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
+      assert(tokens.size() >= 3 && tokens.size() <= 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
 
       const unsigned fednumber        = strtoul(tokens[0].c_str(), 0, 10);
       const unsigned crate            = strtoul(tokens[1].c_str(), 0, 10);
@@ -164,13 +164,19 @@ PixelFEDConfig::PixelFEDConfig(std::string filename):
       PixelFEDParameters tmp;
       tmp.setFEDParameters(fednumber, crate, vme_base_address);
 
-      if (tokens.size() == 3 || tokens[3] != "uTCA") {
+      if (tokens.size() == 3) {
 	tmp.setType("VME");
       }
+      else if (tokens.size() == 4) {
+        assert(tokens[3] == "VME");
+        tmp.setType("VME");
+      }
       else {
-	tmp.setType("uTCA");
+	tmp.setType(tokens[3]);
         tmp.setURI(tokens[4]);
       }
+
+      assert(tmp.getType() == "VME" || tmp.getType() == "VMEPiggy" || tmp.getType() == "CTA");
 
       fedconfig_.push_back(tmp); 
     }
@@ -201,7 +207,7 @@ void PixelFEDConfig::writeASCII(std::string dir) const {
     assert(0);
   }
 
-  out <<" #FED number     crate     vme base address     type    URI" <<endl;
+  out <<"#FED number     crate     vme base address     type    URI" <<endl;
   for(unsigned int i=0;i<fedconfig_.size();i++){
     out << fedconfig_[i].getFEDNumber()<<"               "
 	<< fedconfig_[i].getCrate()<<"         "

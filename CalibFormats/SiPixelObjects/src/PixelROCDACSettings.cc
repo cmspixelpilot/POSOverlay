@@ -266,6 +266,7 @@ void PixelROCDACSettings::writeASCII(ostream& out) const{
 
 //=============================================================================================
 void PixelROCDACSettings::writeXML(ofstream *out) const {
+  assert(0);
   std::string mthn = "[PixelROCDACSettings::writeXML()]\t\t\t    " ;
 
   *out << "  <DATA>"                                                  << endl ;

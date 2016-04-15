@@ -108,7 +108,7 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
     std::string dummy;
 
     getline(in, dummy); // skip the column headings
-
+      
     do {
 	
 	std::string TKFECID;
@@ -117,19 +117,17 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
 	unsigned int address;
 	std::string uri;
 
-	in >> TKFECID >> std::dec >> crate >> type;
+	in >> TKFECID;
+        in >> crate;
+        in >> type;
+
 	if (type=="VME" || type=="PCI")
 	{
 		in >> std::hex>> address >>std::dec ;
 	}
-	else if (type == "uTCA") {
+	else if (type == "GLIB" || type == "CTA") {
 	  in >> uri;
 	  address = 0;
-	}
-	else // type not specified, default to "VME"
-	{
-		address = strtoul(type.c_str(), 0, 16); // convert string to integer using base 16
-		type = "VME";
 	}
 
 	if (!in.eof() ){
@@ -166,8 +164,9 @@ void PixelTKFECConfig::writeASCII(std::string dir) const {
   for(unsigned int i=0;i<TKFECconfig_.size();i++){
     out << TKFECconfig_[i].getTKFECID()<<"          "
 	<< TKFECconfig_[i].getCrate()<<"          ";
-    if (TKFECconfig_[i].getType()=="uTCA") {
-      out << "uTCA " << TKFECconfig_[i].getURI() << endl;
+    const std::string& type = TKFECconfig_[i].getType();
+    if (type=="GLIB" || type == "CTA") {
+      out << type << " " << TKFECconfig_[i].getURI() << endl;
     }
     else {
       if (TKFECconfig_[i].getType()=="PCI") {
@@ -342,6 +341,7 @@ void PixelTKFECConfig::writeXML( std::ofstream *outstream,
                             	 std::ofstream *out1stream,
                             	 std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelTKFECConfig::writeXML()]\t\t\t    " ;
 
   for(unsigned int i=0;i<TKFECconfig_.size();i++){

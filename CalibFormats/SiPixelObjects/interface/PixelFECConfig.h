@@ -35,6 +35,8 @@ namespace pos{
     unsigned int getCrate(unsigned int i) const;
     unsigned int getVMEBaseAddress(unsigned int i) const;
     unsigned int crateFromFECNumber(unsigned int fecnumber) const;
+    std::string typeFromFECNumber(unsigned fecnumber) const;
+    std::string URIFromFECNumber(unsigned fecnumber) const;
     unsigned int VMEBaseAddressFromFECNumber(unsigned int fecnumber) const;
     unsigned int getFECSlot(unsigned int i) {return FECSlotFromVMEBaseAddress(getVMEBaseAddress(i));}
     unsigned int FECSlotFromFECNumber(unsigned int fecnumber) {return FECSlotFromVMEBaseAddress(VMEBaseAddressFromFECNumber(fecnumber));}

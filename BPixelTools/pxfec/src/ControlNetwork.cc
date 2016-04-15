@@ -137,7 +137,7 @@ int ControlNetwork::testHubId(const int id, int mode){ //mode: 0=tbm read, 1=tbm
 void ControlNetwork::scanHubIds(int mode){
   for(int id=0; id<32; id++){
     if (testHubId(id , mode)==0){
-      cout << id << " IS OK ";
+      cout << id << " ";
     }
   }
   cout << endl;
@@ -252,7 +252,6 @@ void ControlNetwork::Execute(SysCommand *command){
 
  
 void ControlNetwork::init(){
-  cout << " JMT JMT\n\n\n\n HELLO INIT\n\n\n";
   //unsigned long data = 0;
   // What does this realy do?
   // Internal triggers work for both settings

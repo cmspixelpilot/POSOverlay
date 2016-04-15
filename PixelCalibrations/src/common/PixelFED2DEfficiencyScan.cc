@@ -58,7 +58,7 @@ xoap::MessageReference PixelFED2DEfficiencyScan::execute(xoap::MessageReference 
 
       //cout<<" crate/fed "<<fedcrate<<" "<<fednumber<<endl;
 
-      PixelFEDInterface* iFED=FEDInterfaceFromFEDnumber_[fednumber];
+      PixelFEDInterfaceBase* iFED=FEDInterfaceFromFEDnumber_[fednumber];
       
       uint64_t buffer64[fifo3Depth];
       int status=iFED->spySlink64(buffer64);
@@ -97,11 +97,6 @@ xoap::MessageReference PixelFED2DEfficiencyScan::execute(xoap::MessageReference 
 	cout << "Error reading spySlink64 status="<<status<<endl;
       }
     }
-//  } catch (HAL::HardwareAccessException& e) {
-//    diagService_->reportError("Exception occurred :",DIAGTRACE);//not TRACE, use ERROR
-//    string mes = e.what();
-//    diagService_->reportError(mes,DIAGINFO);
-//
   } catch (exception e) {
     diagService_->reportError("*** Unknown exception occurred",DIAGWARN);
   }

@@ -12,6 +12,7 @@
 #define BLOCKTRANSFER
 
 #include "PixelFECInterface/include/PixelFECInterface.h"
+#include "PixelFECInterface/include/TBMReadException.h"
 
 #define ret_error(ret) \
   if (ret!=0) { \
@@ -52,6 +53,7 @@ PixelFECInterface::PixelFECInterface(const HAL::VMEDevice * const vmeDeviceP,
     }
   }
 
+  setssid(4);
 }
 //------------------------------------------------------------------------
 PixelFECInterface::~PixelFECInterface(void) 

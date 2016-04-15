@@ -65,19 +65,18 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 
       unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
  
-      PixelFEDInterface* iFED=FEDInterface_[vmeBaseAddress];
+      PixelFEDInterfaceBase* iFED=FEDInterface_[vmeBaseAddress];
 
       uint64_t buffer64[fifo3Depth];
       int status=iFED->spySlink64(buffer64);
-      //printf(" status is %i\n", status);
+
       if (status>0) {
-	if(false){
+	if(0){
 	  std::cout<<"Contents of Spy FIFO 3"<<std::endl;
 	  std::cout<<"----------------------"<<std::endl;
 	  for (int i=0; i<=status;++i) {
 	    std::cout<<"Clock "<<i<<" = 0x"<<std::hex<<buffer64[i]<<std::dec<<std::endl;
 	  }
-
 	}
 	
 	FIFO3Decoder decode(buffer64);
@@ -119,12 +118,6 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 	cout << "Error reading spySlink64 status="<<status<<endl;
       }
     }
-//  } catch (HAL::HardwareAccessException& e) {
-//    diagService_->reportError("Exception occurred :",DIAGTRACE);
-//   
-//    string mes = e.what();
-//    diagService_->reportError(mes,DIAGINFO);
-//   
   } catch (exception e) {
     diagService_->reportError("*** Unknown exception occurred",DIAGWARN);
   }
@@ -184,8 +177,7 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::beginCalibration(xo
 				     name1_,nThr,
 				     VcThrMin-0.5*VcThrStep,
 				     VcThrMax+0.5*VcThrStep);
-
-    std::cout << "Booking PixelEfficiency2DVcThrCalDel #" << i_aROC << " with name " << aROC_string[i_aROC].rocname() << std::endl;
+      
     eff_[aROC_string[i_aROC]]=tmp;
 
   }

@@ -554,7 +554,7 @@ void PixelTemperatureCalibration::archiveDACSettings(std::ostream& stream) const
 	    //dacSettings_readOutChip->writeASCII(std::cout);
 
 	    stream << "  <" << (*readOutChip)->rocname() << ">" << std::endl;
-	    assert(0);
+	    assert(0); // JMTBAD OLDDACS
 #if 0
 	    stream << "   <Vdd>" << (int)dacSettings_readOutChip->getVdd() << "</Vdd>" << std::endl;
 	    stream << "   <Vana>" << (int)dacSettings_readOutChip->getVana() << "</Vana>" << std::endl;

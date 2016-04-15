@@ -6,6 +6,7 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
+#include "CalibFormats/SiPixelObjects/interface/Utility.h"
 #include <fstream>
 #include <sstream>
 #include <map>
@@ -18,6 +19,7 @@ using namespace std;
 
 
 PixelFECConfig::PixelFECConfig(std::vector<std::vector<std::string> >& tableMat ) : PixelConfigBase(" "," "," "){
+  assert(0);
 
  std::map<std::string , int > colM;
  std::vector<std::string > colNames;
@@ -92,54 +94,55 @@ PixelFECConfig::PixelFECConfig(std::vector<std::vector<std::string> >& tableMat 
 
 //****************************************************************************************
 
- 
-PixelFECConfig::PixelFECConfig(std::string filename):
-    PixelConfigBase(" "," "," "){
 
-    std::string mthn = "[[PixelFECConfig::PixelFECConfig()]\t\t\t   " ;
-    
+PixelFECConfig::PixelFECConfig(std::string filename):
+  PixelConfigBase(" "," "," "){
+
+    std::string mthn = "[PixelFECConfig::PixelFECConfig()]\t\t\t    " ;
     std::ifstream in(filename.c_str());
 
     if (!in.good()){
-	std::cout << __LINE__ << "]\t" << mthn << "Could not open: " << filename << std::endl;
-	throw std::runtime_error("Failed to open file "+filename);
+      std::cout << __LINE__ << "]\t" << mthn << "Could not open: " << filename.c_str() << std::endl;
+      throw std::runtime_error("Failed to open file "+filename);
     }
     else {
-	std::cout << __LINE__ << "]\t" << mthn <<" Opened: "         << filename << std::endl;
+      std::cout << __LINE__ << "]\t" << mthn << "Opened: " << filename.c_str() << std::endl;
     }
 
-    std::string dummy;
+    std::string line;
 
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
+    while (getline(in, line)) {
+      if (line[0] == '#' || line.find_first_not_of(" \t") == std::string::npos) continue;
+      std::vector<std::string> tokens = tokenize(line, true);
+      if (tokens.size() == 0) continue; // a comment line
+      assert(tokens.size() >= 3 && tokens.size() <= 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
 
-    do {
-	
-	unsigned int fecnumber;
-	unsigned int crate;
-	unsigned int vme_base_address;
+      const unsigned fednumber        = strtoul(tokens[0].c_str(), 0, 10);
+      const unsigned crate            = strtoul(tokens[1].c_str(), 0, 10);
+      const unsigned vme_base_address = strtoul(tokens[2].c_str(), 0, 16);
 
-	in >> fecnumber >> crate >> std::hex>> vme_base_address >>std::dec ;
+      PixelFECParameters tmp;
+      tmp.setFECParameters(fednumber, crate, vme_base_address);
 
-	if (!in.eof() ){
-	    //std::cout << __LINE__ << "]\t" << mthn << fecnumber <<" "<< crate << " "  
-	    //      << std::hex << vme_base_address<<std::dec<<std::endl;
-	    
-	    PixelFECParameters tmp;
-	    
-	    tmp.setFECParameters(fecnumber , crate , vme_base_address);
-	    
-	    fecconfig_.push_back(tmp);
-	}
+      if (tokens.size() == 3) {
+	tmp.setType("VME");
+      }
+      else if (tokens.size() == 4) {
+        assert(tokens[3] == "VME");
+        tmp.setType("VME");
+      }
+      else {
+	tmp.setType(tokens[3]);
+        tmp.setURI(tokens[4]);
+      }
 
+      assert(tmp.getType() == "VME" || tmp.getType() == "GLIB" || tmp.getType() == "CTA");
+
+      fecconfig_.push_back(tmp); 
     }
-    while (!in.eof());
+    
     in.close();
-}
+  }
  
 
 //std::ostream& operator<<(std::ostream& s, const PixelFECConfig& table){
@@ -197,6 +200,38 @@ unsigned int PixelFECConfig::crateFromFECNumber(unsigned int fecnumber) const{
 
 }
 
+std::string PixelFECConfig::typeFromFECNumber(unsigned int fecnumber) const {
+
+
+  std::string mthn = "[PixelFECConfig::typeFromFECNumber()]\t\t\t    " ;
+  for(unsigned int i=0;i<fecconfig_.size();i++){
+    if (fecconfig_[i].getFECNumber()==fecnumber) return fecconfig_[i].getType();
+  }
+
+  std::cout << __LINE__ << "]\t" << mthn << "Could not find FEC number: " << fecnumber << std::endl;
+
+  assert(0);
+
+  return 0;
+
+}
+
+std::string PixelFECConfig::URIFromFECNumber(unsigned int fecnumber) const {
+
+
+  std::string mthn = "[PixelFECConfig::URIFromFECNumber()]\t\t\t    " ;
+  for(unsigned int i=0;i<fecconfig_.size();i++){
+    if (fecconfig_[i].getFECNumber()==fecnumber) return fecconfig_[i].getURI();
+  }
+
+  std::cout << __LINE__ << "]\t" << mthn << "Could not find FEC number: " << fecnumber << std::endl;
+
+  assert(0);
+
+  return 0;
+
+}
+
 unsigned int PixelFECConfig::VMEBaseAddressFromFECNumber(unsigned int fecnumber) const{
 
     std::string mthn = "[PixelFECConfig::VMEBaseAddressFromFECNumber()]\t\t    " ;
@@ -221,13 +256,15 @@ void PixelFECConfig::writeASCII(std::string dir) const {
 
   std::vector< PixelFECParameters >::const_iterator i=fecconfig_.begin();
 
-  out << "#FEC number     crate     vme base address" << endl;
+  out <<"#FEC number     crate     vme base address     type    URI" <<endl;
   for(;i!=fecconfig_.end();++i){
     out << i->getFECNumber()<<"               "
         << i->getCrate()<<"         "
-        << "0x"<<hex<<i->getVMEBaseAddress()<<dec<<endl;
+        << "0x"<<hex<<i->getVMEBaseAddress()<<dec
+        << i->getType() <<"     "
+        << i->getURI()  <<endl;
   }
-
+  out.close();
 }
 
 //=============================================================================================
@@ -275,6 +312,7 @@ void PixelFECConfig::writeXML( std::ofstream *outstream,
                                std::ofstream *out1stream,
                                std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelFECConfig::writeXML()]\t\t\t    " ;
 
   std::vector< PixelFECParameters >::const_iterator i=fecconfig_.begin();

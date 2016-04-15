@@ -18,10 +18,6 @@
 using namespace pos;
 using namespace std;
 
-namespace {
-  const bool PRINT = false;
-}
-
 PixelGainAliveSCurveCalibration::PixelGainAliveSCurveCalibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
   : PixelCalibrationBase(tempConfiguration, *mySOAPCmdr)
 {
@@ -78,7 +74,7 @@ void PixelGainAliveSCurveCalibration::endCalibration()
 
 bool PixelGainAliveSCurveCalibration::execute()
 {
-  if (PRINT) printf("PixelGainAliveSCurveCalibration EXECUTE %i\n", int(event_));
+
   PixelCalibConfiguration* tempCalibObject = dynamic_cast <PixelCalibConfiguration*> (theCalibObject_);
   assert(tempCalibObject!=0);
 
@@ -101,15 +97,11 @@ bool PixelGainAliveSCurveCalibration::execute()
         
     fecTimer_.start();
     //if(false) { ////
-    if (PRINT) printf("PixelGainAliveSCurveCalibration GOING TO NEXT FEC CONFIG\n");
     nextFECConfig(event_);
-    if (PRINT) printf("PixelGainAliveSCurveCalibration BACK FROM NEXT FEC CONFIG\n");
     //} // end if false
     fecTimer_.stop();
 
   }
-
-  //usleep(10000);	// 0.01 s. FIXME. Temporary throttling
   
   ttcTimer_.start();
 
@@ -123,8 +115,7 @@ bool PixelGainAliveSCurveCalibration::execute()
   //} // end if 
 
   ttcTimer_.stop();
-
-  if (PRINT) printf("PixelGainAliveSCurveCalibration TRIGGER, READ FED\n");
+  
   fedTimer_.start();
 
   Attribute_Vector parameters(8);
@@ -181,7 +172,7 @@ bool PixelGainAliveSCurveCalibration::execute()
   //} // end if False /////////////
 
   fedTimer_.stop();
-  if (PRINT) printf("PixelGainAliveSCurveCalibration FED READ DONE\n");
+    
   return (event_+1!=tempCalibObject->nTriggersTotal());
   
 }

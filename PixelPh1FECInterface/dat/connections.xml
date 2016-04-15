@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<connections>
-<!--    <connection id="GLIB" uri="ipbusudp-2.0://192.168.0.165:50001" address_table="file:///home/fectest/FEC_mTCA/Glib_Application/cpp_files/registers2.xml" />-->
-        <connection id="board0" uri="chtcp-2.0://cmsuppixch:10203?target=ctapxfec:50001" address_table="file://registers_cta.xml" />
-<!--     <connection id="GLIB" uri=“chtcp-2.0://cmsuppixch:10203?target=glibpxfec:50001"   address_table="file:///home/fectest/FEC_mTCA/Glib_Application/cpp_files/registers2.xml" />-->
-</connections>

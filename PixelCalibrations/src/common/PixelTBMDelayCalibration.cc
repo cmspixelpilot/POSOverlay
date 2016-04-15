@@ -26,8 +26,6 @@ void PixelTBMDelayCalibration::beginCalibration() {
   if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMBDelay") && !tempCalibObject->containsScan("TBMPLL"))
     std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
 
-  ToggleChannels = tempCalibObject->parameterValue("ToggleChannels") == "yes";
-  CycleScopeChannels = tempCalibObject->parameterValue("CycleScopeChannels") == "yes";
   DelayBeforeFirstTrigger = tempCalibObject->parameterValue("DelayBeforeFirstTrigger") == "yes";
   DelayEveryTrigger = tempCalibObject->parameterValue("DelayEveryTrigger") == "yes";
 }
@@ -43,19 +41,7 @@ bool PixelTBMDelayCalibration::execute() {
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
   if (firstOfPattern) {
     std::cout << "new state " << state << std::endl;
-    if (ToggleChannels) commandToAllFEDCrates("ToggleChannels");
     commandToAllFECCrates("CalibRunning");
-  }
-
-  if (CycleScopeChannels) {
-    const int em36 = event_ % 36;
-    const int which = em36 / 9;
-    const int channel = em36 % 9;
-    std::cout << "fiddling with SetScopeChannel event_ = " << event_ << " % 36 = " << em36 << " which = " << which << " channel = " << channel << std::endl;
-    Attribute_Vector parametersToFED(2);
-    parametersToFED[0].name_ = "Which"; parametersToFED[0].value_ = itoa(which);
-    parametersToFED[1].name_ = "Ch";    parametersToFED[1].value_ = itoa(channel);
-    commandToAllFEDCrates("SetScopeChannel", parametersToFED);
   }
 
   if (firstOfPattern) {

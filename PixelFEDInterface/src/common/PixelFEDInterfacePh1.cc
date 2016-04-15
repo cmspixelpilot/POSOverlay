@@ -4,33 +4,33 @@
 #include <time.h>
 //#include <unistd.h>
 
-#include "PixelPh1FEDInterface/include/PixelPh1FEDInterface.h"
+#include "PixelFEDInterface/include/PixelFEDInterfacePh1.h"
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
 using namespace std;
 
-PixelPh1FEDInterface::PixelPh1FEDInterface(RegManager* const rm)
-  : Printlevel(1),
-    regManager(rm),
+PixelFEDInterfacePh1::PixelFEDInterfacePh1(RegManager* const rm, const std::string& datbase)
+  : regManager(rm),
+    fitel_fn_base(datbase),
     slink64calls(0)
 {
-  num_SEU.assign(96, 0);
+  num_SEU.assign(48, 0);
 }
 
-PixelPh1FEDInterface::~PixelPh1FEDInterface() {
+PixelFEDInterfacePh1::~PixelFEDInterfacePh1() {
 }
 
-int PixelPh1FEDInterface::setup(const string& fn) {
-  setPixelFEDCard(pos::PixelPh1FEDCard(fn));
+int PixelFEDInterfacePh1::setup(const string& fn) {
+  setPixelFEDCard(pos::PixelFEDCard(fn));
   return setup();
 }
 
-int PixelPh1FEDInterface::setup(pos::PixelPh1FEDCard& c) {
+int PixelFEDInterfacePh1::setup(pos::PixelFEDCard c) {
   setPixelFEDCard(c);
   return setup();
 }
 
-int PixelPh1FEDInterface::setup() {
+int PixelFEDInterfacePh1::setup() {
   fRegMapFilename[FMC0_Fitel0] = fitel_fn_base + "/FMCFITEL.txt";
   fRegMapFilename[FMC0_Fitel1] = fitel_fn_base + "/FMCFITEL.txt";
   fRegMapFilename[FMC1_Fitel0] = fitel_fn_base + "/FMCFITEL.txt";
@@ -47,12 +47,12 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
-    {"pixfed_ctrl_regs.PACKET_NB", card.packet_nb}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
+    {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
-    {"pixfed_ctrl_regs.TBM_MASK_1", card.cntrl_1},
-    {"pixfed_ctrl_regs.TBM_MASK_2", card.cntrl_2},
-    {"pixfed_ctrl_regs.TBM_MASK_3", card.cntrl_3},
-    {"fe_ctrl_regs.fifo_config.channel_of_interest", card.TransScopeCh},
+    {"pixfed_ctrl_regs.TBM_MASK_1", pixelFEDCard.cntrl_utca & 0xFFFFFFFFULL},
+    {"pixfed_ctrl_regs.TBM_MASK_2", pixelFEDCard.cntrl_utca & (0xFFFFFFFFULL << 32)},
+    {"pixfed_ctrl_regs.TBM_MASK_3", 0xFFFFFFFF},
+    {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"pixfed_ctrl_regs.TRIGGER_SEL", 0},
     {"pixfed_ctrl_regs.data_type", 0}, // 2 = fake data?
     {"fe_ctrl_regs.decode_reg_reset", 1}, // init FE spy fifos etc JMTBAD take out if this doesn't work any more
@@ -82,11 +82,11 @@ int PixelPh1FEDInterface::setup() {
   return cDDR3calibrated;
 }
 
-void PixelPh1FEDInterface::loadFPGA() {
+void PixelFEDInterfacePh1::loadFPGA() {
 }
 
 
-std::string PixelPh1FEDInterface::getBoardType()
+std::string PixelFEDInterfacePh1::getBoardType()
 {
     // adapt me!
     std::string cBoardTypeString;
@@ -109,14 +109,14 @@ std::string PixelPh1FEDInterface::getBoardType()
 
 }
 
-void PixelPh1FEDInterface::getFEDNetworkParameters()
+void PixelFEDInterfacePh1::getFEDNetworkParameters()
 {
     std::cout << "MAC & IP Source: " << regManager->ReadReg("mac_ip_source") << std::endl;
 
     std::cout << "MAC Address: " << std::hex << regManager->ReadReg("mac_b5") << ":" << regManager->ReadReg("mac_b4") << ":" << regManager->ReadReg("mac_b3") << ":" << regManager->ReadReg("mac_b2") << ":" << regManager->ReadReg("mac_b1") << ":" << regManager->ReadReg("mac_b0") << std::dec << std::endl;
 }
 
-void PixelPh1FEDInterface::getBoardInfo()
+void PixelFEDInterfacePh1::getBoardInfo()
 {
     std::cout << std::endl << "Board Type: " << getBoardType() << std::endl;
     getFEDNetworkParameters();
@@ -159,7 +159,7 @@ void PixelPh1FEDInterface::getBoardInfo()
 }
 
 
-void PixelPh1FEDInterface::disableFMCs()
+void PixelFEDInterfacePh1::disableFMCs()
 {
     std::vector< std::pair<std::string, uint32_t> > cVecReg;
     cVecReg.push_back( { "fmc_pg_c2m", 0 } );
@@ -168,7 +168,7 @@ void PixelPh1FEDInterface::disableFMCs()
     regManager->WriteStackReg(cVecReg);
 }
 
-void PixelPh1FEDInterface::enableFMCs()
+void PixelFEDInterfacePh1::enableFMCs()
 {
     std::vector< std::pair<std::string, uint32_t> > cVecReg;
     cVecReg.push_back( { "fmc_pg_c2m", 1 } );
@@ -178,39 +178,39 @@ void PixelPh1FEDInterface::enableFMCs()
 }
 
 /*
-void PixelPh1FEDInterface::FlashProm( const std::string & strConfig, const char* pstrFile )
+void PixelFEDInterfacePh1::FlashProm( const std::string & strConfig, const char* pstrFile )
 {
     checkIfUploading();
 
     fpgaConfig->runUpload( strConfig, pstrFile );
 }
 
-void PixelPh1FEDInterface::JumpToFpgaConfig( const std::string & strConfig )
+void PixelFEDInterfacePh1::JumpToFpgaConfig( const std::string & strConfig )
 {
     checkIfUploading();
 
     fpgaConfig->jumpToImage( strConfig );
 }
 
-std::vector<std::string> PixelPh1FEDInterface::getFpgaConfigList()
+std::vector<std::string> PixelFEDInterfacePh1::getFpgaConfigList()
 {
     checkIfUploading();
     return fpgaConfig->getFirmwareImageNames( );
 }
 
-void PixelPh1FEDInterface::DeleteFpgaConfig( const std::string & strId )
+void PixelFEDInterfacePh1::DeleteFpgaConfig( const std::string & strId )
 {
     checkIfUploading();
     fpgaConfig->deleteFirmwareImage( strId );
 }
 
-void PixelPh1FEDInterface::DownloadFpgaConfig( const std::string& strConfig, const std::string& strDest)
+void PixelFEDInterfacePh1::DownloadFpgaConfig( const std::string& strConfig, const std::string& strDest)
 {
     checkIfUploading();
     fpgaConfig->runDownload( strConfig, strDest.c_str());
 }
 
-void PixelPh1FEDInterface::checkIfUploading()
+void PixelFEDInterfacePh1::checkIfUploading()
 {
     if ( fpgaConfig && fpgaConfig->getUploadingFpga() > 0 )
         throw Exception( "This board is uploading an FPGA configuration" );
@@ -220,7 +220,7 @@ void PixelPh1FEDInterface::checkIfUploading()
 }
 */
 
-void PixelPh1FEDInterface::LoadFitelRegMap(int cFMCId, int cFitelId) {
+void PixelFEDInterfacePh1::LoadFitelRegMap(int cFMCId, int cFitelId) {
   const std::string& filename = fRegMapFilename[FitelMapNum(cFMCId, cFitelId)];
   std::ifstream file( filename.c_str(), std::ios::in );
   if (!file) {
@@ -249,18 +249,18 @@ void PixelPh1FEDInterface::LoadFitelRegMap(int cFMCId, int cFitelId) {
   file.close();
 }
 
-void PixelPh1FEDInterface::EncodeFitelReg( const FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId , std::vector<uint32_t>& pVecReq ) {
+void PixelFEDInterfacePh1::EncodeFitelReg( const FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId , std::vector<uint32_t>& pVecReq ) {
   pVecReq.push_back(  pFMCId  << 24 |  pFitelId << 20 |  pRegItem.fAddress << 8 | pRegItem.fValue );
 }
 
-void PixelPh1FEDInterface::DecodeFitelReg( FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId, uint32_t pWord ) {
+void PixelFEDInterfacePh1::DecodeFitelReg( FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId, uint32_t pWord ) {
   //uint8_t cFMCId = ( pWord & 0xff000000 ) >> 24;
   //cFitelId = (  pWord & 0x00f00000   ) >> 20;
   pRegItem.fAddress = ( pWord & 0x0000ff00 ) >> 8;
   pRegItem.fValue = pWord & 0x000000ff;
 }
 
-void PixelPh1FEDInterface::i2cRelease(uint32_t pTries)
+void PixelFEDInterfacePh1::i2cRelease(uint32_t pTries)
 {
     uint32_t cCounter = 0;
     // release
@@ -280,7 +280,7 @@ void PixelPh1FEDInterface::i2cRelease(uint32_t pTries)
     }
 }
 
-bool PixelPh1FEDInterface::polli2cAcknowledge(uint32_t pTries)
+bool PixelFEDInterfacePh1::polli2cAcknowledge(uint32_t pTries)
 {
     bool cSuccess = false;
     uint32_t cCounter = 0;
@@ -312,7 +312,7 @@ bool PixelPh1FEDInterface::polli2cAcknowledge(uint32_t pTries)
     return cSuccess;
 }
 
-bool PixelPh1FEDInterface::WriteFitelBlockReg(std::vector<uint32_t>& pVecReq) {
+bool PixelFEDInterfacePh1::WriteFitelBlockReg(std::vector<uint32_t>& pVecReq) {
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_addr", 0x4d);
   bool cSuccess = false;
   // write the encoded registers in the tx fifo
@@ -341,7 +341,7 @@ bool PixelPh1FEDInterface::WriteFitelBlockReg(std::vector<uint32_t>& pVecReq) {
   return cSuccess;
 }
 
-bool PixelPh1FEDInterface::ReadFitelBlockReg(std::vector<uint32_t>& pVecReq)
+bool PixelFEDInterfacePh1::ReadFitelBlockReg(std::vector<uint32_t>& pVecReq)
 {
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_addr", 0x4d);
   bool cSuccess = false;
@@ -376,7 +376,7 @@ bool PixelPh1FEDInterface::ReadFitelBlockReg(std::vector<uint32_t>& pVecReq)
   return cSuccess;
 }
 
-void PixelPh1FEDInterface::ConfigureFitel(int cFMCId, int cFitelId , bool pVerifLoop )
+void PixelFEDInterfacePh1::ConfigureFitel(int cFMCId, int cFitelId , bool pVerifLoop )
 {
   FitelRegMap& cFitelRegMap = fRegMap[FitelMapNum(cFMCId, cFitelId)];
     FitelRegMap::iterator cIt = cFitelRegMap.begin();
@@ -484,7 +484,7 @@ void PixelPh1FEDInterface::ConfigureFitel(int cFMCId, int cFitelId , bool pVerif
     }
 }
 
-std::pair<bool, std::vector<double> > PixelPh1FEDInterface::ReadADC( const uint8_t pFMCId, const uint8_t pFitelId) {
+std::pair<bool, std::vector<double> > PixelFEDInterfacePh1::ReadADC( const uint8_t pFMCId, const uint8_t pFitelId) {
   // the Fitel FMC needs to be set up to be able to read the RSSI on a given Channel:
   // I2C register 0x1: set to 0x4 for RSSI, set to 0x5 for Die Temperature of the Fitel
   // Channel Control Registers: set to 0x02 to disable RSSI for this channel, set to 0x0c to enable RSSI for this channel
@@ -579,19 +579,24 @@ std::pair<bool, std::vector<double> > PixelPh1FEDInterface::ReadADC( const uint8
   return std::make_pair(success, cLTCValues);
 }
 
-void PixelPh1FEDInterface::reset() {
+int PixelFEDInterfacePh1::reset() {
   // JMTBAD from fedcard
 
   //  setup(); // JMTBAD
+
+  return 0;
 }
 
-void PixelPh1FEDInterface::resetFED() {
+void PixelFEDInterfacePh1::resetFED() {
 }
 
-void PixelPh1FEDInterface::armOSDFifo(int channel, int rochi, int roclo) {
+void PixelFEDInterfacePh1::sendResets(unsigned which) {
 }
 
-uint32_t PixelPh1FEDInterface::readOSDFifo(int channel) {
+void PixelFEDInterfacePh1::armOSDFifo(int channel, int rochi, int roclo) {
+}
+
+uint32_t PixelFEDInterfacePh1::readOSDFifo(int channel) {
   return 0;
 }
 
@@ -611,7 +616,7 @@ void prettyprintPhase(const std::vector<uint32_t>& pData, int pChannel)
               ((pData.at( (pChannel * 4 ) + 2 )       ) & 0x1f ) << std::endl;
 }
 
-void PixelPh1FEDInterface::readPhases(bool verbose, bool override_timeout) {
+void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
     // Perform all the resets
     std::vector< std::pair<std::string, uint32_t> > cVecReg;
     cVecReg.push_back( { "fe_ctrl_regs.decode_reset", 1 } ); // reset deocode auto clear
@@ -683,7 +688,7 @@ void PixelPh1FEDInterface::readPhases(bool verbose, bool override_timeout) {
     cVecReg.clear();
 }
 
-std::vector<uint32_t> PixelPh1FEDInterface::readTransparentFIFO()
+std::vector<uint32_t> PixelFEDInterfacePh1::readTransparentFIFO()
 {
     //regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
     //std::vector<uint32_t> cFifoVec = ReadBlockRegValue( "fifo.bit_stream", 32 );
@@ -709,7 +714,7 @@ std::vector<uint32_t> PixelPh1FEDInterface::readTransparentFIFO()
     return cFifoVec;
 }
 
-int PixelPh1FEDInterface::drainTransparentFifo(uint32_t* data) {
+int PixelFEDInterfacePh1::drainTransparentFifo(uint32_t* data) {
   const size_t MAX_TRANSPARENT_FIFO = 1024;
   std::vector<uint32_t> v(readTransparentFIFO());
   const int ie(min(v.size(), MAX_TRANSPARENT_FIFO));
@@ -736,7 +741,7 @@ void prettyprintSpyFIFO(const std::vector<uint32_t>& pVec)
     }
 }
 
-std::vector<uint32_t> PixelPh1FEDInterface::readSpyFIFO()
+std::vector<uint32_t> PixelFEDInterfacePh1::readSpyFIFO()
 {
   
   std::vector<uint32_t> cSpy[2];
@@ -765,7 +770,7 @@ std::vector<uint32_t> PixelPh1FEDInterface::readSpyFIFO()
 }
 
 
-int PixelPh1FEDInterface::drainSpyFifo(uint32_t* data) {
+int PixelFEDInterfacePh1::drainSpyFifo(uint32_t* data) {
   const size_t MAX_SPY_FIFO = 1024;
   std::vector<uint32_t> v(readSpyFIFO());
   const int ie(min(v.size(), MAX_SPY_FIFO));
@@ -774,9 +779,9 @@ int PixelPh1FEDInterface::drainSpyFifo(uint32_t* data) {
   return ie;
 }
 
-PixelPh1FEDInterface::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os)
+PixelFEDInterfacePh1::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os)
 {
-  PixelPh1FEDInterface::encfifo1 r;
+  PixelFEDInterfacePh1::encfifo1 r;
     os << "----------------------------------------------------------------------------------" << std::endl;
     for (uint32_t cIndex = 0; cIndex < pFifoVec.size(); cIndex++ )
     {
@@ -796,7 +801,7 @@ PixelPh1FEDInterface::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pF
 
         if (pMarkerVec.at(cIndex) == 1)
         {
-	  PixelPh1FEDInterface::encfifo1hit h;
+	  PixelFEDInterfacePh1::encfifo1hit h;
 	  h.ch = (pFifoVec.at(cIndex) >> 26) & 0x3f;
 	  if (h.ch == 45) h.ch = 33;
 	  if (h.ch == 46) h.ch = 34;
@@ -824,7 +829,7 @@ PixelPh1FEDInterface::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pF
 return r;
 }
 
-PixelPh1FEDInterface::digfifo1 PixelPh1FEDInterface::readFIFO1() {
+PixelFEDInterfacePh1::digfifo1 PixelFEDInterfacePh1::readFIFO1() {
   digfifo1 df;
   df.cFifo1A  = regManager->ReadBlockRegValue("fifo.spy_1_A", 2048);
   df.cMarkerA = regManager->ReadBlockRegValue("fifo.spy_1_A_marker", 2048);
@@ -840,23 +845,23 @@ PixelPh1FEDInterface::digfifo1 PixelPh1FEDInterface::readFIFO1() {
   return df;
 }
 
-int PixelPh1FEDInterface::drainFifo1(uint32_t *data) {
+int PixelFEDInterfacePh1::drainFifo1(uint32_t *data) {
   return 0;
 }
 
-int PixelPh1FEDInterface::drainErrorFifo(uint32_t *data) {
+int PixelFEDInterfacePh1::drainErrorFifo(uint32_t *data) {
   return 0;
 }
 
-int PixelPh1FEDInterface::drainTemperatureFifo(uint32_t* data) {
+int PixelFEDInterfacePh1::drainTemperatureFifo(uint32_t* data) {
   return 0;
 }
 
-int PixelPh1FEDInterface::drainTTSFifo(uint32_t *data) {
+int PixelFEDInterfacePh1::drainTTSFifo(uint32_t *data) {
   return 0;
 }
 
-void PixelPh1FEDInterface::SelectDaqDDR( uint32_t pNthAcq )
+void PixelFEDInterfacePh1::SelectDaqDDR( uint32_t pNthAcq )
 {
     fStrDDR  = ( ( pNthAcq % 2 + 1 ) == 1 ? "DDR0" : "DDR1" );
     fStrDDRControl = ( ( pNthAcq % 2 + 1 ) == 1 ? "pixfed_ctrl_regs.DDR0_ctrl_sel" : "pixfed_ctrl_regs.DDR1_ctrl_sel" );
@@ -906,7 +911,7 @@ void prettyprintTBMFIFO(const std::vector<uint32_t>& pData )
     }
 }
 
-std::vector<uint32_t> PixelPh1FEDInterface::ReadData(uint32_t cBlockSize)
+std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 {
     //    std::cout << "JJJ READ DATA " << cBlockSize << std::endl;
     //std::chrono::milliseconds cWait( 10 );
@@ -954,14 +959,14 @@ std::vector<uint32_t> PixelPh1FEDInterface::ReadData(uint32_t cBlockSize)
 }
 
 
-int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
+int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
   std::cout << "slink64call #" << slink64calls << std::endl;
 
   //  usleep(1000000);
   //sleep(10);
   readSpyFIFO();
-  PixelPh1FEDInterface::digfifo1 f = readFIFO1();
+  PixelFEDInterfacePh1::digfifo1 f = readFIFO1();
   data[0] = 0x5000000000000000;
   data[0] |= uint64_t(f.a.event & 0xffffff) << 32;
   data[0] |= uint64_t(41) << 8;
@@ -996,96 +1001,78 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   return int(j);
 }
 
-bool PixelPh1FEDInterface::isWholeEvent(uint32_t nTries) {
+bool PixelFEDInterfacePh1::isWholeEvent(uint32_t nTries) {
   return false;
 }
 
-bool PixelPh1FEDInterface::isNewEvent(uint32_t nTries) {
+bool PixelFEDInterfacePh1::isNewEvent(uint32_t nTries) {
   return false;
 }
 
-int PixelPh1FEDInterface::enableSpyMemory(const int enable) {
+int PixelFEDInterfacePh1::enableSpyMemory(const int enable) {
   // card.modeRegister ?
-  return setModeRegister(card.modeRegister);
+  return setModeRegister(pixelFEDCard.modeRegister);
 }
 
-uint32_t PixelPh1FEDInterface::get_VMEFirmwareDate() {
-  uint32_t iwrdat=0;
-  // read here
-  cout<<"FEDID:"<<card.fedNumber<<" VME FPGA (update via jtag pins only) firmware date d/m/y "
-      <<dec<<((iwrdat&0xff000000)>>24)<<"/"
-      <<dec<<((iwrdat&0xff0000)>>16)<<"/"
-      <<dec<<((((iwrdat&0xff00)>>8)*100)+(iwrdat&0xff))<<endl;
-  return iwrdat;
+void PixelFEDInterfacePh1::printBoardInfo() {
 }
 
-uint32_t PixelPh1FEDInterface::get_FirmwareDate(int chip) {
-  uint32_t iwrdat=0;
-  if(chip != 1) return 0;
-  //read here
-  cout<<"FEDID:"<<card.fedNumber<<" FPGA firmware date d/m/y "
-      <<dec<<((iwrdat&0xff000000)>>24)<<"/"
-      <<dec<<((iwrdat&0xff0000)>>16)<<"/"
-      <<dec<<((((iwrdat&0xff00)>>8)*100)+(iwrdat&0xff))<<endl;
-  return iwrdat;
+int PixelFEDInterfacePh1::loadFedIDRegister() {
+  if(Printlevel&1)cout<<"Load FEDID register from DB 0x"<<hex<<pixelFEDCard.fedNumber<<dec<<endl;
+  return setFedIDRegister(pixelFEDCard.fedNumber);
 }
 
-bool PixelPh1FEDInterface::loadFedIDRegister() {
-  if(Printlevel&1)cout<<"Load FEDID register from DB 0x"<<hex<<card.fedNumber<<dec<<endl;
-  return setFedIDRegister(card.fedNumber);
-}
-
-bool PixelPh1FEDInterface::setFedIDRegister(const uint32_t value) {
+int PixelFEDInterfacePh1::setFedIDRegister(const int value) {
   cout<<"Set FEDID register "<<hex<<value<<dec<<endl;
   // write here
-  uint32_t got = getFedIDRegister();
+  int got = getFedIDRegister();
   if (value != got) cout<<"soft FEDID = "<<value<<" doesn't match hard board FEDID = "<<got<<endl;
   return value == got;
 }
 
-uint32_t PixelPh1FEDInterface::getFedIDRegister() {
+int PixelFEDInterfacePh1::getFedIDRegister() {
   return 0;
 }
 
-bool PixelPh1FEDInterface::loadControlRegister() {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Load Control register from DB 0x"<<hex<<card.Ccntrl<<dec<<endl;
-  return setControlRegister(card.Ccntrl);
+int PixelFEDInterfacePh1::loadControlRegister() {
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Control register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
+  return setControlRegister(pixelFEDCard.Ccntrl);
 }
 
-bool PixelPh1FEDInterface::setControlRegister(uint32_t value) {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
+int PixelFEDInterfacePh1::setControlRegister(const int value) {
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
   // write here
-  card.Ccntrl=value; // stored this value   
+  pixelFEDCard.Ccntrl=value; // stored this value   
   return false;
 }
 
-uint32_t PixelPh1FEDInterface::getControlRegister() {
+int PixelFEDInterfacePh1::getControlRegister() {
   return 0;
 }
 
-bool PixelPh1FEDInterface::loadModeRegister() {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Load Mode register from DB 0x"<<hex<<card.Ccntrl<<dec<<endl;
-  return setModeRegister(card.modeRegister);
+int PixelFEDInterfacePh1::loadModeRegister() {
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Mode register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
+  return setModeRegister(pixelFEDCard.modeRegister);
 }
 
-bool PixelPh1FEDInterface::setModeRegister(uint32_t value) {
-  if(Printlevel&1)cout<<"FEDID:"<<card.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
+int PixelFEDInterfacePh1::setModeRegister(int value) {
+  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
   // write here
-  card.modeRegister=value; // stored this value   
+  pixelFEDCard.modeRegister=value; // stored this value   
   return false;
 }
 
-uint32_t PixelPh1FEDInterface::getModeRegister() {
+int PixelFEDInterfacePh1::getModeRegister() {
   return 0;
 }
 
-void PixelPh1FEDInterface::set_PrivateWord(uint32_t pword) {
+void PixelFEDInterfacePh1::set_PrivateWord(uint32_t pword) {
 }
 
-void PixelPh1FEDInterface::resetSlink() {
+void PixelFEDInterfacePh1::resetSlink() {
 }
 
-bool PixelPh1FEDInterface::checkFEDChannelSEU() {
+bool PixelFEDInterfacePh1::checkFEDChannelSEU() {
   /*
     Check to see if the channels that are currently on match what we expect. If not
     increment the counter and return true. Note that this assumes that the method won't
@@ -1100,7 +1087,7 @@ bool PixelPh1FEDInterface::checkFEDChannelSEU() {
   // Note: since N_enbable_expected is bitset<9>, this only compares the first 9 bits
   if (enbable_current != enbable_expected && enbable_current != enbable_last) {
     foundSEU = true;
-    cout << "Detected FEDChannel SEU in FED " << card.fedNumber << endl;
+    cout << "Detected FEDChannel SEU in FED " << pixelFEDCard.fedNumber << endl;
     cout << "Expected " << enbable_expected << " Found " << enbable_current << " Last " << enbable_last << endl;
     incrementSEUCountersFromEnbableBits(num_SEU, enbable_current, enbable_last);
   }
@@ -1110,13 +1097,13 @@ bool PixelPh1FEDInterface::checkFEDChannelSEU() {
   return foundSEU;
 }
 
-void PixelPh1FEDInterface::incrementSEUCountersFromEnbableBits(vector<int> &counter, enbable_t current, enbable_t last) {
+void PixelFEDInterfacePh1::incrementSEUCountersFromEnbableBits(vector<int> &counter, enbable_t current, enbable_t last) {
   for(size_t i = 0; i < current.size(); i++)
     if (current[i] != last[i])
       counter[i]++;
 }
 
-bool PixelPh1FEDInterface::checkSEUCounters(int threshold) {
+bool PixelFEDInterfacePh1::checkSEUCounters(int threshold) {
   /*
     Check to see if any of the channels have more than threshold SEUs.
     If so, return true and set expected enbable bit for that channel
@@ -1124,7 +1111,7 @@ bool PixelPh1FEDInterface::checkSEUCounters(int threshold) {
     Otherwise, return false
   */
   bool return_val = false;
-  cout << "Checking for more than " << threshold << " SEUs in FED " << card.fedNumber << endl;
+  cout << "Checking for more than " << threshold << " SEUs in FED " << pixelFEDCard.fedNumber << endl;
   cout << "Channels with too many SEUs: ";
   for (size_t i=0; i<48; i++)
     {
@@ -1136,13 +1123,13 @@ bool PixelPh1FEDInterface::checkSEUCounters(int threshold) {
     }
   if (return_val) {
     cout << ". Disabling." << endl;
-    cout << "Setting runDegraded flag for FED " << card.fedNumber << endl;
+    cout << "Setting runDegraded flag for FED " << pixelFEDCard.fedNumber << endl;
     runDegraded_ = true;
   } else cout << endl;
   return return_val;
 }
 
-void PixelPh1FEDInterface::resetEnbableBits() {
+void PixelFEDInterfacePh1::resetEnbableBits() {
   // Get the current values of higher bits in these registers, so we can leave them alone
 
   //uint64_t OtherConfigBits = 0;
@@ -1154,22 +1141,22 @@ void PixelPh1FEDInterface::resetEnbableBits() {
   //  write;
 }
 
-void PixelPh1FEDInterface::storeEnbableBits() {
-  enbable_expected = masks_to_enbable(card.cntrl_1, card.cntrl_2, card.cntrl_3);
+void PixelFEDInterfacePh1::storeEnbableBits() {
+  enbable_expected = pixelFEDCard.cntrl_utca;
   enbable_last = enbable_expected;
 }
 
-void PixelPh1FEDInterface::resetSEUCountAndDegradeState(void) {
+void PixelFEDInterfacePh1::resetSEUCountAndDegradeState(void) {
   cout << "reset SEU counters and the runDegrade flag " << endl;
   // reset the state back to running 
   runDegraded_ = false;
   // clear the count flag
-  num_SEU.assign(96, 0);
+  num_SEU.assign(48, 0);
   // reset the expected state to default
   storeEnbableBits();
 }
 
-void PixelPh1FEDInterface::testTTSbits(uint32_t data, int enable) {
+void PixelFEDInterfacePh1::testTTSbits(uint32_t data, int enable) {
   //will turn on the test bits indicate in bits 0...3 as long as bit 31 is set
   //As of this writing, the bits indicated are: 0(Warn), 1(OOS), 2(Busy), 4(Ready)
   //Use a 1 or any >1 to enable, a 0 or <0 to disable
@@ -1180,59 +1167,59 @@ void PixelPh1FEDInterface::testTTSbits(uint32_t data, int enable) {
   // write here
 }
 
-void PixelPh1FEDInterface::setXY(int X, int Y) {
+void PixelFEDInterfacePh1::setXY(int X, int Y) {
 }
 
-int PixelPh1FEDInterface::getXYCount() {
+int PixelFEDInterfacePh1::getXYCount() {
   return 0;
 }
 
-void PixelPh1FEDInterface::resetXYCount() {
+void PixelFEDInterfacePh1::resetXYCount() {
 }
 
-int PixelPh1FEDInterface::getNumFakeEvents() {
+uint32_t PixelFEDInterfacePh1::getNumFakeEvents() {
   return 0;
 }
 
-void PixelPh1FEDInterface::resetNumFakeEvents() {
+void PixelFEDInterfacePh1::resetNumFakeEvents() {
 }
 
-uint32_t PixelPh1FEDInterface::readEventCounter() {
+int PixelFEDInterfacePh1::readEventCounter() {
   return 0;
 }
 
-uint32_t PixelPh1FEDInterface::getFifoStatus() {
+uint32_t PixelFEDInterfacePh1::getFifoStatus() {
   return 0;
 }
 
-uint32_t PixelPh1FEDInterface::linkFullFlag() {
+uint32_t PixelFEDInterfacePh1::linkFullFlag() {
   return 0;
 }
 
-uint32_t PixelPh1FEDInterface::numPLLLocks() {
+uint32_t PixelFEDInterfacePh1::numPLLLocks() {
   return 0;
 }
 
-uint32_t PixelPh1FEDInterface::getFifoFillLevel() {
+uint32_t PixelFEDInterfacePh1::getFifoFillLevel() {
   return 0;
 }
 
-uint64_t PixelPh1FEDInterface::getSkippedChannels() {
+uint64_t PixelFEDInterfacePh1::getSkippedChannels() {
   return 0;
 }
 
-uint32_t PixelPh1FEDInterface::getErrorReport(int ch) {
+uint32_t PixelFEDInterfacePh1::getErrorReport(int ch) {
   return 0;
 }
 
-uint32_t PixelPh1FEDInterface::getTimeoutReport(int ch) {
+uint32_t PixelFEDInterfacePh1::getTimeoutReport(int ch) {
   return 0;
 }
 
-int PixelPh1FEDInterface::TTCRX_I2C_REG_READ(int Register_Nr) {
+int PixelFEDInterfacePh1::TTCRX_I2C_REG_READ(int Register_Nr) {
   return 0;
 }
 
-int PixelPh1FEDInterface::TTCRX_I2C_REG_WRITE(int Register_Nr, int Value) {
+int PixelFEDInterfacePh1::TTCRX_I2C_REG_WRITE(int Register_Nr, int Value) {
   return 0;
 }

@@ -81,7 +81,7 @@ DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
                        $(XDAQ_ROOT)/lib
 #$(ROOTSYS)/lib \
 
-DependentLibraries = SiPixelObjects PixelGUIUtilities PixelTKFECDataTools PixelSupervisorConfiguration PixelCalibrations PixelTestStandUtilities PixelFEDInterface Pixelb2inUtilities PixelDCSUtilities occi nnz12 clntsh
+DependentLibraries = SiPixelObjects PixelGUIUtilities PixelTKFECDataTools PixelSupervisorConfiguration PixelCalibrations PixelTestStandUtilities Pixelb2inUtilities PixelDCSUtilities occi nnz12 clntsh
 
 DependentLibraries += $(ROOTLibs)
 

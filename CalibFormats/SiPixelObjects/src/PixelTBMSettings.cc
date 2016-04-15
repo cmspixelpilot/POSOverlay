@@ -88,19 +88,18 @@ PixelTBMSettings::PixelTBMSettings(std::vector < std::vector< std::string> > &ta
       PixelROCName tmp(tableMat[1][colM["MODULE_NAME"]]);
       rocid_ = tmp ;
       //std::cout << __LINE__ << mthn << "Built ROCNAME: " << rocid_.rocname()<< std::endl ;
-
 #if 0      
       analogInputBias_  = atoi(tableMat[1][colM["ANLG_INBIAS_VAL"]].c_str());
       analogOutputBias_ = atoi(tableMat[1][colM["ANLG_OUTBIAS_VAL"]].c_str());
       analogOutputGain_ = atoi(tableMat[1][colM["ANLG_OUTGAIN_VAL"]].c_str());
-
+      
       if( tableMat[1][colM["TBM_MODE"]] == "SingleMode"){
 	singlemode_=true;
       }
       else{
 	singlemode_=false;
       }
-     #endif
+#endif
     }
 }//end contructor
 
@@ -448,14 +447,13 @@ void PixelTBMSettings::writeXML(std::ofstream *outstream,
                                 std::ofstream *out1stream,
                                 std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "]\t[PixelTBMSettings::writeXML()]\t\t\t    " ;
 
   PixelModuleName module(rocid_.rocname());
   													     
   *outstream << "  <DATA>"										     << std::endl ;
   *outstream << "   <MODULE_NAME>"	<< rocid_.rocname()	 << "</MODULE_NAME>"			     << std::endl ;
-
-  assert(0);
 #if 0
   *outstream << "   <ANLG_INBIAS_VAL>"  <<(int)analogInputBias_  << "</ANLG_INBIAS_VAL>"		     << std::endl ;
   *outstream << "   <ANLG_OUTBIAS_VAL>" <<(int)analogOutputBias_ << "</ANLG_OUTBIAS_VAL>"		     << std::endl ;
