@@ -2815,7 +2815,7 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
           snprintf(boardid, 32, "FEC%02u", fecnumber);
           RegMgr_[fecVMEBaseAddress] = new RegManager(boardid,
                                                       theFECConfiguration_->URIFromFECNumber(fecnumber),
-                                                      datbase_ + "address_table.xml");
+                                                      "file://" + datbase_ + "address_table.xml");
           //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
           //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
           int dummy = 0;

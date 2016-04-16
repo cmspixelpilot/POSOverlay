@@ -2323,7 +2323,7 @@ bool PixelFEDSupervisor::job_Configure ()
         snprintf(boardid, 32, "FED%02lu", fednumber);
         RegMgr_[vmeBaseAddress] = new RegManager(boardid,
                                                  theFEDConfiguration_->URIFromFEDNumber(fednumber),
-                                                 datbase_+"address_table.xml");
+                                                 "file://" + datbase_+"address_table.xml");
         //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
         //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
       
