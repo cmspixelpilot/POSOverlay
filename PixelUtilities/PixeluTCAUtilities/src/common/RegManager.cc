@@ -51,8 +51,8 @@ bool RegManager::WriteStackReg(const std::vector< std::pair<std::string, uint32_
 
     if (pVecReg[v].first == "REGMGR_DISPATCH")
       fBoard.dispatch();
-
-    fBoard.getNode(pVecReg[v].first).write(pVecReg[v].second);
+    else
+      fBoard.getNode(pVecReg[v].first).write(pVecReg[v].second);
   }
 
   fBoard.dispatch();
