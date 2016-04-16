@@ -199,7 +199,7 @@ class PixelFECInterface: public pos::PixelFECConfigInterface {
 
   /* rocinit: Initialize mask and trim for all pixels of a roc to that
      same mask/trim value.  */
-  int rocinit(int mfec, int mfecchannel, int hubaddress, int portaddress,
+  int rocinit(int NCOLS, int mfec, int mfecchannel, int hubaddress, int portaddress,
 	      int rocid,
 	      int mask, int trim);
 

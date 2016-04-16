@@ -24,10 +24,10 @@ fecCrate_(fecCrate),
 fecSlot_(fecSlot)
 {
     //Constructor stuff
-    if (PRINT) cout << "PixelPh1FECInterface Constructor called" << endl;
-    pfecvmeslot = vmeslot;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "PixelPh1FECInterface Constructor" << endl;
     
     maxbuffersize_=1000;
+    cout << "PixelPh1FECInterface::maxbuffersize_ set to only 1000!!! change this in future\n";
     fecdebug = 0;
     
     for (int tfecchannel=1;tfecchannel<=2;tfecchannel++) {
@@ -60,7 +60,7 @@ int PixelPh1FECInterface::getversion(unsigned long *data) {
     valword value;
     value = pRegManager->ReadReg("GenReg.VERSIONM01");
     *data = value.value();
-    if (PRINT) cout<<"Get FEC version finds firmware version: "<<value.value()<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: " <<"Get FEC version finds firmware version: "<<value.value()<<endl;
     return value;
 }
 //-----------------------------------------------------------------------
@@ -68,7 +68,7 @@ int PixelPh1FECInterface::getversion(unsigned long *data) {
 int PixelPh1FECInterface::getStatus(void) {
     valword value;
     value = pRegManager->ReadReg("STATUS");
-    if (PRINT) cout<<"Get FEC status "<<value.value()<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: " <<"Get FEC status "<<value.value()<<endl;
     return value;
 }
 //--------------------------------------------------------------------------
@@ -87,13 +87,12 @@ int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
     
     valword value;
     value = pRegManager->ReadReg(names[mfec-1]);
-    cout<<"Get FEC version finds firmware version: "<<value.value()<<endl;
     
     *data = value.value();
     
     //*data = (value & 0xFF000000) >> 24;
     
-    if (PRINT) cout<<"Get FEC version finds firmware version: "<<*data<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: " <<"Get FEC version finds firmware version: "<<*data<<endl;
     return 0;
 }
 
@@ -101,19 +100,20 @@ int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
 // Nik added these two function for GLIB/CTA board internal clk switch 
 
 void PixelPh1FECInterface::switchclk(unsigned int clk_word){
-       outputwordhal("CLKReg", clk_word);
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "switchclk 0x" << std::hex << clk_word << std::dec << std::endl;
+  outputwordhal("CLKReg", clk_word);
 }
 
 void PixelPh1FECInterface::enableinternalclk(){
-	outputwordhal("CLKSWITCH.ENABLE", 0);
-//	outputwordhal("ctrl.ttc_xpoint_A_out3", 3); 
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "enableinternalclk" << std::endl;
+  outputwordhal("CLKSWITCH.ENABLE", 0);
+  //outputwordhal("ctrl.ttc_xpoint_A_out3", 3); 
 }
 
 void PixelPh1FECInterface::disableinternalclk(){
-	outputwordhal("CLKSWITCH.DISABLE", 1);
-//        outputwordhal("ctrl.ttc_xpoint_A_out3", 0);
+  outputwordhal("CLKSWITCH.DISABLE", 1);
+  //outputwordhal("ctrl.ttc_xpoint_A_out3", 0);
 }
-
 
 //----------------------------------------------------------------------------
 //
@@ -305,7 +305,7 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
             //      }
         } while (((*ch1 & 0x8) == 0x8) && (timeout < CSTIMEOUT));
         
-        if (PRINT) cout << "CH1 timeout=" << dec << timeout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CH1 timeout=" << dec << timeout <<endl;
         if (timeout>=CSTIMEOUT) { cout << "ERROR mfecbusy channel 1"<<endl; }
         
     }
@@ -356,7 +356,7 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
             //      }
         } while (((*ch2 & 0x8) == 0x8) && (timeout < CSTIMEOUT));
         
-        if (PRINT) cout << "CH2 timeout=" << dec << timeout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CH2 timeout=" << dec << timeout <<endl;
         if (timeout>=CSTIMEOUT) { cout << "ERROR mfecbusy channel 2"<<endl; }
         
     }
@@ -378,7 +378,7 @@ int PixelPh1FECInterface::getfecctrlstatus(const int mfec, unsigned long *data) 
     //		   "CSREGM5","CSREGM6","CSREGM7","CSREGM8"};
     
     valword value;
-    if (PRINT) cout << "Getting FEC cntrstatus register" <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FEC cntrstatus register" <<endl;
     switch (mfec) {
         case 1:
             value = pRegManager->ReadReg("CSReg.CSREGM1");
@@ -407,87 +407,6 @@ int PixelPh1FECInterface::getfecctrlstatus(const int mfec, unsigned long *data) 
     }
     *data = value.value();
     return 0;
-}
-//----------------------------------------------------------------------------------------------
-//
-int PixelPh1FECInterface::outputbuffer(const int mfec, const int fecchannel, unsigned long data) {
-
-    switch (mfec) {
-        case 1:
-            if (fecchannel == 1) {
-                outputwordhalblock("OutFIFOCh1.BOUT_BUF1M1", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("OutFIFOCh2.BOUT_BUF2M1", data);
-            }
-            break;
-        case 2:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M2", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M2", data);
-            }
-            break;
-        case 3:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M3", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M3", data);
-            }
-            break;
-        case 4:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M4", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M4", data);
-            }
-            break;
-        case 5:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M5", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M5", data);
-            }
-            break;
-        case 6:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M6", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M6", data);
-            }
-            break;
-        case 7:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M7", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M7", data);
-            }
-            break;
-        case 8:
-            if (fecchannel == 1) {
-                outputwordhalblock("BOUT_BUF1M8", data);
-            } else if (fecchannel == 2) {
-                outputwordhalblock("BOUT_BUF2M8", data);
-            }
-            break;
-    }
-    return 0;
-}
-//-----------------------------------------------------------------------------------
-//// output 1 word in HAL block mode
-void PixelPh1FECInterface::outputwordhalblock(const char *halname, unsigned int data) {
-    
-    /* For vme this was a block transfer, for mTCA this is a single word transfer!!!
-     This needs to be checked with pixle people whether we have to keep block transfer. If yes, move to parse data to vector of unsigned int
-    */
-    
-    
-    cout <<"data in outputwordhalblock " << hex << data << hex << endl;	
-    pRegManager->WriteReg(halname, data);
-    
-    
-//    vmeDevicePtr->WriteBlockReg(halname, 4, (char *) &data,
-//                             HAL::HAL_NO_VERIFY,
-//                             HAL::HAL_NO_INCREMENT);
 }
 //----------------------------------------------------------------------------------
 //// output one word in HAL single mode
@@ -518,112 +437,15 @@ void PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std
 }
 
 
-
-////-----------------------------------------------------------------------------------
-////// output block
-//int PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel,
-//                                   unsigned int *data, int ndata) {
-//    //   const string names[2][8] = { {"BOUT_BUF1M1","BOUT_BUF1M2","BOUT_BUF1M3","BOUT_BUF1M4",
-//    // 			        "BOUT_BUF1M5","BOUT_BUF1M6","BOUT_BUF1M7","BOUT_BUF1M8"},
-//    // 			       {"BOUT_BUF2Minjecttrigger1","BOUT_BUF2M2","BOUT_BUF2M3","BOUT_BUF2M4",
-//    // 			        "BOUT_BUF2M5","BOUT_BUF2M6","BOUT_BUF2M7","BOUT_BUF2M8"} };
-//    
-//    
-//    //cout << "OUTPUTBLOCK asked to transfer ndata:"<<dec<<ndata<<endl;
-//    if (ndata > 0) ndata = ((ndata-1)/4 + 1)*4;
-//    
-//    if (mfec == 1) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M1", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M1", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 2) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M2", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M2", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 3) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M3", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M3", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 4) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M4", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M4", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 5) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M5", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M5", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 6) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M6", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M6", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 7) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M7", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M7", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    } else if (mfec == 8) {
-//        if (fecchannel == 1) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF1M8", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        } else if (fecchannel == 2) {
-//            vmeDevicePtr->writeBlock("BOUT_BUF2M8", ndata, (char *) data,
-//                                     HAL::HAL_NO_VERIFY,
-//                                     HAL::HAL_NO_INCREMENT);
-//        }
-//    }
-//    
-//    return 0;
-//}
-
 int PixelPh1FECInterface::resetdoh(const int mfec, const int fecchannel) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "resetdoh(" << mfec << ", " << fecchannel << ")" << endl;
     // fecchannel determines if value will be shifted on CS register word
     writeCSregister(mfec, fecchannel, 0x8000);
     return 0;
 }
 
 int PixelPh1FECInterface::injectrstroc(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstroc(" << mfec << ", " << bitstate << ")" << endl;
     //const string names[8] = {"INRSTROCM1","INRSTROCM2","INRSTROCM3","INRSTROCM4",
     //		             "INRSTROCM5","INRSTROCM6","INRSTROCM7","INRSTROCM8"};
     switch (mfec)
@@ -640,6 +462,7 @@ int PixelPh1FECInterface::injectrstroc(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::injecttrigger(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "injecttrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:   outputwordhal("GenReg.INTRIGM1", bitstate); break;
@@ -654,6 +477,7 @@ int PixelPh1FECInterface::injecttrigger(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::injectrsttbm(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrsttbm(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.INRSTTBMM1", bitstate); break;
@@ -668,6 +492,7 @@ int PixelPh1FECInterface::injectrsttbm(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::injectrstcsr(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstcsr(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.INRSTCSRM1", bitstate); break;
@@ -682,6 +507,7 @@ int PixelPh1FECInterface::injectrstcsr(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::enablecallatency(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "enablecallatency(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.ENCALLATENCYM1", bitstate); break;
@@ -696,6 +522,7 @@ int PixelPh1FECInterface::enablecallatency(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::disableexttrigger(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "disableexttrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.DISEXTTRIGM1", bitstate); break;
@@ -710,6 +537,7 @@ int PixelPh1FECInterface::disableexttrigger(const int mfec, const int bitstate) 
     return 0;
 }
 int PixelPh1FECInterface::loopnormtrigger(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "loopnormtrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.LOOPNORMTRIGM1", bitstate); break;
@@ -724,6 +552,7 @@ int PixelPh1FECInterface::loopnormtrigger(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::loopcaltrigger(const int mfec, const int bitstate) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "loopcaltrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.LOOPCALTRIGM1", bitstate); break;
@@ -738,6 +567,7 @@ int PixelPh1FECInterface::loopcaltrigger(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::callatencycount(const int mfec, const int latency) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "callatencycount(" << mfec << ", " << latency << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.CALLATCNTM1", latency); break;
@@ -752,6 +582,7 @@ int PixelPh1FECInterface::callatencycount(const int mfec, const int latency) {
     return 0;
 }
 int PixelPh1FECInterface::FullBufRDaDisable(const int mfec, const int disable) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "FullBufRDaDisable(" << mfec << ", " << disable << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.DISRDACHECKM1", disable); break;
@@ -766,6 +597,7 @@ int PixelPh1FECInterface::FullBufRDaDisable(const int mfec, const int disable) {
     return 0;
 }
 int PixelPh1FECInterface::AllRDaDisable(const int mfec, const int disable) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "AllRDaDisable(" << mfec << ", " << disable << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.DISRDAM1", disable); break;
@@ -781,6 +613,7 @@ int PixelPh1FECInterface::AllRDaDisable(const int mfec, const int disable) {
 }
 
 int PixelPh1FECInterface::testFiberEnable(const int mfec, const int enable) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "testFiberEnable(" << mfec << ", " << enable << ")" << endl;
     switch (mfec)
     {
         case 1:  outputwordhal("GenReg.TESTFIBERM1", enable); break;
@@ -807,7 +640,7 @@ int PixelPh1FECInterface::readback(const int mfec, const int channel) {
          "INP_BUF2M5","INP_BUF2M6","INP_BUF2M7","INP_BUF2M8"} };
     
     valword value ;
-    if (PRINT) cout << "Getting FIFO readback register" <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FIFO readback register" <<endl;
     
     if(mfec<1 || mfec>8) {
         cout<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
@@ -841,7 +674,7 @@ int PixelPh1FECInterface::getByteHubCount(const int mfec, const int channel,
     
     valword value;
     int ret = 0;
-    if (PRINT) cout << "Getting the HUB & BYTE COUNT register" <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting the HUB & BYTE COUNT register" <<endl;
     
     if(mfec<1 || mfec>8) {
         cout<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
@@ -874,7 +707,7 @@ void PixelPh1FECInterface::fecDebug(int newstate) {
 //
 unsigned char PixelPh1FECInterface::cinttogray(unsigned int igray) {
     // cintogray
-    if (PRINT) cout<<"CINTTOGRAY "<<igray<<" -> "<<(igray^(igray>>1))<<endl;;
+    if (PRINT) cout << "PixelPh1FECInterface: " <<"CINTTOGRAY "<<igray<<" -> "<<(igray^(igray>>1))<<endl;;
     return (igray^(igray>>1));
 }
 //------------------------------------------------------------------------------
@@ -913,6 +746,8 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
     //  cout << "\nqbufsend writing "<<qbufn[mfec][fecchannel]<<" bytes\n";
     
     qbufnsend[mfec][fecchannel]++;
+
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "qbufsend(" << mfec << ", " << fecchannel << "), nsend = " << qbufnsend[mfec][fecchannel] << endl;
     
     mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat); //must make sure channel is not busy, wait if necessary!!!!!!
     // FIXME could be more efficient - e.g. go to another channel
@@ -995,6 +830,15 @@ int PixelPh1FECInterface::rocsetwbc(int mfec, int mfecchannel, int tbmchannel,
                                  int hubaddress, int portaddress, int rocid,
                                  int wbcvalue) {
     
+  if (PRINT) cout << "PixelPh1FECInterface: "  << std::dec << "rocsetwbc("
+		  << "mfec=" << mfec << ", "
+		  << "mfecchannel=" << mfecchannel << ", "
+		  << "tbmchannel=" << tbmchannel << ", "
+		  << "hubaddress=" << hubaddress << ", "
+		  << "portaddress=" << portaddress << ", "
+		  << "rocid=" << rocid << ", "
+		  << "wbcvalue=" << wbcvalue << std::endl;
+
     // Clear the buffer if not in buffer mode)
     if (qbufn[mfec][mfecchannel] > 0)  {
         qbufsend(mfec,mfecchannel);
@@ -1016,8 +860,22 @@ int PixelPh1FECInterface::rocsetchipcontrolregister(int mfec, int mfecchannel,
                                                  int chipdisable,
                                                  int halfspeed,
                                                  const bool buffermode) {
+
+  if (PRINT) cout << "PixelPh1FECInterface: "  << std::dec << "rocsetchipcontrolregister("
+		  << "mfec=" << mfec << ", "
+		  << "mfecchannel=" << mfecchannel << ", "
+		  << "hubaddress=" << hubaddress << ", "
+		  << "portaddress=" << portaddress << ", "
+		  << "rocid=" << rocid << ", "
+		  << "calhighrange=" << calhighrange << ", "
+		  << "chipdisable=" << chipdisable << ", "
+		  << "halfspeed=" << halfspeed << ", "
+		  << "buffermode=" << buffermode
+		  << ")" << std::endl;
+
     if (halfspeed)
         printf("JMT PixelPh1FECInterface::rocsetchipcontrolregister halfspeed is %i and it's not used any more\n", halfspeed);
+
     unsigned char mydata;
     mydata = 0;
     if (halfspeed > 0) mydata |= 0x01;
@@ -1041,11 +899,13 @@ int PixelPh1FECInterface::rocsetchipcontrolregister(int mfec, int mfecchannel,
 // Reset TBM
 int PixelPh1FECInterface::tbmreset(int mfec, int fecchannel, int tbmchannel,
                                 int hubaddress) {
-    return tbmcmd(mfec, fecchannel, tbmchannel, hubaddress, 4, 2, 16, 0);
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "tbmreset: ";
+  return tbmcmd(mfec, fecchannel, tbmchannel, hubaddress, 4, 2, 16, 0);
 }
 // Reset ROC
 int PixelPh1FECInterface::rocreset(int mfec, int fecchannel, int tbmchannel,
                                 int hubaddress) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "rocreset: ";
     return tbmcmd(mfec, fecchannel, tbmchannel, hubaddress, 4, 2, 4, 0);
 }
 //
@@ -1065,7 +925,7 @@ int PixelPh1FECInterface::clrcal(int mfec, int fecchannel,
     
     if (buffermode) {
         
-        if (PRINT) cout << "Buffer mode clrcal"<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode clrcal"<<endl;
         
         // Check that there is nothing for the buffer mode?
         if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
@@ -1098,13 +958,13 @@ int PixelPh1FECInterface::clrcal(int mfec, int fecchannel,
         
     } else { // direct mode
         
-        if (PRINT) cout << "Direct mode clrcal"<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "Direct mode clrcal"<<endl;
         
         if (qbufn[mfec][fecchannel] > 0)  {
             qbufsend(mfec,fecchannel);
             cout << "mfec " << mfec <<":"<<fecchannel<<" leftover from buffer mode"<<endl;
         }
-        if (PRINT) cout << "CLRCAL ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CLRCAL ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
             <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<endl;
         
         mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
@@ -1143,7 +1003,7 @@ int PixelPh1FECInterface::clrcal(int mfec, int fecchannel,
         for (i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword  <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword  <<dec<<endl;
         }
         
         outputblock(mfec, fecchannel, wordvec);
@@ -1176,8 +1036,8 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
     
     if (buffermode) {
         
-        if (PRINT) cout<<"progpix1 buffered mask and trim"<<endl;
-        if (PRINT) cout << "PROGPIX1 ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix1 buffered mask and trim"<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX1 ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
         
@@ -1224,8 +1084,8 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
         // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
         return 0;
     } else { // direct mode
-        if (PRINT) cout<<"progpix1 direct mask and trim"<<endl;
-        if (PRINT) cout << "PROGPIX1 ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<" mask:"<<mask<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix1 direct mask and trim"<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX1 ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<" mask:"<<mask<<endl;
         
         // Check that there is nothing for the buffer mode?
         if (qbufn[mfec][fecchannel] > 0)  {
@@ -1277,7 +1137,7 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
         writeCSregister(mfec, fecchannel, 0x08);
         
         for (i=0;i<current;i++) {
-            if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
         }
         // add 3 zeros to pad remainder of 4 byte word
         ndata = current;
@@ -1285,13 +1145,13 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
         txdata[current++] = 0;
         txdata[current++] = 0;
         
-        if (PRINT) cout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
         
         // Now load the data to the word container
         for (i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
         }
         
         outputblock(mfec, fecchannel, wordvec);
@@ -1327,15 +1187,15 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
     // <<portaddress<<" rocid:"<<rocid<<" "<<coladdr<<" "<<rowaddress<<" "<<hex<<nnn<<dec<<" "<<buffermode<<endl;
     
     if (buffermode) {
-        if (PRINT) cout<<"progpix buffered databyte"<<endl;
-        if (PRINT) cout << "PROGPIX Q ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix buffered databyte"<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX Q ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
 		    <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" databyte:"<<std::hex<<(unsigned int)(databyte)<<std::dec<< endl;
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
         
         if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
             //cout << "PixelPh1FECInterface::progpix:ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT("<<qbufn[mfec][fecchannel]<<")"<<endl;
-            if (PRINT) cout << "qbufn = " << qbufn[mfec][fecchannel] << " > maxbufsize = " << maxbuffersize_ << "; qbufsending..." << endl;
+            if (PRINT) cout << "PixelPh1FECInterface: "  << "qbufn = " << qbufn[mfec][fecchannel] << " > maxbufsize = " << maxbuffersize_ << "; qbufsending..." << endl;
             qbufsend(mfec,fecchannel);
         }
         assert(qbufn[mfec][fecchannel] < maxbuffersize_);
@@ -1378,8 +1238,8 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
         
     } else { // direct mode
         
-        if (PRINT) cout<<"progpix direct databyte"<<endl;
-        if (PRINT) cout << "PROGPIX ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix direct databyte"<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
 		    <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" databyte:"
 		    <<hex<<int(databyte)<<dec<<endl;
         
@@ -1430,7 +1290,7 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
         writeCSregister(mfec, fecchannel, 0x08);
         
         for (i=0;i<current;i++) {
-            if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
         }
         // add 3 zeros to pad remainder of 4 byte word
         ndata = current;
@@ -1438,13 +1298,13 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
         txdata[current++] = 0;
         txdata[current++] = 0;
         
-        if (PRINT) cout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
         
         // Now load the data to the word container
         for (i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
         }
         
         outputblock(mfec, fecchannel, wordvec);
@@ -1472,7 +1332,7 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
     std::vector<uint32_t>  wordvec;
     
     if (buffermode) {
-        if (PRINT) cout << "CALPIX ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" caldata:"<<caldata<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CALPIX ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" caldata:"<<caldata<<endl;
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
         
@@ -1519,7 +1379,7 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
         
     } else { // direct mode
         
-        if (PRINT) cout << "CALPIX ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" caldata:"<<caldata<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CALPIX ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" caldata:"<<caldata<<endl;
         
         // Check that there is nothing for the buffer mode?
         if (qbufn[mfec][fecchannel] > 0)  {
@@ -1567,7 +1427,7 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
         writeCSregister(mfec, fecchannel, 0x08);
         
         for (i=0;i<current;i++) {
-            if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
         }
         // add 3 zeros to pad remainder of 4 byte word
         ndata = current;
@@ -1575,13 +1435,13 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
         txdata[current++] = 0;
         txdata[current++] = 0;
         
-        if (PRINT) cout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
         
         // Now load the data to the word container
         for (i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
         }
         
         outputblock(mfec, fecchannel, wordvec);
@@ -1610,7 +1470,7 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
     std::vector<uint32_t>  wordvec;
     
     if (buffermode) {
-        if (PRINT) cout << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
         
         if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
             //cout << "ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT"<<endl;
@@ -1653,7 +1513,7 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
         
     } else { // direct mode
         
-        if (PRINT) cout << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
         
         // Check that there is nothing for the buffer mode?
         if (qbufn[mfec][fecchannel] > 0)  {
@@ -1693,7 +1553,7 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
         writeCSregister(mfec, fecchannel, 0x08);
         
         for (i=0;i<current;i++) {
-            if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
         }
         // add 3 zeros to pad remainder of 4 byte word
         ndata = current;
@@ -1701,13 +1561,13 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
         txdata[current++] = 0;
         txdata[current++] = 0;
         
-        if (PRINT) cout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
 
         // Now load the data to the word container
         for (i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
         }
         
         outputblock(mfec, fecchannel, wordvec);
@@ -1756,7 +1616,7 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
     
     if (buffermode) {
         
-        if (PRINT) cout << "Buffer mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
         
         if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
             //cout << "PixelPh1FECInterface::progdac: ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT ("<<qbufn[mfec][fecchannel]<<")"<<endl;;
@@ -1796,7 +1656,7 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
         
     } else { // direct mode
         
-        if (PRINT) cout << "Regular mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "Regular mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
         
         // Check that there is nothing for the buffer mode?
         if (qbufn[mfec][fecchannel] > 0)  {
@@ -1855,7 +1715,7 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
             iword = (unsigned int*) &txdata[i];
 //            outputwordhal("SOUT_BUF1M1", *iword);
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped " << flipByte(*iword)  <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped " << flipByte(*iword)  <<dec<<endl;
         }
 
         outputblock(mfec, fecchannel, wordvec);
@@ -1883,7 +1743,7 @@ int PixelPh1FECInterface::progalldacs(int mfec, int fecchannel,
     unsigned int ch1stat, ch2stat;
     std::vector<uint32_t>  wordvec;
     
-    if (PRINT) cout << "PROGALLDACS ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGALLDACS ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<endl;
     
     // There are 26 dacs to program with addresses 1..26.  Program them all
     // passing data to mfec in one tx buffer
@@ -1964,7 +1824,7 @@ int PixelPh1FECInterface::progalldacs(int mfec, int fecchannel,
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
     }
     
     outputblock(mfec, fecchannel, wordvec);
@@ -1986,7 +1846,9 @@ int PixelPh1FECInterface::progalldacs(int mfec, int fecchannel,
 void PixelPh1FECInterface::setAllDAC(const PixelHdwAddress& theROC,
                                   const std::vector<unsigned int>& dacs,
                                   const bool buffermode) {
-    
+
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "setAllDAC " << theROC << " buffermode=" << buffermode << endl;
+
     assert(dacs.size()==30);
     static bool jmt_warned = false;
     if (!jmt_warned) {
@@ -2052,7 +1914,7 @@ void PixelPh1FECInterface::setAllDAC(const PixelHdwAddress& theROC,
 void PixelPh1FECInterface::setMaskAndTrimAll(const PixelHdwAddress& theROC,
                                           const std::vector<unsigned char>& allPixels,
                                           const bool buffermode) {
-    std::cout << "In PixelPh1FECInterface::setMaskAndTrimAll" << std::endl;
+  if (PRINT) std::cout << "PixelPh1FECInterface: "  << "setMaskAndTrimAll " << theROC << " buffermode=" << buffermode << std::endl;
     
     // Check that there is nothing for the buffer mode?
     int mfec = theROC.mfec();
@@ -2087,7 +1949,7 @@ void PixelPh1FECInterface::setMaskAndTrimAll(const PixelHdwAddress& theROC,
 void PixelPh1FECInterface::setDcolEnableAll(const PixelHdwAddress& theROC,
                                          unsigned char mask,
                                          const bool buffermode) {
-    std::cout << "In PixelPh1FECInterface::setDcolEnableAll" << std::endl;
+  std::cout << "setDcolEnableAll " << theROC << " buffermode=" << buffermode << " mask=0x" << std::hex << unsigned(mask) << std::dec << std::endl;
     
     // Check that there is nothing for the buffer mode?
     int mfec = theROC.mfec();
@@ -2113,7 +1975,7 @@ void PixelPh1FECInterface::setDcolEnableAll(const PixelHdwAddress& theROC,
 //-----------------------------------------------------------------------------------------------
 // Program ALL pixels in a ROC to the same mask and trim
 // Use the compressed column mode.
-int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
+int PixelPh1FECInterface::rocinit(int NCOLS, int mfec, int fecchannel,
                                int hubaddress, int portaddress, int rocid,
                                int mask, int trim) {
     
@@ -2126,7 +1988,7 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
     unsigned char coltemp0, coltemp1, coltemp2, tmask, ttrim, databyte;
     std::vector<uint32_t>  wordvec;
     
-    if (PRINT) cout << "ROCINIT CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "ROCINIT NCOLS = " << NCOLS << " CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
     
     // Check that there is nothing for the buffer mode?
     if (qbufn[mfec][fecchannel] > 0)  {
@@ -2143,10 +2005,12 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
     // First are the hub (5 bits) and port (3 bits)
     txdata[current++] = (hubaddress << 3) | portaddress ;
     
+    //    const int NCOL = 52;
+
     // Now send the number of columns of compressed data to follow
     //  txdata[current++] = 52; // full chip of cols is 52
     //  txdata[current++] = 10; // full chip of cols is 52
-    txdata[current++] = 52; // full chip of cols is 52
+    txdata[current++] = NCOLS; // full chip of cols is 52
     
     
     // Now set the mask and trim
@@ -2154,9 +2018,8 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
     ttrim = trim & 0x0F;
     databyte = tmask | ttrim;
     
-    //for (ic=0;ic<52;ic=ic++) {
-    for (ic=0;ic<52;++ic) {
-        if (PRINT) cout << "CURRENT COLUMN:" << ic << endl;
+    for (ic=0;ic<NCOLS;++ic) {
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CURRENT COLUMN:" << ic << endl;
         // Now send  pix chip address (high nibble) and the command (low nibble)
         txdata[current++] = (rocid << 4) | (0x04);
         // Next set the col number
@@ -2167,10 +2030,10 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
         txdata[current++] = coltemp2;
         // Now send the mask and trim
         txdata[current++] = databyte;
-        //if (PRINT) cout << "databyte: " << hex << unsigned(databyte) << dec << endl;
+        //if (PRINT) cout << "PixelPh1FECInterface: "  << "databyte: " << hex << unsigned(databyte) << dec << endl;
     }
     
-    if (PRINT) cout << "ROCINIT BUFFER USAGE: "<< dec  <<current<< " bytes."<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "ROCINIT BUFFER USAGE: "<< dec  <<current<< " bytes."<<endl;
     //158 byte for a rocinit
     
     // terminate with 0
@@ -2195,13 +2058,13 @@ int PixelPh1FECInterface::rocinit(int mfec, int fecchannel,
     txdata[current++] = 0;
     txdata[current++] = 0;
     
-    if (PRINT) cout <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
     
     // Now load the data to the word container
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
     }
     
     outputblock(mfec, fecchannel, wordvec);
@@ -2244,7 +2107,7 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
     mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
     
     
-    if (PRINT) cout << "ROCTRIMLOAD CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" "<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "ROCTRIMLOAD CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" "<<endl;
     
     current = 0;
     
@@ -2261,7 +2124,7 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
     pixptr = 0;
     
     for (ic=0;ic<52;ic+=8) {
-        if (PRINT) cout << "CURRENT COLUMN:" << ic << endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "CURRENT COLUMN:" << ic << endl;
         mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
         current = 0;
         // First are the hub (5 bits) and port (3 bits)
@@ -2279,11 +2142,11 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
             coltemp1 = 2*(cinttogray(coltemp1));
             coltemp2 = coltemp1 | (coltemp0 & 0x01);
             txdata[current++] = coltemp2;
-            if (PRINT) cout << "column (grayed/hex): " << hex << (int) coltemp2 << dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: "  << "column (grayed/hex): " << hex << (int) coltemp2 << dec<<endl;
             for (j=0;j<80;j++) {
                 // Now send the mask and trim
                 databyte = allPixels[pixptr++];
-                //if (PRINT) cout << "databyte=" << hex << (unsigned)(databyte) << dec << endl;
+                //if (PRINT) cout << "PixelPh1FECInterface: "  << "databyte=" << hex << (unsigned)(databyte) << dec << endl;
                 //databyte = (char) cdata++;
                 //databyte = (char) 0x60;
                 txdata[current++] = databyte;
@@ -2302,9 +2165,9 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
         // Reset the appropriate mfec channel
         // dis enable compression full column
         writeCSregister(mfec, fecchannel, 0x18);
-        if (PRINT) cout << "TOTAL byte count: " << dec << current <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  << "TOTAL byte count: " << dec << current <<endl;
         for (i=0;i<current;i++) {
-            if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
         }
         
         
@@ -2314,13 +2177,13 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
         txdata[current++] = 0;
         txdata[current++] = 0;
         
-        if (PRINT) cout <<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
         
         // Now load the data to the word container
         for (i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
             wordvec.push_back( *iword );
-            if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+            if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
         }
         
         outputblock(mfec, fecchannel, wordvec);
@@ -2357,7 +2220,7 @@ int PixelPh1FECInterface::coltrimload(int mfec, int fecchannel,
     
     //  unsigned short int cdata;
     
-    if (PRINT) cout << "COLTRIMLOAD CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" "<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "COLTRIMLOAD CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" "<<endl;
     
     // Check that there is nothing for the buffer mode?
     if (qbufn[mfec][fecchannel] > 0)  {
@@ -2400,7 +2263,7 @@ int PixelPh1FECInterface::coltrimload(int mfec, int fecchannel,
         coltemp1 = 2*(cinttogray(coltemp1));
         coltemp2 = coltemp1 | (coltemp0 & 0x01);
         txdata[current++] = coltemp2;
-        if (PRINT) cout<<"column(grayed/hex):"<<hex<<(int) coltemp2<<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"column(grayed/hex):"<<hex<<(int) coltemp2<<dec<<endl;
         for (j=0;j<80;j++) {
             // Now send the mask and trim
             databyte = allPixels[pixptr++];
@@ -2447,7 +2310,7 @@ int PixelPh1FECInterface::coltrimload(int mfec, int fecchannel,
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
     }
     
     outputblock(mfec, fecchannel, wordvec);
@@ -2464,6 +2327,18 @@ int PixelPh1FECInterface::coltrimload(int mfec, int fecchannel,
 int PixelPh1FECInterface::sendcoltoroc(const int mfec, int fecchannel,
                                     int hubaddress, int portaddress, int rocid,
                                     int coladdr, int mask, int trim) {
+
+  if (PRINT) cout << "PixelPh1FECInterface: "  << std::dec << "sendcoltoroc("
+		  << "mfec=" << mfec << ", "
+		  << "mfecchannel=" << fecchannel << ", "
+		  << "hubaddress=" << hubaddress << ", "
+		  << "portaddress=" << portaddress << ", "
+		  << "rocid=" << rocid << ", "
+		  << "coladdr=" << coladdr << ", "
+		  << "mask=" << mask << ", "
+		  << "trim=" << trim << ", "
+		  << std::endl;
+
     unsigned char coltemp0, coltemp1, coltemp2, tmask, ttrim;
     int current, krow, rowaddress, i, ndata;
 
@@ -2542,7 +2417,7 @@ int PixelPh1FECInterface::sendcoltoroc(const int mfec, int fecchannel,
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
     }
     
     outputblock(mfec, fecchannel, wordvec);
@@ -2570,7 +2445,7 @@ int PixelPh1FECInterface::tbmread(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t>  wordvec;
     
-    if (PRINT) cout << "TBM Command: mfec:"<<mfec<<" tbmchannel:"<<tbmchannel<<" hubaddress:"<<hubaddress
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "TBMREAD: mfec:"<<mfec<<" tbmchannel:"<<tbmchannel<<" hubaddress:"<<hubaddress
         <<" portaddress:"<<portaddress<<" offset:"<<offset<<" databyte:"<<databyte<<" direction:"
         <<direction<<endl;
     
@@ -2602,7 +2477,7 @@ int PixelPh1FECInterface::tbmread(int mfec, int fecchannel,
     txdata[current++] = 0xFF;
     
     for (i=0;i<current;i++) {
-        if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") ";
+        if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") ";
     }
     // add 3 zeros to pad remainder of 4 byte word
     ndata = current;
@@ -2610,7 +2485,7 @@ int PixelPh1FECInterface::tbmread(int mfec, int fecchannel,
     txdata[current++] = 0;
     txdata[current++] = 0;
     
-    if (PRINT) cout <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
     
     // Reset ALL buffer memory pointer
     writeCSregister(mfec, fecchannel, 0x08);
@@ -2619,7 +2494,7 @@ int PixelPh1FECInterface::tbmread(int mfec, int fecchannel,
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword <<dec<<endl;
     }
     
     outputblock(mfec, fecchannel, wordvec);
@@ -2659,7 +2534,7 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t> wordvec;
     
-    if (PRINT) cout << "TBM Command: mfec:"<<mfec<<" tbmchannel:"<<tbmchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" offset:"<<offset<<" databyte:"<<databyte<<" direction:"<<direction<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "TBM Command: mfec:"<<mfec<<" tbmchannel:"<<tbmchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" offset:"<<offset<<" databyte:"<<databyte<<" direction:"<<direction<<endl;
     
     mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
     
@@ -2687,7 +2562,7 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
     txdata[current++] = 0xFF;
     
     for (i=0;i<current;i++) {
-        if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
     }
     // add 3 zeros to pad remainder of 4 byte word
     ndata = current;
@@ -2695,7 +2570,7 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
     txdata[current++] = 0;
     txdata[current++] = 0;
     
-    if (PRINT) cout <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
     
     // Reset ALL buffer memory pointer
     writeCSregister(mfec, fecchannel, 0x08);
@@ -2706,7 +2581,7 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
         iword = (unsigned int*) &txdata[i];
 //        outputwordhal("SOUT_BUF1M1",*iword);
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped  " << flipByte(*iword) <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped  " << flipByte(*iword) <<dec<<endl;
     }
     
     
@@ -2724,7 +2599,8 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
 int PixelPh1FECInterface::tbmspeed(int mfec, int fecchannel, int tbmchannel,
                                 int hubaddress, 
                                 int speed) {
-    return tbmcmd(mfec, fecchannel, tbmchannel, hubaddress, 4, 0, speed, 0);
+  if (PRINT) cout << "PixelPh1FECInterface: "  << "tbmspeed: ";
+  return tbmcmd(mfec, fecchannel, tbmchannel, hubaddress, 4, 0, speed, 0);
 }
 //
 int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel, 
@@ -2736,7 +2612,7 @@ int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t> wordvec;
     
-    if (PRINT) cout << "TBM Command: mfec:"<<mfec<<" tbmchannel:"<<tbmchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "TBMSPEED2: mfec:"<<mfec<<" tbmchannel:"<<tbmchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<endl;
     
     mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat); 
     
@@ -2762,7 +2638,7 @@ int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel,
     txdata[current++] = 0xFF;
     
     for (i=0;i<current;i++) {
-        if (PRINT) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<" ("<<hex<< (int) txdata[i]<<") "<<dec;
     }
     // add 3 zeros to pad remainder of 4 byte word
     ndata = current;
@@ -2770,7 +2646,7 @@ int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel,
     txdata[current++] = 0;
     txdata[current++] = 0;
     
-    if (PRINT) cout <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: "  <<endl;
     
     // Reset ALL buffer memory pointer
     writeCSregister(mfec, fecchannel, 0x08);
@@ -2780,7 +2656,7 @@ int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel,
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
         wordvec.push_back( *iword );
-        if (PRINT) cout<<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword  <<dec<<endl;
+        if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword  <<dec<<endl;
     }
     
     outputblock(mfec, fecchannel, wordvec);
@@ -2789,7 +2665,7 @@ int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel,
     // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
     
     writeCSregister(mfec, fecchannel, 0x07);
-    if (PRINT) cout << "SENDDATA mfec:"<<hex<<mfec<<dec;
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "SENDDATA mfec:"<<hex<<mfec<<dec;
     
     unsigned int ch1,ch2;
     
@@ -2809,6 +2685,11 @@ int PixelPh1FECInterface::tbmspeed2(int mfec, int fecchannel,
 // To test the fiber connections
 int PixelPh1FECInterface::testFiber(const int mfec, const int channel,
                                  int* rda, int * rck) {
+  if (PRINT) cout << "PixelPh1FECInterface: "  << std::dec << "testFiber("
+		  << "mfec=" << mfec << ", "
+		  << "mfecchannel=" << channel << ", "
+		  << std::endl;
+
     //cout<<" Test the fiber connections "<<endl;
     testFiberEnable(mfec,1); // Enable the fiber test
     usleep(int(0xffff*0.025)); // wait for 1.6ms
@@ -2836,7 +2717,8 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
                                    int& success2, 
                                    int& success3,
                                    int& success4) {
-    
+
+
     //myportaddress = 4;  // redefine the port to 4
     if(myportaddress==7 && myhubaddress==31)  {
         cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" "
@@ -2844,7 +2726,10 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         <<myrocid<<" redefine hub address to 30"<<endl; 
         myhubaddress = 30; // avoid the 31 and 7 combination
     }
-    
+
+    //cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" "
+    //    <<mytbmchannel<<" "<<myportaddress<<"\n";
+
     //cout<<mymask<<" "<<mytrim<<" "<<nTry<<" "<<commands<<endl;
     
     success0 = success1 = success2 = success3 = success4 = 0;
@@ -2855,7 +2740,9 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     
     unsigned int         dataReceivedMask=0x00000200;
     if (myfecchannel==2) dataReceivedMask=0x02000000;
-    
+
+    bool giveUpEarly = false;
+
     std::vector <unsigned char> testroc2 ((80*52), 0x00);
     
     databyte =  ((mymask << 7)|mytrim);
@@ -2865,66 +2752,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     //  cout << "DATABYTE:" << hex <<(unsigned int) databyte <<dec<<endl;
     
     for (j=0;j<(80*52);j++) testroc2[j]= databyte;
-    
-    cntgood=0; cntbad = 0;
-    for (j=0;j<nTry;j++) {
-        calpix(mymfec, myfecchannel, myhubaddress, myportaddress,
-               
-               myrocid, 0, 0, 1);
-        mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
-        getfecctrlstatus(mymfec,&data);  
-        
-        if ((data & dataReceivedMask) == dataReceivedMask) {  // receive complete
-            cntgood++;
-        } else {
-            cntbad++;
-        }
-        
-        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<" "<<ch1<<" "<<ch2<<dec<<endl;
-        if(cntbad == 4) { //this point is clearly nonoptimal, so give up
-            //break;
-            return 0;
-        }
-        
-    }
-    
-    success0 = cntgood;
-    
-    
-    
-    cntgood=0; cntbad = 0;
-    
-    for (j=0;j<nTry;j++) {
-        
-        tbmspeed(mymfec,myfecchannel,mytbmchannel,myhubaddress, 1);
-        
-        mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
-        
-        getfecctrlstatus(mymfec,&data);  
-        
-        if ((data & dataReceivedMask) == dataReceivedMask) {
-            
-            // receive complete
-            
-            cntgood++;
-            
-        } else {
-            
-            cntbad++;
-            
-        }
-        //cout<<"-2- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
-        if(cntbad == 4) {
-            //break;
-            return 0;
-        }
-        
-    }
-    
-    success1 = cntgood;
-    
-    
-    
+
     int masksetting, trimsetting;
     
     cntgood=0; cntbad = 0;
@@ -2934,19 +2762,51 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     else masksetting = 0;
     
     trimsetting = (0xf)&databyte;
+
+    cntgood=0; cntbad = 0;
+    for (j=0;j<nTry;j++) {
+      //tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
+      rocinit(1, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
+                masksetting,trimsetting);
+        mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
+        getfecctrlstatus(mymfec,&data);  
+        
+        //if ((data & dataReceivedMask) == dataReceivedMask) {  // receive complete
+	if (myfecchannel==2) data >>= 16;
+	if ((data & 0x7F00) == 0x200) {
+            cntgood++;
+        } else {
+            cntbad++;
+        }
+        
+	uint32_t xxx = 0xdeadbeef;
+	getByteHubCount(1,1,4,(int*)&xxx);
+        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
+        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<" "<<ch1<<" "<<ch2<<dec<<endl;
+        if(giveUpEarly && cntbad == 4) { //this point is clearly nonoptimal, so give up
+            //break;
+            return 0;
+        }
+        
+    }
     
-    
+    success0 = cntgood;
+
+    cntgood=0; cntbad = 0;
     
     for (j=0;j<nTry;j++) {
-        
-        rocinit(mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
+      //tbmcmd(1, 1, 14, 15, 4, 7, 200+nTry*4, 0);
+      rocinit(3, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
                 masksetting,trimsetting);
+      //      calpix(mymfec, myfecchannel, myhubaddress, myportaddress, myrocid, 0, 0, 1, true);  qbufsend();
         
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
         getfecctrlstatus(mymfec,&data);  
         
-        if ((data & dataReceivedMask) == dataReceivedMask) {
+	if (myfecchannel==2) data >>= 16;
+	if ((data & 0x7F00) == 0x200) {
+	  //if ((data & dataReceivedMask) == dataReceivedMask) {
             
             // receive complete
             
@@ -2957,8 +2817,47 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-        //cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
-        if(cntbad == 4) {
+	//cout<<"-2- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
+        if(giveUpEarly && cntbad == 4) {
+            //break;
+            return 0;
+        }
+        
+    }
+    
+    success1 = cntgood;
+
+    cntgood=0; cntbad = 0;
+    
+    for (j=0;j<nTry;j++) {
+      //tbmcmd(1, 1, 14, 15, 4, 7, (240+nTry*4)%256, 0);
+      rocinit(5, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+        
+        mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
+        
+        getfecctrlstatus(mymfec,&data);  
+        
+	uint32_t xxx = 0xdeadbeef;
+	getByteHubCount(1,1,4,(int*)&xxx);
+	uint32_t xxx2 = xxx;
+	xxx >>= 16;
+	
+	if (myfecchannel==2) data >>= 16;
+	if ((data & 0x7F00) == 0x200) {
+	//if ((data & 0x200) == 0x200 && (xxx>>8) == (xxx&0xff)) {
+	  //if ((data & dataReceivedMask) == dataReceivedMask) {
+            
+            // receive complete
+            
+            cntgood++;
+            
+        } else {
+            
+            cntbad++;
+            
+        }
+	//        cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
         }
@@ -2967,187 +2866,86 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     
     success2 = cntgood;
     
-    
-    if(commands == 0 || commands == 1) {
+    cntgood=0; cntbad = 0;
+
+    for (j=0;j<nTry;j++) {
+      //tbmcmd(1, 1, 14, 15, 4, 7, 120+nTry*4, 0);
+      rocinit(7, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         
-        cntgood=0; cntbad = 0;
+        mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
-        for (j=0;j<nTry;j++) {
+        getfecctrlstatus(mymfec,&data);  
+        
+	uint32_t xxx = 0xdeadbeef;
+	getByteHubCount(1,1,4,(int*)&xxx);
+	uint32_t xxx2 = xxx;
+	xxx >>= 16;
+	
+	if (myfecchannel==2) data >>= 16;
+	if ((data & 0x7F00) == 0x200) {
+	//if ((data & 0x200) == 0x200 && (xxx>>8) == (xxx&0xff)) {
+	  //if ((data & dataReceivedMask) == dataReceivedMask) {
             
-            std::string filename;
+            // receive complete
             
-            if (getenv("BUILD_HOME")==0){
-                filename=std::string(getenv("XDAQ_ROOT"))+"/dat/PixelPh1FECInterface/dat/infeccmd.dat";
-            }
-            else {
-                filename=std::string(getenv("BUILD_HOME"))+"/pixel/PixelPh1FECInterface/dat/infeccmd.dat";
-            }
+            cntgood++;
             
-            std::ifstream infec(filename.c_str());
+        } else {
             
-            assert(infec.is_open());
-            assert(infec.good());
-            assert(!infec.eof());
-            
-            string strbuf;
-            
-            for(int i=0;i<j+1;i++) {
-                getline(infec,strbuf);
-                //cout <<"strbuf="<<strbuf<<endl;
-                assert(!infec.eof());
-            }
-            
-            //cout <<"strbuf="<<strbuf<<endl;
-            
-            /*
-             if (in.eof()) {
-             cout << "Found eof will close and open again"<<endl;
-             in.close();	
-             in.open("infeccmd.dat",ios::in);
-             assert(!in.eof());
-             getline(in,strbuf);
-             
-             }
-             
-             assert(!in.eof());
-             //assert(in.good());
-             
-             */
-            
-            //string strbuf="7 33 4 114 7 104 1 0";
-            
-            //string strbuf="307 33 4 114 7 104 1 0 32 3 8 25 200 0 32 4 4 7 104 128 0 32 3 8 253 4 0 32 1 1 0 32 4 2 7 104 1 0 32 3 24 25 200 0 32 4 20 7 104 128 0 32 3 24 253 4 0 32 1 17 0 32 4 18 7 104 1 0 32 3 40 25 200 0 32 4 36 7 104 128 0 32 3 40 253 4 0 32 1 33 0 32 4 34 7 104 1 0 32 3 56 25 200 0 32 4 52 7 104 128 0 32 3 56 253 4 0 32 1 49 0 32 4 50 7 104 1 0 32 3 72 25 200 0 32 4 68 7 104 128 0 32 3 72 253 4 0 32 1 65 0 32 4 66 7 104 1 0 32 3 88 25 200 0 32 4 84 7 104 128 0 32 3 88 253 4 0 32 1 81 0 32 4 82 7 104 1 0 32 3 104 25 200 0 32 4 100 7 104 128 0 32 3 104 253 4 0 32 1 97 0 32 4 98 7 104 1 0 32 3 120 25 200 0 32 4 116 7 104 128 0 32 3 120 253 4 0 32 1 113 0 32 4 114 7 104 1 0 32 3 136 25 200 0 32 4 132 7 104 128 0 32 3 136 253 4 0 32 1 129 0 32 4 130 7 104 1 0 32 3 152 25 200 0 32 4 148 7 104 128 0 32 3 152 253 4 0 32 1 145 0 32 4 146 7 104 1 0 ";
-            
-            //string strbuf="984 97 4 4 24 101 128 0 97 3 8 253 4 0 97 1 1 0 97 4 2 24 101 1 0 97 3 24 25 250 0 97 4 20 24 101 128 0 97 3 24 253 4 0 97 1 17 0 97 4 18 24 101 1 0 97 3 40 25 250 0 97 4 36 24 101 128 0 97 3 40 253 4 0 97 1 33 0 97 4 34 24 101 1 0 97 3 56 25 250 0 97 4 52 24 101 128 0 97 3 56 253 4 0 97 1 49 0 97 4 50 24 101 1 0 96 3 72 25 250 0 96 4 68 24 101 128 0 96 3 72 253 4 0 96 1 65 0 96 4 66 24 101 1 0 96 3 56 25 250 0 96 4 52 24 101 128 0 96 3 56 253 4 0 96 1 49 0 96 4 50 24 101 1 0 96 3 40 25 250 0 96 4 36 24 101 128 0 96 3 40 253 4 0 96 1 33 0 96 4 34 24 101 1 0 96 3 24 25 250 0 96 4 20 24 101 128 0 96 3 24 253 4 0 96 1 17 0 96 4 18 24 101 1 0 96 3 8 25 250 0 96 4 4 24 101 128 0 96 3 8 253 4 0 96 1 1 0 96 4 2 24 101 1 0 33 3 8 25 250 0 33 4 4 24 101 128 0 33 3 8 253 4 0 33 1 1 0 33 4 2 24 101 1 0 33 3 24 25 250 0 33 4 20 24 101 128 0 33 3 24 253 4 0 33 1 17 0 33 4 18 24 101 1 0 33 3 40 25 250 0 33 4 36 24 101 128 0 33 3 40 253 4 0 33 1 33 0 33 4 34 24 101 1 0 33 3 56 25 250 0 33 4 52 24 101 128 0 33 3 56 253 4 0 33 1 49 0 33 4 50 24 101 1 0 33 3 72 25 250 0 33 4 68 24 101 128 0 33 3 72 253 4 0 33 1 65 0 33 4 66 24 101 1 0 33 3 88 25 250 0 33 4 84 24 101 128 0 33 3 88 253 4 0 33 1 81 0 33 4 82 24 101 1 0 34 3 8 25 250 0 34 4 4 24 101 128 0 34 3 8 253 4 0 34 1 1 0 34 4 2 24 101 1 0 34 3 24 25 250 0 34 4 20 24 101 128 0 34 3 24 253 4 0 34 1 17 0 34 4 18 24 101 1 0 34 3 40 25 250 0 34 4 36 24 101 128 0 34 3 40 253 4 0 34 1 33 0 34 4 34 24 101 1 0 34 3 56 25 250 0 34 4 52 24 101 128 0 34 3 56 253 4 0 34 1 49 0 34 4 50 24 101 1 0 34 3 72 25 250 0 34 4 68 24 101 128 0 34 3 72 253 4 0 34 1 65 0 34 4 66 24 101 1 0 34 3 88 25 250 0 34 4 84 24 101 128 0 34 3 88 253 4 0 34 1 81 0 34 4 82 24 101 1 0 34 3 104 25 250 0 34 4 100 24 101 128 0 34 3 104 253 4 0 34 1 97 0 34 4 98 24 101 1 0 34 3 120 25 250 0 34 4 116 24 101 128 0 34 3 120 253 4 0 34 1 113 0 34 4 114 24 101 1 0 35 3 8 25 250 0 35 4 4 24 101 128 0 35 3 8 253 4 0 35 1 1 0 35 4 2 24 101 1 0 35 3 24 25 250 0 35 4 20 24 101 128 0 35 3 24 253 4 0 35 1 17 0 35 4 18 24 101 1 0 35 3 40 25 250 0 35 4 36 24 101 128 0 35 3 40 253 4 0 35 1 33 0 35 4 34 24 101 1 0 35 3 56 25 250 0 35 4 52 24 101 128 0 35 3 56 253 4 0 35 1 49 0 35 4 50 24 101 1 0 35 3 72 25 250 0 35 4 68 24 101 128 0 35 3 72 253 4 0 35 1 65 0 35 4 66 24 101 1 0 35 3 88 25 250 0 35 4 84 24 101 128 0 35 3 88 253 4 0 35 1 81 0 35 4 82 24 101 1 0 35 3 104 25 250 0 35 4 100 24 101 128 0 35 3 104 253 4 0 35 1 97 0 35 4 98 24 101 1 0 35 3 120 25 250 0 35 4 116 24 101 128 0 35 3 120 253 4 0 35 1 113 0 35 4 114 24 101 1 0 35 3 136 25 250 0 35 4 132 24 101 128 0 35 3 136 253 4 0 35 1 129 0 35 4 130 24 101 1 0 35 3 152 25 250 0 35 4 148 24 101 128 0 35 3 152 253 4 0 35 1 145 0 35 4 146 24 101 1 0";
-            
-            
-            istringstream instring(strbuf);
-            
-            int nwords;
-            
-            instring >> nwords;
-            
-            assert(nwords>1);
-            assert(nwords<1025);
-            
-            //cout << "Words to read:"<<nwords<<endl;
-            
-            qbufn[mymfec][myfecchannel]=nwords;
-            
-            for (int i=0;i<nwords;i++){
-                int tmp;
-                instring >> tmp;
-                qbuf[mymfec][myfecchannel][i]=tmp;
-                if (j==0){
-                    //cout << "qbuf["<<mymfec<<"]["<<myfecchannel<<"]["<<i<<"]="
-                    //     << (int)qbuf[mymfec][myfecchannel][i]<<endl;
-                }
-            }    
-            
-            int hubandport = (myhubaddress << 3) | myportaddress;
-            
-            int n = 0;
-            int countnext = 0;
-            while(n < nwords) {
-                qbuf[mymfec][myfecchannel][n] = hubandport;
-                countnext = qbuf[mymfec][myfecchannel][n+1];
-                n += countnext + 3;
-            }
-            
-            qbufsend(mymfec, myfecchannel);
-            
-            mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
-            
-            getfecctrlstatus(mymfec,&data);  
-            
-            if ((data & dataReceivedMask) == dataReceivedMask) {
-                
-                // receive complete
-                
-                cntgood++;
-                
-            } else {
-                
-                cntbad++;
-                
-            }
-            //cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
-            if(cntbad == 4) {
-                //break;
-                return 0;
-            }
+            cntbad++;
             
         }
-        
-        success3 = cntgood;
+        //cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if(giveUpEarly && cntbad == 4) {
+            //break;
+            return 0;
+        }
         
     }
     
+    success3 = cntgood;
     
     cntgood=0; cntbad = 0;
-    
-    if(commands == 0 || commands == 2) {
+
+    usleep(1000);
+
+    for (j=0;j<nTry;j++) {
+      //tbmcmd(1, 1, 14, 15, 4, 7, 160+nTry*4, 0);
+      rocinit(9, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+
+        mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
+	usleep(100);
+        getfecctrlstatus(mymfec,&data);  
+	usleep(100);
         
-        for (j=0;j<nTry;j++) {
+	uint32_t xxx = 0xdeadbeef;
+	getByteHubCount(1,1,4,(int*)&xxx);
+	uint32_t xxx2 = xxx;
+	xxx >>= 16;
+	
+	if (myfecchannel==2) data >>= 16;
+	if ((data & 0x7F00) == 0x200) {
+	//if ((data & 0x200) == 0x200 && (xxx>>8) == (xxx&0xff)) {
+	  //if ((data & dataReceivedMask) == dataReceivedMask) {
             
-            //    myfec.roctrimload(mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,testroc2);
+            // receive complete
             
-            coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress,
-                        myrocid,
-                        0,8,
-                        testroc2);
+            cntgood++;
             
-            coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress,
-                        myrocid,
-                        8,8,
-                        testroc2);
+        } else {
             
-            coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress,
-                        myrocid,
-                        16,8,
-                        testroc2);
-            
-            coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress,
-                        myrocid,
-                        24,8,
-                        testroc2);
-            
-            coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress,
-                        myrocid,
-                        32,8,
-                        testroc2);
-            
-            coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress,
-                        myrocid,
-                        40,8,
-                        testroc2);
-            
-            mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
-            
-            getfecctrlstatus(mymfec,&data);
-            
-            if ((data & dataReceivedMask) == dataReceivedMask) {
-                
-                // receive complete
-                
-                cntgood++;
-                
-            } else {
-                
-                cntbad++;
-                
-            }
-            //cout<<"-5- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
-            
-            if(cntbad == 4) {
-                //break;
-                return 0;
-            }
+            cntbad++;
             
         }
+        //cout<<"-5- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if(giveUpEarly && cntbad == 4) {
+            //break;
+            return 0;
+        }
         
-        success4 = cntgood;
     }
+
+    success4 = cntgood;
     
     return 0;
     
