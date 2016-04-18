@@ -130,7 +130,7 @@ xoap::MessageReference PixelTKFECDelay25Calibration::execute(xoap::MessageRefere
   unsigned int tbmchannel=module_firstHdwAddress.fedchannel();
   unsigned int hubaddress=module_firstHdwAddress.hubaddress();
   unsigned int portaddress=7; //change from 4 to 7 on advice of Rutgers mFEC experts
-  //printf("JMT fecnum %u feccrate %u vmeaddr %lx mfec %u mfecch %u tbmch %u hubaddr %u portaddr %u\n", fecnumber, feccrate, vmeBaseAddress, mfec, mfecchannel, tbmchannel, hubaddress, portaddress);
+  printf("JMT fecnum %u feccrate %u vmeaddr %lx mfec %u mfecch %u tbmch %u hubaddr %u portaddr %u\n", fecnumber, feccrate, vmeBaseAddress, mfec, mfecchannel, tbmchannel, hubaddress, portaddress);
   //unsigned int portaddress=module_hdwaddress->portaddress();
   
   parametersToFEC.at(0).value_=itoa(vmeBaseAddress);
@@ -552,10 +552,10 @@ bool PixelTKFECDelay25Calibration::SetDelay(PixelPortCardConfig* tempPortCard, s
 
    assert(fecAccess_!=0);
 
-   int flag = 1;
+   int flag = 3; // JMTBAD what was 1?
    enumDeviceType modeType = PHILIPS;
 
-   portcardI2CDevice(fecAccess_, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, modeType, value, flag);
+   bool ret = portcardI2CDevice(fecAccess_, fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, modeType, value, flag);
 
    if(update) {
       cout << "TKFECDelay25Calibration:  updated " << delay << endl;
@@ -567,11 +567,11 @@ bool PixelTKFECDelay25Calibration::SetDelay(PixelPortCardConfig* tempPortCard, s
       tempPortCard->writeASCII(outputdir+"/");
    }
 
-   return true;
+   return ret;
 }
 
-void PixelTKFECDelay25Calibration::portcardI2CDevice(FecAccess* fecAccess, tscType8 fecAddress, tscType8 ringAddress, tscType8 ccuAddress, tscType8 channelAddress, tscType8 deviceAddress, enumDeviceType modeType, unsigned int value, int flag) {
-
+bool PixelTKFECDelay25Calibration::portcardI2CDevice(FecAccess* fecAccess, tscType8 fecAddress, tscType8 ringAddress, tscType8 ccuAddress, tscType8 channelAddress, tscType8 deviceAddress, enumDeviceType modeType, unsigned int value, int flag) {
+   bool ret = true;
    keyType index = buildCompleteKey(fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress);
    try {
       fecAccess_->addi2cAccess(index, modeType, MODE_SHARE);
@@ -580,21 +580,32 @@ void PixelTKFECDelay25Calibration::portcardI2CDevice(FecAccess* fecAccess, tscTy
       cout << e.what()  << std::endl ;
       cout << "---------------------------------" << std::endl ;
 
-      return;
+      return false;
    }
 
    try {
       fecAccess_->write(index, value);
+      if (flag & 2) {
+	usleep(100);
+	unsigned value2=fecAccess_->read(index);
+	if (value != value2) {
+	  printf("did not successfully write fec 0x%x ring 0x%x ccu 0x%x channel 0x%x dev 0x%x value 0x%x value2 0x%x\n", fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, value, value2);
+	  ret = false;
+	}
+	else
+	  printf("successfully wrote fec 0x%x ring 0x%x ccu 0x%x channel 0x%x dev 0x%x value 0x%x value2 0x%x\n", fecAddress, ringAddress, ccuAddress, channelAddress, deviceAddress, value, value2);
+      }
+	
    } catch (FecExceptionHandler e) {
       cout<<"--------- Exception ---------"<<std::endl;
       cout<< e.what() <<std::endl;
       cout<<"-----------------------------"<<std::endl;
 
-      return;
+      return false;
    }
    fecAccess_->removei2cAccess(index);
    
-   return;
+   return ret;
 }
 
 bool PixelTKFECDelay25Calibration::NS(set< pair<int,int> > CandidatePoints, set< pair<int,int> > &GoodPoints, int i, int &countRegion) {
