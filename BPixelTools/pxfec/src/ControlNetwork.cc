@@ -119,7 +119,7 @@ int ControlNetwork::testHubId(const int id, int mode){ //mode: 0=tbm read, 1=tbm
   else if (mode==3) {
     for(int iroc=0;iroc<16;iroc++) {
       portaddress = iroc/4; 
-      interface->rocinit(mfec, channel, id, portaddress, iroc, mask, trim);
+      interface->rocinit(52, mfec, channel, id, portaddress, iroc, mask, trim);
     }
     usleep(100000);  // usleep 
   }
@@ -252,6 +252,7 @@ void ControlNetwork::Execute(SysCommand *command){
 
  
 void ControlNetwork::init(){
+
   //unsigned long data = 0;
   // What does this realy do?
   // Internal triggers work for both settings

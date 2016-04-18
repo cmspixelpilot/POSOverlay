@@ -25,7 +25,7 @@ void Roc::Init(){
   }
   
   // Disable all pixels
-  cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, mask, trim);
+  cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, mask, trim);
   cout<<endl;
 }
 
@@ -55,13 +55,13 @@ void Roc::Execute(SysCommand *command){
   
     if(command->Keyword("mask")){
       cout << "masking roc " << iroc << "  on hub " << hubaddress << endl;
-      cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, trimBits); //mask,trim
+      cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, trimBits); //mask,trim
     }else if(command->Keyword("unmask")){
       cout << "unmasking roc " << iroc << "  on hub " << hubaddress << endl;
-      cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 1, trimBits); //mask,trim
+      cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, 1, trimBits); //mask,trim
     }else if(command->Keyword("trim",&value1)){
       trimBits=*value1;
-      cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, *value1); //mask,trim
+      cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, *value1); //mask,trim
     }else if(command->Keyword("clrcal")||command->Keyword("cald")){
       cn->interface->clrcal(cn->mfec, cn->channel, hubaddress, portaddress, iroc);
     }else if(command->Keyword("fullspeed")){     setDAC(0xFD,  0);
