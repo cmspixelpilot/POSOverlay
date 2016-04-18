@@ -1815,7 +1815,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
 
 int main(int argc, char *argv[])
 {
-  uhal::setLogLevelTo(uhal::Debug());
+  //uhal::setLogLevelTo(uhal::Debug());
 
   VMELock lock(1);
   lock.acquire();
@@ -1864,6 +1864,8 @@ int main(int argc, char *argv[])
     cout << "utca mode " << endl; 
     fecAddress = 0 ;
     ringAddress = 0x0 ;
+    ccuAddress = 0x7c; // JMTBAD
+    channelAddress = 0x10;
   }
   else {
     cout << "Please select PCI [-pci] or VME [-vmecaenusb]/[-vmecaenpci] or uTCA [-utca] mode " << endl;
