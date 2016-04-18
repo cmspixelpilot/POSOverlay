@@ -1,6 +1,6 @@
 #include "BPixelTools/pxfec/include/SysCommand.h"
 #include "BPixelTools/tools/include/VMELock.h"
-#include "PixelPh1FECInterface/include/PixelPh1FECInterface.h"
+#include "PixelFECInterface/include/PixelPh1FECInterface.h"
 
 
 #include <string>
@@ -21,18 +21,18 @@ using namespace std;
 pos::PixelFECConfigInterface* pixelFECInterface[22]={0};
 ControlNetwork* cn[64]={0};
 
-char * addressTablePtr;
-
-
 PixelPh1FECInterface* initPixelFEC(int slot){
     
     unsigned long fecBase=0x08000000 * slot;
     cout << fecBase << endl;
-    RegManager * pRegManager = new RegManager(addressTablePtr, 0);
+    std::string build_home(getenv("BUILD_HOME"));
+    std::string datbase_ = build_home + "/pixel/PixelFECInterface/dat/";
+    std::string uri = "chtcp-2.0://131.225.180.40:10203?target=192.168.1.169:50001";
+    RegManager * pRegManager = new RegManager("board", uri, "file://" + datbase_ + "address_table.xml");
     
     int dummy_vmeslot=0; unsigned int dummy_feccrate=0; unsigned int dummy_fecslot = 0;
     PixelPh1FECInterface* aFECInterface = new PixelPh1FECInterface(pRegManager,dummy_vmeslot,dummy_feccrate,dummy_fecslot);
-    
+
     cout<<"Init FEC in slot "<< slot <<endl;
     
     const bool glib = false;
@@ -72,10 +72,10 @@ PixelPh1FECInterface* initPixelFEC(int slot){
 //   int calpix_ = aFECInterface->calpix(1,1,15, 7, 1,1,1,1, true);
 
   	    
-//   int myData = 0; 
-//     int readbyte = aFECInterface->getByteHubCount(1, 1, 1, &myData);
-//
-//    cout <<"myData " << hex << myData << hex << " "<<readbyte << dec <<  endl;
+   int myData = 0; 
+     int readbyte = aFECInterface->getByteHubCount(1, 1, 1, &myData);
+
+    cout <<"myData " << hex << myData << hex << " "<<readbyte << dec <<  endl;
 
 
 cout <<"bla bla"<<endl;
@@ -123,7 +123,7 @@ int main(int argc, char **argv){
   // default configuration variables 
   int port=0;                      // port, 0= no port,    define with option -port
   int VMEBoard=1; //CAEN interface   define with option -vmecaenpci or -vmecaenusb
-  string file="data/d.ini.P-A-2-08";        // init file            define with option -file
+  string file="data/d.ini";        // init file            define with option -file
 
 
   // parse command line arguments
@@ -152,8 +152,6 @@ int main(int argc, char **argv){
       exit(1);
     }
   }
-
-  addressTablePtr = (char *) "file:///home/fectest/FEC_mTCA/pixel/BPiasdfasdfasdfaxelTools/pxfec/xml_files/ConnectionFile.xml";
 
   VMELock lock(1);
  
