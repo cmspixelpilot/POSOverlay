@@ -24,7 +24,7 @@ LibraryDirs = \
 	-L${MY_PROJECT_ROOT}/lib 
 
 
-Libraries=  -lPixelPh1FECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -lxerces-c -lxcept -lconfig -ltoolbox -llog4cplus -lasyncresolv -luuid    \
+Libraries=  -lPixelFECInterface -lCAENVME  -lGenericHAL -lCAENLinuxBusAdapter -lxerces-c -lxcept -lconfig -ltoolbox -llog4cplus -lasyncresolv -luuid -lconfig -lxdaq -lxdata -lxoap -lxgi -lcgicc -lpeer -llog4cplus -llogxmlappender -llogudpappender -lmimetic -lSiPixelObjects \
                 -lpthread \
                 \
                 -lboost_filesystem \
