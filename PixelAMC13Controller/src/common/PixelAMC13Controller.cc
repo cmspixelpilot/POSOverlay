@@ -42,7 +42,7 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
   std::string commandName=command.getElementName().getLocalName();
   xoap::SOAPName name=envelope.createName("Key");
       
-  for (unsigned int i=0;i<parameters.size();++i)
+  for (unsigned int i = 0;i < parameters.size(); ++i)
     {
       name=envelope.createName(parameters[i].name_);
           
@@ -109,7 +109,7 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
 xoap::MessageReference PixelAMC13Controller::Reset (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   xoap::MessageReference reply = xoap::createMessage();
   xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
-  xoap::SOAPName responseName = envelope.createName( "dummyResponse", "xdaq", XDAQ_NS_URI);
+  xoap::SOAPName responseName = envelope.createName( "TTCciControlFSMReset", "xdaq", XDAQ_NS_URI);
   xoap::SOAPBodyElement e = envelope.getBody().addBodyElement ( responseName );
   return reply;
 }
@@ -117,7 +117,7 @@ xoap::MessageReference PixelAMC13Controller::Reset (xoap::MessageReference msg) 
 xoap::MessageReference PixelAMC13Controller::Enable (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   xoap::MessageReference reply = xoap::createMessage();
   xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
-  xoap::SOAPName responseName = envelope.createName( "dummyResponse", "xdaq", XDAQ_NS_URI);
+  xoap::SOAPName responseName = envelope.createName( "enableResponse", "xdaq", XDAQ_NS_URI);
   xoap::SOAPBodyElement e = envelope.getBody().addBodyElement ( responseName );
   return reply;
 }
@@ -125,7 +125,7 @@ xoap::MessageReference PixelAMC13Controller::Enable (xoap::MessageReference msg)
 xoap::MessageReference PixelAMC13Controller::Stop (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   xoap::MessageReference reply = xoap::createMessage();
   xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
-  xoap::SOAPName responseName = envelope.createName( "dummyResponse", "xdaq", XDAQ_NS_URI);
+  xoap::SOAPName responseName = envelope.createName( "stopResponse", "xdaq", XDAQ_NS_URI);
   xoap::SOAPBodyElement e = envelope.getBody().addBodyElement ( responseName );
   return reply;
 }
@@ -133,11 +133,18 @@ xoap::MessageReference PixelAMC13Controller::Stop (xoap::MessageReference msg) t
 xoap::MessageReference PixelAMC13Controller::Suspend (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   xoap::MessageReference reply = xoap::createMessage();
   xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
-  xoap::SOAPName responseName = envelope.createName( "dummyResponse", "xdaq", XDAQ_NS_URI);
+  xoap::SOAPName responseName = envelope.createName( "suspendResponse", "xdaq", XDAQ_NS_URI);
   xoap::SOAPBodyElement e = envelope.getBody().addBodyElement ( responseName );
   return reply;
 }
 
+xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  xoap::MessageReference reply = xoap::createMessage();
+  xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
+  xoap::SOAPName responseName = envelope.createName( "Fault", "xdaq", XDAQ_NS_URI);
+  xoap::SOAPBodyElement e = envelope.getBody().addBodyElement ( responseName );
+  return reply;
+}
 
 std::vector<int> PixelAMC13Controller::parseAMCMask(xdata::String maskStr) {
   std::vector<int> amcVec;

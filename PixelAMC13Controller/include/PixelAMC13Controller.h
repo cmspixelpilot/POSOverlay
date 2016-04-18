@@ -62,6 +62,7 @@ class PixelAMC13Controller: public xdaq::Application
 	xoap::MessageReference Enable (xoap::MessageReference msg) throw (xoap::exception::Exception);
 	xoap::MessageReference Stop (xoap::MessageReference msg) throw (xoap::exception::Exception);
 	xoap::MessageReference Suspend (xoap::MessageReference msg) throw (xoap::exception::Exception);
+	xoap::MessageReference Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception);
  private:
 	
 	std::vector<int> parseAMCMask(xdata::String maskStr);
