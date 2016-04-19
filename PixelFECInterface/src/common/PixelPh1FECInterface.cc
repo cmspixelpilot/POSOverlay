@@ -11,7 +11,15 @@ using namespace std;
 using namespace pos;
 
 namespace {
-    const bool PRINT = false;
+  bool PRINT = false;
+  bool PRINT_old = PRINT;
+  void PRINT_ON() {
+    PRINT_old = PRINT;
+    PRINT = true;
+  }
+  void PRINT_RESTORE() {
+    PRINT = PRINT_old;
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -41,6 +49,13 @@ fecSlot_(fecSlot)
 
     //disableinternalclk();
     switchclk(0xFF7CFFD8);
+
+    PRINT_ON();
+    unsigned long data;
+    getversion(&data);
+    getGeneral();
+    PRINT_RESTORE();
+    
 }
 //------------------------------------------------------------------------
 PixelPh1FECInterface::~PixelPh1FECInterface(void)
@@ -55,6 +70,12 @@ PixelPh1FECInterface::~PixelPh1FECInterface(void)
  getversion(const int mfec, unsigned long *data) form queries a particular
  mfec for the version (all mfecs on a VME FEC board will have the same
  mfec version sice it is loaded from a single eeprom.) */
+
+unsigned PixelPh1FECInterface::getGeneral() {
+  valword value = pRegManager->ReadReg("GenReg");
+  if (PRINT) cout << "PixelPh1FECInterface: Get FEC general register: 0x" << hex << value.value() << dec << endl;
+  return value.value();
+}
 
 int PixelPh1FECInterface::getversion(unsigned long *data) {
     valword value;
@@ -378,7 +399,6 @@ int PixelPh1FECInterface::getfecctrlstatus(const int mfec, unsigned long *data) 
     //		   "CSREGM5","CSREGM6","CSREGM7","CSREGM8"};
     
     valword value;
-    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FEC cntrstatus register" <<endl;
     switch (mfec) {
         case 1:
             value = pRegManager->ReadReg("CSReg.CSREGM1");
@@ -406,23 +426,20 @@ int PixelPh1FECInterface::getfecctrlstatus(const int mfec, unsigned long *data) 
             break;
     }
     *data = value.value();
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FEC cntrstatus register: 0x" << hex << *data << dec <<endl;
     return 0;
 }
 //----------------------------------------------------------------------------------
 //// output one word in HAL single mode
-///notes from mia and nik: we hacked this function since it had problems with WriteReg for CTA(works fine with glib), reason unknown.
 void PixelPh1FECInterface::outputwordhal(const char *halname, unsigned int data) {
-    
-    cout <<"data in outputwordhal : before " << hex << data << hex << endl;	
-    valword value1 =  pRegManager->ReadReg(halname);	
-    cout << "value before: " << value1 << endl;
-    std::vector<uint32_t> data_tmp;
-    data_tmp.push_back(data);
-    pRegManager->WriteBlockReg(halname, data_tmp);
-  //  pRegManager->WriteReg(halname, data);
-    cout <<"data in outputwordhal : after" << hex << data << hex << endl;
+  pRegManager->WriteReg(halname, data);
+  if (PRINT) {
     valword value =  pRegManager->ReadReg(halname);	
-    cout << "value from read function " << value << endl;
+    cout <<"PixelPh1FECInterface: outputwordhal " << halname << " 0x" << hex << data << " readback 0x" << value;
+    if (value.value() != data)
+      cout << "NOT OK";
+    cout << endl;
+  }
 }
 
 void PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std::vector<uint32_t> wordcont) {
@@ -445,6 +462,8 @@ int PixelPh1FECInterface::resetdoh(const int mfec, const int fecchannel) {
 }
 
 int PixelPh1FECInterface::injectrstroc(const int mfec, const int bitstate) {
+  disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW changes
+  
   if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstroc(" << mfec << ", " << bitstate << ")" << endl;
     //const string names[8] = {"INRSTROCM1","INRSTROCM2","INRSTROCM3","INRSTROCM4",
     //		             "INRSTROCM5","INRSTROCM6","INRSTROCM7","INRSTROCM8"};
@@ -459,6 +478,8 @@ int PixelPh1FECInterface::injectrstroc(const int mfec, const int bitstate) {
         case 7:   outputwordhal("INRSTROCM7", bitstate); break;
         case 8:   outputwordhal("INRSTROCM8", bitstate); break;
     }
+
+    disableexttrigger(mfec, 0);
     return 0;
 }
 int PixelPh1FECInterface::injecttrigger(const int mfec, const int bitstate) {
@@ -477,6 +498,7 @@ int PixelPh1FECInterface::injecttrigger(const int mfec, const int bitstate) {
     return 0;
 }
 int PixelPh1FECInterface::injectrsttbm(const int mfec, const int bitstate) {
+  disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW chang 
   if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrsttbm(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
@@ -489,9 +511,11 @@ int PixelPh1FECInterface::injectrsttbm(const int mfec, const int bitstate) {
         case 7:  outputwordhal("INRSTTBMM7", bitstate); break;
         case 8:  outputwordhal("INRSTTBMM8", bitstate); break;
     }
+    disableexttrigger(mfec, 0);
     return 0;
 }
 int PixelPh1FECInterface::injectrstcsr(const int mfec, const int bitstate) {
+  disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW chang 
   if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstcsr(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
@@ -504,6 +528,7 @@ int PixelPh1FECInterface::injectrstcsr(const int mfec, const int bitstate) {
         case 7:  outputwordhal("INRSTCSRM7", bitstate); break;
         case 8:  outputwordhal("INRSTCSRM8", bitstate); break;
     }
+    disableexttrigger(mfec, 0); // JMTBAD to be taken out if FW chang 
     return 0;
 }
 int PixelPh1FECInterface::enablecallatency(const int mfec, const int bitstate) {
@@ -674,7 +699,7 @@ int PixelPh1FECInterface::getByteHubCount(const int mfec, const int channel,
     
     valword value;
     int ret = 0;
-    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting the HUB & BYTE COUNT register" <<endl;
+    if (PRINT) cout << "PixelPh1FECInterface: byte + hub count:\n";
     
     if(mfec<1 || mfec>8) {
         cout<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
@@ -684,9 +709,9 @@ int PixelPh1FECInterface::getByteHubCount(const int mfec, const int channel,
         cout<<" PixelPh1FECInterface: Wrong mfec channel number "<<channel<<endl;
         return 2;
     }
-    
+
     value = pRegManager->ReadReg(names[channel-1][mfec-1]);
-    
+    if (PRINT) cout << hex << "0x" << value << dec << endl;
     if(byte<0||byte>4) {*data=0; ret=1;}   // signal out of range, return 0
     else if(byte==4) {*data = value.value();}      // for 4 return the whole register
     else {*data = (int) (value.value()  >> (8*byte)) & 0xFF;} // for 0-3 return a byte
@@ -1978,7 +2003,8 @@ void PixelPh1FECInterface::setDcolEnableAll(const PixelHdwAddress& theROC,
 int PixelPh1FECInterface::rocinit(int NCOLS, int mfec, int fecchannel,
                                int hubaddress, int portaddress, int rocid,
                                int mask, int trim) {
-    
+  //PRINT_ON();
+
     // set trims/masks on a roc all to same one value
     
     unsigned int *iword;
@@ -2075,6 +2101,7 @@ int PixelPh1FECInterface::rocinit(int NCOLS, int mfec, int fecchannel,
     
     if (fecdebug == 2) mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);
 
+    //PRINT_RESTORE();
     return 0;
 }
 //------------------------------------------------------------------------------------
@@ -2527,6 +2554,8 @@ int PixelPh1FECInterface::tbmread(int mfec, int fecchannel,
 int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
                               int tbmchannel, int hubaddress, int portaddress,
                               int offset, int databyte, int direction) {
+  //PRINT_ON();
+
     unsigned int t;
     unsigned int *iword;
     unsigned int ch1stat, ch2stat;
@@ -2592,6 +2621,7 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
     
     if (fecdebug == 2) mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat); 
     
+    //PRINT_RESTORE();
     return 0;
 }
 //--------------------------------------------------------------------------------
@@ -2765,15 +2795,15 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     cntgood=0; cntbad = 0;
     for (j=0;j<nTry;j++) {
-      //tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
-      rocinit(1, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
-                masksetting,trimsetting);
+      tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
+      //rocinit(1, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         getfecctrlstatus(mymfec,&data);  
         
         //if ((data & dataReceivedMask) == dataReceivedMask) {  // receive complete
 	if (myfecchannel==2) data >>= 16;
 	if ((data & 0x7F00) == 0x200) {
+	  //printf("GOOD!\n");
             cntgood++;
         } else {
             cntbad++;
@@ -2809,6 +2839,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 	  //if ((data & dataReceivedMask) == dataReceivedMask) {
             
             // receive complete
+	  //printf("GOOD!\n");
             
             cntgood++;
             
@@ -2849,6 +2880,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             
             // receive complete
             
+	  //printf("GOOD!\n");
             cntgood++;
             
         } else {
@@ -2856,7 +2888,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-	//        cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+	//cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
@@ -2888,6 +2920,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             
             // receive complete
             
+	  //printf("GOOD!\n");
             cntgood++;
             
         } else {
@@ -2930,6 +2963,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             
             // receive complete
             
+	  //printf("GOOD!\n");
             cntgood++;
             
         } else {

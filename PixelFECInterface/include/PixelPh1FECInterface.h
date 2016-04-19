@@ -42,8 +42,8 @@ public:
     
     int getversion(const int mfec, unsigned long *data);
     int getversion(unsigned long *data);
-    int setssid(const int ssid);
     int getStatus(void);
+    unsigned getGeneral();
 
     // Nik added these two 
     void switchclk(unsigned int clk_word);
