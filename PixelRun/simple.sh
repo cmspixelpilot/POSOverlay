@@ -7,4 +7,9 @@ echo $LOGFN
 echo
 #echo JMT turned off INFO level messages because the TTCciSupervisor is way too chatty...
 #echo
-${XDAQ_ROOT}/bin/xdaq.sh -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/simple.xml 2>&1 -z pixel | tee $LOGFN
+if [ "$1" == "gdb" ]; then
+    gdb --args ${XDAQ_ROOT}/bin/xdaq.exe -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/simple.xml -z pixel
+else
+    ${XDAQ_ROOT}/bin/xdaq.sh -p 1973 -e ${BUILD_HOME}/pixel/XDAQConfiguration/Profile.xml -c ${BUILD_HOME}/pixel/XDAQConfiguration/simple.xml -z pixel 2>&1 | tee $LOGFN
+fi
+
