@@ -20,8 +20,6 @@
 class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
     
 public:
-    
-    
   PixelPh1FECInterface(RegManager* const RegManagerPtr, const int vmeslot,
                       unsigned int fecCrate, unsigned int fecSlot);
     
@@ -55,9 +53,7 @@ public:
     int writeCSregister(int mfec, int fecchannel, int cscommand);
     
     void mfecbusy(int mfec, int fecchannel, unsigned int *cs1,unsigned int *cs2);
-    int outputbuffer(const int mfec, const int fecchannel, unsigned long data);
     void outputblock(const int mfec, const int fecchannel,std::vector<uint32_t> wordcont);
-    void outputwordhalblock(const char *halname, unsigned int data);
     void outputwordhal(const char *halname, unsigned int data);
     
     int getfecctrlstatus(const int mfec, unsigned long *data);
@@ -65,11 +61,6 @@ public:
     
     int readback(const int mfec, int channel); // added tbm readout d.k.11/07
     int getByteHubCount(const int mfec, const int channel, const int byte, int *data);
-    
-    
-    
-    
-    // Here goes all the common functions whose declarations weren't depended on CAEN or VME.
     
     
     int qbufsend(int mfec, int fecchannel);
@@ -128,7 +119,7 @@ public:
     
     /* rocinit: Initialize mask and trim for all pixels of a roc to that
      same mask/trim value.  */
-    int rocinit(int mfec, int mfecchannel, int hubaddress, int portaddress,
+    int rocinit(int NCOLS, int mfec, int mfecchannel, int hubaddress, int portaddress,
                 int rocid,
                 int mask, int trim);
     
@@ -230,7 +221,6 @@ public:
 	    
 private:
     
-    int pfecvmeslot;
     typedef uhal::ValWord<uint32_t> valword;
     typedef uhal::ValVector<uint32_t> valvec;
     RegManager * const pRegManager;
@@ -266,5 +256,4 @@ private:
     
 };
 
-#endif // ifdef declare 
-
+#endif

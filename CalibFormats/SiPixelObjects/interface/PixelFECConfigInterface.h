@@ -55,7 +55,7 @@ namespace pos{
 			    int hubaddress, int portaddress, int rocid,
 			    const std::vector<unsigned char>& allPixels)=0;
 
-    virtual int rocinit(int mfec, int fecchannel,
+    virtual int rocinit(int NCOLS, int mfec, int fecchannel,
                         int hubaddress, int portaddress, int rocid,
                         int mask, int trim)=0;
 

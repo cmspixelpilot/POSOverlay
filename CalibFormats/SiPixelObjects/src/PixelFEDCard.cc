@@ -642,8 +642,9 @@ PixelFEDCard::PixelFEDCard(string fileName):
   size_t linelen = 0;
   char* line = 0;
   getline(&line, &linelen, infile);
+  if (localDEBUG) printf("first line: %s\n", line);
 
-  if (strcmp(line, "Type: VMEPiggy") == 0) {
+  if (strcmp(line, "Type: VMEPiggy\n") == 0) {
     type = VMEPiggy;
 
     //Bits (1st 4) used to set the channel you want to read in spy fifo2
@@ -660,7 +661,7 @@ PixelFEDCard::PixelFEDCard(string fileName):
 
     getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
   }
-  else if (strcmp(line, "Type: CTA") == 0) {
+  else if (strcmp(line, "Type: CTA\n") == 0) {
     type = CTA;
 
     fscanf(infile, "Control bits: %llx\n", (unsigned long long*)&cntrl_utca);

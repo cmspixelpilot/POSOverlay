@@ -2788,7 +2788,7 @@ void PixelFECInterface::setDcolEnableAll(const PixelHdwAddress& theROC,
 //-----------------------------------------------------------------------------------------------
 // Program ALL pixels in a ROC to the same mask and trim
 // Use the compressed column mode.
-int PixelFECInterface::rocinit(int mfec, int fecchannel,
+int PixelFECInterface::rocinit(int NCOLS, int mfec, int fecchannel,
 			      int hubaddress, int portaddress, int rocid,
 			       int mask, int trim) {
 
@@ -2822,7 +2822,7 @@ int PixelFECInterface::rocinit(int mfec, int fecchannel,
   // Now send the number of columns of compressed data to follow
   //  txdata[current++] = 52; // full chip of cols is 52
   //  txdata[current++] = 10; // full chip of cols is 52
-  txdata[current++] = 52; // full chip of cols is 52
+  txdata[current++] = NCOLS; // full chip of cols is 52
 
  
   // Now set the mask and trim
@@ -2831,7 +2831,7 @@ int PixelFECInterface::rocinit(int mfec, int fecchannel,
   databyte = tmask | ttrim;
   
   //for (ic=0;ic<52;ic=ic++) {
-  for (ic=0;ic<52;++ic) {
+  for (ic=0;ic<NCOLS;++ic) {
     if (PRINT) cout << "CURRENT COLUMN:" << ic << endl;
     // Now send  pix chip address (high nibble) and the command (low nibble)
     txdata[current++] = (rocid << 4) | (0x04);
@@ -3622,7 +3622,7 @@ int PixelFECInterface::delay25Test(int mymfec,
 
   for (j=0;j<nTry;j++) {
 
-    rocinit(mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
+    rocinit(52, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
             masksetting,trimsetting);
 
     mfecbusy(mymfec, myfecchannel, &ch1, &ch2);

@@ -985,6 +985,9 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   data[j] |= uint64_t((j+1)&0x3fff) << 32;
   ++j;
 
+  // maybe we trashed the 5 in the msb, it's all the decoder cares about...
+  data[0] = 0x5000000000000000 | (data[0] & 0xFFFFFFFFFFFFFFF);
+
   std::cout << "my fake fifo3:\n";
   for (size_t i = 0; i < j; ++i)
     std::cout << std::hex << "0x" << std::setw(8) << data[i] << std::endl;
