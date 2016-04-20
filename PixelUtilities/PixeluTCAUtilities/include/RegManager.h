@@ -73,7 +73,14 @@ class RegManager {
 
   virtual std::vector<uint32_t> ReadBlockRegValue(const std::string& pRegNode, const uint32_t& pBlocksize);
 
- public:
+  /*!
+   * \brief Read a reg as a 4-char string
+   * \param pRegNode : Node of the register to read
+   * \return std::string the string
+   */
+  std::string ReadRegAsString(const std::string& pRegNode);
+
+
   /*!
    * \brief constructor
    * \param puHalConfigFileName : path of the uHal Config File

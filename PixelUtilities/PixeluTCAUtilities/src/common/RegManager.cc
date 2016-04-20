@@ -195,3 +195,13 @@ std::vector<uint32_t> RegManager::ReadBlockRegValue(const std::string& pRegNode,
   std::vector<uint32_t> vBlock = valBlock.value();
   return vBlock;
 }
+
+std::string RegManager::ReadRegAsString(const std::string& pRegNode) {
+  uint32_t v = ReadReg(pRegNode).value();
+  std::string s;
+  for (int i = 0; i < 4; ++i) {
+    int off = (3-i)*8;
+    s.push_back(char((v & (0xFF << off)) >> off));
+  }
+  return s;
+}
