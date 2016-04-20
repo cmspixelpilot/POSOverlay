@@ -81,6 +81,7 @@ else:
 running_procs=list()
 for classname,commandargs,logfile in commandargslist:
   log=open(logfile,'w')
+  print command, commandargs
   running_procs.append((classname,Popen([command, commandargs], stdout=log, stderr=log)))
   print('Started: '+classname+' (logfile: '+logfile+')')
 
