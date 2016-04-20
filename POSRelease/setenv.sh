@@ -1,6 +1,6 @@
 # these four should be customized
-export ROOTSYS=/nfshome0/pixelpilot/root_v5.34.14.source
-export BUILD_HOME=/nfshome0/pixelpilot/TriDAS_XDAQ13
+export ROOTSYS=/home/fnaltest/TriDAS/root
+export BUILD_HOME=/home/fnaltest/TriDAS
 export POS_OUTPUT_DIRS=$BUILD_HOME/pixel/PixelRun/Runs
 export PIXELCONFIGURATIONBASE=$BUILD_HOME/Config
 
