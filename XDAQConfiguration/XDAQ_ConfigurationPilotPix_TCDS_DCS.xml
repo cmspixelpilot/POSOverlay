@@ -29,8 +29,6 @@
     <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="xmas" group="dcs">
       <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct">
         <configuration xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelDCSInterface.so</xc:Module>
@@ -61,12 +59,7 @@
     
   <xc:Context id="2" url="http://vmepc-s2b18-08-01.cms:1974/">    
     <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1936" network="xmas"/>
-    <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq">
-      <properties xmlns="urn:xdaq-application:PixelFECSupervisor" xsi:type="soapenc:Struct">		        
-	<UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-	<DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFECSupervisor/conf/clientApp.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
+    <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq"/>
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
@@ -82,12 +75,7 @@
     
   <xc:Context id="3" url="http://vmepc-s2b18-08-01.cms:1971/">    
     <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1933" network="xmas"/>
-    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq">
-      <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
+    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq"/>
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
@@ -149,55 +137,20 @@
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTCDSSupervisor.so</xc:Module>
   </xc:Context>    
     
-  <xc:Context id="6" url="http://vmepc-s2b18-08-01.cms:1975/">
-  <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1927" network="xmas"/>
-    <xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="xmas">
-      <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
-        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
-    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
-    <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86_64_slc6/libGlobalErrorDispatcher.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libtoolbox.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxdaq.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxdata.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
-    <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
-  </xc:Context>
-
-  
-  <!-- ###################################################################################### -->
-  <!-- PSX SERVICE-->
-  <xc:Context id="8" url="http://pc-c2e11-26-01.cms:9924">
+  <xc:Context id="8" url="http://psx-pix.cms:9923">
     <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
   </xc:Context>
 
-  <!-- ###################################################################################### -->
-  <!-- TCDS -->
-  <!-- ###################################################################################### -->
   <xc:Context url="http://tcds-control-pix.cms:2102">
     <xc:Application class="tcds::ici::ICIController" id="307" instance="0" group="tcds" network="xmas" />
     <xc:Application class="tcds::pi::PIController" id="507" instance="0" group="tcds" network="xmas" />
   </xc:Context>
   
-  <!-- ###################################################################################### -->
-  <!-- JOBCONTROL -->
-  <!-- ###################################################################################### -->
   <xc:Context url="http://vmepc-s2b18-08-01.cms:9999">
     <xc:Application class="jobcontrol" id="10" network="xmas" group="jc"/>
   </xc:Context>
  
-  
-  <!-- ###################################################################################### -->
-  <!-- RCMS SERVICE: TO BE CHANGED TO RIGHT RCMS SERVICE -->
-  <!-- ###################################################################################### -->
-  <xc:Context url="http://cmsrc-pixeldev.cms:37000/rcms"> <!--37001???-->
+  <xc:Context url="http://cmsrc-pixeldev.cms:37000/rcms">
     <xc:Application class="RCMSStateListener" id="37010" network="xmas" instance="0" path="/services/replycommandreceiver"/>
   </xc:Context>
-
 </xc:Partition>
