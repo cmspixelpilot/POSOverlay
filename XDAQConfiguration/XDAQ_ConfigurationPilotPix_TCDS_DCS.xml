@@ -2,7 +2,7 @@
 <xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
 	
   <xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:1970/">
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1921" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1921" network="xmas"/>
     <xc:Application class="PixelSupervisor" id="51" instance="0" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
         <UseTCDS xsi:type="xsd:boolean">true</UseTCDS>
@@ -17,7 +17,7 @@
   </xc:Context>
 
   <xc:Context id="7" url="http://vmepc-s2b18-08-01.cms:1976/">
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="19111" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="19111" network="xmas"/>
     <xc:Application class="PixelDCSFSMInterface" id="120" instance="0" network="xmas" group="dcs">
       <properties xmlns="urn:xdaq-application:PixelDCSFSMInterface" xsi:type="soapenc:Struct">
         <configuration xsi:type="xsd:string">/nfshome0/pixelpilot/build/TriDAS/pixel/PixelDCSInterface/xml/interface.xml</configuration>
@@ -31,7 +31,7 @@
   </xc:Context>
 
   <xc:Context id="1" url="http://vmepc-s2b18-08-01.cms:1973/">
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1937" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1937" network="xmas"/>
     <xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
         <readDCU_workloop_usleep xsi:type="xsd:integer">10000000</readDCU_workloop_usleep>
@@ -42,21 +42,21 @@
   </xc:Context>
     
   <xc:Context id="2" url="http://vmepc-s2b18-08-01.cms:1974/">    
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1936" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1936" network="xmas"/>
     <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq"/>
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelFECSupervisor.so</xc:Module>
   </xc:Context>
     
   <xc:Context id="3" url="http://vmepc-s2b18-08-01.cms:1971/">    
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1933" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1933" network="xmas"/>
     <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq"/>
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelFEDSupervisor.so</xc:Module>
   </xc:Context>
     
   <xc:Context id="4" url="http://vmepc-s2b18-08-01.cms:1985/">    
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1925" network="xmas"/>
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1925" network="xmas"/>
     <xc:Application class="pixel::tcds::PixeliCISupervisor" id="85" instance="1" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:pixel::tcds::PixeliCISupervisor" xsi:type="soapenc:Struct">
         <tcdsAppClassName xsi:type="xsd:string">tcds::ici::ICIController</tcdsAppClassName>
@@ -79,7 +79,7 @@
   </xc:Context>
   
   <xc:Context id="5" url="http://vmepc-s2b18-08-01.cms:1986/">      
-    <xc:Endpoint protocol="tcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1926" network="xmas"/>    
+    <xc:Endpoint protocol="utcp" service="b2in" hostname="vmepc-s2b18-08-01.cms" port="1926" network="xmas"/>    
     <xc:Application class="pixel::tcds::PixelPISupervisor" id="86" instance="2" network="xmas" group="daq">
       <properties xmlns="urn:xdaq-application:pixel::tcds::PixelPISupervisor" xsi:type="soapenc:Struct">
         <tcdsAppClassName xsi:type="xsd:string">tcds::pi::PIController</tcdsAppClassName>
@@ -109,12 +109,13 @@
     <xc:Application class="tcds::ici::ICIController" id="307" instance="0" group="tcds" network="xmas" />
     <xc:Application class="tcds::pi::PIController" id="507" instance="0" group="tcds" network="xmas" />
   </xc:Context>
-  
+
   <xc:Context url="http://vmepc-s2b18-08-01.cms:9999">
     <xc:Application class="jobcontrol" id="10" network="xmas" group="jc"/>
   </xc:Context>
- 
+
   <xc:Context url="http://cmsrc-pixeldev.cms:37000/rcms">
     <xc:Application class="RCMSStateListener" id="37010" network="xmas" instance="0" path="/services/replycommandreceiver"/>
   </xc:Context>
+
 </xc:Partition>
