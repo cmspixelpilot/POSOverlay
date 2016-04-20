@@ -2795,8 +2795,8 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     cntgood=0; cntbad = 0;
     for (j=0;j<nTry;j++) {
-      tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
-      //rocinit(1, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      //tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
+      rocinit(10, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         getfecctrlstatus(mymfec,&data);  
         
@@ -2826,7 +2826,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     
     for (j=0;j<nTry;j++) {
       //tbmcmd(1, 1, 14, 15, 4, 7, 200+nTry*4, 0);
-      rocinit(3, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
+      rocinit(20, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
                 masksetting,trimsetting);
       //      calpix(mymfec, myfecchannel, myhubaddress, myportaddress, myrocid, 0, 0, 1, true);  qbufsend();
         
@@ -2862,7 +2862,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     
     for (j=0;j<nTry;j++) {
       //tbmcmd(1, 1, 14, 15, 4, 7, (240+nTry*4)%256, 0);
-      rocinit(5, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      rocinit(31, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
@@ -2902,7 +2902,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     for (j=0;j<nTry;j++) {
       //tbmcmd(1, 1, 14, 15, 4, 7, 120+nTry*4, 0);
-      rocinit(7, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      rocinit(40, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
@@ -2944,7 +2944,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     for (j=0;j<nTry;j++) {
       //tbmcmd(1, 1, 14, 15, 4, 7, 160+nTry*4, 0);
-      rocinit(9, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      rocinit(52, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
 
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
 	usleep(100);
