@@ -29,8 +29,6 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
   int setup(pos::PixelFEDCard pfc); 
   int setup();  // run the setup 
 
-  std::string getBoardType();
-  void getFEDNetworkParameters();
   void getBoardInfo();
   void disableFMCs();
   void enableFMCs();

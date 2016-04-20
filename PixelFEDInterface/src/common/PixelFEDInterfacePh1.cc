@@ -68,10 +68,10 @@ int PixelFEDInterfacePh1::setup() {
 
   int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
-  ConfigureFitel(0, 0, true);
-  ConfigureFitel(0, 1, true);
-  //ConfigureFitel(1, 0, true);
-  //ConfigureFitel(1, 1, true);
+  //ConfigureFitel(0, 0, true);
+  //ConfigureFitel(0, 1, true);
+  ConfigureFitel(1, 0, true);
+  ConfigureFitel(1, 1, true);
 
   fNthAcq = 0;
 
@@ -85,77 +85,40 @@ int PixelFEDInterfacePh1::setup() {
 void PixelFEDInterfacePh1::loadFPGA() {
 }
 
-
-std::string PixelFEDInterfacePh1::getBoardType()
-{
-    // adapt me!
-    std::string cBoardTypeString;
-
-    uhal::ValWord<uint32_t> cBoardType = regManager->ReadReg( "board_id" );
-
-    char cChar = ( ( cBoardType & 0xFF000000 ) >> 24 );
-    cBoardTypeString.push_back( cChar );
-
-    cChar = ( ( cBoardType & 0x00FF0000 ) >> 16 );
-    cBoardTypeString.push_back( cChar );
-
-    cChar = ( ( cBoardType & 0x0000FF00 ) >> 8 );
-    cBoardTypeString.push_back( cChar );
-
-    cChar = ( cBoardType & 0x000000FF );
-    cBoardTypeString.push_back( cChar );
-
-    return cBoardTypeString;
-
-}
-
-void PixelFEDInterfacePh1::getFEDNetworkParameters()
-{
-    std::cout << "MAC & IP Source: " << regManager->ReadReg("mac_ip_source") << std::endl;
-
-    std::cout << "MAC Address: " << std::hex << regManager->ReadReg("mac_b5") << ":" << regManager->ReadReg("mac_b4") << ":" << regManager->ReadReg("mac_b3") << ":" << regManager->ReadReg("mac_b2") << ":" << regManager->ReadReg("mac_b1") << ":" << regManager->ReadReg("mac_b0") << std::dec << std::endl;
-}
-
 void PixelFEDInterfacePh1::getBoardInfo()
 {
-    std::cout << std::endl << "Board Type: " << getBoardType() << std::endl;
-    getFEDNetworkParameters();
-    std::string cBoardTypeString;
+    std::cout << std::endl << "Board Type: " << regManager->ReadRegAsString("board_id") << std::endl;
+    std::cout << "Revision id: " << regManager->ReadRegAsString("rev_id") << std::endl;
+    std::cout << "Firmware id: " << std::hex << regManager->ReadReg("firmware_id") << std::dec << " : " << regManager->ReadRegAsString("firmware_id") << std::endl;
+    std::cout << "MAC & IP Source: " << regManager->ReadReg("mac_ip_source") << std::endl;
 
-    uhal::ValWord<uint32_t> cBoardType = regManager->ReadReg( "pixfed_stat_regs.user_ascii_code_01to04" );
+    std::cout << "MAC Address: " << std::hex
+	      << regManager->ReadReg("mac_b5") << ":" 
+	      << regManager->ReadReg("mac_b4") << ":"
+	      << regManager->ReadReg("mac_b3") << ":"
+	      << regManager->ReadReg("mac_b2") << ":"
+	      << regManager->ReadReg("mac_b1") << ":"
+	      << regManager->ReadReg("mac_b0") << std::dec << std::endl;
 
-    char cChar = ( ( cBoardType & 0xFF000000 ) >> 24 );
-    cBoardTypeString.push_back( cChar );
+    std::cout << "Board Use: " << regManager->ReadRegAsString("pixfed_stat_regs.user_ascii_code_01to04") << regManager->ReadRegAsString("pixfed_stat_regs.user_ascii_code_05to08") << std::endl;
 
-    cChar = ( ( cBoardType & 0x00FF0000 ) >> 16 );
-    cBoardTypeString.push_back( cChar );
+    std::cout << "FW version IPHC : "
+	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_nb") << "." << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.archi_ver_nb")
+	      << "; Date: "
+	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_day") << "."
+	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_month") << "."
+	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_year") <<  std::endl;
 
-    cChar = ( ( cBoardType & 0x0000FF00 ) >> 8 );
-    cBoardTypeString.push_back( cChar );
+    std::cout << "FW version HEPHY : "
+	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_nb") << "."
+	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.archi_ver_nb")
+	      << "; Date: "
+	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_day") << "."
+	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_month") << "."
+	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year") << std::endl;
 
-    cChar = ( cBoardType & 0x000000FF );
-    cBoardTypeString.push_back( cChar );
-
-    cBoardType = regManager->ReadReg( "pixfed_stat_regs.user_ascii_code_05to08" );
-    cChar = ( ( cBoardType & 0xFF000000 ) >> 24 );
-    cBoardTypeString.push_back( cChar );
-
-    cChar = ( ( cBoardType & 0x00FF0000 ) >> 16 );
-    cBoardTypeString.push_back( cChar );
-
-    cChar = ( ( cBoardType & 0x0000FF00 ) >> 8 );
-    cBoardTypeString.push_back( cChar );
-
-    cChar = ( ( cBoardType & 0x00000000 ) );
-    cBoardTypeString.push_back( cChar );
-
-    std::cout << "Board Use: " << cBoardTypeString << std::endl;
-
-    std::cout << "FW version IPHC : " << regManager->ReadReg( "pixfed_stat_regs.user_iphc_fw_id.fw_ver_nb" ) << "." << regManager->ReadReg( "pixfed_stat_regs.user_iphc_fw_id.archi_ver_nb" ) << "; Date: " << regManager->ReadReg( "pixfed_stat_regs.user_iphc_fw_id.fw_ver_day" ) << "." << regManager->ReadReg( "pixfed_stat_regs.user_iphc_fw_id.fw_ver_month" ) << "." << regManager->ReadReg( "pixfed_stat_regs.user_iphc_fw_id.fw_ver_year" ) <<  std::endl;
-    std::cout << "FW version HEPHY : " << regManager->ReadReg( "pixfed_stat_regs.user_hephy_fw_id.fw_ver_nb" ) << "." << regManager->ReadReg( "pixfed_stat_regs.user_hephy_fw_id.archi_ver_nb" ) << "; Date: " << regManager->ReadReg( "pixfed_stat_regs.user_hephy_fw_id.fw_ver_day" ) << "." << regManager->ReadReg( "pixfed_stat_regs.user_hephy_fw_id.fw_ver_month" ) << "." << regManager->ReadReg( "pixfed_stat_regs.user_hephy_fw_id.fw_ver_year" ) << std::endl;
-
-    std::cout << "FMC 8 Present : " << regManager->ReadReg( "status.fmc_l8_present" ) << std::endl;
-    std::cout << "FMC 12 Present : " << regManager->ReadReg( "status.fmc_l12_present" ) << std::endl << std::endl;
+    std::cout << "FMC 8 Present : " << regManager->ReadReg("status.fmc_l8_present") << std::endl;
+    std::cout << "FMC 12 Present : " << regManager->ReadReg("status.fmc_l12_present") << std::endl << std::endl;
 }
 
 
