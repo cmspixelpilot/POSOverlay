@@ -47,8 +47,6 @@ Packages=\
 	PixelSupervisorConfiguration \
 	PixelCalibrations \
         PixelFEDSupervisor \
-        PixelMonitor   \
-        PixelFEDMonitor \
 	PixelFECSupervisor \
 	PixelTKFECSupervisor \
 	PixelSupervisor \
