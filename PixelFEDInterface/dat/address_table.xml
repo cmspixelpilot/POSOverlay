@@ -176,13 +176,26 @@
         <node id="DDR0_full" address="0x40000004" mask="0x00000010" permission="r" />
         <node id="DDR1_full" address="0x40000004" mask="0x00000020" permission="r" />
         <node id="fitel_config_ack" address="0x40000004" mask="0x00000300" permission="r" />
+        <node id="calibModeOvf" address="0x40000004" mask="0x00000800" permission="r" />
+        <!--FSM flags-->
+        <node id="fsm_flags" address="0x40000005" permission="r">
+            <node id="ddr3_ctrl_fsm_flag_0" mask="0xff" />
+            <node id="ddr3_ctrl_fsm_flag_1" mask="0xff00" />
+            <node id="main_fifo_ctrl_fsm_flag" mask="0xff0000" />
+            <node id="ddr0_active" mask="0x01000000" />
+            <node id="ddr1_active" mask="0x02000000" />
+            <node id="slink_ctrl_fsm_flag" mask="0xfc000000" />
+        </node>
+        <!--for commissioning mode-->
+        <node id="cnt_word32from_start" address="0x40000006" mask="0x00ffffff" />
     </node>
+
     <!-- CTRL - REGISTER MAPPING - from pixfed_ctrl_regs: CTRL & CMD => RD/WR -->
-    <!-- check me -->
     <node id="pixfed_ctrl_regs">
         <node id="PC_CONFIG_OK" address="0x40010000" mask="0x00000001" />
         <node id="CMD_START_BY_PC" address="0x40010000" mask="0x00000002" />
         <node id="TRIGGER_SEL" address="0x40010000" mask="0x00000004" />
+        <node id="reset_all_clocks" address="0x40010000" mask="0x00000008" />
         <node id="INT_TRIGGER_FREQ_SEL" address="0x40010000" mask="0x000000f0" />
         <node id="INT_TRIGGER_EN" address="0x40010000" mask="0x00000100" />
         <node id="DDR0_end_readout" address="0x40010000" mask="0x00001000" />
@@ -203,6 +216,23 @@
         <node id="TBM_MASK_1" address="0x40010004" mask="0xffffffff" />
         <node id="TBM_MASK_2" address="0x40010005" mask="0xffffffff" />
         <node id="TBM_MASK_3" address="0x40010006" mask="0xffffffff" />
+
+        <node id="acq_ctrl">
+            <!--bit0 = TBM fifo + ddr + ipbus -->
+            <!--bit1 = slink data + ddr + ipbus-->
+            <!--bit2 = slink data + FEROL IP-->
+            <node id="acq_mode" address="0x40010007" mask="0x00000007" />
+            <node id="calib_mode" address="0x40010007" mask="0x00000100" />
+            <node id="calib_mode_NEvents" address="0x40010007" mask="0x0ffff000" />
+        </node>
+        <node id="slink_ctrl" address="0x40010008">
+            <node id="privateEvtNb" mask="0x000000ff" />
+            <node id="slinkFormatH_source_id" mask="0x000fff00" />
+            <node id="slinkFormatH_FOV" mask="0x00f00000" />
+            <node id="slinkFormatH_Evt_ty" mask="0x0f000000" />
+            <node id="slinkFormatH_Evt_stat" mask="0xf0000000" />
+        </node>
+        <node id="tbm_trailer_status_mask" address="0x40010009" mask="0x000000ff" permission="rw" />
     </node>
     <!-- MISC -->
     <node id="fitel_config_fifo_tx" address="0x40100000" mode="non-incremental" size="512" permission="rw" />
