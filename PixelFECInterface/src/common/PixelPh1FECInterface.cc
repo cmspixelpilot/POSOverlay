@@ -664,8 +664,6 @@ int PixelPh1FECInterface::readback(const int mfec, const int channel) {
         {"InFIFOCh2.INP_BUF2M1","INP_BUF2M2","INP_BUF2M3","INP_BUF2M4",
          "INP_BUF2M5","INP_BUF2M6","INP_BUF2M7","INP_BUF2M8"} };
     
-    valword value ;
-    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FIFO readback register" <<endl;
     
     if(mfec<1 || mfec>8) {
         cout<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
@@ -676,7 +674,8 @@ int PixelPh1FECInterface::readback(const int mfec, const int channel) {
         return 2;
     }
     
-    value = pRegManager->ReadReg(names[channel-1][mfec-1]);
+    valword value = pRegManager->ReadReg(names[channel-1][mfec-1]);
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FIFO readback register: 0x" << std::hex << value << std::dec <<endl;
 
     return (int) value.value();
 }
