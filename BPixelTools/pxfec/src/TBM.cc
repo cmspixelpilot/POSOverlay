@@ -197,11 +197,11 @@ int TBM::readTBM(const int tbmChannel, const int tbmRegister, int& value){
       value=cn->interface->tbmread(cn->mfec, cn->channel, tbmChannel, hubaddress, 4, tbmRegister);
       //value=cn->interface->tbmread(cn->mfec, cn->channel, tbmChannel, hubaddress, 1, tbmRegister);
       //cout << "channel " << cn->channel <<  endl;
-      cout << "hub " << hubaddress << ": TBM A register " << tbmRegister << ": " << value << endl; 
+      cout << "hub " << hubaddress << ": TBM A register " << tbmRegister << ": 0x" << std::hex << value << std::dec << endl; 
     }
   }else if (tbmChannel==tbmB && tbmRegister>=0 && tbmRegister<=7){  
     value=cn->interface->tbmread(cn->mfec, cn->channel, tbmChannel, hubaddress, 4, tbmRegister);
-    cout << "hub " << hubaddress << ": TBM B register " << tbmRegister << ": " << value << endl;
+    cout << "hub " << hubaddress << ": TBM B register " << tbmRegister << ": 0x" << std::hex << value << std::dec << endl;
   }else{
     value=255;
     cout << "illegal argument for readTBM " << tbmChannel << " " << tbmRegister << endl;
