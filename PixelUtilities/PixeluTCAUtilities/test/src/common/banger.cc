@@ -27,4 +27,12 @@ int main(int argc, char** argv) {
     std::cout << "value: 0x" << std::hex << rm.ReadReg(node) << std::dec << std::endl;
   else if (cmd == "readstr")
     std::cout << "value as str: " << rm.ReadRegAsString(node) << std::endl;
+  else if (cmd == "write") {
+    assert(argc >= 7);
+    uint32_t val = strtoul(argv[6], 0, 16);
+    rm.WriteReg(node, val);
+    uint32_t val2 = rm.ReadReg(node);
+    std::cout << "write val 0x" << std::hex << val << " readback 0x" << val2 << std::dec << std::endl;
+  }
+      
 }
