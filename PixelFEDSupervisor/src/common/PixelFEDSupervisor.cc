@@ -165,6 +165,7 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::SetPhasesDelays, "SetPhasesDelays", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetControlRegister, "SetControlRegister", XDAQ_NS_URI);
 
+  xoap::bind(this, &PixelFEDSupervisor::prepareFEDCalibrationMode, "prepareFEDCalibrationMode", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::FEDCalibrations, "FEDCalibrations", XDAQ_NS_URI);
 
   xoap::bind(this, &PixelFEDSupervisor::beginCalibration, "BeginCalibration", XDAQ_NS_URI );
@@ -4554,6 +4555,23 @@ xoap::MessageReference PixelFEDSupervisor::FEDCalibrations(xoap::MessageReferenc
 
   return theFEDCalibrationBase_->execute(msg);
 
+}
+
+xoap::MessageReference PixelFEDSupervisor::prepareFEDCalibrationMode(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+
+  Attribute_Vector parameters(1);
+  parameters[0].name_="NEvents";
+  //parameters[1].name_="VMEBaseAddress";
+  Receive(msg, parameters);
+
+  unsigned nevents = strtoul(parameters[0].value_.c_str(), 0, 10);
+  //unsigned the_address = strtoul(parameters[1].value_.c_str(), 0, 10);
+
+  for (FEDInterfaceMap::iterator iFED = FEDInterface_.begin(); iFED != FEDInterface_.end(); ++iFED)
+    //if (iFED->first == the_address)  // JMTBAD do we want to require it fed-by-fed
+    iFED->second->prepareCalibrationMode(nevents);
+
+  return MakeSOAPMessageReference("prepareFEDCalibrationModeDone");
 }
 
 xoap::MessageReference PixelFEDSupervisor::beginCalibration(xoap::MessageReference msg) throw (xoap::exception::Exception){

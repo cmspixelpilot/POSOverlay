@@ -46,6 +46,8 @@ int PixelFEDInterfacePh1::setup() {
     {"pixfed_ctrl_regs.rx_index_sel_en", 0},
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
+    {"pixfed_ctrl_regs.acq_ctrl.calib_mode", 0}, 
+    {"pixfed_ctrl_regs.acq_ctrl.acq_mode", 0},
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
@@ -649,6 +651,10 @@ void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
     cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 1} );
     regManager->WriteStackReg(cVecReg);
     cVecReg.clear();
+}
+
+void PixelFEDInterfacePh1::prepareCalibrationMode(unsigned nevents) {
+  printf("JMT implement prepareCalibrationMode(%u)!!!\n", nevents);
 }
 
 std::vector<uint32_t> PixelFEDInterfacePh1::readTransparentFIFO()

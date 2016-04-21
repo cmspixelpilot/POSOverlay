@@ -31,6 +31,8 @@ class PixelFEDInterfaceBase {
 
   virtual void readPhases(bool verbose, bool override_timeout) = 0;
 
+  virtual void prepareCalibrationMode(unsigned nevents) = 0;
+
   //virtual int drainTransparentFifo(uint32_t* data) = 0;
   //virtual int drainSpyFifo(uint32_t* data) = 0;
   //virtual int drainFifo1(uint32_t* data) = 0;

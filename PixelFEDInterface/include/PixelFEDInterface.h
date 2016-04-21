@@ -406,6 +406,9 @@ int FixBBB(int chan,uint32_t *data);
 
 #endif // USE_HAL 
 
+ public:
+  // Stuff that doesn't apply to VME or VME+piggy FED
+  void prepareCalibrationMode(unsigned) {}
 };
 
-#endif // ifdef declare 
+#endif

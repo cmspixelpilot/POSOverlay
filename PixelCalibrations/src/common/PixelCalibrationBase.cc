@@ -147,6 +147,16 @@ void PixelCalibrationBase::reportProgress( double howOften, std::ostream& out, i
 	}
 }
 
+void PixelCalibrationBase::prepareFEDCalibrationMode(unsigned int nevents) {
+  Attribute_Vector parameters(1);
+  parameters[0].name_  = "NEvents";
+  parameters[0].value_ = itoa(nevents); 
+
+  // JMTBAD should this be careful about which feds it sends to?
+  std::string cmd("prepareFEDCalibrationMode");
+  sendToFED(cmd, parameters);
+}
+
 void PixelCalibrationBase::sendTTCCalSync(){
 
   if (useTTC_){

@@ -57,6 +57,8 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
 
   void readPhases(bool verbose, bool override_timeout);
 
+  void prepareCalibrationMode(unsigned nevents);
+
 struct encfifo1hit {
   unsigned ch;
   unsigned roc;

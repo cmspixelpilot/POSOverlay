@@ -211,6 +211,7 @@ class PixelFEDSupervisor: public xdaq::Application, public SOAPCommander, public
 
     xoap::MessageReference SetPhasesDelays (xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference SetControlRegister(xoap::MessageReference msg) throw (xoap::exception::Exception);
+    xoap::MessageReference prepareFEDCalibrationMode(xoap::MessageReference msg) throw (xoap::exception::Exception);
     xoap::MessageReference FEDCalibrations(xoap::MessageReference msg) throw (xoap::exception::Exception);
 
     xoap::MessageReference beginCalibration(xoap::MessageReference msg) throw (xoap::exception::Exception);

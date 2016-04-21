@@ -87,7 +87,10 @@ class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCom
   //Goto next FEC configuration
   void nextFECConfig(unsigned int event);
 
-  //Send enableFIFO3 to all FEDs
+  // Tell the FED we're going to get nevents calibration triggers (needed for Ph1 FED, dummy for Ph0)
+  void prepareFEDCalibrationMode(unsigned int nevents);
+
+  //Send enableFIFO3 to all FEDs   JMTBAD this isn't used any more
   void enableFIFO3();
 
   //Send read data to all FEDs
