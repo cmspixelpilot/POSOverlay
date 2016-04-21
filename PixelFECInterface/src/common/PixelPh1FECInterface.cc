@@ -2794,8 +2794,8 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     cntgood=0; cntbad = 0;
     for (j=0;j<nTry;j++) {
-      //tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
-      rocinit(10, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      tbmcmd(1, 1, 14, 15, 4, 7, nTry*4, 0);
+      //rocinit(10, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         getfecctrlstatus(mymfec,&data);  
         
@@ -2810,7 +2810,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(1,1,4,(int*)&xxx);
-        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
+        cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
         //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<" "<<ch1<<" "<<ch2<<dec<<endl;
         if(giveUpEarly && cntbad == 4) { //this point is clearly nonoptimal, so give up
             //break;
