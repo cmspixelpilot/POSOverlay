@@ -70,10 +70,10 @@ int PixelFEDInterfacePh1::setup() {
 
   int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
-  //ConfigureFitel(0, 0, true);
-  //ConfigureFitel(0, 1, true);
-  ConfigureFitel(1, 0, true);
-  ConfigureFitel(1, 1, true);
+  ConfigureFitel(0, 0, true);
+  ConfigureFitel(0, 1, true);
+  //ConfigureFitel(1, 0, true);
+  //ConfigureFitel(1, 1, true);
 
   fNthAcq = 0;
 
