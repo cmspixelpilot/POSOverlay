@@ -1319,7 +1319,7 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
         dacvalue = test(ii, state, rocs_[i], foundVcThrDAC->second);
       }
       else {
-        scanValue(ii, state, rocs_[i]);
+        dacvalue = scanValue(ii, state, rocs_[i]);
       }
 
       //cout << "dacname ii:"<<dacs_[ii].name()<<" "<<ii<<endl;
