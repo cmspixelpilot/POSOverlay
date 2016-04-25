@@ -2627,7 +2627,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   //const bool useSharedMemory = false; //  KEEP false, set to true in order to test shared memory
   const bool readSpyFifo3  = true; // true;
   const bool readErrorFifo = true;
-  bool readTTSFifo = false; //not a const so we can make it true at the beginning of a run, for instance.
+  bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
   const bool readBaselineCorr = false;
   const bool readLastDACFifo  = true;
   const bool readFifoStatusAndLFF = true;
@@ -2640,8 +2640,6 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 
   PixelTimer wlTimer;
   wlTimer.start();
-
-  int hitsseen = 0;
 
   // Skip if there are no active feds in this fed
   if( vmeBaseAddressAndFEDNumberAndChannels_.size() == 0 ) return true;
@@ -2916,7 +2914,6 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  statusFile <<"Time: "<<timeOfDay.toString("%c", timeOfDay.tz());
 
 	  statusFile << " FED="<<fednumber<< " LFF status=" <<100*lffMap[fednumber].mean() <<"% (Since last printout)" << std::endl;
-	  statusFile << "hits seen: " << hitsseen << std::endl;
 	  statusFile << "FIFO I Almost Full: N(1-9)="<<100*fifoStatusMap[fednumber][0].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][2].mean() 
 		     << "% SC(19-27)=" <<100*fifoStatusMap[fednumber][4].mean() << "% S(27-36)=" <<100*fifoStatusMap[fednumber][6].mean() << "%" << std::endl;
 	  statusFile << "FIFO II Nearly Full: N(1-9)="<<100*fifoStatusMap[fednumber][1].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][3].mean() 
@@ -3157,9 +3154,8 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	    spyTimerHW.stop();
 	    if (localPrint) cout<<" fifo3 length "<<dataLength<<endl;
 	    if (dataLength) {
-	      FIFO3Decoder decode3(buffer64);
-	      hitsseen += decode3.nhits();
 	      if(localPrint) {
+		FIFO3Decoder decode3(buffer64);
 		for (int i = 0; i <= dataLength; ++i)
 		  std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer64[i]>>32) << " " << std::setw(8) << (buffer64[i] & 0xFFFFFFFF) << std::dec << std::endl;
 		std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
