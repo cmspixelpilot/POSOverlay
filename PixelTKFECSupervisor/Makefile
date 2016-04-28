@@ -96,11 +96,12 @@ endif
 
 Libraries = 
 ExternalObjects = -L$(XDAQ_ROOT)/lib  \
+	-L$(CACTUS_ROOT)/lib \
+	-lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lboost_thread -lboost_regex -lboost_filesystem \
 	-l$(BusAdapter) -lGenericHAL -lHALUtilities \
         -L$(ENV_CMS_TK_CAEN_ROOT) -lCAENVME \
         -L$(BUILD_HOME)/FecSoftwareV3_0/lib \
 	-lAPIFecVme -lDeviceAccess 
-
 
 #
 # Compile the source files and create a shared library
