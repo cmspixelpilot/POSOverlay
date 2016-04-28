@@ -1,10 +1,6 @@
-# these four should be customized
-export ROOTSYS=/home/fnaltest/TriDAS/root
-export BUILD_HOME=/home/fnaltest/TriDAS
-export POS_OUTPUT_DIRS=$BUILD_HOME/pixel/PixelRun/Runs
-export PIXELCONFIGURATIONBASE=$BUILD_HOME/Config
+# site specifics in here
+source local.sh
 
-# the part below should usually not be touched
 export CACTUS_ROOT=/opt/cactus
 export XDAQ_ROOT=/opt/xdaq
 export XDAQ_BASE=/opt/xdaq
@@ -36,4 +32,3 @@ export LD_LIBRARY_PATH=/usr/lib64/root:${LD_LIBRARY_PATH}
 cd $ROOTSYS
 source bin/thisroot.sh
 cd - > /dev/null
-

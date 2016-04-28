@@ -2581,12 +2581,10 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   //const bool useSharedMemory = false; //  KEEP false, set to true in order to test shared memory
   const bool readSpyFifo3  = true;
   const bool readErrorFifo = true;
-  bool readTTSFifo = false; //not a const so we can make it true at the beginning of a run, for instance.
-  const bool readBaselineCorr = true;
+  bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
+  const bool readBaselineCorr = false;
   const bool fifo3errcntr = false;
-#ifdef READ_LASTDAC
-  const bool readLastDACFifo  = false;
-#endif
+  const bool readLastDACFifo  = true;
   const bool readFifoStatusAndLFF = true;
   const bool useSEURecovery = true; // Enable SEU recovery mechanism
   const bool doSEURecovery = true; // Do SEU recovery mechanism (added 6/9, dk.)
@@ -2868,7 +2866,7 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  statusFile <<"Time: "<<timeOfDay.toString("%c", timeOfDay.tz());
 
 	  statusFile << " FED="<<fednumber<< " LFF status=" <<100*lffMap[fednumber].mean() <<"% (Since last printout)" << std::endl;
-	  statusFile << "FIFO I Almost Full: N(1-9)="<<100*fifoStatusMap[fednumber][0].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][2].mean()
+	  statusFile << "FIFO I Almost Full: N(1-9)="<<100*fifoStatusMap[fednumber][0].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][2].mean() 
 		     << "% SC(19-27)=" <<100*fifoStatusMap[fednumber][4].mean() << "% S(27-36)=" <<100*fifoStatusMap[fednumber][6].mean() << "%" << std::endl;
 	  statusFile << "FIFO II Nearly Full: N(1-9)="<<100*fifoStatusMap[fednumber][1].mean() << "% NC(10-18)=" <<100*fifoStatusMap[fednumber][3].mean()
 		     << "% SC(19-27)=" <<100*fifoStatusMap[fednumber][5].mean() << "% S(27-36)=" <<100*fifoStatusMap[fednumber][7].mean() << "%" << std::endl;
@@ -3031,7 +3029,24 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
 	  if (iFED->isWholeEvent(1)) {//this checks for 1's - spy fifo ready to be read
 	    int dataLength=iFED->spySlink64(buffer64);
 	    spyTimerHW.stop();
-	    if(localPrint) cout<<" fifo3 length "<<dataLength<<endl;
+	    if (localPrint) cout<<" fifo3 length "<<dataLength<<endl;
+	    if (dataLength) {
+	      if(localPrint) {
+		FIFO3Decoder decode3(buffer64);
+		for (int i = 0; i <= dataLength; ++i)
+		  std::cout << "Clock " << std::setw(2) << i << " = 0x " << std::hex << std::setw(8) << (buffer64[i]>>32) << " " << std::setw(8) << (buffer64[i] & 0xFFFFFFFF) << std::dec << std::endl;
+		std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
+		for (unsigned i = 0; i < decode3.nhits(); ++i) {
+		  //const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3.channel(i), decode3.rocid(i)-1);
+		  std::cout << "#" << i << ": ch: " << decode3.channel(i)
+			    << " rocid: " << decode3.rocid(i)
+		    //    << " (" << rocname << ")"
+			    << " dcol: " << decode3.dcol(i)
+			    << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
+			    << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
+		}
+	      }
+	    }
 
 	    if(dataLength>0){  // Add protection from Will
 	      fwrite(buffer64, sizeof(uint64_t), dataLength, dataFile_[fednumber]);

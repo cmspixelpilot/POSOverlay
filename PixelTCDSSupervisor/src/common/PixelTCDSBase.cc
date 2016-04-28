@@ -275,7 +275,11 @@ pixel::tcds::PixelTCDSBase::createSendL1ASOAPCommand()
 xoap::MessageReference
 pixel::tcds::PixelTCDSBase::createConfigureSOAPCommand(std::string const& hwCfgString)
 {
-  return( createComplexSOAPCommand("Configure",sessionId(),"hardwareConfigurationString",hwCfgString) );
+  xoap::MessageReference msg = createComplexSOAPCommand("Configure",sessionId(),"hardwareConfigurationString",hwCfgString);
+  // JMTBAD this is real dum
+  if (tcdsAppClassName() == "tcds::pi::PIController")
+    addElementToSOAPCommand(msg, "fedEnableMask", "xsd:string", "40&1%1240&0%");
+  return msg;
 }
 
 

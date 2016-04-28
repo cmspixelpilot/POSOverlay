@@ -3,6 +3,7 @@
 	
   <xc:Context id="0" url="http://vmepc-s2b18-08-01.cms:1973/">
 
+    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
     <xc:Module>${XDAQ_ROOT}/lib/libtoolbox.so</xc:Module>

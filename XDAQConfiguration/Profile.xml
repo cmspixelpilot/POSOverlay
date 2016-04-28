@@ -42,4 +42,18 @@
         <xp:Module>${XDAQ_ROOT}/lib/libpttcp.so</xp:Module> 
         <xp:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xp:Module>
 
+	<xp:Application class="pt::utcp::Application" id="21" instance="0" network="local" heartbeat="false" logpolicy="inherit">
+	  <properties xmlns="urn:xdaq-application:pt::utcp::Application" xsi:type="soapenc:Struct">
+	    <maxBlockSize xsi:type="xsd:unsignedInt">4096</maxBlockSize>
+	    <committedPoolSize xsi:type="xsd:double">0x100000</committedPoolSize>
+	    <ioQueueSize xsi:type="xsd:unsignedInt">1024</ioQueueSize>
+	    <autoConnect xsi:type="xsd:boolean">false</autoConnect>
+	    <protocol xsi:type="xsd:string">utcp</protocol>
+	    <maxReceiveBuffers xsi:type="xsd:unsignedInt">4</maxReceiveBuffers>
+	  </properties>
+	</xp:Application>
+
+        <xp:Module>${XDAQ_ROOT}/lib/libtcpla.so</xp:Module> 
+        <xp:Module>${XDAQ_ROOT}/lib/libptutcp.so</xp:Module> 
+
 </xp:Profile>
