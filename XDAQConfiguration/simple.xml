@@ -1,9 +1,11 @@
 <?xml version='1.0'?>
 <xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
 	
-  <xc:Context id="0" url="http://cms-sidet001.fnal.gov:1973/">
+  <xc:Context id="0" url="http://vandyfpixutca:1973/">
 
-    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="cms-sidet001.fnal.gov" port="1914" network="xmas"/>
+    <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
+
+    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vandyfpixutca" port="1914" network="xmas"/>
 
     <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
     <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
