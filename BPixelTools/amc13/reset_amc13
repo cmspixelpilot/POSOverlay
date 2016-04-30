@@ -1,0 +1,11 @@
+stop
+writeT1 CONF.TTC.BGO0.COMMAND 0
+writeT1 CONF.TTC.BGO0.BX 0
+writeT1 CONF.TTC.BGO0.ENABLE 0
+writeT1 CONF.TTC.ENABLE_BGO 0
+rg
+rc
+rd
+i 1-12 n
+st
+

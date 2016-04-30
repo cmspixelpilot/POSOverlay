@@ -27,7 +27,7 @@ PixelPh1FECInterface* initPixelFEC(int slot){
     cout << fecBase << endl;
     std::string build_home(getenv("BUILD_HOME"));
     std::string datbase_ = build_home + "/pixel/PixelFECInterface/dat/";
-    std::string uri = "chtcp-2.0://131.225.180.40:10203?target=pxfec:50001";
+    std::string uri = "chtcp-2.0://localhost:10203?target=pxfec:50001";
     RegManager * pRegManager = new RegManager("board", uri, "file://" + datbase_ + "address_table.xml");
     
     int dummy_vmeslot=0; unsigned int dummy_feccrate=0; unsigned int dummy_fecslot = 0;

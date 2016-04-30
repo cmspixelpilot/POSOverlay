@@ -667,8 +667,8 @@ PixelFEDCard::PixelFEDCard(string fileName):
     fscanf(infile, "Control bits: %llx\n", (unsigned long long*)&cntrl_utca);
     if (localDEBUG) printf("Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
 
-    fscanf(infile, "Transparent+scope channel: %x\n", &TransScopeCh);
-    if (localDEBUG) printf("Transparent+scope channel: %x\n", TransScopeCh);
+    fscanf(infile, "Transparent+scope channel: %u\n", &TransScopeCh);
+    if (localDEBUG) printf("Transparent+scope channel: %u\n", TransScopeCh);
 
     fscanf(infile, "PACKET_NB: %x\n", &PACKET_NB);
     if (localDEBUG) printf("PACKET_NB: %x\n", PACKET_NB);
@@ -1312,7 +1312,7 @@ void PixelFEDCard::writeASCII(std::string dir) const{
   else if (type == CTA) {
     fprintf(outfile, "Type: CTA\n");
     fprintf(outfile, "Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
-    fprintf(outfile, "Transparent+scope channel: %x\n", TransScopeCh);
+    fprintf(outfile, "Transparent+scope channel: %u\n", TransScopeCh);
     fprintf(outfile, "PACKET_NB: %x\n", PACKET_NB);
   }
   else
