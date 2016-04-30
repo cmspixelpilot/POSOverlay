@@ -5,17 +5,25 @@
 
 #include <uhal/uhal.hpp>
 
+class RegManagerUhalLogSetter {
+  static bool loggingSet;
+ public:
+  RegManagerUhalLogSetter();
+};
+
 /*!
  * \class RegManager
  * \brief Permit connection to given boards and r/w given registers
  */
 class RegManager {
+ private:
+  RegManagerUhalLogSetter sLogSetter; /*!< whether uhal logging configured yet*/
+
  protected:
   std::string fUniqueId; /*!< used in prints*/
   bool fVerifyWrites; /*!< whether to verify writes*/
   bool fDebugPrints; /*!< print out mostly everything*/
   uhal::HwInterface fBoard; /*!< Board in use*/
-
  public:
   /*!
    * \brief Write a register

@@ -1,5 +1,19 @@
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
+bool RegManagerUhalLogSetter::loggingSet = false;
+
+RegManagerUhalLogSetter::RegManagerUhalLogSetter() {
+  if (!loggingSet) {
+    loggingSet = true;
+    uhal::GetLoggingMutex().lock();
+    if (getenv("POS_UHAL_LOGGING"))
+      uhal::setLogLevelFromEnvironment("POS_UHAL_LOGGING");
+    else
+      uhal::setLogLevelTo(uhal::Warning());
+    uhal::GetLoggingMutex().unlock();
+  }
+}
+
 RegManager::RegManager(const std::string& puHalConfigFileName, const std::string& pBoardId)
   : fUniqueId(pBoardId),
     fVerifyWrites(false),
@@ -13,7 +27,7 @@ RegManager::RegManager(const std::string& pBoardId, const std::string& pURI, con
     fDebugPrints(false),
     fBoard(uhal::ConnectionManager::getDevice(pBoardId, pURI, pAddressTableFn))
 {}
-    
+
 bool RegManager::WriteReg(const std::string& pRegNode, const uint32_t& pVal) {
   if (fDebugPrints)
     std::cout << fUniqueId << " WriteReg " << pRegNode << " 0x" << std::hex << pVal << std::dec << std::endl;
