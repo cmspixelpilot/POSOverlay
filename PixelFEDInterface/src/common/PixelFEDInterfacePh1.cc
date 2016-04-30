@@ -615,12 +615,6 @@ void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
     regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
     cValVec.clear();
 
-    // some additional configuration
-    cVecReg.push_back( { "fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}); // set 192val
-    cVecReg.push_back( { "fe_ctrl_regs.fifo_config.channel_of_interest", 8} ); // set channel for scope FIFO
-    regManager->WriteStackReg(cVecReg);
-    cVecReg.clear();
-
     // initialize Phase Finding
     regManager->WriteReg("fe_ctrl_regs.initialize_swap", 1);
     std::cout << "Initializing Phase Finding ..." << std::endl << std::endl;
