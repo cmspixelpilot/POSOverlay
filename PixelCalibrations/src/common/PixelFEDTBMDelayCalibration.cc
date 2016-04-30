@@ -707,7 +707,11 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     delete decodeErr;
   }
 
-  sendResets(); // LRES + CLRES
+  for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
+    const unsigned fednumber = fedsAndChannels[ifed].first;
+    const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+    FEDInterface_[vmeBaseAddress]->sendResets(3);
+  }
 }
 
 void PixelFEDTBMDelayCalibration::Analyze() {

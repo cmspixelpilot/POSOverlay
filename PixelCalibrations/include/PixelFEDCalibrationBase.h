@@ -51,8 +51,6 @@ class PixelFEDCalibrationBase : public PixelFEDSupervisorConfiguration,
 
 
  protected:
-  void sendResets();
-
   void setFEDModeAndControlRegister(unsigned int mode, unsigned int control);
 
   void baselinecorr_off();
