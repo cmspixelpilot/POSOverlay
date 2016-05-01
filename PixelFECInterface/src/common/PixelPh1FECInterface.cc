@@ -848,7 +848,7 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
         iword = (unsigned int*) &qbuf[mfec][fecchannel][i];
         wordvec.push_back( *iword );
         if (PRINT) {
-          cout<<"PixelPh1FECInterface:    ("<<setw(2)<<i<<"): ";
+          cout<<"PixelPh1FECInterface:  ("<<setw(5)<<i<<"): ";
           hexprintword(*iword);
           cout << endl;
         }
@@ -2832,7 +2832,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(1,1,4,(int*)&xxx);
-        cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
+        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
         //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<" "<<ch1<<" "<<ch2<<dec<<endl;
         if(giveUpEarly && cntbad == 4) { //this point is clearly nonoptimal, so give up
             //break;
@@ -2923,15 +2923,20 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     for (j=0;j<nTry;j++) {
       //tbmcmd(1, 1, 14, 15, 4, 7, 120+nTry*4, 0);
-      rocinit(40, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
-        
+      //rocinit(40, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      const int N = 251;
+      const uint32_t myqbuf[N] = {0x2bf4047b, 0x7b00886a, 0x6b00f404, 0x047b0088, 0x886b01f4, 0xf4047b00, 0x00886b02, 0x03f4047b, 0x7b00886b, 0x6b06f404, 0x047b0088, 0x886b07f4, 0xf4047b00, 0x00886b04, 0x05f4047b, 0x7b00886b, 0x6b0cf404, 0x047b0088, 0x886b0df4, 0xf4047b00, 0x00886b0e, 0x0ff4047b, 0x7b00886b, 0x6b0af404, 0x047b0088, 0x886b0bf4, 0xf4047b00, 0x00886b08, 0x09f4047b, 0x7b00886b, 0x6b18f404, 0x047b0088, 0x886b19f4, 0xf4047b00, 0x00886b1a, 0x1bf4047b, 0x7b00886b, 0x6b1ef404, 0x047b0088, 0x886b1ff4, 0xf4047b00, 0x00886b1c, 0x1df4047b, 0x7b00886b, 0x6b14f404, 0x047b0088, 0x886b15f4, 0xf4047b00, 0x00886b16, 0x17f4047b, 0x7b00886b, 0x6b12f404, 0x047b0088, 0x886b13f4, 0xf4047b00, 0x00886b10, 0x11f4047b, 0x7b00886b, 0x6b30f404, 0x047b0088, 0x886b31f4, 0xf4047b00, 0x00886b32, 0x33f4047b, 0x7b00886b, 0x6b36f404, 0x047b0088, 0x886b37f4, 0xf4047b00, 0x00886b34, 0x35f4047b, 0x7b00886b, 0x6b3cf404, 0x047b0088, 0x886b3df4, 0xf4047b00, 0x00886b3e, 0x3ff4047b, 0x7b00886b, 0x6b3af404, 0x047b0088, 0x886b3bf4, 0xf4047b00, 0x00886b38, 0x39f4047b, 0x7b00886b, 0x6b28f404, 0x047b0088, 0x886b29f4, 0xf4047b00, 0x00886b2a, 0x2bf4047b, 0x7b00886b, 0x6900f404, 0x047b0088, 0x886901f4, 0xf4047b00, 0x00886902, 0x03f4047b, 0x7b008869, 0x6906f404, 0x047b0088, 0x886907f4, 0xf4047b00, 0x00886904, 0x05f4047b, 0x7b008869, 0x690cf404, 0x047b0088, 0x88690df4, 0xf4047b00, 0x0088690e, 0x0ff4047b, 0x7b008869, 0x690af404, 0x047b0088, 0x88690bf4, 0xf4047b00, 0x00886908, 0x09f4047b, 0x7b008869, 0x6918f404, 0x047b0088, 0x886919f4, 0xf4047b00, 0x0088691a, 0x1bf4047b, 0x7b008869, 0x691ef404, 0x047b0088, 0x88691ff4, 0xf4047b00, 0x0088691c, 0x1df4047b, 0x7b008869, 0x6914f404, 0x047b0088, 0x886915f4, 0xf4047b00, 0x00886916, 0x17f4047b, 0x7b008869, 0x6912f404, 0x047b0088, 0x886913f4, 0xf4047b00, 0x00886910, 0x11f4047b, 0x7b008869, 0x6930f404, 0x047b0088, 0x886931f4, 0xf4047b00, 0x00886932, 0x33f4047b, 0x7b008869, 0x6936f404, 0x047b0088, 0x886937f4, 0xf4047b00, 0x00886934, 0x35f4047b, 0x7b008869, 0x693cf404, 0x047b0088, 0x88693df4, 0xf4047b00, 0x0088693e, 0x3ff4047b, 0x7b008869, 0x693af404, 0x047b0088, 0x88693bf4, 0xf4047b00, 0x00886938, 0x39f4047b, 0x7b008869, 0x6928f404, 0x047b0088, 0x886929f4, 0xf4047b00, 0x0088692a, 0x2bf4047b, 0x7b008869, 0x6800f404, 0x047b0088, 0x886801f4, 0xf4047b00, 0x00886802, 0x03f4047b, 0x7b008868, 0x6806f404, 0x047b0088, 0x886807f4, 0xf4047b00, 0x00886804, 0x05f4047b, 0x7b008868, 0x680cf404, 0x047b0088, 0x88680df4, 0xf4047b00, 0x0088680e, 0x0ff4047b, 0x7b008868, 0x680af404, 0x047b0088, 0x88680bf4, 0xf4047b00, 0x00886808, 0x09f4047b, 0x7b008868, 0x6818f404, 0x047b0088, 0x886819f4, 0xf4047b00, 0x0088681a, 0x1bf4047b, 0x7b008868, 0x681ef404, 0x047b0088, 0x88681ff4, 0xf4047b00, 0x0088681c, 0x1df4047b, 0x7b008868, 0x6814f404, 0x047b0088, 0x886815f4, 0xf4047b00, 0x00886816, 0x17f4047b, 0x7b008868, 0x6812f404, 0x047b0088, 0x886813f4, 0xf4047b00, 0x00886810, 0x11f4047b, 0x7b008868, 0x6830f404, 0x047b0088, 0x886831f4, 0xf4047b00, 0x00886832, 0x33f4047b, 0x7b008868, 0x6836f404, 0x047b0088, 0x886837f4, 0x0000ff00 };
+      qbufn[mymfec][myfecchannel] = N*4 - 2; // JMTBAD count position of FF in last word
+      memcpy(qbuf[mymfec][myfecchannel], myqbuf, N*4); // just copy all the last word
+      qbufsend();
+
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
         getfecctrlstatus(mymfec,&data);  
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(1,1,4,(int*)&xxx);
-	//uint32_t xxx2 = xxx;
+	uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2949,7 +2954,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-        //cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
