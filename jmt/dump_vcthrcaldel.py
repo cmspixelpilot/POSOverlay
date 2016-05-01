@@ -15,6 +15,7 @@ os.system('mkdir -p %s' % out_dir)
 f = ROOT.TFile(in_fn)
 
 dirs = [
+    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD1/Pilt_BmI_D3_BLD1_PNL1/Pilt_BmI_D3_BLD1_PNL1_PLQ1',
     'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL1/Pilt_BmO_D3_BLD10_PNL1_PLQ1',
     'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL2/Pilt_BmO_D3_BLD10_PNL2_PLQ1',
     'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL1/Pilt_BmO_D3_BLD11_PNL1_PLQ1',
