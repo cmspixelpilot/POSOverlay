@@ -282,8 +282,8 @@ void ControlNetwork::init(){
   //cout<<" after reset tbm/roc "<<endl;
 
   // Try the new setup bits
-  int ret = interface->FullBufRDaDisable(mfec,1); //1-set
-  if(ret != 0) cout<<" error in set FullBufRDaDisbale "<<ret<<endl; //Error
+  //int ret = interface->FullBufRDaDisable(mfec,1); //1-set
+  //if(ret != 0) cout<<" error in set FullBufRDaDisbale "<<ret<<endl; //Error
 
   
   ctrlStatus();
