@@ -3015,6 +3015,3 @@ unsigned int PixelPh1FECInterface::flipByte(unsigned int input){
     result |= (input & 0xFF000000) >> 24;
     return result;
 }
-
-
-
