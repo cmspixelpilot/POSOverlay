@@ -59,6 +59,7 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
 
   void prepareCalibrationMode(unsigned nevents);
 
+  // JMTBAD get rid of this dumb shit
 struct encfifo1hit {
   unsigned ch;
   unsigned roc;
@@ -72,8 +73,6 @@ struct encfifo1 {
   std::vector<encfifo1hit> hits;
   encfifo1() : found(false) {}
 };
-
-
 struct digfifo1 {
   std::vector<uint32_t> cFifo1A;
   std::vector<uint32_t> cFifo1B;
@@ -88,6 +87,7 @@ struct digfifo1 {
   std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
   digfifo1 readFIFO1();
+  encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os);
   int drainFifo1(uint32_t* data);
   int drainTBMFifo(uint32_t* data);
   int drainErrorFifo(uint32_t* data);

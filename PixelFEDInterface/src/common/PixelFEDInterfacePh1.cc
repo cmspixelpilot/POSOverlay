@@ -14,6 +14,7 @@ PixelFEDInterfacePh1::PixelFEDInterfacePh1(RegManager* const rm, const std::stri
     fitel_fn_base(datbase),
     slink64calls(0)
 {
+  Printlevel = Printlevel | 16;
   num_SEU.assign(48, 0);
 }
 
@@ -749,10 +750,12 @@ std::vector<uint32_t> PixelFEDInterfacePh1::readSpyFIFO()
     }
   }
 
-  std::cout  << std::endl << "TBM_SPY FIFO A (size " << cSpy[0].size() << "):" << std::endl;
-  prettyprintSpyFIFO(cSpy[0]);
-  std::cout << std::endl << "TBM_SPY FIFO B (size " << cSpy[1].size() << "):" << std::endl;
-  prettyprintSpyFIFO(cSpy[1]);
+  if (getPrintlevel()&16) {
+    std::cout  << std::endl << "TBM_SPY FIFO A (size " << cSpy[0].size() << "):" << std::endl;
+    prettyprintSpyFIFO(cSpy[0]);
+    std::cout << std::endl << "TBM_SPY FIFO B (size " << cSpy[1].size() << "):" << std::endl;
+    prettyprintSpyFIFO(cSpy[1]);
+  }
 
 //append content of Spy Fifo B to A and return
     return std::vector<uint32_t>();
@@ -771,16 +774,16 @@ int PixelFEDInterfacePh1::drainSpyFifo(uint32_t* data) {
   return ie;
 }
 
-PixelFEDInterfacePh1::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os)
+PixelFEDInterfacePh1::encfifo1 PixelFEDInterfacePh1::prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os)
 {
   PixelFEDInterfacePh1::encfifo1 r;
-    os << "----------------------------------------------------------------------------------" << std::endl;
+  if (getPrintlevel()&16) os << "----------------------------------------------------------------------------------" << std::endl;
     for (uint32_t cIndex = 0; cIndex < pFifoVec.size(); cIndex++ )
     {
         if (pMarkerVec.at(cIndex) == 8)
         {
             // Event Header
-            os << std::dec << "    Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_H: " <<  ( (pFifoVec.at(cIndex) >> 9) & 0xff ) << " EVT Nr: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
+            if (getPrintlevel()&16) os << std::dec << "    Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_H: " <<  ( (pFifoVec.at(cIndex) >> 9) & 0xff ) << " EVT Nr: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
 	    //assert(!r.found);
 	    r.found = true;
 	    r.event = pFifoVec.at(cIndex) & 0xff;
@@ -788,7 +791,7 @@ PixelFEDInterfacePh1::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pF
 
         if (pMarkerVec.at(cIndex) == 12)
         {
-            os << std::dec << "ROC Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f  ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " Status: " << (  (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
+            if (getPrintlevel()&16) os << std::dec << "ROC Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f  ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " Status: " << (  (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
         }
 
         if (pMarkerVec.at(cIndex) == 1)
@@ -802,22 +805,22 @@ PixelFEDInterfacePh1::encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pF
 	  h.pxl = (pFifoVec.at(cIndex) >> 8) & 0xff;
 	  h.ph = (pFifoVec.at(cIndex)) & 0xff;
 	  r.hits.push_back(h);
-            os  << std::dec << "            CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " DC: " <<  ( (pFifoVec.at(cIndex) >> 16) & 0x1f ) << " PXL: " <<  ( (pFifoVec.at(cIndex) >> 8) & 0xff ) <<  " PH: " <<  ( (pFifoVec.at(cIndex)) & 0xff ) << std::endl;
+            if (getPrintlevel()&16) os  << std::dec << "            CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " DC: " <<  ( (pFifoVec.at(cIndex) >> 16) & 0x1f ) << " PXL: " <<  ( (pFifoVec.at(cIndex) >> 8) & 0xff ) <<  " PH: " <<  ( (pFifoVec.at(cIndex)) & 0xff ) << std::endl;
         }
 
         if (pMarkerVec.at(cIndex) == 4)
         {
             // TBM Trailer
-            os << std::dec << "   Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_T2: " <<  ( (pFifoVec.at(cIndex) >> 12) & 0xff ) << " TBM_T1: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
+            if (getPrintlevel()&16) os << std::dec << "   Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_T2: " <<  ( (pFifoVec.at(cIndex) >> 12) & 0xff ) << " TBM_T1: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
         }
 
         if (pMarkerVec.at(cIndex) == 6)
         {
             // Event Trailer
-            os << std::dec << "Event Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " marker: " <<  ( (pFifoVec.at(cIndex)) & 0x1fffff )  << std::endl;
+            if (getPrintlevel()&16) os << std::dec << "Event Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " marker: " <<  ( (pFifoVec.at(cIndex)) & 0x1fffff )  << std::endl;
         }
     }
-    os << "----------------------------------------------------------------------------------" << std::endl;
+    if (getPrintlevel()&16) os << "----------------------------------------------------------------------------------" << std::endl;
 return r;
 }
 
@@ -828,9 +831,10 @@ PixelFEDInterfacePh1::digfifo1 PixelFEDInterfacePh1::readFIFO1() {
   df.cFifo1B  = regManager->ReadBlockRegValue("fifo.spy_1_B", 2048);
   df.cMarkerB = regManager->ReadBlockRegValue("fifo.spy_1_B_marker", 2048);
 
-  std::cout << std::endl <<  "FIFO 1 Channel A: " << std::endl;
-  df.a = prettyprintFIFO1(df.cFifo1A, df.cMarkerA, std::cout);
-  std::cout << std::endl << "FIFO 1 Channel B: " << std::endl;
+  if (getPrintlevel()&16) std::cout << std::endl <<  "FIFO 1 Channel A: " << std::endl;
+  // JMTBAD UNTANGLE THE SIDE EFFECTS
+  df.a = prettyprintFIFO1(df.cFifo1A, df.cMarkerA, std::cout); 
+  if (getPrintlevel()&16) std::cout << std::endl << "FIFO 1 Channel B: " << std::endl;
   df.b = prettyprintFIFO1(df.cFifo1B, df.cMarkerB, std::cout);
   //  assert(df.a.event == 0 || df.b.event == 0 || df.a.event == df.b.event);
 
@@ -953,7 +957,7 @@ std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 
 int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
-  std::cout << "slink64call #" << slink64calls << std::endl;
+  if (getPrintlevel()&16) std::cout << "slink64call #" << slink64calls << std::endl;
 
   //  usleep(1000000);
   //sleep(10);
@@ -961,18 +965,30 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   PixelFEDInterfacePh1::digfifo1 f = readFIFO1();
   data[0] = 0x5000000000000000;
   data[0] |= uint64_t(f.a.event & 0xffffff) << 32;
-  data[0] |= uint64_t(41) << 8;
-  size_t j = 1;
-  for (size_t i = 0; i < f.a.hits.size(); ++i, ++j) {
+  data[0] |= uint64_t(pixelFEDCard.fedNumber) << 8;
+  size_t ii = 0;
+  uint32_t last_w = 0;
+  for (size_t i = 0; i < f.a.hits.size(); ++i, ++ii) {
     encfifo1hit h = f.a.hits[i];
-    data[j] = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
-    data[j] |= uint64_t(0x1b) << 53;
+    uint32_t w = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+    if (ii % 2 == 1)
+      data[1+ii/2] = (uint64_t(w) << 32) | last_w;
+    last_w = w;
   }
-  for (size_t i = 0; i < f.b.hits.size(); ++i, ++j) {
+  if (ii % 2 == 1)
+    data[1+ii/2] = (uint64_t(0x1b) << 53) | (1ULL << 32) | last_w;
+
+  for (size_t i = 0; i < f.b.hits.size(); ++i, ++ii) {
     encfifo1hit h = f.b.hits[i];
-    data[j] = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
-    data[j] |= uint64_t(0x1b) << 53;
+    uint32_t w = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+    if (ii % 2 == 1)
+      data[1+ii/2] = (uint64_t(w) << 32) | last_w;
+    last_w = w;
   }
+  if (ii % 2 == 1)
+    data[1+ii/2] = (uint64_t(0x1b) << 53) | (1ULL << 32) | last_w;
+
+  size_t j = ii/2 + 1;
   data[j] = 0xa000000000000000;
   data[j] |= uint64_t((j+1)&0x3fff) << 32;
   ++j;
@@ -980,9 +996,11 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   // maybe we trashed the 5 in the msb, it's all the decoder cares about...
   data[0] = 0x5000000000000000 | (data[0] & 0xFFFFFFFFFFFFFFF);
 
-  std::cout << "my fake fifo3:\n";
-  for (size_t i = 0; i < j; ++i)
-    std::cout << std::hex << "0x" << std::setw(8) << data[i] << std::endl;
+  if (getPrintlevel()&16) {
+    std::cout << "my fake fifo3:\n";
+    for (size_t i = 0; i < j; ++i)
+      std::cout << std::hex << "0x" << std::setw(8) << data[i] << std::endl;
+  }
 
   regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
   usleep(1000);
@@ -1013,7 +1031,7 @@ void PixelFEDInterfacePh1::printBoardInfo() {
 }
 
 int PixelFEDInterfacePh1::loadFedIDRegister() {
-  if(Printlevel&1)cout<<"Load FEDID register from DB 0x"<<hex<<pixelFEDCard.fedNumber<<dec<<endl;
+  if(getPrintlevel()&1)cout<<"Load FEDID register from DB 0x"<<hex<<pixelFEDCard.fedNumber<<dec<<endl;
   return setFedIDRegister(pixelFEDCard.fedNumber);
 }
 
@@ -1030,12 +1048,12 @@ int PixelFEDInterfacePh1::getFedIDRegister() {
 }
 
 int PixelFEDInterfacePh1::loadControlRegister() {
-  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Control register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
+  if(getPrintlevel()&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Control register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
   return setControlRegister(pixelFEDCard.Ccntrl);
 }
 
 int PixelFEDInterfacePh1::setControlRegister(const int value) {
-  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
+  if(getPrintlevel()&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Control register "<<hex<<value<<dec<<endl;
   // write here
   pixelFEDCard.Ccntrl=value; // stored this value   
   return false;
@@ -1046,12 +1064,12 @@ int PixelFEDInterfacePh1::getControlRegister() {
 }
 
 int PixelFEDInterfacePh1::loadModeRegister() {
-  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Mode register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
+  if(getPrintlevel()&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Load Mode register from DB 0x"<<hex<<pixelFEDCard.Ccntrl<<dec<<endl;
   return setModeRegister(pixelFEDCard.modeRegister);
 }
 
 int PixelFEDInterfacePh1::setModeRegister(int value) {
-  if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
+  if(getPrintlevel()&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Set Mode register "<<hex<<value<<dec<<endl;
   // write here
   pixelFEDCard.modeRegister=value; // stored this value   
   return false;
