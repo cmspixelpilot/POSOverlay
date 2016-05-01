@@ -798,8 +798,6 @@ PixelFEDInterfacePh1::encfifo1 PixelFEDInterfacePh1::prettyprintFIFO1( const std
         {
 	  PixelFEDInterfacePh1::encfifo1hit h;
 	  h.ch = (pFifoVec.at(cIndex) >> 26) & 0x3f;
-	  if (h.ch == 45) h.ch = 33;
-	  if (h.ch == 46) h.ch = 34;
 	  h.roc = (pFifoVec.at(cIndex) >> 21) & 0x1f;
 	  h.dcol = (pFifoVec.at(cIndex) >> 16) & 0x1f;
 	  h.pxl = (pFifoVec.at(cIndex) >> 8) & 0xff;
@@ -966,29 +964,45 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   data[0] = 0x5000000000000000;
   data[0] |= uint64_t(f.a.event & 0xffffff) << 32;
   data[0] |= uint64_t(pixelFEDCard.fedNumber) << 8;
-  size_t ii = 0;
-  uint32_t last_w = 0;
-  for (size_t i = 0; i < f.a.hits.size(); ++i, ++ii) {
-    encfifo1hit h = f.a.hits[i];
-    uint32_t w = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
-    if (ii % 2 == 1)
-      data[1+ii/2] = (uint64_t(w) << 32) | last_w;
-    last_w = w;
+  size_t j = 1;
+  const bool oldway = true;
+  if (oldway) {
+    for (size_t i = 0; i < f.a.hits.size(); ++i, ++j) {
+      encfifo1hit h = f.a.hits[i];
+      data[j] = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+      data[j] |= uint64_t(0x1b) << 53;
+    }
+    for (size_t i = 0; i < f.b.hits.size(); ++i, ++j) {
+      encfifo1hit h = f.b.hits[i];
+      data[j] = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+      data[j] |= uint64_t(0x1b) << 53;
+    }
   }
-  if (ii % 2 == 1)
-    data[1+ii/2] = (uint64_t(0x1b) << 53) | (1ULL << 32) | last_w;
-
-  for (size_t i = 0; i < f.b.hits.size(); ++i, ++ii) {
-    encfifo1hit h = f.b.hits[i];
-    uint32_t w = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+  else {
+    size_t ii = 0;
+    uint32_t last_w = 0;
+    for (size_t i = 0; i < f.a.hits.size(); ++i, ++ii) {
+      encfifo1hit h = f.a.hits[i];
+      uint32_t w = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+      if (ii % 2 == 1)
+        data[1+ii/2] = (uint64_t(w) << 32) | last_w;
+      last_w = w;
+    }
     if (ii % 2 == 1)
-      data[1+ii/2] = (uint64_t(w) << 32) | last_w;
-    last_w = w;
-  }
-  if (ii % 2 == 1)
-    data[1+ii/2] = (uint64_t(0x1b) << 53) | (1ULL << 32) | last_w;
+      data[1+ii/2] = (uint64_t(0x1b) << 53) | (1ULL << 32) | last_w;
 
-  size_t j = ii/2 + 1;
+    for (size_t i = 0; i < f.b.hits.size(); ++i, ++ii) {
+      encfifo1hit h = f.b.hits[i];
+      uint32_t w = (h.ch << 26) | (h.roc << 21) | (h.dcol << 16) | (h.pxl << 8) | h.ph;
+      if (ii % 2 == 1)
+        data[1+ii/2] = (uint64_t(w) << 32) | last_w;
+      last_w = w;
+    }
+    if (ii % 2 == 1)
+      data[1+ii/2] = (uint64_t(0x1b) << 53) | (1ULL << 32) | last_w;
+
+    j = ii/2 + 1;
+  }
   data[j] = 0xa000000000000000;
   data[j] |= uint64_t((j+1)&0x3fff) << 32;
   ++j;
