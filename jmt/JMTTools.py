@@ -18,7 +18,12 @@ def run_from_argv():
         except ValueError:
             pass
     if run is None:
-        raise ValueError('no number in argv')
+        cwd = os.getcwd()
+        cwd = os.path.basename(cwd)
+        if cwd.startswith('Run_'):
+            run = int(cwd.split('Run_')[1])
+        else:
+            raise ValueError('no number in argv and cannot grok %s' % os.getcwd())
     return run
 
 def run_dir(run):
