@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
@@ -19,6 +20,15 @@ namespace {
   }
   void PRINT_RESTORE() {
     PRINT = PRINT_old;
+  }
+
+  void hexprintword(uint32_t w) {
+    cout << hex
+         << setw(2) << setfill('0') << ((w&0xFF000000)>>24) << " "
+         << setw(2) << setfill('0') << ((w&0x00FF0000)>>16) << " "
+         << setw(2) << setfill('0') << ((w&0x0000FF00)>> 8) << " "
+         << setw(2) << setfill('0') << ((w&0x000000FF)    )
+         << dec;
   }
 }
 
@@ -44,6 +54,7 @@ fecSlot_(fecSlot)
             qbufnerr[tmfec][tfecchannel]=0;
             qbufn[tmfec][tfecchannel]=0;
             qbufn_old[tmfec][tfecchannel]=0;
+            memset(qbuf[tmfec][tfecchannel], 0, qbufsize);
         }
     }
 
@@ -759,6 +770,8 @@ int PixelPh1FECInterface::qbufsend(void) {
     }
     return 0;
 }
+
+
 //--------------------------------------------------------------------------------
 // Send buffered data for one channel
 int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
@@ -823,28 +836,37 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
     // Reset the appropriate mfec channel
     //  writeCSregister(mfec, fecchannel, 0x08);
     // enable arm auto send reset mFEC
-    writeCSregister(mfec, fecchannel, 0x8e);
-
+    writeCSregister(mfec, fecchannel, 0x88);
+    //cout << "after 88: " << hex << pRegManager->ReadReg("CSReg.CSREGM1") << dec << endl;
 
     std::vector<uint32_t> wordvec;
     unsigned int *iword;
     int i;
     // Now load the data to the word container
+    if (PRINT) cout<<"PixelPh1FECInterface: Final FEC data (ndata: " << qbufn[mfec][fecchannel] << ")\n";
     for (i=0;i<qbufn[mfec][fecchannel];i+=4) {
         iword = (unsigned int*) &qbuf[mfec][fecchannel][i];
         wordvec.push_back( *iword );
         if (PRINT) {
-            cout<<"Final FEC data "<<  "("<<i<<hex<<"): "<< *iword ;
-            cout<< "   ndata:" << dec << qbufn[mfec][fecchannel] <<endl;
+          cout<<"PixelPh1FECInterface:    ("<<setw(2)<<i<<"): ";
+          hexprintword(*iword);
+          cout << endl;
         }
     }
     
     outputblock(mfec, fecchannel, wordvec);
     
     // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
-    writeCSregister(mfec, fecchannel, 0x8f);
-    
+    writeCSregister(mfec, fecchannel, 0x87);
+    //cout << "after 87: 0x" << hex << pRegManager->ReadReg("CSReg.CSREGM1") << dec << endl;
+    //mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat); //must make sure channel is not busy, wait if necessary!!!!!!
+    //unsigned long csreg;
+    //getfecctrlstatus(mfec,&csreg);
+    //cout << "csreg direct read 0x" << hex << csreg << " from mfecbusy 0x" << mfecCSregister[mfec] << dec << endl;
+
+
     qbufn[mfec][fecchannel] = 0;
+    memset(qbuf[mfec][fecchannel], 0, qbufsize); // JMTBAD for good measure to be sure new FEC doesn't pick up stuff after the 0xFF...
     
     return 0;
 }
@@ -2869,7 +2891,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(1,1,4,(int*)&xxx);
-	uint32_t xxx2 = xxx;
+	//uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2909,7 +2931,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(1,1,4,(int*)&xxx);
-	uint32_t xxx2 = xxx;
+	//uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2952,7 +2974,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(1,1,4,(int*)&xxx);
-	uint32_t xxx2 = xxx;
+	//uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
