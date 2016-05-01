@@ -73,7 +73,7 @@ namespace pos{
     virtual void writeXMLTrailer(std::ofstream *fedstream,
 				 std::ofstream *recostream,
 				 std::ofstream *tbmstream) const ;
-    uint64_t enabledChannels();  // returns 64-bit integer mask 47..0
+    uint64_t enabledChannels();  // returns 64-bit integer mask 47..0 for Ph1 FED or 35..0 for Ph0
 
     enum { VME, VMEPiggy, CTA };
     int type;
@@ -84,6 +84,7 @@ namespace pos{
     int opt_ouadj[3]; // DC-output offset
   
     //input offset dac (one for each channel)
+    //Ph1 FED: these can all be 36-arrays because we don't use them in the code
     int offs_dac[36];
   
     //clock phases, use bits 0-8, select the clock edge
@@ -108,7 +109,7 @@ namespace pos{
     //For VME, lower 9 bits of each are used.
     unsigned int Ncntrl,NCcntrl,SCcntrl,Scntrl;
 
-    // This one for uTCA. Assumes we won't do 96-ch fed.
+    // Ph1 FED: same as N/NC/SC/Scntrl, but all in one word. Assumes we won't do 96-ch fed.
     uint64_t cntrl_utca;
     uint64_t cntrl_utca_original;
 
@@ -138,7 +139,7 @@ namespace pos{
     //Mode register
     int modeRegister; // "ModeReg" in LAD_C
   
-    //Number of ROCS per FED channel
+    //Number of ROCS per FED channel -- 48 channels for Ph1 FED
     int NRocs[48];
 
     //Control Regs for setting ADC 1Vpp and 2Vpp
@@ -162,7 +163,7 @@ namespace pos{
     // data Regs to skip bad ROCs by fpga in old fed, testregs in fed with piggy
     unsigned int N_testreg,NC_testreg,SC_testreg,S_testreg;
 
-    // channel you want transparent/scope fifo for in uTCA fed.
+    // Ph1 FED: channel you want transparent/scope fifo for
     unsigned TransScopeCh;
     
     //The values as read from file so that they can be restored after
@@ -176,7 +177,14 @@ namespace pos{
     //VME base address  = a unique id in the case of uTCA  JMTBAD redundant with fedNumber...
     unsigned long FEDBASE_0, fedNumber;
 
+    // Ph1 FED: something for the DDRs (this will go away)
     unsigned PACKET_NB;
+
+    // Ph1 FED: What position the FMC is in
+    int which_FMC;
+
+    // Ph1 FED: whether to swap channel order for fitel
+    bool swap_Fitel_order;
 
     // Most recent additions requested by Will and Danek (Dario)
     int BusyHoldMin       ;

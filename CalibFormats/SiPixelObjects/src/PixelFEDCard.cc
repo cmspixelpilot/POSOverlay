@@ -673,6 +673,14 @@ PixelFEDCard::PixelFEDCard(string fileName):
     fscanf(infile, "PACKET_NB: %x\n", &PACKET_NB);
     if (localDEBUG) printf("PACKET_NB: %x\n", PACKET_NB);
 
+    fscanf(infile, "Which FMC (lower = 0): %d\n", &which_FMC);
+    if (localDEBUG) printf("Which FMC (lower = 0): %d\n", which_FMC);
+
+    int tmp = 0;
+    fscanf(infile, "Fitel channel order swapped: %d\n", &tmp);
+    swap_Fitel_order = tmp;
+    if (localDEBUG) printf("Fitel channel order swapped: %d\n", swap_Fitel_order);
+
     getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
   }
   else {
@@ -1182,6 +1190,11 @@ PixelFEDCard::PixelFEDCard(string fileName):
 void PixelFEDCard::clear(void) 
 {
   type = 0;
+  cntrl_utca = cntrl_utca_original = 0;
+  TransScopeCh = 0;
+  PACKET_NB = 0;
+  which_FMC = 0;
+  swap_Fitel_order = 0;
   FEDBASE_0 = 0 ;
   fedNumber = 999 ;
   for(int i=0;i<36;i++){
@@ -1314,6 +1327,8 @@ void PixelFEDCard::writeASCII(std::string dir) const{
     fprintf(outfile, "Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
     fprintf(outfile, "Transparent+scope channel: %u\n", TransScopeCh);
     fprintf(outfile, "PACKET_NB: %x\n", PACKET_NB);
+    fprintf(outfile, "Which FMC (lower = 0): %d\n", which_FMC);
+    fprintf(outfile, "Fitel channel order swapped: %d\n", swap_Fitel_order);
   }
   else
     fprintf(outfile, "Type: VME\n");

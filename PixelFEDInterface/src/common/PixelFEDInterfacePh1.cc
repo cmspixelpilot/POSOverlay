@@ -31,6 +31,8 @@ int PixelFEDInterfacePh1::setup(pos::PixelFEDCard c) {
 }
 
 int PixelFEDInterfacePh1::setup() {
+  // Could possibly want to set different registers for different FMC?
+  // And just load the regmaps for both fmc0 and 1 even if we don't have e.g. the upper one
   fRegMapFilename[FMC0_Fitel0] = fitel_fn_base + "/FMCFITEL.txt";
   fRegMapFilename[FMC0_Fitel1] = fitel_fn_base + "/FMCFITEL.txt";
   fRegMapFilename[FMC1_Fitel0] = fitel_fn_base + "/FMCFITEL.txt";
@@ -40,6 +42,29 @@ int PixelFEDInterfacePh1::setup() {
   LoadFitelRegMap(0, 1);
   LoadFitelRegMap(1, 0);
   LoadFitelRegMap(1, 1);
+
+  // Enable the channels that are specified in the control register,
+  // same scheme as old FED: channel enabled if bit is 0, channel 1 =
+  // LSB.
+  //
+  // By default, the Fitel config is set to 2 in the reg map = digital
+  // power down.  8 means enabled. So go through and turn on the
+  // fibers that have a channel enabled.
+  std::cout << "cntrl_utca is 0x" << std::hex << pixelFEDCard.cntrl_utca << dec << std::endl;
+  assert(pixelFEDCard.which_FMC == 0 || pixelFEDCard.which_FMC == 1);
+  for (int channel = 0; channel < 48; ++channel) {
+    if (!(pixelFEDCard.cntrl_utca & (1ULL << channel))) {
+      const int which_Fitel = channel < 24;
+      const int which_map = FitelMapNum(pixelFEDCard.which_FMC, which_Fitel);
+      int ch = channel % 24 / 2 + 1;
+      if (pixelFEDCard.swap_Fitel_order)
+        ch = 12 - ch + 1;
+      char ch_name[16];
+      snprintf(ch_name, 16, "Ch%02d_ConfigReg", ch);
+      std::cout << "Fitel " << which_Fitel << " map " << which_map << " " << ch_name << " -> 0x08" << std::endl;
+      fRegMap[which_map][std::string(ch_name)].fValue = 0x08;
+    }
+  }
 
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
     {"pixfed_ctrl_regs.PC_CONFIG_OK",    0},
@@ -51,8 +76,8 @@ int PixelFEDInterfacePh1::setup() {
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
-    {"pixfed_ctrl_regs.TBM_MASK_1", pixelFEDCard.cntrl_utca & 0xFFFFFFFFULL},
-    {"pixfed_ctrl_regs.TBM_MASK_2", pixelFEDCard.cntrl_utca & (0xFFFFFFFFULL << 32)},
+    {"pixfed_ctrl_regs.TBM_MASK_1", uint32_t(pixelFEDCard.cntrl_utca & 0xFFFFFFFFULL)},
+    {"pixfed_ctrl_regs.TBM_MASK_2", uint32_t((pixelFEDCard.cntrl_utca & 0xFFFFFFFF00000000ULL) >> 32)},
     {"pixfed_ctrl_regs.TBM_MASK_3", 0xFFFFFFFF},
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"pixfed_ctrl_regs.TRIGGER_SEL", 0},
@@ -70,10 +95,14 @@ int PixelFEDInterfacePh1::setup() {
 
   int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
-  ConfigureFitel(0, 0, true);
-  ConfigureFitel(0, 1, true);
-  //ConfigureFitel(1, 0, true);
-  //ConfigureFitel(1, 1, true);
+  if (pixelFEDCard.which_FMC == 0) {
+    ConfigureFitel(0, 0, true);
+    ConfigureFitel(0, 1, true);
+  }
+  else if (pixelFEDCard.which_FMC == 1) {
+    ConfigureFitel(1, 0, true);
+    ConfigureFitel(1, 1, true);
+  }
 
   fNthAcq = 0;
 
@@ -207,7 +236,7 @@ void PixelFEDInterfacePh1::LoadFitelRegMap(int cFMCId, int cFitelId) {
     fRegItem.fValue	 = strtoul(fValue_str.c_str(),    0, 16);
     fRegItem.fPermission = fPermission_str[0];
 
-    //std::cout << fName << " "<< +fRegItem.fAddress << " " << +fRegItem.fDefValue << " " << +fRegItem.fValue << std::endl;
+    //std::cout << "LoadFitelRegMap(" << cFMCId << "," << cFitelId << "): " << fName << " Addr: 0x" << std::hex << +fRegItem.fAddress << " DefVal: 0x" << +fRegItem.fDefValue << " Val: 0x" << +fRegItem.fValue << std::dec << std::endl;
     fRegMap[FitelMapNum(cFMCId, cFitelId)][fName] = fRegItem;
   }
 
