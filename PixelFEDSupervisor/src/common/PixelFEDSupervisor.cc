@@ -4705,6 +4705,14 @@ void PixelFEDSupervisor::b2inEvent(toolbox::mem::Reference* msg, xdata::Properti
 
 
   }
+  else if(action=="prepareFEDCalibrationMode"){
+
+    xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("prepareFEDCalibrationMode", attrib);
+
+    receiveMsg = Receive(this->prepareFEDCalibrationMode(soapMsg));
+
+
+  }
   else if(action=="FEDCalibrations"){
 
     xoap::MessageReference soapMsg=this->MakeSOAPMessageReference("FEDCalibrations", attrib);
