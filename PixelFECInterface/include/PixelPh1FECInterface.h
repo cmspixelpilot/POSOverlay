@@ -236,11 +236,12 @@ private:
     int qbufnsend[9][3];
     int qbufnerr[9][3];
     
+    enum {qbufsize = 1024};
     int qbufn[9][3];
-    unsigned char qbuf[9][3][1024];
+    unsigned char qbuf[9][3][qbufsize];
     
     int qbufn_old[9][3];
-    unsigned char qbuf_old[9][3][1024];
+    unsigned char qbuf_old[9][3][qbufsize];
     
     //int qbuflasthub[9][3];
     //int qbuflastport[9][3];
