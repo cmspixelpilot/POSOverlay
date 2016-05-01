@@ -52,5 +52,7 @@ else
     cmd="gdb --args ${XDAQ_ROOT}/bin/xdaq.exe $cmd"
 fi
 
+cmd="$cmd | tee $LOGFN"
 echo $cmd
-$cmd
+eval $cmd 
+
