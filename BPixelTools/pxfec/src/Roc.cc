@@ -66,6 +66,14 @@ void Roc::Execute(SysCommand *command){
       cn->interface->clrcal(cn->mfec, cn->channel, hubaddress, portaddress, iroc);
     }else if(command->Keyword("fullspeed")){     setDAC(0xFD,  0);
     }else if(command->Keyword("halfspeed")){     setDAC(0xFD,  1);
+    }else if(command->Keyword("testbufmode")) {
+      for (int j = 0; j < 80; ++j) {
+        for (int i = 0; i < 52; ++i)
+          cn->interface->progpix1(cn->mfec, cn->channel, hubaddress, portaddress, iroc, i, j, 1, 0x8, 1); //mask,trim
+        if (j == 39)
+          cn->interface->progdac(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 2, 0, 1);
+      }
+      cn->interface->qbufsend();
     }else if(command->Keyword("arm", &value1, &value2)){
       for(int * j=value1; (*j)>=0; j++){
 	for(int * k=value2; (*k)>=0; k++){
