@@ -176,6 +176,7 @@
         <node id="DDR0_full" address="0x40000004" mask="0x00000010" permission="r" />
         <node id="DDR1_full" address="0x40000004" mask="0x00000020" permission="r" />
         <node id="fitel_config_ack" address="0x40000004" mask="0x00000300" permission="r" />
+        <node id="fitel_config_fifo_rx_empty" address="0x40000004" mask="0x00000400" permission="r" />
         <node id="calibModeOvf" address="0x40000004" mask="0x00000800" permission="r" />
         <!--FSM flags-->
         <node id="fsm_flags" address="0x40000005" permission="r">
@@ -215,7 +216,7 @@
         <node id="rx_index_sel_en" address="0x40010003" mask="0x00000400" />
         <node id="TBM_MASK_1" address="0x40010004" mask="0xffffffff" />
         <node id="TBM_MASK_2" address="0x40010005" mask="0xffffffff" />
-        <node id="TBM_MASK_3" address="0x40010006" mask="0xffffffff" />
+        <!-- <node id="TBM_MASK_3" address="0x40010006" mask="0xffffffff" /> -->
 
         <node id="acq_ctrl">
             <!--bit0 = TBM fifo + ddr + ipbus -->
