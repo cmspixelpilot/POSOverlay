@@ -3588,6 +3588,9 @@ xoap::MessageReference PixelFEDSupervisor::BaselineMonitor (xoap::MessageReferen
     unsigned long vmeBaseAddress = iterFED->first;
     unsigned long fednumber = theFEDConfiguration_->FEDNumberFromCrateAndVMEBaseAddress(crate_,vmeBaseAddress);
     PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+    if (fed == 0)
+      continue;
+
     static std::map <unsigned long, map <unsigned int, Moments> > baselineCorrection;
 
     uint64_t enabledChans=FEDInterface_[vmeBaseAddress]->getPixelFEDCard().enabledChannels();
