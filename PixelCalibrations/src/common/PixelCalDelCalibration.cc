@@ -77,7 +77,7 @@ bool PixelCalDelCalibration::execute(){
     unsigned int nConfigs=tempCalibObject->nConfigurations();
     unsigned int j=event_/tempCalibObject->nTriggersPerPattern();
 
-    if (j%(nConfigs/50)==0) {
+    if (nConfigs/50 > 0 && j%(nConfigs/50)==0) {
       diagService_->reportError(stringF(j) + " configurations out of " + stringF(nConfigs) + " have been done.",DIAGDEBUG);
 
       double percentageOfJob=((double)j*100)/((double)nConfigs);
