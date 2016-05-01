@@ -158,6 +158,8 @@ void PixelCalibrationBase::prepareFEDCalibrationMode(unsigned int nevents) {
 }
 
 void PixelCalibrationBase::sendTTCCalSync(){
+  // JMT will this work putting it here always? Sleep after?
+  prepareFEDCalibrationMode(1);
 
   if (useTTC_){
     Attribute_Vector parametersToTTC(2);
