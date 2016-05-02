@@ -979,12 +979,12 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
   if (getPrintlevel()&16) std::cout << "slink64call #" << slink64calls << std::endl;
 
-  usleep(100000);
+  usleep(10);
 
   uhal::ValWord<uint32_t> cVal = 0;
   do {
     cVal = regManager->ReadReg("pixfed_stat_regs.DDR0_full");
-    if (cVal == 0) usleep(10000);
+    if (cVal == 0) usleep(10);
   }
   while ( cVal == 0 );
 
@@ -992,14 +992,14 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   std::cout << "Reading " << cNWords32 << " 32 bit words from DDR " << 0 << std::endl;
   uint32_t cBlockSize = cNWords32 + (2 * 2 * last_calib_mode_nevents);
   std::cout << "This translates into " << cBlockSize << " words" << std::endl;
-  usleep(10000);
+  usleep(10);
   std::vector<uint32_t> cData = regManager->ReadBlockRegValue("DDR0", cBlockSize);
-  usleep(10000);
+  usleep(10);
   regManager->WriteReg("pixfed_ctrl_regs.DDR0_end_readout", 1);
-  usleep(10000);
+  usleep(10);
 
   while (regManager->ReadReg("pixfed_stat_regs.DDR0_full") == 1)
-    usleep(10000);
+    usleep(10);
 
   regManager->WriteReg("pixfed_ctrl_regs.DDR0_end_readout", 0);
 
@@ -1040,7 +1040,21 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   readSpyFIFO();
   PixelFEDInterfacePh1::digfifo1 f = readFIFO1();
 
-  assert(f.a.hits.size() + f.b.hits.size() == decode3.nhits());
+  if (f.a.hits.size() + f.b.hits.size() != decode3.nhits()) {
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "Laurent says " << decode3.nhits() << ". this doesn't agree with Helmut, who says " << f.a.hits.size() + f.b.hits.size() << "\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************\n";
+    std::cout << "********************************************************************************" << std::endl;
+  }
 
   const bool myfakefifo3 = false;
   if (myfakefifo3) {
@@ -1103,11 +1117,11 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   }
 
   regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
-  usleep(1000);
+  usleep(10);
   regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK",0);
-  usleep(1000);
+  usleep(10);
   regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK",1);
-  usleep(1000);
+  usleep(10);
 
   //std::vector<uint32_t> cData = ReadData(1024);
   //cData = ReadData(1024);
