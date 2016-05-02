@@ -1,13 +1,3 @@
-/*************************************************************************
- * XDAQ Components for Distributed Data Acquisition                      *
- * Copyright (C) 2000-2009, CERN.			                 *
- * All rights reserved.                                                  *
- * Authors: J. Gutleber and L. Orsini					 *
- *                                                                       *
- * For the licensing terms see LICENSE.		                         *
- * For the list of contributors see CREDITS.   			         *
- *************************************************************************/
-
 #include "PixelAMC13Controller.h"
 
 XDAQ_INSTANTIATOR_IMPL(PixelAMC13Controller)
