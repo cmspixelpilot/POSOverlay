@@ -180,7 +180,7 @@ struct digfifo1 {
   // keep track of degraded state
   bool runDegraded_;
 
-  int slink64calls;
+  uint64_t slink64calls;
 };
 
 #endif

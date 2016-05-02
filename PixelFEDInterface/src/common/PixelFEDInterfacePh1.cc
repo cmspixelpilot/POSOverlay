@@ -1018,7 +1018,12 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
     std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::dec << std::endl;
     //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::dec << std::endl;
   }
-  
+
+  // JMTBAD fake event number until they give it to us
+  data[0] &= 0xFF000000FFFFFFFF;
+  data[0] |= (slink64calls & 0xFFFFFFULL) << 32;
+  std::cout << "faking event number from # spy64 calls: header is now 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[0]>>32) << " " << std::setw(8) << std::setfill('0') << (data[0] & 0xFFFFFFFF) << std::dec << std::endl;
+
   FIFO3Decoder decode3(data);
   //for (size_t i = 0; i <= ndata64; ++i)
   std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
