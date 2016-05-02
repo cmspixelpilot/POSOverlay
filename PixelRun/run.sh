@@ -7,6 +7,7 @@ echo $LOGFN
 echo
 
 gdb=0
+gdbr=0
 dcs=1
 xml=0
 port=1973
@@ -15,6 +16,8 @@ while test $# -gt 0
 do
     case "$1" in
         --gdb) gdb=1
+            ;;
+        --gdbr) gdbr=1
             ;;
         --nodcs) dcs=0
             ;;
@@ -46,10 +49,12 @@ else
     cmd="$cmd $xml"
 fi
 
-if [ "$gdb" == "0" ]; then
-    cmd="${XDAQ_ROOT}/bin/xdaq.sh $cmd"
-else
+if [ "$gdb" == "1" ]; then
     cmd="gdb --args ${XDAQ_ROOT}/bin/xdaq.exe $cmd"
+elif [ "$gdbr" == "1" ]; then
+    cmd="gdb --ex run --args ${XDAQ_ROOT}/bin/xdaq.exe $cmd"
+else
+    cmd="${XDAQ_ROOT}/bin/xdaq.sh $cmd"
 fi
 
 cmd="$cmd | tee $LOGFN"
