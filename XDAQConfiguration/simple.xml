@@ -7,12 +7,13 @@
 
     <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vandyfpixutca" port="1914" network="xmas"/>
 
-    <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
-    <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
-      <UseTCDS xsi:type="xsd:boolean">false</UseTCDS>
-      <UseTTC xsi:type="xsd:boolean">true</UseTTC>
-      <TTCSupervisorApplicationName xsi:type="xsd:string">ttc::TTCciControl</TTCSupervisorApplicationName>
-    </properties>
+    <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
+        <UseTCDS xsi:type="xsd:boolean">false</UseTCDS>
+        <UseTTC xsi:type="xsd:boolean">true</UseTTC>
+        <TTCSupervisorApplicationName xsi:type="xsd:string">ttc::TTCciControl</TTCSupervisorApplicationName>
+      </properties>
+    </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
 
     <xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="local" group="daq">
@@ -27,6 +28,21 @@
 
     <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq"/>
     <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
+
+    <xc:Application class="PixelAMC13Controller" id="90" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelAMC13Controller" xsi:type="soapenc:Struct">
+	<Uri1 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T1:50001</Uri1>
+	<AddressT1 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
+	<Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T1:50001</Uri2>
+	<AddressT2 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
+	<AMCMask xsi:type="xsd:string">1,2,3,4,5,6,7,8,9,10,11,12</AMCMask>
+	<BGORepeat xsi:type="xsd:boolean">false</BGORepeat>
+	<BGOPrescale xsi:type="xsd:integer">2</BGOPrescale>
+	<BGOBX xsi:type="xsd:integer">48</BGOBX>
+      </properties>
+    </xc:Application>
+    <xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>
+
   </xc:Context>
 
   <xc:Context id="1" url="http://cms-sidet003.fnal.gov:1973/">
