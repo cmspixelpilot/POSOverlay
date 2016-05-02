@@ -39,23 +39,38 @@ typedef std::vector<Attribute> Attribute_Vector;
 class PixelAMC13Controller: public xdaq::Application  
 {
 	
-	public:
+ public:
 	
 	XDAQ_INSTANTIATOR();
+
+	Amc13Description* amc13Description;
+	Amc13Interface* amc13Interface;
 
 	xdata::String cUri1;
 	xdata::String cAddressT1;
 	xdata::String cUri2;
 	xdata::String cAddressT2;
-	
-	int bgoCommand;
+	xdata::String amcMaskStr;
 	xdata::Boolean bgoRepeat;
 	xdata::Integer bgoPrescale;
 	xdata::Integer bgoBX;
 
 	PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);
+
+	xoap::MessageReference userCommand (xoap::MessageReference msg) throw (xoap::exception::Exception);
+	xoap::MessageReference Reset (xoap::MessageReference msg) throw (xoap::exception::Exception);
+	xoap::MessageReference Enable (xoap::MessageReference msg) throw (xoap::exception::Exception);
+	xoap::MessageReference Stop (xoap::MessageReference msg) throw (xoap::exception::Exception);
+	xoap::MessageReference Suspend (xoap::MessageReference msg) throw (xoap::exception::Exception);
+	xoap::MessageReference Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception);
+ private:
 	
-	xoap::MessageReference userCommand (xoap::MessageReference msg) throw (xoap::exception::Exception);	
+	std::vector<int> parseAMCMask(xdata::String maskStr);
+	uint32_t convertAnyInt( const char* pRegValue )
+	{
+	  if ( std::string( pRegValue ).find( "0x" ) != std::string::npos ) return static_cast<uint32_t>( strtoul( pRegValue , 0, 16 ) );
+	  else return static_cast<uint32_t>( strtoul( pRegValue , 0, 10 ) );
+	}
 };
 
 #endif

@@ -265,8 +265,10 @@ void Amc13Interface::disableBGO(int pChan)
 
   snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE");
   fAMC13->write( amc13::AMC13Simple::T1, tmp, 0);
+  snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%d.%s", pChan, "ENABLE_SINGLE");
+  fAMC13->write( amc13::AMC13Simple::T1, tmp, 0);
   // Edit by Georg Auzinger, not in official AMC13 SW package but required
-  fAMC13->write( amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_BGO", 0);
+  //  fAMC13->write( amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_BGO", 0);
 }
 
 void Amc13Interface::fireBGO()
