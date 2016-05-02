@@ -1,4 +1,10 @@
-# site specifics in here
+# site specifics in local.sh, not in git
+# it should export
+#   ROOTSYS, where root is installed,
+#   BUILD_HOME, this TriDAS dir,
+#   POS_OUTPUT_DIRS, where the run outputs will go,
+#   POS_LOG_DIR, where the log files will be kept,
+#   PIXELCONFIGURATIONBASE, where the config files (aliases,configurations.txt, etc.) are
 source local.sh
 
 export CACTUS_ROOT=/opt/cactus
