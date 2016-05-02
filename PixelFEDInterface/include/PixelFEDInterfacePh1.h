@@ -57,6 +57,7 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
 
   void readPhases(bool verbose, bool override_timeout);
 
+  uint32_t last_calib_mode_nevents;
   void prepareCalibrationMode(unsigned nevents);
 
   // JMTBAD get rid of this dumb shit
