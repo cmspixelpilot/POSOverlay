@@ -296,10 +296,7 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   getApplicationInfoSpace()->fireItemAvailable("UseTCDS", &useTCDS_);
   getApplicationInfoSpace()->fireItemAvailable("TTCSupervisorApplicationName", &TTCSupervisorApplicationName_);
   getApplicationInfoSpace()->fireItemAvailable("LTCSupervisorApplicationName", &LTCSupervisorApplicationName_);
-  
-  std::cout << "useTCDS is " <<  useTCDS_ << " " <<  TTCSupervisorApplicationName_.toString() << " " <<  LTCSupervisorApplicationName_.toString() << std::endl;
 
-  //  assert(useTTC_ != useTCDS_);
 }
 
 //gio
@@ -1038,6 +1035,9 @@ string PixelSupervisor::getHtmlColorFromState( const string & state ) {
 
 xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
+
+  std::cout << "useTCDS is " <<  useTCDS_ << " " <<  TTCSupervisorApplicationName_.toString() << " " <<  LTCSupervisorApplicationName_.toString() << std::endl;
+    assert(useTTC_ != useTCDS_);
 
 std::string const msg_info_txo = "Entered SOAP message callback method PixelSupervisor::Initialize";
  LOG4CPLUS_INFO(sv_logger_,msg_info_txo);
