@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
 bool RegManagerUhalLogSetter::loggingSet = false;
@@ -63,8 +64,10 @@ bool RegManager::WriteStackReg(const std::vector< std::pair<std::string, uint32_
     if (fDebugPrints)
       std::cout << "\t" << fUniqueId << pVecReg[v].first << " 0x" << std::hex << pVecReg[v].second << std::dec << std::endl;
 
-    if (pVecReg[v].first == "REGMGR_DISPATCH")
+    if (pVecReg[v].first == "REGMGR_DISPATCH") {
       fBoard.dispatch();
+      usleep(pVecReg[v].second);
+    }
     else
       fBoard.getNode(pVecReg[v].first).write(pVecReg[v].second);
   }
