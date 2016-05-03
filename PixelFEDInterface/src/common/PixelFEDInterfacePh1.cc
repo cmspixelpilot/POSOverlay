@@ -92,7 +92,7 @@ int PixelFEDInterfacePh1::setup() {
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"pixfed_ctrl_regs.data_type", 0}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
     {"fe_ctrl_regs.decode_reg_reset", 1}, // init FE spy fifos etc JMTBAD take out if this doesn't work any more
-    {"REGMGR_DISPATCH", 0}, // JMTBAD there were two separate WriteStackReg calls, take this out if it doesn't matter // JMTBAD if we need to sleep, the 2nd arg could do the time
+    {"REGMGR_DISPATCH", 1000}, // JMTBAD there were two separate WriteStackReg calls, take this out if it doesn't matter, the 1000 means sleep 1 ms
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0},
     {"pixfed_ctrl_regs.fitel_config_req", 0},
     {"pixfed_ctrl_regs.PC_CONFIG_OK", 1},
@@ -694,7 +694,7 @@ void PixelFEDInterfacePh1::prepareCalibrationMode(unsigned nevents) {
     {"pixfed_ctrl_regs.PC_CONFIG_OK", 0},
     {"pixfed_ctrl_regs.acq_ctrl.calib_mode", 1},
     {"pixfed_ctrl_regs.acq_ctrl.calib_mode_NEvents", nevents - 1},
-    {"REGMGR_DISPATCH", 0}, // JMTBAD there were two separate WriteStackReg calls, take this out if it doesn't matter
+    {"REGMGR_DISPATCH", 1000},
     {"pixfed_ctrl_regs.PC_CONFIG_OK", 1},
   };
 
@@ -979,7 +979,7 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
   if (getPrintlevel()&16) std::cout << "slink64call #" << slink64calls << std::endl;
 
-  usleep(10);
+  usleep(1000);
 
   uhal::ValWord<uint32_t> cVal = 0;
   do {
