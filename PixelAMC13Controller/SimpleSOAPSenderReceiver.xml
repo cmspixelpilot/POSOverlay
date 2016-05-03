@@ -10,7 +10,7 @@
 		  <properties xmlns="urn:xdaq-application:PixelAMC13Controller" xsi:type="soapenc:Struct">
 		    <Uri1 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T1:50001</Uri1>
 		    <AddressT1 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
-		    <Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T1:50001</Uri2>
+		    <Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T2:50001</Uri2>
 		    <AddressT2 xsi:type="xsd:string">file:///opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
 		    <AMCMask xsi:type="xsd:string">1,2,3,4,5,6,7,8,9,10,11,12</AMCMask>
 		    <BGORepeat xsi:type="xsd:boolean">false</BGORepeat>
