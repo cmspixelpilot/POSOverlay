@@ -2,6 +2,7 @@
 #define _AMC13_INTERFACE_H__
 
 #include "amc13/AMC13.hh"
+#include "PixelUtilities/PixeluTCAUtilities/include/PixelUhalLogSetter.h"
 
 class PixelAMC13Interface {
  public:
@@ -65,6 +66,8 @@ class PixelAMC13Interface {
   bool fDebugPrints;
   uint32_t fCalBX;
   uint32_t fL1ABurstDelay;
+
+  PixelUhalLogSetter logSetter_; /*!< whether uhal logging configured yet*/
 };
 
 #endif
