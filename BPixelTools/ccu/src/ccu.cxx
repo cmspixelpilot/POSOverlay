@@ -1866,6 +1866,7 @@ int main(int argc, char *argv[])
     ringAddress = 0x0 ;
     ccuAddress = 0x7c; // JMTBAD
     channelAddress = 0x10;
+    piaChannelAddress = 0x33;
   }
   else {
     cout << "Please select PCI [-pci] or VME [-vmecaenusb]/[-vmecaenpci] or uTCA [-utca] mode " << endl;
