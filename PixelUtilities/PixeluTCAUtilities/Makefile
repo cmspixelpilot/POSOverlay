@@ -19,8 +19,8 @@ IncludeDirs = \
 
 LibraryDirs = 
 
-UserCFlags = -O
-UserCCFlags = -std=c++0x -g -O -Wno-long-long
+UserCFlags = -O0
+UserCCFlags = -std=c++0x -g -O0 -Wno-long-long
 
 DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
                         $(XDAQ_ROOT)/lib \
