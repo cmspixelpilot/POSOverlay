@@ -25,7 +25,7 @@ writeT1 CONF.TTC.BGO3.ORBIT_PRESCALE 0
 writeT1 CONF.TTC.BGO3.LONG_CMD 0
 writeT1 CONF.TTC.BGO3.ENABLE 0
 rg
+i 1-12 n t f
 rc
 rd
-i 1-12 n t f
 st
