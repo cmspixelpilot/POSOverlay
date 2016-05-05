@@ -8,10 +8,11 @@ void help() {
             << "t - LevelOne\n"
             << "1 - ResetTBM\n"
             << "2 - ResetROC\n"
-            << "f - Dump measured clock frequency\n"
-            << "m - Set AMC mask\n"
-            << "b - Set cal BX (L1A trig is at 500)\n"
-            << "d - Set L1A burst delay in orbits\n"
+            << "f - dump measured clock frequency\n"
+            << "l - dump measured clock frequency 10 times 1 per sec\n"
+            << "m mask - Set AMC mask\n"
+            << "b bx - Set cal BX (L1A trig is at 500)\n"
+            << "d delay - Set L1A burst delay in orbits\n"
             << "r - (re)Configure -- must do after m, b, or d for them to take effect\n"
             << "q - quit\n"
             << "h - this message\n"
@@ -21,7 +22,7 @@ void help() {
 int main(int argc, char** argv) {
   //  assert(argc > 1);
 
-  RegManagerUhalLogSetter r;
+  PixelUhalLogSetter r;
 
   PixelAMC13Interface a("chtcp-2.0://localhost:10203?target=amc13_T1:50001",
                         "chtcp-2.0://localhost:10203?target=amc13_T2:50001");
@@ -57,6 +58,12 @@ int main(int argc, char** argv) {
     }
     else if (c == 'f') {
       a.ClockFreq();
+    }
+    else if (c == 'l') {
+      for (int i = 0; i < 10; ++i) {
+        a.ClockFreq();
+        sleep(1);
+      }
     }
     else if (c == 'm') {
       std::string s;
