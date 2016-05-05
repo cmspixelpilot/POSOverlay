@@ -8,6 +8,13 @@
 
 #include "xdaq/NamespaceURI.h"
 
+#include "xgi/Utils.h"
+#include "xgi/Method.h"
+#include "cgicc/CgiDefs.h"
+#include "cgicc/Cgicc.h"
+#include "cgicc/HTTPHTMLHeader.h"
+#include "cgicc/HTMLClasses.h"
+
 #include "xoap/MessageReference.h"
 #include "xoap/MessageFactory.h"
 #include "xoap/SOAPEnvelope.h"
@@ -18,9 +25,10 @@
 #include "xdata/UnsignedInteger.h"
 #include "xdata/String.h"
 
+#include "PixelUtilities/PixelSOAPUtilities/include/SOAPCommander.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/PixelAMC13Interface.h"
 
-class PixelAMC13Controller : public xdaq::Application {
+class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
  public:
   XDAQ_INSTANTIATOR();
 
@@ -34,6 +42,10 @@ class PixelAMC13Controller : public xdaq::Application {
   PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);
   ~PixelAMC13Controller() { delete amc13; }
 
+  void Default(xgi::Input* in, xgi::Output* out) throw (xgi::exception::Exception);
+  void StateMachineXgiHandler(xgi::Input* in, xgi::Output* out) throw (xgi::exception::Exception);
+  void AllAMC13Tables(xgi::Input* in, xgi::Output* out) throw (xgi::exception::Exception);
+
   xoap::MessageReference Reset(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference Configuration(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference Configure(xoap::MessageReference msg) throw (xoap::exception::Exception);
@@ -44,6 +56,7 @@ class PixelAMC13Controller : public xdaq::Application {
 
  private:
   PixelAMC13Interface* amc13;
+  void InitAMC13();
 };
 
 #endif
