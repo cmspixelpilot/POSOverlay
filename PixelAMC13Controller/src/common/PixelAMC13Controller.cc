@@ -57,13 +57,14 @@ void PixelAMC13Controller::InitAMC13() {
 }
 
 void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
-  if (!amc13) InitAMC13();
-
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir", "ltr") << std::endl;
   *out << cgicc::title("Pixel AMC13 Controller") << std::endl;
 
   std::vector<std::string> sends = {"reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM" };
+
+  if (!amc13)
+    *out << "not yet initialized!<br>";
 
   *out << "<h3>Commands:</h3>\n"
        << "<table><tr>\n";
@@ -77,9 +78,12 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
     *out << cgicc::p() << std::endl;
     *out << cgicc::form() << std::endl;
     *out << "</td>\n";
+    if (!amc13) break;
   }
   *out << "</tr></table><br>\n";
 
+  if (!amc13) return;
+  
   *out << "Input clock frequency measurement: "
        << commaify(amc13->ClockFreq())
        << " &plusmn; 50 Hz<br>\n";
@@ -91,8 +95,6 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 }
 
 void PixelAMC13Controller::StateMachineXgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception) {
-  if (!amc13) InitAMC13();
-
   cgicc::Cgicc cgi(in);
 
   Attribute_Vector attrib(2);
@@ -101,14 +103,29 @@ void PixelAMC13Controller::StateMachineXgiHandler(xgi::Input *in, xgi::Output *o
   attrib[1].name_="xdaq:sequence_name";
   attrib[1].value_=cgi.getElement("StateInput")->getValue();
 
-  xoap::MessageReference msg = MakeSOAPMessageReference("userCommand", attrib);
-  xoap::MessageReference reply = userCommand(msg);
+  if (!amc13 && attrib[1].value_ != "reset") {
+    *out << "<h1>won't do anything before reset</h1>\n";
+    this->Default(in, out);
+    return;
+  }
+
+  if (attrib[1].value_ == "reset") {
+    xoap::MessageReference msg = MakeSOAPMessageReference("reset");
+    Reset(msg);
+  }
+  else {
+    xoap::MessageReference msg = MakeSOAPMessageReference("userCommand", attrib);
+    userCommand(msg);
+  }
 
   this->Default(in, out);
 }
 
 void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
-  if (!amc13) InitAMC13();
+  if (!amc13) {
+    *out << "<h1>won't do anything before reset</h1>\n";
+    return;
+  }
 
   *out << "<h3>Dump of AMC13 tables:</h3>\n";
   std::stringstream ss;
@@ -143,31 +160,9 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
   Attribute_Vector parameters(2);
   parameters[0].name_ = "xdaq:CommandPar";
   parameters[1].name_ = "xdaq:sequence_name";
+  Receive(msg, parameters);
 
-  xoap::SOAPEnvelope envelope=msg->getSOAPPart().getEnvelope();
-  std::vector<xoap::SOAPElement> bodyList=envelope.getBody().getChildElements();
-  xoap::SOAPElement command=bodyList[0];
-  std::string commandName=command.getElementName().getLocalName();
-  xoap::SOAPName name=envelope.createName("Key");
-
-  for (unsigned int i = 0;i < parameters.size(); ++i) {
-    name=envelope.createName(parameters[i].name_);
-
-    try {
-      parameters[i].value_ = command.getAttributeValue(name);
-      if (parameters[i].value_ == "" && parameters[i].name_ != "")
-        std::cout <<" Complaint "
-                  <<" : Parameter "<<parameters[i].name_
-                  <<" ("<<i <<") does not exist in the list of incoming parameters!"
-                  <<"It could also be because you passed an empty string"<<std::endl;
-    }
-    catch (xoap::exception::Exception& e) {
-      std::cout<<"Parameter "<<parameters[i].name_<<" does not exist in the list of incoming parameters!"<<std::endl;
-      XCEPT_RETHROW(xoap::exception::Exception,"Looking for parameter that does not exist!",e);
-    }
-  }
-
-  if (PRINT) std::cout << "PixelAMC13Controller::userCommand(" << commandName << ", " << parameters[0].value_ << ", " << parameters[1].value_ << ")" << std::endl;
+  if (PRINT) std::cout << "PixelAMC13Controller::userCommand(" << parameters[0].value_ << ", " << parameters[1].value_ << ")" << std::endl;
 
   if (parameters[1].value_ == "CalSync")
     amc13->CalSync();
