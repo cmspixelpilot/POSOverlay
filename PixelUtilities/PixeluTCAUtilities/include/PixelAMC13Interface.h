@@ -61,13 +61,13 @@ class PixelAMC13Interface {
   void FireBGO(unsigned which);
 
  private:
+  PixelUhalLogSetter logSetter;
+
   amc13::AMC13* fAMC13;
   uint32_t fMask;
   bool fDebugPrints;
   uint32_t fCalBX;
   uint32_t fL1ABurstDelay;
-
-  PixelUhalLogSetter logSetter_; /*!< whether uhal logging configured yet*/
 };
 
 #endif
