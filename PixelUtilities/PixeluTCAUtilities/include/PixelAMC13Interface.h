@@ -7,42 +7,34 @@ class PixelAMC13Interface {
  public:
   struct BGO {
     BGO() : fUse(false) {}
-    BGO(uint32_t pCommand, bool pRepeat, int pPrescale, int pBX)
-    : fUse(true), fCommand(pCommand), fRepeat(pRepeat), fPrescale(pPrescale), fBX(pBX)
+    BGO(uint32_t pCommand, bool pSingle, int pPrescale, int pBX)
+    : fUse(true),
+      fCommand(pCommand),
+      isLong(fCommand & 0xFFFFFF00),
+      single(pSingle),
+      fPrescale(pPrescale),
+      fBX(pBX)
     {}
+
     bool fUse;
     unsigned fCommand;
-    bool fRepeat;
+    bool isLong;
+    bool single;
     unsigned fPrescale;
     unsigned fBX;
   };
 
-  struct Trigger {
-    Trigger() : fEnabled(false) {}
-    Trigger(int pMode, uint32_t pBurst, uint32_t pRate, int pRules)
-    : fEnabled(true), fMode(pMode), fBurst(pBurst), fRate(pRate), fRules(pRules)
-    {}
-    bool fEnabled; // whether to set it up
-    int fMode; //mode 0 = periodic trigger every rate orbits at BX=500
-               //mode 1 = periodic trigger every rate BX
-               //mode 2 = random trigger at rate Hz
-    uint32_t fBurst;
-    uint32_t fRate;
-    int fRules;
-  };
-
-  uint32_t getTTCHistoryItemAddress( int item);
-
-  PixelAMC13Interface(const std::string& uriT1, const std::string& addressT1, const std::string& uriT2, const std::string& addressT2, const std::string& amcMask);
+  PixelAMC13Interface(const std::string& uriT1, const std::string& uriT2);
+  PixelAMC13Interface(const std::string& uriT1, const std::string& addressT1, const std::string& uriT2, const std::string& addressT2);
   ~PixelAMC13Interface();
 
-  amc13::AMC13* getAMC13() { return fAMC13; }
-  void SetBGO(size_t i, BGO b);
-  BGO GetBGO(size_t i);
-  void SetAMCMask(uint32_t v) { fAMCMask = v; }
+  amc13::AMC13* Get() { return fAMC13; }
+
+  void SetMask(uint32_t v) { fMask = v; }
+  void SetMask(const std::string& v) { fMask = fAMC13->parseInputEnableList(v, true); }
   void SetDebugPrints(bool v) { fDebugPrints = v; }
-  void SetTTCSimulator(bool v) { fSimulate = v; }
-  void SetTrigger(Trigger v) { fTrigger = v; }
+  void SetCalBX(unsigned v) { fCalBX = v; }
+  void SetL1ABurstDelay(unsigned v) { fL1ABurstDelay = v; }
 
   void DoResets();
 
@@ -50,29 +42,29 @@ class PixelAMC13Interface {
   void Halt();
   void Reset();
 
-  void StartL1A();
-  void StopL1A();
-  void BurstL1A();
+  void CalSync();
+  void LevelOne();
+  void ResetTBM();
+  void ResetROC();
+
+  uint32_t ClockFreq();
 
   void ClearL1AHistory();
   void ClearTTCHistory();
   void ClearTTCHistoryFilter();
+  uint32_t getTTCHistoryItemAddress( int item);
   void DumpHistory();
   void DumpTriggers();
 
-  void ConfigureBGO(size_t i, BGO b);
-  void FireBGOs(unsigned which);
+  void ConfigureBGO(unsigned i, BGO b);
+  void FireBGO(unsigned which);
 
  private:
   amc13::AMC13* fAMC13;
-  uint32_t fAMCMask;
+  uint32_t fMask;
   bool fDebugPrints;
-
-  typedef std::map<size_t, BGO> BGOs;
-  BGOs fBGOs;
-
-  Trigger fTrigger;
-  bool fSimulate;
+  uint32_t fCalBX;
+  uint32_t fL1ABurstDelay;
 };
 
 #endif

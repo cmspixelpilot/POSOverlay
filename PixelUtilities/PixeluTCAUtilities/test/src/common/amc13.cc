@@ -3,55 +3,87 @@
 #include "PixelUtilities/PixeluTCAUtilities/include/PixelAMC13Interface.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
+void help() {
+  std::cout << "c - CalSync\n"
+            << "t - LevelOne\n"
+            << "1 - ResetTBM\n"
+            << "2 - ResetROC\n"
+            << "f - Dump measured clock frequency\n"
+            << "m - Set AMC mask\n"
+            << "b - Set cal BX (L1A trig is at 500)\n"
+            << "d - Set L1A burst delay in orbits\n"
+            << "r - (re)Configure -- must do after m, b, or d for them to take effect\n"
+            << "q - quit\n"
+            << "h - this message\n"
+            << std::endl;
+}
+
 int main(int argc, char** argv) {
   //  assert(argc > 1);
 
   RegManagerUhalLogSetter r;
 
   PixelAMC13Interface a("chtcp-2.0://localhost:10203?target=amc13_T1:50001",
-                        "/opt/cactus/etc/amc13/AMC13XG_T1.xml",
-                        "chtcp-2.0://localhost:10203?target=amc13_T2:50001",
-                        "/opt/cactus/etc/amc13/AMC13XG_T2.xml",
-                        "1-12");
+                        "chtcp-2.0://localhost:10203?target=amc13_T2:50001");
 
+  a.SetMask("1-12");
   a.SetDebugPrints(1);
-  a.SetTTCSimulator(true);
-  PixelAMC13Interface::Trigger trig(0, 1, 100, 0);
-  //  trig.fEnabled = false;
-  a.SetTrigger(trig);
-  a.SetBGO(0, PixelAMC13Interface::BGO(0x2c, true, 0, 420));
-  a.SetBGO(1, PixelAMC13Interface::BGO(0x14, false, 0, 1));
-  a.SetBGO(2, PixelAMC13Interface::BGO(0x1c, false, 0, 1));
-  //a.SetBGO(0, PixelAMC13Interface::BGO(0x2, false, 0, 123));
+  a.SetCalBX(420);
+  a.SetL1ABurstDelay(1000);
 
   a.Configure();
 
+  help();
+
   while (1) {
-    std::cout << "Press something... ";
+    std::cout << "? ";
     char c;
     std::cin >> c;
     if (c == 'h') {
-      //a.getAMC13()->write(amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_INTERNAL_L1A", true);
       a.DumpTriggers();
       a.DumpHistory();
-      //      a.getAMC13()->write(amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_INTERNAL_L1A", false);
+    }
+    else if (c == 'c') {
+      a.CalSync();
     }
     else if (c == 't') {
-//      a.StartL1A();
-//      usleep(90000);
-//      a.StopL1A();
-      a.BurstL1A();
+      a.LevelOne();
+    }
+    else if (c == '1') {
+      a.ResetTBM();
+    }
+    else if (c == '2') {
+      a.ResetROC();
     }
     else if (c == 'f') {
-      std::cout << "clock freq: " << a.getAMC13()->read(amc13::AMC13Simple::T2, "STATUS.TTC.CLK_FREQ") * 50 << std::endl;
+      a.ClockFreq();
     }
-    else if (c >= '1' && c <= '7') {
-      unsigned w(c - '0');
-      std::cout << "fire bgos " << w << std::endl;
-      a.FireBGOs(w);
+    else if (c == 'm') {
+      std::string s;
+      std::cin >> s;
+      a.SetMask(s);
+      std::cout << "YOU MUST MANUALLY RECONFIGURE WITH r" << std::endl;
+    }
+    else if (c == 'b') {
+      unsigned v;
+      std::cin >> v;
+      a.SetCalBX(v);
+      std::cout << "YOU MUST MANUALLY RECONFIGURE WITH r" << std::endl;
+    }
+    else if (c == 'd') {
+      unsigned v;
+      std::cin >> v;
+      a.SetL1ABurstDelay(v);
+      std::cout << "YOU MUST MANUALLY RECONFIGURE WITH r" << std::endl;
+    }
+    else if (c == 'r') {
+      a.Configure();
     }
     else if (c == 'q') {
       break;
+    }
+    else if (c == 'h') {
+      help();
     }
   }
 }

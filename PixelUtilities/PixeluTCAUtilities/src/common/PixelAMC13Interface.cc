@@ -12,14 +12,27 @@ namespace {
 }
 
 PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
-                               const std::string& addressT1,
-                               const std::string& uriT2,
-                               const std::string& addressT2,
-                               const std::string& amcMask)
-  : fAMC13(new amc13::AMC13(uriT1, addressT1, uriT2, addressT2)),
-    fAMCMask(fAMC13->parseInputEnableList(amcMask, true)),
+                                         const std::string& uriT2)
+
+  : fAMC13(new amc13::AMC13(uriT1, "/opt/cactus/etc/amc13/AMC13XG_T1.xml",
+                            uriT2, "/opt/cactus/etc/amc13/AMC13XG_T2.xml")),
+    fMask(0),
     fDebugPrints(false),
-    fSimulate(true)
+    fCalBX(381),
+    fL1ABurstDelay(1000)
+{
+}
+
+PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
+                                         const std::string& addressT1,
+                                         const std::string& uriT2,
+                                         const std::string& addressT2)
+
+  : fAMC13(new amc13::AMC13(uriT1, addressT1, uriT2, addressT2)),
+    fMask(0),
+    fDebugPrints(false),
+    fCalBX(381),
+    fL1ABurstDelay(1000)
 {
 }
 
@@ -27,19 +40,87 @@ PixelAMC13Interface::~PixelAMC13Interface() {
   delete fAMC13;
 }
 
-void PixelAMC13Interface::SetBGO(size_t i, BGO b) {
-  if (i > 3)
-    throw_simple(amc13::Exception::UnexpectedRange(), "addBGO() - only 4 bgos allowed");
-  fBGOs[i] = b;
+void PixelAMC13Interface::DoResets() {
+  if (fDebugPrints) std::cout << "Resetting T1, T2, counters, DAQ" << std::endl;
+  fAMC13->reset(amc13::AMC13Simple::T1);
+  fAMC13->reset(amc13::AMC13Simple::T2);
+  fAMC13->resetCounters();
+  fAMC13->resetDAQ();
+  fAMC13->sendLocalEvnOrnReset(true, true);
+
+  // JMTBAD these two don't work with fw T1 0x23D T2 0x2E (but they are both on the T2 and this is the latest fw?)
+  //fAMC13->clearTTCHistory(); 
+  //fAMC13->clearTTCHistoryFilter();
+  ClearL1AHistory();
+  ClearTTCHistory();
+  ClearTTCHistoryFilter();
+
+  fAMC13->setTTCHistoryFilter(0, 0x10101); // filter BC0
+  fAMC13->setTTCFilterEna(true);
+  fAMC13->setTTCHistoryEna(true);
+
+  for (int i = 0; i < 4; ++i)
+    fAMC13->configureBGOShort(i, 0, 0, 0, true);
 }
 
-PixelAMC13Interface::BGO PixelAMC13Interface::GetBGO(size_t i) {
-  if (i > 3)
-    throw_simple(amc13::Exception::UnexpectedRange(), "addBGO() - only 4 bgos allowed");
-  std::map<size_t, BGO>::iterator it = fBGOs.find(i);
-  if (it == fBGOs.end())
-    return BGO();
-  return it->second;
+void PixelAMC13Interface::Configure() {
+  DoResets();
+
+  fAMC13->localTtcSignalEnable(true);
+
+  fAMC13->AMCInputEnable(fMask);
+  if (fDebugPrints) {
+    std::cout << "Enabled TTC links for these AMCs: ";
+    for (int i = 0; i < 12; ++i)
+      if (fMask & (1 << i)) std::cout << i+1 << " ";
+    std::cout << std::endl;
+  }
+
+  ConfigureBGO(0, BGO(0x2c, false, 0, fCalBX)); // CAL
+  ConfigureBGO(1, BGO(0x14, true,  0, 100));    // RESET TBM
+  ConfigureBGO(2, BGO(0x1c, true,  0, 100));    // RESET ROC
+
+  fAMC13->configureLocalL1A(true, 0, 1, 1, 0); // trigger burst 1 after 1 orbit = 
+}
+
+void PixelAMC13Interface::Halt() {
+  if (fDebugPrints) std::cout << "Halt";
+  DoResets();
+}
+
+void PixelAMC13Interface::Reset() {
+  if (fDebugPrints) std::cout << "Reset" << std::endl;
+  DoResets();
+}
+
+void PixelAMC13Interface::CalSync() {
+  if (fDebugPrints) std::cout << "CalSync" << std::endl;
+  fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
+  //usleep(10000);
+  fAMC13->sendL1ABurst();
+  //usleep(10000);
+  fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
+}
+
+void PixelAMC13Interface::LevelOne() {
+  if (fDebugPrints) std::cout << "LevelOne" << std::endl;
+  fAMC13->sendL1ABurst();
+}
+
+void PixelAMC13Interface::ResetTBM() {
+  if (fDebugPrints) std::cout << "ResetTBM" << std::endl;
+  FireBGO(1);
+}
+
+void PixelAMC13Interface::ResetROC() {
+  if (fDebugPrints) std::cout << "ResetROC" << std::endl;
+  FireBGO(2);
+}
+
+uint32_t PixelAMC13Interface::ClockFreq() {
+  uint32_t v = fAMC13->read(amc13::AMC13Simple::T2, "STATUS.TTC.CLK_FREQ") * 50;
+  if (fDebugPrints) std::cout << "ClockFreq " << v << std::endl;
+  return v;
 }
 
 void PixelAMC13Interface::ClearL1AHistory() {
@@ -59,105 +140,7 @@ void PixelAMC13Interface::ClearTTCHistoryFilter() {
     fAMC13->write(amc13::AMC13Simple::T2, base+i, 0);
 }
 
-
-void PixelAMC13Interface::DoResets() {
-  if (fDebugPrints) std::cout << "Resetting T1, T2, counters, DAQ" << std::endl;
-  fAMC13->reset(amc13::AMC13Simple::T1);
-  fAMC13->reset(amc13::AMC13Simple::T2);
-  fAMC13->resetCounters();
-  fAMC13->resetDAQ();
-  fAMC13->sendLocalEvnOrnReset(true, true);
-
-  fAMC13->setTTCHistoryFilter(0, 0x10101); // filter out BC0
-  fAMC13->setTTCFilterEna(true);
-  fAMC13->setTTCHistoryEna(false);
-
-  // JMTBAD these two don't work with fw T1 0x23D T2 0x2E (but they are both on the T2 and this is the latest fw?)
-  //fAMC13->clearTTCHistory(); 
-  //fAMC13->clearTTCHistoryFilter();
-  ClearL1AHistory();
-  ClearTTCHistory();
-  ClearTTCHistoryFilter();
-
-  fAMC13->setTTCHistoryFilter(0, 0x10101);
-  fAMC13->setTTCFilterEna(true);
-  fAMC13->setTTCHistoryEna(true);
-
-  for (int i = 0; i < 4; ++i) 
-    fAMC13->configureBGOShort(i, 0, 0, 0, 0);
-}
-
-void PixelAMC13Interface::Configure() {
-  DoResets();
-
-  ClearL1AHistory();
-
-  fAMC13->AMCInputEnable(fAMCMask);
-  if (fDebugPrints) {
-    std::cout << "Enabled TTC links for the following AMCs: ";
-    for (int i = 0; i < 12; ++i)
-      if (fAMCMask & (1 << i)) std::cout << i+1 << " ";
-    std::cout << std::endl;
-  }
-
-  assert(fBGOs.size() <= 4);
-  for (BGOs::const_iterator it = fBGOs.begin(), ite = fBGOs.end(); it != ite; ++it) {
-    const size_t i = it->first;
-    const BGO& bgo = it->second;
-    if (bgo.fUse) {
-      ConfigureBGO(i, bgo);
-      if (fDebugPrints) std::cout << "Configured BGO Channel " << i << " :"
-                                  << " Command: " << bgo.fCommand
-                                  << " BX: " << bgo.fBX
-                                  << " Prescale: " << bgo.fPrescale
-                                  << " Repetitive: " << bgo.fRepeat << std::endl;
-    }
-  }
-
-  fAMC13->configureLocalL1A(fTrigger.fEnabled, fTrigger.fMode, uint32_t(fTrigger.fBurst), uint32_t(fTrigger.fRate), fTrigger.fRules );
-  //fAMC13->fakeDataEnable(1); // fAMC13->write(amc13::AMC13Simple::T1, "CONF.LOCAL_TRIG.FAKE_DATA_ENABLE", 1); // JMTBAD ???
-  if (fDebugPrints) std::cout << "Configuring local L1A:"
-                                << " Enabled: " << fTrigger.fEnabled
-                                << " Mode: " << fTrigger.fMode
-                                << " Rate: " << fTrigger.fRate
-                                << " Burst: " << fTrigger.fBurst
-                                << " Rules: " << fTrigger.fRules << std::endl;
-
-  fAMC13->localTtcSignalEnable(fSimulate);
-  if (fSimulate && fDebugPrints) std::cout << "AMC13 configured to use local TTC simulator" << std::endl;
-
-  //ClearTTCHistory();
-  //ClearTTCHistoryFilter();
-
-  if (fDebugPrints) std::cout << "AMC13 successfully configured!" << std::endl;
-}
-
-void PixelAMC13Interface::Halt() {
-  if (fDebugPrints) std::cout << "Halt: ";
-  DoResets();
-}
-
-void PixelAMC13Interface::Reset() {
-  if (fDebugPrints) std::cout << "Reset: " << std::endl;
-  DoResets();
-}
-
-void PixelAMC13Interface::StartL1A()
-{
-  fAMC13->startContinuousL1A();
-}
-
-void PixelAMC13Interface::StopL1A()
-{
-  fAMC13->stopContinuousL1A();
-}
-
-void PixelAMC13Interface::BurstL1A()
-{
-  fAMC13->sendL1ABurst();
-}
-
-uint32_t PixelAMC13Interface::getTTCHistoryItemAddress( int item) {
+uint32_t PixelAMC13Interface::getTTCHistoryItemAddress(int item) {
   if (item > -1 || item < -512)
     throw_simple(amc13::Exception::UnexpectedRange(), "TTC history item offset out of range");
 
@@ -225,50 +208,37 @@ void PixelAMC13Interface::DumpTriggers()
   }
 }
 
-void PixelAMC13Interface::ConfigureBGO(size_t i, BGO bgo) {
+void PixelAMC13Interface::ConfigureBGO(unsigned i, BGO bgo) {
   if (i > 3)
     throw_simple(amc13::Exception::UnexpectedRange(), "AMC13::ConfigureBGO() - channel must be in range 0 to 3");
 
   if (bgo.fBX > 3563)
     throw_simple(amc13::Exception::UnexpectedRange(), "AMC13::ConfigureBGO() - bx must be in range 0 to 3563");
 
-  char tmp[32];
+  std::string bgo_base = "CONF.TTC.BGO";
+  bgo_base += '0' + i;
+  bgo_base += '.';
 
-  snprintf(tmp, sizeof(tmp), "CONF.TTC.BGO%lu.COMMAND", i);
-  fAMC13->write( amc13::AMC13Simple::T1, tmp, bgo.fCommand);
-
-  snprintf(tmp, sizeof(tmp), "CONF.TTC.BGO%lu.LONG_CMD", i);
-  fAMC13->write( amc13::AMC13Simple::T1, tmp, (bgo.fCommand & 0xFFFFFF00) ? 1 : 0);
-
-  snprintf(tmp, sizeof(tmp), "CONF.TTC.BGO%lu.BX", i);
-  fAMC13->write( amc13::AMC13Simple::T1, tmp, bgo.fBX);
-
-  snprintf(tmp, sizeof(tmp), "CONF.TTC.BGO%lu.ORBIT_PRESCALE", i);
-  fAMC13->write( amc13::AMC13Simple::T1, tmp, bgo.fPrescale);
+  fAMC13->write(amc13::AMC13Simple::T1, bgo_base + "COMMAND",        bgo.fCommand);
+  fAMC13->write(amc13::AMC13Simple::T1, bgo_base + "LONG_CMD",       bgo.isLong);
+  fAMC13->write(amc13::AMC13Simple::T1, bgo_base + "ENABLE",         0);
+  fAMC13->write(amc13::AMC13Simple::T1, bgo_base + "ENABLE_SINGLE",  bgo.single);
+  fAMC13->write(amc13::AMC13Simple::T1, bgo_base + "BX",             bgo.fBX);
+  fAMC13->write(amc13::AMC13Simple::T1, bgo_base + "ORBIT_PRESCALE", bgo.fPrescale);
 }
 
-void PixelAMC13Interface::FireBGOs(unsigned which) {
-  bool at_least_one = false;
-  char tmp[64];
+void PixelAMC13Interface::FireBGO(unsigned i) {
+  if (i > 3)
+    throw_simple(amc13::Exception::UnexpectedRange(), "AMC13::FireBGO() - channel must be in range 0 to 3");
 
-  for (size_t i = 0; i < 4; ++i) {
-    BGO bgo = GetBGO(i);
-    if (bgo.fUse) {
-      at_least_one = true;
+  std::string single_addr = "CONF.TTC.BGO";
+  single_addr += '0' + i;
+  single_addr += ".ENABLE_SINGLE";
 
-      const bool enable = which & (1 << i);
-      snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%lu.ENABLE_SINGLE", i);
-      fAMC13->write(amc13::AMC13Simple::T1, tmp, enable && !bgo.fRepeat);
-      snprintf( tmp, sizeof(tmp), "CONF.TTC.BGO%lu.ENABLE", i);
-      fAMC13->write(amc13::AMC13Simple::T1, tmp, enable && bgo.fRepeat);
-    }
-  }
-
-  if (!at_least_one)
-    throw_simple(amc13::Exception::UnexpectedRange(), "FireBGO() - none enabled?");
-
+  fAMC13->write(amc13::AMC13Simple::T1, single_addr, 1); 
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_BGO", 1);
   fAMC13->write(amc13::AMC13Simple::T1, "ACTION.TTC.SINGLE_COMMAND", 1);
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.ENABLE_BGO", 0);
+  fAMC13->write(amc13::AMC13Simple::T1, single_addr, 0);
 }
 
