@@ -25,9 +25,15 @@ using namespace pos;
 #define PSX_NS_URI "http://xdaq.cern.ch/xdaq/xsd/2006/psx-pvss-10.xsd"
 const std::string dpeSuffix_get = ":_online.._value";
 
+namespace {
+  bool dumbAMC13 = false;
+  bool dumbAMC13goto = false;
+}
+
 PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & tempConfiguration, const SOAPCommander& soapCommander) 
   : PixelSupervisorConfiguration(tempConfiguration),
-    SOAPCommander(soapCommander)
+    SOAPCommander(soapCommander),
+    AMC13(0)
 {
   //FIXME this method should never be called and should be removed.
   std::cout << "Greetings from the PixelCalibrationBase copy constructor." << std::endl;
@@ -38,6 +44,11 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
 
   percentageOfJob_=0;
 
+  if (dumbAMC13)
+    AMC13 = new amc13::AMC13("chtcp-2.0://localhost:10203?target=amc13_T1:50001",
+                             "/opt/cactus/etc/amc13/AMC13XG_T1.xml",
+                             "chtcp-2.0://localhost:10203?target=amc13_T2:50001",
+                             "/opt/cactus/etc/amc13/AMC13XG_T2.xml");
   
   if(dynamic_cast <PixelCalibConfiguration*> (theCalibObject_)==0) 
     { 
@@ -53,7 +64,7 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
 }
 
 
-PixelCalibrationBase::~PixelCalibrationBase(){}
+PixelCalibrationBase::~PixelCalibrationBase() { delete AMC13; }
 
 
 void PixelCalibrationBase::sendBeginCalibrationToFEDs(){
@@ -161,7 +172,17 @@ void PixelCalibrationBase::sendTTCCalSync(){
   // JMT will this work putting it here always? Sleep after?
   prepareFEDCalibrationMode(1);
 
+  usleep(1000);
+
   if (useTTC_){
+    uint64_t l1a_count_0;
+    uint64_t l1a_count_1;
+    uint64_t l1a_count_2;
+    if (dumbAMC13) {
+      l1a_count_0 = (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+      printf("before CalSync call: %llu\n", (unsigned long long)l1a_count_0);
+    }
+
     Attribute_Vector parametersToTTC(2);
     parametersToTTC[0].name_="xdaq:CommandPar";
     parametersToTTC[0].value_="Execute Sequence";
@@ -176,6 +197,36 @@ void PixelCalibrationBase::sendTTCCalSync(){
             cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
           }
       }
+
+    if (dumbAMC13) {
+      l1a_count_1 = (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+      printf("after CalSync call: %llu\n", (unsigned long long)l1a_count_1);
+      if (l1a_count_1 - l1a_count_0 != 1)
+        printf("\n\n\n\n\n\n\n\nFIRST L1A DIDN'T GO THROUGH\n\n\n\n\n\n\n");
+    }
+
+  redol1:
+    usleep(1000);
+
+    parametersToTTC[1].value_="LevelOne";
+    
+    for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
+      {
+        if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse")
+          {
+            cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
+          }
+      }
+
+    if (dumbAMC13) {
+      l1a_count_2 = (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+      printf("after LevelOne call: %llu\n", (unsigned long long)l1a_count_2);
+      if (l1a_count_2 - l1a_count_1 != 1) {
+        printf("\n\n\n\n\n\n\n\nSECOND L1A DIDN'T GO THROUGH\n\n\n\n\n\n\n");
+        if (dumbAMC13goto)
+          goto redol1;
+      }
+    }
   }
   
   

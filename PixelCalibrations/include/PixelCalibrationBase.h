@@ -15,6 +15,7 @@
 #include "PixelSupervisorConfiguration/include/PixelSupervisorConfiguration.h"
 
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
+#include "amc13/AMC13.hh"
 
 // temporary DiagSystem wrapper
 #include "PixelCalibrations/include/DiagWrapper.h"
@@ -22,6 +23,8 @@
 class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCommander
 {
  public:
+
+  amc13::AMC13* AMC13;
 
   PixelCalibrationBase( const PixelSupervisorConfiguration &,
 			const SOAPCommander& soapCommander);
