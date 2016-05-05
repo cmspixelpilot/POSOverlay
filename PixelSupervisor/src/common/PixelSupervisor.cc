@@ -3595,15 +3595,14 @@ std::string const msg_fatal_ltg = "[PixelSupervisor::stateConfiguring] no LTCSup
  LOG4CPLUS_FATAL(sv_logger_,msg_fatal_ltg);
     }
     proceed = false; // do not continue with other supervisors before LTCSupervisors are not configured
-    sleep(10);
+    sleep(useTTC_ ? 1 : 10);
   }
 
 
   if (!proceed) {
     std::string const msg_info_blx = "[PixelSupervisor::stateConfiguring] TCDS supervisors not yet configured.";
     LOG4CPLUS_INFO(sv_logger_,msg_info_blx);
-    // for now sleep 25 seconds after
-    ::sleep(10);
+    sleep(useTTC_ ? 1 : 10);
   }
 
 
