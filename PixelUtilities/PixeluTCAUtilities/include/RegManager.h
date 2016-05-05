@@ -4,12 +4,7 @@
 #define PixelUtilities_PixeluTCAUtilities_RegManager_h
 
 #include <uhal/uhal.hpp>
-
-class RegManagerUhalLogSetter {
-  static bool loggingSet;
- public:
-  RegManagerUhalLogSetter();
-};
+#include "PixelUtilities/PixeluTCAUtilities/include/PixelUhalLogSetter.h"
 
 /*!
  * \class RegManager
@@ -17,7 +12,7 @@ class RegManagerUhalLogSetter {
  */
 class RegManager {
  private:
-  RegManagerUhalLogSetter sLogSetter; /*!< whether uhal logging configured yet*/
+  PixelUhalLogSetter sLogSetter; /*!< whether uhal logging configured yet*/
 
  protected:
   std::string fUniqueId; /*!< used in prints*/
