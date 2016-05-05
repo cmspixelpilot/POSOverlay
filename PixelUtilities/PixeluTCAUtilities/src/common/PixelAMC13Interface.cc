@@ -80,6 +80,7 @@ void PixelAMC13Interface::Configure() {
   ConfigureBGO(1, BGO(0x14, true,  0, 100));    // RESET TBM
   ConfigureBGO(2, BGO(0x1c, true,  0, 100));    // RESET ROC
 
+  //fAMC13->fakeDataEnable(1); // JMTBAD needed to send triggers ???
   fAMC13->configureLocalL1A(true, 0, 1, 1, 0); // trigger burst 1 after 1 orbit = 
 }
 
@@ -96,10 +97,11 @@ void PixelAMC13Interface::Reset() {
 void PixelAMC13Interface::CalSync() {
   if (fDebugPrints) std::cout << "CalSync" << std::endl;
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
-  //usleep(10000);
+  usleep(10000);
   fAMC13->sendL1ABurst();
-  //usleep(10000);
+  usleep(10000);
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
+  usleep(10000);
 }
 
 void PixelAMC13Interface::LevelOne() {
