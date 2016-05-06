@@ -44,7 +44,7 @@ fecSlot_(fecSlot)
     //Constructor stuff
     if (PRINT) cout << "PixelPh1FECInterface: "  << "PixelPh1FECInterface Constructor" << endl;
     
-    maxbuffersize_=10000;
+    maxbuffersize_=15000;
     cout << "PixelPh1FECInterface::maxbuffersize_ set to " << maxbuffersize_ << "!!! change this in future\n";
     fecdebug = 0;
     
