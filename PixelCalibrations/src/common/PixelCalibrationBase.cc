@@ -26,8 +26,8 @@ using namespace pos;
 const std::string dpeSuffix_get = ":_online.._value";
 
 namespace {
-  bool dumbAMC13 = false;
-  bool dumbAMC13gotos = false;
+  bool dumbAMC13 = true;
+  bool dumbAMC13gotos = true;
 }
 
 PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & tempConfiguration, const SOAPCommander& soapCommander) 
