@@ -8,11 +8,12 @@ class PixelAMC13Interface {
  public:
   struct BGO {
     BGO() : fUse(false) {}
-    BGO(uint32_t pCommand, bool pSingle, int pPrescale, int pBX)
+    BGO(uint32_t pCommand, bool enable, bool enableSingle, int pPrescale, int pBX)
     : fUse(true),
       fCommand(pCommand),
       isLong(fCommand & 0xFFFFFF00),
-      single(pSingle),
+      fEnable(enable),
+      fEnableSingle(enableSingle),
       fPrescale(pPrescale),
       fBX(pBX)
     {}
@@ -20,7 +21,8 @@ class PixelAMC13Interface {
     bool fUse;
     unsigned fCommand;
     bool isLong;
-    bool single;
+    bool fEnable;
+    bool fEnableSingle;
     unsigned fPrescale;
     unsigned fBX;
   };
@@ -50,6 +52,7 @@ class PixelAMC13Interface {
 
   uint32_t GetClockFreq();
   uint64_t GetL1ACount();
+  uint32_t GetL1ARate();
 
   void ClearL1AHistory();
   void ClearTTCHistory();

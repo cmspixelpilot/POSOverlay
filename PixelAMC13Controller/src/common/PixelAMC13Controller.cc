@@ -87,6 +87,9 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   *out << "L1A count: "
        << commaify(amc13->GetL1ACount()) << "<br>\n";
 
+  *out << "L1A rate: "
+       << commaify(amc13->GetL1ARate()) << " Hz<br>\n";
+
   *out << "Input clock frequency measurement: "
        << commaify(amc13->GetClockFreq())
        << " &plusmn; 50 Hz<br>\n";
