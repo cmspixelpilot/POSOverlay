@@ -37,7 +37,6 @@ class PixelAMC13Interface {
   void SetMask(const std::string& v) { fMask = fAMC13->parseInputEnableList(v, true); }
   void SetDebugPrints(bool v) { fDebugPrints = v; }
   void SetCalBX(unsigned v) { fCalBX = v; }
-  void SetL1ABurstDelay(unsigned v) { fL1ABurstDelay = v; }
 
   void DoResets();
 
@@ -71,7 +70,6 @@ class PixelAMC13Interface {
   uint32_t fMask;
   bool fDebugPrints;
   uint32_t fCalBX;
-  uint32_t fL1ABurstDelay;
 };
 
 #endif

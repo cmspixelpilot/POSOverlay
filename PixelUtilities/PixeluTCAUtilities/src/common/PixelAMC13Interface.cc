@@ -18,8 +18,7 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
                             uriT2, "/opt/cactus/etc/amc13/AMC13XG_T2.xml")),
     fMask(0),
     fDebugPrints(false),
-    fCalBX(381),
-    fL1ABurstDelay(10)
+    fCalBX(381)
 {
 }
 
@@ -31,8 +30,7 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
   : fAMC13(new amc13::AMC13(uriT1, addressT1, uriT2, addressT2)),
     fMask(0),
     fDebugPrints(false),
-    fCalBX(381),
-    fL1ABurstDelay(10)
+    fCalBX(381)
 {
 }
 
@@ -97,11 +95,11 @@ void PixelAMC13Interface::Reset() {
 void PixelAMC13Interface::CalSync() {
   if (fDebugPrints) std::cout << "CalSync" << std::endl;
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
-  usleep(40000);
+  usleep(1000);
   fAMC13->sendL1ABurst();
-  usleep(20000);
+  usleep(1000);
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
-  usleep(10000);
+  usleep(1000);
 }
 
 void PixelAMC13Interface::LevelOne() {
