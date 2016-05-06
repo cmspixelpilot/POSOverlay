@@ -19,7 +19,7 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fMask(0),
     fDebugPrints(false),
     fCalBX(381),
-    fL1ABurstDelay(1000)
+    fL1ABurstDelay(10)
 {
 }
 
@@ -32,7 +32,7 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fMask(0),
     fDebugPrints(false),
     fCalBX(381),
-    fL1ABurstDelay(1000)
+    fL1ABurstDelay(10)
 {
 }
 
