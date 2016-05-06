@@ -84,8 +84,11 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 
   if (!amc13) return;
   
+  *out << "L1A count: "
+       << commaify(amc13->GetL1ACount()) << "<br>\n";
+
   *out << "Input clock frequency measurement: "
-       << commaify(amc13->ClockFreq())
+       << commaify(amc13->GetClockFreq())
        << " &plusmn; 50 Hz<br>\n";
 
   std::string urlAllAMC13Tables = "/";
