@@ -97,9 +97,9 @@ void PixelAMC13Interface::Reset() {
 void PixelAMC13Interface::CalSync() {
   if (fDebugPrints) std::cout << "CalSync" << std::endl;
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
-  usleep(10000);
+  usleep(40000);
   fAMC13->sendL1ABurst();
-  usleep(10000);
+  usleep(20000);
   fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
   usleep(10000);
 }
