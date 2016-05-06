@@ -36,7 +36,7 @@
 
 
 
-extern void Gl_histinit(char*);
+extern void Gl_histinit(const char*);
 //extern char *Getline(const char*);
 extern char *Getlinem(int, const char*);
 extern void  Gl_histadd(const char *);

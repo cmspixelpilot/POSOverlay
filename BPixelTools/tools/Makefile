@@ -1,5 +1,5 @@
 CC=		g++
-FLAGS=		 -g -Wall -I./include -fPIC
+FLAGS=		 -O0 -g -Wall -I./include -fPIC
 #FLAGS=		 -g -Wall -DDEBUG -I./include 
 LDLAGS= -m64 
 SOFLAGS= -shared
