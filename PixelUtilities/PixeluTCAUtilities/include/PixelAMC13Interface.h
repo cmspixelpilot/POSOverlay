@@ -48,7 +48,8 @@ class PixelAMC13Interface {
   void ResetTBM();
   void ResetROC();
 
-  uint32_t ClockFreq();
+  uint32_t GetClockFreq();
+  uint64_t GetL1ACount();
 
   void ClearL1AHistory();
   void ClearTTCHistory();

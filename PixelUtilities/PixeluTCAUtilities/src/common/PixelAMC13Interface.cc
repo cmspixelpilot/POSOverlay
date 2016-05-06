@@ -119,10 +119,14 @@ void PixelAMC13Interface::ResetROC() {
   FireBGO(2);
 }
 
-uint32_t PixelAMC13Interface::ClockFreq() {
+uint32_t PixelAMC13Interface::GetClockFreq() {
   uint32_t v = fAMC13->read(amc13::AMC13Simple::T2, "STATUS.TTC.CLK_FREQ") * 50;
   if (fDebugPrints) std::cout << "ClockFreq " << v << std::endl;
   return v;
+}
+
+uint64_t PixelAMC13Interface::GetL1ACount() {
+  return (uint64_t(fAMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | fAMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
 }
 
 void PixelAMC13Interface::ClearL1AHistory() {
