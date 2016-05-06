@@ -46,7 +46,7 @@ struct ColRowAddrDecoder {
   }
 
   std::pair<int, int> colrowencode(std::pair<int, int> colrow) {
-    const int dcol = colrow.first / 2;
+    //const int dcol = colrow.first / 2;
     return std::make_pair(dcolencode(colrow.first / 2), rowencode(colrow.second));
   }
 };
