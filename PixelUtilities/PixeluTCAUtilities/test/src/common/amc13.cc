@@ -57,11 +57,11 @@ int main(int argc, char** argv) {
       a.ResetROC();
     }
     else if (c == 'f') {
-      a.ClockFreq();
+      a.GetClockFreq();
     }
     else if (c == 'l') {
       for (int i = 0; i < 10; ++i) {
-        a.ClockFreq();
+        a.GetClockFreq();
         sleep(1);
       }
     }
