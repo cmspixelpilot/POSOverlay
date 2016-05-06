@@ -655,13 +655,16 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	std::cout << "FIFO3Decoder thinks:\n"
 		  << "nhits: " << decode3->nhits() << std::endl;
 	int hits_by_ch[37] = {0};
-	int hits_by_roc[37][8] = {{0}};
+	int hits_by_roc[37][9] = {{0}};
 	unsigned lastroc = 0;
 	for (unsigned i = 0; i < decode3->nhits(); ++i) {
 	  const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3->channel(i), decode3->rocid(i)-1);
+          unsigned rocidm1 = decode3->rocid(i)-1;
+          if (rocidm1 > 7)
+            rocidm1 = 8;
 	  ++hits_by_ch[decode3->channel(i)];
-	  ++hits_by_roc[decode3->channel(i)][decode3->rocid(i)-1];
-	  if (lastroc != 0 && decode3->rocid(i) != lastroc) {
+	  ++hits_by_roc[decode3->channel(i)][rocidm1];
+	  if (rocidm1 < 8 && lastroc != 0 && decode3->rocid(i) != lastroc) {
 	    std::cout << "\n";
 	    lastroc = decode3->rocid(i);
 	  }
