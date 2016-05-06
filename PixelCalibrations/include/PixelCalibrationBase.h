@@ -75,6 +75,8 @@ class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCom
   void commandToAllFEDCrates( std::string command, Attribute_Vector parameters = Attribute_Vector(0) );
   void commandToAllFEDChannels( std::string command );
 
+  uint64_t getL1ACountFromAMC13();
+
   //Send ROCReset to all TTC supervisors
   void sendTTCROCReset();
 

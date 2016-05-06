@@ -27,7 +27,7 @@ const std::string dpeSuffix_get = ":_online.._value";
 
 namespace {
   bool dumbAMC13 = false;
-  bool dumbAMC13goto = false;
+  bool dumbAMC13gotos = false;
 }
 
 PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & tempConfiguration, const SOAPCommander& soapCommander) 
@@ -168,6 +168,13 @@ void PixelCalibrationBase::prepareFEDCalibrationMode(unsigned int nevents) {
   sendToFED(cmd, parameters);
 }
 
+uint64_t PixelCalibrationBase::getL1ACountFromAMC13() {
+  if (dumbAMC13)
+    return (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+  else
+    return 0;
+}
+
 void PixelCalibrationBase::sendTTCCalSync(){
   // JMT will this work putting it here always? Sleep after?
   prepareFEDCalibrationMode(1);
@@ -179,7 +186,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
     uint64_t l1a_count_1;
     uint64_t l1a_count_2;
     if (dumbAMC13) {
-      l1a_count_0 = (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+      l1a_count_0 = getL1ACountFromAMC13();
       printf("before CalSync call: %llu\n", (unsigned long long)l1a_count_0);
     }
 
@@ -190,6 +197,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
     parametersToTTC[1].value_="CalSync";
     
     Supervisors::iterator i_PixelTTCSupervisor;
+  redo1stL1:
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
       {
         if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse")
@@ -199,17 +207,20 @@ void PixelCalibrationBase::sendTTCCalSync(){
       }
 
     if (dumbAMC13) {
-      l1a_count_1 = (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+      l1a_count_1 = getL1ACountFromAMC13();
       printf("after CalSync call: %llu\n", (unsigned long long)l1a_count_1);
-      if (l1a_count_1 - l1a_count_0 != 1)
+      if (l1a_count_1 == l1a_count_0) {
         printf("\n\n\n\n\n\n\n\nFIRST L1A DIDN'T GO THROUGH\n\n\n\n\n\n\n");
+        if (dumbAMC13gotos)
+          goto redo1stL1;
+      }
     }
 
-  redol1:
     usleep(10000);
 
     parametersToTTC[1].value_="LevelOne";
     
+  redo2ndL1:
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
       {
         if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse")
@@ -219,12 +230,12 @@ void PixelCalibrationBase::sendTTCCalSync(){
       }
 
     if (dumbAMC13) {
-      l1a_count_2 = (uint64_t(AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_HI")) << 32) | AMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_COUNT_LO");
+      l1a_count_2 = getL1ACountFromAMC13();
       printf("after LevelOne call: %llu\n", (unsigned long long)l1a_count_2);
-      if (l1a_count_2 - l1a_count_1 != 1) {
+      if (l1a_count_2 == l1a_count_1) {
         printf("\n\n\n\n\n\n\n\nSECOND L1A DIDN'T GO THROUGH\n\n\n\n\n\n\n");
-        if (dumbAMC13goto)
-          goto redol1;
+        if (dumbAMC13gotos)
+          goto redo2ndL1;
       }
     }
 
