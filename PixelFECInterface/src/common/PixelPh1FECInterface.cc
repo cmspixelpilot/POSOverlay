@@ -32,20 +32,16 @@ namespace {
   }
 }
 
-//--------------------------------------------------------------------------
-// Here comes the constructor -- with two versions, one for HAL, one for CAEN
 PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
-                                     const int vmeslot,
-                                     unsigned int fecCrate,
-                                     unsigned int fecSlot): pRegManager(RegManagerPtr),
-fecCrate_(fecCrate),
-fecSlot_(fecSlot)
+                                           const char* boardid)
+  : pRegManager(RegManagerPtr),
+    board_id(boardid)
 {
     //Constructor stuff
     if (PRINT) cout << "PixelPh1FECInterface: "  << "PixelPh1FECInterface Constructor" << endl;
-    
-    maxbuffersize_=1000;
-    cout << "PixelPh1FECInterface::maxbuffersize_ set to " << maxbuffersize_ << "!!! change this in future\n";
+
+    cout << "PixelPh1FECInterface::maxbuffersize set to " << maxbuffersize << "!!! change this in future\n";
+    assert(qbufsize > maxbuffersize + 100);
     fecdebug = 0;
     
     for (int tfecchannel=1;tfecchannel<=2;tfecchannel++) {
@@ -68,11 +64,7 @@ fecSlot_(fecSlot)
     PRINT_RESTORE();
     
 }
-//------------------------------------------------------------------------
-PixelPh1FECInterface::~PixelPh1FECInterface(void)
-{
-    //Destructor stuff
-}
+
 //-------------------------------------------------------------------------
 /* There are two versions of getversion() for both hal and CAEN (4 total)
  The form getversion(unsigned long *data) returns the integer 0..255
@@ -751,13 +743,13 @@ void PixelPh1FECInterface::analyzeFecCSRChan(int mFEC, int ichan, unsigned int i
     if (fecdebug == 1) cout << "Previous fec command FAILED ";
     else if (fecdebug == 2) cout << "Current fec command FAILED ";
     cout << "CSR Register:0x" << hex <<ival<<dec<<endl;
-    if ((ival & 0x01) == 0x01) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive timeout"<<endl;
-    if ((ival & 0x02) == 0x02) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive complete"<<endl;
-    if ((ival & 0x04) == 0x04) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" HubAddress error"<<endl;
-    if ((ival & 0x08) == 0x08) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" Send started but not finished"<<endl;
-    if ((ival & 0x10) == 0x10) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive count error"<<endl;
-    if ((ival & 0x20) == 0x20) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive error"<<endl;
-    if ((ival & 0x40) == 0x40) cout <<"slot="<<fecSlot_<<" mFEC="<<mFEC<<" CH="<<ichan<<" Stop Failure"<<endl;
+    if ((ival & 0x01) == 0x01) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive timeout"<<endl;
+    if ((ival & 0x02) == 0x02) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive complete"<<endl;
+    if ((ival & 0x04) == 0x04) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" HubAddress error"<<endl;
+    if ((ival & 0x08) == 0x08) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" Send started but not finished"<<endl;
+    if ((ival & 0x10) == 0x10) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive count error"<<endl;
+    if ((ival & 0x20) == 0x20) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" Receive error"<<endl;
+    if ((ival & 0x40) == 0x40) cout <<"board="<<board_id<<" mFEC="<<mFEC<<" CH="<<ichan<<" Stop Failure"<<endl;
 }
 //-----------------------------------------------------------------------------
 // Send buffered data for all channels
@@ -784,7 +776,9 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
     
     qbufnsend[mfec][fecchannel]++;
 
-    if (PRINT) cout << "PixelPh1FECInterface: "  << "qbufsend(" << mfec << ", " << fecchannel << "), nsend = " << qbufnsend[mfec][fecchannel] << endl;
+    //PRINT_ON();
+
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "qbufsend(" << mfec << ", " << fecchannel << "), ndata = " << qbufn[mfec][fecchannel] << ", ncalls = " << qbufnsend[mfec][fecchannel] << endl;
     
     mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat); //must make sure channel is not busy, wait if necessary!!!!!!
     // FIXME could be more efficient - e.g. go to another channel
@@ -804,7 +798,7 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
                 
                 count++;
                 
-                cout << "%Found channel with error: slot="<<fecSlot_<<" "<<mfec<<" "
+                cout << "%Found channel with error: board="<<board_id<<" "<<mfec<<" "
                 << fecchannel<<" sent "<<qbufnsend[mfec][fecchannel]
                 << " commands and had "<<qbufnerr[mfec][fecchannel]
                 << " errors."<<endl;
@@ -867,6 +861,8 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
 
     qbufn[mfec][fecchannel] = 0;
     memset(qbuf[mfec][fecchannel], 0, qbufsize); // JMTBAD for good measure to be sure new FEC doesn't pick up stuff after the 0xFF...
+
+    //PRINT_RESTORE();
     
     return 0;
 }
@@ -974,10 +970,10 @@ int PixelPh1FECInterface::clrcal(int mfec, int fecchannel,
         if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode clrcal"<<endl;
         
         // Check that there is nothing for the buffer mode?
-        if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
+        if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
             qbufsend(mfec,fecchannel);
         }
-        assert(qbufn[mfec][fecchannel] < maxbuffersize_);
+        assert(qbufn[mfec][fecchannel] < maxbuffersize);
         
         // If the hub and port are different, resend the new hub and port
         //  if (!((qbuflasthub[mfec][fecchannel] == hubaddress) &&
@@ -1087,11 +1083,11 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
         
-        if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
+        if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
             //cout << "ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT"<<endl;
             qbufsend(mfec,fecchannel);
         }
-        assert(qbufn[mfec][fecchannel] < maxbuffersize_);
+        assert(qbufn[mfec][fecchannel] < maxbuffersize);
         
         // If the hub and port are different, resend the new hub and port
         //  if (!((qbuflasthub[mfec][fecchannel] == hubaddress) &&
@@ -1239,12 +1235,12 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
         
-        if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
+        if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
             //cout << "PixelPh1FECInterface::progpix:ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT("<<qbufn[mfec][fecchannel]<<")"<<endl;
-            if (PRINT) cout << "PixelPh1FECInterface: "  << "qbufn = " << qbufn[mfec][fecchannel] << " > maxbufsize = " << maxbuffersize_ << "; qbufsending..." << endl;
+            if (PRINT) cout << "PixelPh1FECInterface: "  << "qbufn = " << qbufn[mfec][fecchannel] << " > maxbufsize = " << maxbuffersize << "; qbufsending..." << endl;
             qbufsend(mfec,fecchannel);
         }
-        assert(qbufn[mfec][fecchannel] < maxbuffersize_);
+        assert(qbufn[mfec][fecchannel] < maxbuffersize);
         
         // If the hub and port are different, resend the new hub and port
         //  if (!((qbuflasthub[mfec][fecchannel] == hubaddress) &&
@@ -1382,11 +1378,11 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
         
-        if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
+        if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
             //cout << "ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT"<<endl;
             qbufsend(mfec,fecchannel);
         }
-        assert(qbufn[mfec][fecchannel] < maxbuffersize_);
+        assert(qbufn[mfec][fecchannel] < maxbuffersize);
         
         // If the hub and port are different, resend the new hub and port
         //  if (!((qbuflasthub[mfec][fecchannel] == hubaddress) &&
@@ -1518,11 +1514,11 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
     if (buffermode) {
         if (PRINT) cout << "PixelPh1FECInterface: "  << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
         
-        if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
+        if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
             //cout << "ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT"<<endl;
             qbufsend(mfec,fecchannel);
         }
-        assert(qbufn[mfec][fecchannel] < maxbuffersize_);
+        assert(qbufn[mfec][fecchannel] < maxbuffersize);
         
         // If the hub and port are different, resend the new hub and port
         //  if (!((qbuflasthub[mfec][fecchannel] == hubaddress) &&
@@ -1664,12 +1660,12 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
         
-        if (qbufn[mfec][fecchannel] >= maxbuffersize_)  {
+        if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
             //cout << "PixelPh1FECInterface::progdac: ERROR mfec " << mfec <<":"<<fecchannel<<" OVER BUFFER LIMIT ("<<qbufn[mfec][fecchannel]<<")"<<endl;;
             qbufsend(mfec,fecchannel);
         }
         
-        assert(qbufn[mfec][fecchannel] < maxbuffersize_);
+        assert(qbufn[mfec][fecchannel] < maxbuffersize);
         
         // If the hub and port are different, resend the new hub and port
         //  if (!((qbuflasthub[mfec][fecchannel] == hubaddress) &&
@@ -1840,7 +1836,7 @@ int PixelPh1FECInterface::progalldacs(int mfec, int fecchannel,
     txdata[current++] = 0;
     txdata[current++] = 0xFF;
     
-    if(current>maxbuffersize_) cout<<" FEC buffer overflow, reduce the data length "
+    if(current>maxbuffersize) cout<<" FEC buffer overflow, reduce the data length "
         <<current<<endl;
     
     // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
@@ -2087,7 +2083,7 @@ int PixelPh1FECInterface::rocinit(int NCOLS, int mfec, int fecchannel,
     txdata[current++] = 0;
     txdata[current++] = 0xFF;
     
-    if(current>maxbuffersize_) cout<<" FEC buffer overflow, reduce the data length "
+    if(current>maxbuffersize) cout<<" FEC buffer overflow, reduce the data length "
         <<current<<endl;
     
     // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
@@ -2206,8 +2202,8 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
         txdata[current++] = 0;
         txdata[current++] = 0xFF;  // take this ff out for final
         
-        if(current>maxbuffersize_) cout<<" FEC buffer overflow, reduce the data length "
-            <<current<<" "<<maxbuffersize_<<endl;
+        if(current>maxbuffersize) cout<<" FEC buffer overflow, reduce the data length "
+            <<current<<" "<<maxbuffersize<<endl;
         
         // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
         // Reset the appropriate mfec channel
@@ -2325,7 +2321,7 @@ int PixelPh1FECInterface::coltrimload(int mfec, int fecchannel,
     // terminate with 0
     txdata[current++] = 0;
     txdata[current++] = 0xFF;  // take this ff out for final
-    if(current>maxbuffersize_) cout<<" FEC buffer overflow, reduce the data length "
+    if(current>maxbuffersize) cout<<" FEC buffer overflow, reduce the data length "
         <<current<<endl;
     
     // Now data is in txdata.  Ready to initiate tx.  Reset and send go.
@@ -2445,7 +2441,7 @@ int PixelPh1FECInterface::sendcoltoroc(const int mfec, int fecchannel,
     
     // Place FF at the end
     txdata[current++] = 0xFF;
-    if(current>maxbuffersize_) cout<<" FEC buffer overflow, reduce the data length "
+    if(current>maxbuffersize) cout<<" FEC buffer overflow, reduce the data length "
         <<current<<endl;
     if (PRINT) {
         for (i=0;i<current;i++) cout<<" ("<<hex<< (int) txdata[i]<<") "<<dec;
@@ -2926,7 +2922,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
       //rocinit(40, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
       const int N = 251;
       const uint32_t myqbuf[N] = {0x2bf4047b, 0x7b00886a, 0x6b00f404, 0x047b0088, 0x886b01f4, 0xf4047b00, 0x00886b02, 0x03f4047b, 0x7b00886b, 0x6b06f404, 0x047b0088, 0x886b07f4, 0xf4047b00, 0x00886b04, 0x05f4047b, 0x7b00886b, 0x6b0cf404, 0x047b0088, 0x886b0df4, 0xf4047b00, 0x00886b0e, 0x0ff4047b, 0x7b00886b, 0x6b0af404, 0x047b0088, 0x886b0bf4, 0xf4047b00, 0x00886b08, 0x09f4047b, 0x7b00886b, 0x6b18f404, 0x047b0088, 0x886b19f4, 0xf4047b00, 0x00886b1a, 0x1bf4047b, 0x7b00886b, 0x6b1ef404, 0x047b0088, 0x886b1ff4, 0xf4047b00, 0x00886b1c, 0x1df4047b, 0x7b00886b, 0x6b14f404, 0x047b0088, 0x886b15f4, 0xf4047b00, 0x00886b16, 0x17f4047b, 0x7b00886b, 0x6b12f404, 0x047b0088, 0x886b13f4, 0xf4047b00, 0x00886b10, 0x11f4047b, 0x7b00886b, 0x6b30f404, 0x047b0088, 0x886b31f4, 0xf4047b00, 0x00886b32, 0x33f4047b, 0x7b00886b, 0x6b36f404, 0x047b0088, 0x886b37f4, 0xf4047b00, 0x00886b34, 0x35f4047b, 0x7b00886b, 0x6b3cf404, 0x047b0088, 0x886b3df4, 0xf4047b00, 0x00886b3e, 0x3ff4047b, 0x7b00886b, 0x6b3af404, 0x047b0088, 0x886b3bf4, 0xf4047b00, 0x00886b38, 0x39f4047b, 0x7b00886b, 0x6b28f404, 0x047b0088, 0x886b29f4, 0xf4047b00, 0x00886b2a, 0x2bf4047b, 0x7b00886b, 0x6900f404, 0x047b0088, 0x886901f4, 0xf4047b00, 0x00886902, 0x03f4047b, 0x7b008869, 0x6906f404, 0x047b0088, 0x886907f4, 0xf4047b00, 0x00886904, 0x05f4047b, 0x7b008869, 0x690cf404, 0x047b0088, 0x88690df4, 0xf4047b00, 0x0088690e, 0x0ff4047b, 0x7b008869, 0x690af404, 0x047b0088, 0x88690bf4, 0xf4047b00, 0x00886908, 0x09f4047b, 0x7b008869, 0x6918f404, 0x047b0088, 0x886919f4, 0xf4047b00, 0x0088691a, 0x1bf4047b, 0x7b008869, 0x691ef404, 0x047b0088, 0x88691ff4, 0xf4047b00, 0x0088691c, 0x1df4047b, 0x7b008869, 0x6914f404, 0x047b0088, 0x886915f4, 0xf4047b00, 0x00886916, 0x17f4047b, 0x7b008869, 0x6912f404, 0x047b0088, 0x886913f4, 0xf4047b00, 0x00886910, 0x11f4047b, 0x7b008869, 0x6930f404, 0x047b0088, 0x886931f4, 0xf4047b00, 0x00886932, 0x33f4047b, 0x7b008869, 0x6936f404, 0x047b0088, 0x886937f4, 0xf4047b00, 0x00886934, 0x35f4047b, 0x7b008869, 0x693cf404, 0x047b0088, 0x88693df4, 0xf4047b00, 0x0088693e, 0x3ff4047b, 0x7b008869, 0x693af404, 0x047b0088, 0x88693bf4, 0xf4047b00, 0x00886938, 0x39f4047b, 0x7b008869, 0x6928f404, 0x047b0088, 0x886929f4, 0xf4047b00, 0x0088692a, 0x2bf4047b, 0x7b008869, 0x6800f404, 0x047b0088, 0x886801f4, 0xf4047b00, 0x00886802, 0x03f4047b, 0x7b008868, 0x6806f404, 0x047b0088, 0x886807f4, 0xf4047b00, 0x00886804, 0x05f4047b, 0x7b008868, 0x680cf404, 0x047b0088, 0x88680df4, 0xf4047b00, 0x0088680e, 0x0ff4047b, 0x7b008868, 0x680af404, 0x047b0088, 0x88680bf4, 0xf4047b00, 0x00886808, 0x09f4047b, 0x7b008868, 0x6818f404, 0x047b0088, 0x886819f4, 0xf4047b00, 0x0088681a, 0x1bf4047b, 0x7b008868, 0x681ef404, 0x047b0088, 0x88681ff4, 0xf4047b00, 0x0088681c, 0x1df4047b, 0x7b008868, 0x6814f404, 0x047b0088, 0x886815f4, 0xf4047b00, 0x00886816, 0x17f4047b, 0x7b008868, 0x6812f404, 0x047b0088, 0x886813f4, 0xf4047b00, 0x00886810, 0x11f4047b, 0x7b008868, 0x6830f404, 0x047b0088, 0x886831f4, 0xf4047b00, 0x00886832, 0x33f4047b, 0x7b008868, 0x6836f404, 0x047b0088, 0x886837f4, 0x0000ff00 };
-      qbufn[mymfec][myfecchannel] = N*4 - 2; // JMTBAD count position of FF in last word
+      qbufn[mymfec][myfecchannel] = N*4-2; // JMTBAD count position of FF in last word
       memcpy(qbuf[mymfec][myfecchannel], myqbuf, N*4); // just copy all the last word
       qbufsend();
 

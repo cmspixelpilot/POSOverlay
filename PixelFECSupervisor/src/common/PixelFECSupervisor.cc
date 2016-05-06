@@ -2819,7 +2819,7 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
           //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
           //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
           int dummy = 0;
-          tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], dummy, feccrate, fecSlot);
+          tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], boardid);
         }
         else {
           if (busAdapter_ == 0) {

@@ -20,10 +20,7 @@
 class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
     
 public:
-  PixelPh1FECInterface(RegManager* const RegManagerPtr, const int vmeslot,
-                      unsigned int fecCrate, unsigned int fecSlot);
-    
-    ~PixelPh1FECInterface();
+  PixelPh1FECInterface(RegManager* const RegManagerPtr, const char* boardid);
     
     void haltest(void);
     
@@ -220,12 +217,12 @@ public:
     unsigned int flipByte(unsigned int input);
 	    
 private:
-    
     typedef uhal::ValWord<uint32_t> valword;
     typedef uhal::ValVector<uint32_t> valvec;
     RegManager * const pRegManager;
-    
 
+    const std::string board_id;
+    
     // ordering mfecs to match designations on vme card
     unsigned long mfecaddress[9];
     
@@ -236,7 +233,7 @@ private:
     int qbufnsend[9][3];
     int qbufnerr[9][3];
     
-    enum {qbufsize = 1024};
+    enum {maxbuffersize = 1000, qbufsize = 16384}; // JMTBAD some float needed for 0xFFs etc.
     int qbufn[9][3];
     unsigned char qbuf[9][3][qbufsize];
     
@@ -246,15 +243,8 @@ private:
     //int qbuflasthub[9][3];
     //int qbuflastport[9][3];
     
-    //max buffer size; set in constructor. (has to be less than ~1000).
-    int maxbuffersize_;
-    
     int fecdebug;
-    
-    //The crate and slot number
-    unsigned int fecCrate_;
-    unsigned int fecSlot_;
-    
+
 };
 
 #endif
