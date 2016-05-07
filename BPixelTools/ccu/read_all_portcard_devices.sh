@@ -1,6 +1,18 @@
 #!/bin/bash
 
 cat | (bin/ccu -utca connections.xml -fechardwareid board)  <<EOF
+i2cr 10 10
+i2cr 10 11
+i2cr 10 12
+i2cr 10 13
+i2cr 10 14
+i2cr 10 15
+i2cr 10 16
+i2cr 10 17
+i2cr 10 18
+i2cr 10 19
+i2cr 10 1a
+i2cr 10 1b
 i2cr 10 40
 i2cr 10 41
 i2cr 10 42
