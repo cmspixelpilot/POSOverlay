@@ -1037,6 +1037,7 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
               << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
   }
 
+#if 0
   readSpyFIFO();
   PixelFEDInterfacePh1::digfifo1 f = readFIFO1();
 
@@ -1115,6 +1116,7 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
         std::cout << std::hex << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
     }
   }
+#endif
 
   regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
   usleep(10);
