@@ -827,6 +827,8 @@ void PixelTKFECDelay25Calibration::Intersection(set< pair<int,int> > CandidatePo
     if(CandidateIter == CandidatePoints.end()) {
       //This point is not in the intersection, so we get rid of it
       GlobalCandidatePoints.erase(GlobalIter);
+      if (GlobalCandidatePoints.size() == 0)
+        break;
       GlobalIter--;
     }
   }
