@@ -39,6 +39,5 @@ i2cr 10 70
 i2cr 10 71
 i2cr 10 72
 i2cr 10 73
+pia get data
 EOF
-
-
