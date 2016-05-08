@@ -14,9 +14,7 @@ os.system('mkdir -p %s' % out_dir)
 
 f = ROOT.TFile(in_fn)
 
-dirs = [
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD1/Pilt_BmI_D3_BLD1_PNL1/Pilt_BmI_D3_BLD1_PNL1_PLQ1',
-    ]
+dirs = ['Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD%i/Pilt_BmI_D3_BLD%i_PNL1/Pilt_BmI_D3_BLD%i_PNL1_PLQ1' % (i,i,i) for i in xrange(1,15)]
 
 c = ROOT.TCanvas('c', '', 1300, 1000)
 c.Divide(4,4)
