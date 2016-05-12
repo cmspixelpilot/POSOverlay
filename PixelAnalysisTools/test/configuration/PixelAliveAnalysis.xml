@@ -41,7 +41,7 @@
         <!-- Fed channels that you want to analyze. 
 				    Some channels between from and to can be excluded writing a list dash separated
 						If From="1" and To="36" all channels active in the configuration will be analyzed-->
-        <Channels From="1" To="36" />
+        <Channels From="1" To="49" />
         <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
         <Rocs     Exclude=""/>
       </Fed>
