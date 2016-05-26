@@ -982,9 +982,13 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   usleep(1000);
 
   uhal::ValWord<uint32_t> cVal = 0;
+  //uint32_t mycntword = 0;int sleepcnt=0;
   do {
     cVal = regManager->ReadReg("pixfed_stat_regs.DDR0_full");
     if (cVal == 0) usleep(10);
+    //sleepcnt++;
+    //if(sleepcnt>1000)mycntword=regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
+    //if(mycntword>5){cout<<mycntword<<" words in the ddr"<<endl; usleep(300000);}
   }
   while ( cVal == 0 );
 
