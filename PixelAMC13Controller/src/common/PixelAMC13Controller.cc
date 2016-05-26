@@ -40,6 +40,7 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   xoap::bind(this, &PixelAMC13Controller::Stop, "stop", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Suspend, "suspend", XDAQ_NS_URI);  
  
+  getApplicationInfoSpace()->fireItemAvailable("DoNothing", &doNothing);
   getApplicationInfoSpace()->fireItemAvailable("Uri1", &uri1);
   getApplicationInfoSpace()->fireItemAvailable("Uri2", &uri2);
   getApplicationInfoSpace()->fireItemAvailable("AddressT1", &addressT1);
@@ -147,18 +148,30 @@ void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) thr
 
 xoap::MessageReference PixelAMC13Controller::Reset(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Reset" << std::endl;
-  if (!amc13) InitAMC13();
-  amc13->Configure();
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+    if (!amc13) InitAMC13();
+    amc13->Configure();
+  }
   return MakeSOAPMessageReference("TTCciControlFSMReset");
 }
 
 xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Configuration(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("ParameterSetResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Configure (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Configure(MAGIC HAPPENS IN RESET)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("configureResponse");
 }
 
@@ -169,32 +182,47 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
   Receive(msg, parameters);
 
   if (PRINT) std::cout << "PixelAMC13Controller::userCommand(" << parameters[0].value_ << ", " << parameters[1].value_ << ")" << std::endl;
-
-  if (parameters[1].value_ == "CalSync")
-    amc13->CalSync();
-  else if (parameters[1].value_ == "LevelOne")
-    amc13->LevelOne();
-  else if (parameters[1].value_ == "ResetROC")
-    amc13->ResetROC();
-  else if (parameters[1].value_ == "ResetTBM")
-    amc13->ResetTBM();
-  else
-    XCEPT_RAISE(xoap::exception::Exception, "Don't know anything about command " + parameters[1].value_);
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+    if (parameters[1].value_ == "CalSync")
+      amc13->CalSync();
+    else if (parameters[1].value_ == "LevelOne")
+      amc13->LevelOne();
+    else if (parameters[1].value_ == "ResetROC")
+      amc13->ResetROC();
+    else if (parameters[1].value_ == "ResetTBM")
+      amc13->ResetTBM();
+    else
+      XCEPT_RAISE(xoap::exception::Exception, "Don't know anything about command " + parameters[1].value_);
+  }
   
   return MakeSOAPMessageReference("userTTCciControlResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Enable(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Enable(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("enableResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Stop(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Stop(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("stopResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Suspend (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Suspend(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("suspendResponse");
 }
