@@ -17,12 +17,16 @@ id2name = {
 14 : 'M-H-1-48',
 }
 
-dacdir = 'dac/8'
-tbmdir = 'tbm/3'
-trimdir = 'trim/4'
+#id2name = { 1: 'M-G-2-35' }
+
+dacdir = 'dac/10'
+tbmdir = 'tbm/4'
+trimdir = 'trim/5'
 
 WBC = 92
 Readback = 12
+
+doug_area = '/home/fnaltest/TriDAS/Config/!!! from Doug !!!/M-G-2-35_17C'
 
 #######
 
@@ -43,9 +47,12 @@ for x in (dacdir, tbmdir, trimdir):
     os.mkdir(x)
 
 for modid in xrange(1,15):
+    if not id2name.has_key(modid):
+        continue
+
     oldname2 = id2name[modid]
     oldname = 'FPIX_%s' % oldname2
-    olddir = 'TestArea/%s' % oldname2
+    olddir = os.path.join(doug_area, oldname2)
 
     newname = 'Pilt_BmI_D3_BLD%(modid)i_PNL1' % locals()
     newname2 = 'Pilt_BmI_D3_BLD%(modid)i_PNL1_PLQ1' % locals()
