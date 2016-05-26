@@ -32,6 +32,7 @@
     <xc:Application class="SimpleSOAPSender" id="666" instance="0" network="local"/>
     <xc:Application class="PixelAMC13Controller" id="90" instance="0" network="local" group="daq">
       <properties xmlns="urn:xdaq-application:PixelAMC13Controller" xsi:type="soapenc:Struct">
+        <DoNothing xsi:type="xsd:boolean">false</DoNothing>
 	<Uri1 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T1:50001</Uri1>
 	<AddressT1 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
 	<Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T2:50001</Uri2>
