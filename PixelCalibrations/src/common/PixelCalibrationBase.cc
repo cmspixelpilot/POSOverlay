@@ -28,6 +28,7 @@ const std::string dpeSuffix_get = ":_online.._value";
 namespace {
   bool dumbAMC13 = true;
   bool dumbAMC13gotos = true;
+  bool dumbAMC13prints = false;
 }
 
 PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & tempConfiguration, const SOAPCommander& soapCommander) 
@@ -187,7 +188,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
     uint64_t l1a_count_2;
     if (dumbAMC13) {
       l1a_count_0 = getL1ACountFromAMC13();
-      printf("before CalSync call: %llu\n", (unsigned long long)l1a_count_0);
+      if (dumbAMC13prints) printf("before CalSync call: %llu\n", (unsigned long long)l1a_count_0);
     }
 
     Attribute_Vector parametersToTTC(2);
@@ -197,6 +198,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
     parametersToTTC[1].value_="CalSync";
     
     Supervisors::iterator i_PixelTTCSupervisor;
+    int gotocount = 0;
   redo1stL1:
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
       {
@@ -208,34 +210,17 @@ void PixelCalibrationBase::sendTTCCalSync(){
 
     if (dumbAMC13) {
       l1a_count_1 = getL1ACountFromAMC13();
-      printf("after CalSync call: %llu\n", (unsigned long long)l1a_count_1);
+      if (dumbAMC13prints) printf("after CalSync call: %llu\n", (unsigned long long)l1a_count_1);
       if (l1a_count_1 == l1a_count_0) {
-        printf("\n\n\n\n\n\n\n\nFIRST L1A DIDN'T GO THROUGH\n\n\n\n\n\n\n");
-        if (dumbAMC13gotos)
+        printf("\033[1m\033[31mL1A DIDN'T GO THROUGH, count %i\033[0m\n", gotocount);
+        if (gotocount == 100000) {
+          printf("DYING\n");
+          assert(0);
+        }
+        if (dumbAMC13gotos) {
+          ++gotocount;
           goto redo1stL1;
-      }
-    }
-
-    usleep(1000);
-
-    parametersToTTC[1].value_="LevelOne";
-    
-  redo2ndL1:
-    for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
-      {
-        if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse")
-          {
-            cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
-          }
-      }
-
-    if (dumbAMC13) {
-      l1a_count_2 = getL1ACountFromAMC13();
-      printf("after LevelOne call: %llu\n", (unsigned long long)l1a_count_2);
-      if (l1a_count_2 == l1a_count_1) {
-        printf("\n\n\n\n\n\n\n\nSECOND L1A DIDN'T GO THROUGH\n\n\n\n\n\n\n");
-        if (dumbAMC13gotos)
-          goto redo2ndL1;
+        }
       }
     }
 
