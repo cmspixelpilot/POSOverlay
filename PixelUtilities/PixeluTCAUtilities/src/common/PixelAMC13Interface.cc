@@ -56,6 +56,8 @@ void PixelAMC13Interface::DoResets() {
   fAMC13->setTTCHistoryFilter(0, 0x10101); // filter BC0
   fAMC13->setTTCFilterEna(true);
   fAMC13->setTTCHistoryEna(true);
+  
+  countLevelOne = 0;
 
   for (int i = 0; i < 4; ++i)
     fAMC13->configureBGOShort(i, 0, 0, 0, true);
@@ -103,7 +105,8 @@ void PixelAMC13Interface::CalSync() {
 }
 
 void PixelAMC13Interface::LevelOne() {
-  if (fDebugPrints) std::cout << "LevelOne" << std::endl;
+  ++countLevelOne;
+  if (fDebugPrints) std::cout << "LevelOne" << countLevelOne << std::endl;
   fAMC13->sendL1ABurst();
 }
 
@@ -115,6 +118,11 @@ void PixelAMC13Interface::ResetTBM() {
 void PixelAMC13Interface::ResetROC() {
   if (fDebugPrints) std::cout << "ResetROC" << std::endl;
   FireBGO(2);
+}
+
+void PixelAMC13Interface::ResetCounters() {
+  if (fDebugPrints) std::cout << "ResetCounters" << std::endl;
+  fAMC13->resetCounters();
 }
 
 uint32_t PixelAMC13Interface::GetClockFreq() {
