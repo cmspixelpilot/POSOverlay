@@ -3,7 +3,7 @@
 XDAQ_INSTANTIATOR_IMPL(PixelAMC13Controller)
 
 namespace {
-  const bool PRINT = true;
+  const bool PRINT = false;
 
   // stolen from stack overflow yay
   std::string commaify(unsigned value) {
