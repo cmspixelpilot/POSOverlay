@@ -48,6 +48,7 @@ class PixelAMC13Interface {
   void LevelOne();
   void ResetTBM();
   void ResetROC();
+  void ResetCounters();
 
   uint32_t GetClockFreq();
   uint64_t GetL1ACount();
@@ -70,6 +71,7 @@ class PixelAMC13Interface {
   uint32_t fMask;
   bool fDebugPrints;
   uint32_t fCalBX;
+  int countLevelOne;
 };
 
 #endif
