@@ -61,7 +61,7 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   *out << cgicc::html().set("lang", "en").set("dir", "ltr") << std::endl;
   *out << cgicc::title("Pixel AMC13 Controller") << std::endl;
 
-  std::vector<std::string> sends = {"reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM" };
+  std::vector<std::string> sends = {"reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM", "ResetCounters" };
 
   if (!amc13)
     *out << "not yet initialized!<br>";
@@ -84,6 +84,7 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 
   if (!amc13) return;
   
+  *out << "<table><tr>\n"; 
   *out << "L1A count: "
        << commaify(amc13->GetL1ACount()) << "<br>\n";
 
@@ -94,6 +95,24 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
        << commaify(amc13->GetClockFreq())
        << " &plusmn; 50 Hz<br>\n";
 
+
+  amc13->Get()->getStatus()->SetHTML();
+  *out << "T1 Firmware Version: "
+       << amc13->Get()->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS") << "<br>\n";
+  *out << "T2 Firmware Version: "
+       << amc13->Get()->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS") << "<br>\n";
+
+  std::stringstream ss;
+  //*out << amc13->Get()->getStatus()->ReportHeader() << "\n";
+  //*out << amc13->Get()->getStatus()->ReportStyle() << "\n";
+  
+  amc13->Get()->getStatus()->Report(99, ss, "TTC_BGO");
+  amc13->Get()->getStatus()->Report(99, ss, "TTC_History");
+  amc13->Get()->getStatus()->Report(99, ss, "TTC_History_conf");
+  amc13->Get()->getStatus()->Report(99, ss, "Temps_Voltages");
+
+  *out << ss.str();
+  amc13->Get()->getStatus()->UnsetHTML();
   std::string urlAllAMC13Tables = "/";
   urlAllAMC13Tables += getApplicationDescriptor()->getURN();
   urlAllAMC13Tables += "/AllAMC13Tables";
@@ -178,6 +197,8 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
     amc13->ResetROC();
   else if (parameters[1].value_ == "ResetTBM")
     amc13->ResetTBM();
+  else if (parameters[1].value_ == "ResetCounters")
+    amc13->ResetCounters();
   else
     XCEPT_RAISE(xoap::exception::Exception, "Don't know anything about command " + parameters[1].value_);
   
