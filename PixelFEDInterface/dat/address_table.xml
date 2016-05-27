@@ -141,7 +141,7 @@
     <!-- IPHC CMS Ph1 Pixel FED FW Address Table -->
     <!-- according to user_logic.vhd of fc7_basic projecd -->
     <!-- STATUS REGISTER MAPPING from pixfed_stat_reg: STATUS & FLAGS -->
-    <node id="pixfed_stat_regs">
+    <node id="pixfed_stat_regs" permission="r">
         <!-- USER ASCII CODE -->
         <node id="user_ascii_code_01to04" address="0x40000000">
             <node id="01" address="40000000" mask="0xff000000" permission="r" />
@@ -176,7 +176,6 @@
         <node id="DDR0_full" address="0x40000004" mask="0x00000010" permission="r" />
         <node id="DDR1_full" address="0x40000004" mask="0x00000020" permission="r" />
         <node id="fitel_config_ack" address="0x40000004" mask="0x00000300" permission="r" />
-        <node id="fitel_config_fifo_rx_empty" address="0x40000004" mask="0x00000400" permission="r" />
         <node id="calibModeOvf" address="0x40000004" mask="0x00000800" permission="r" />
         <!--FSM flags-->
         <node id="fsm_flags" address="0x40000005" permission="r">
@@ -189,10 +188,99 @@
         </node>
         <!--for commissioning mode-->
         <node id="cnt_word32from_start" address="0x40000006" mask="0x00ffffff" />
+
+        <!--SLINK STATUS-->
+        <node id="slink_core_status">
+            <node id="data_63to32" address="0x40000007" mask="0xffffffff" />
+            <node id="data_31to0" address="0x40000008" mask="0xffffffff" />
+            <node id="sync_loss" address="0x40000009" mask="0x00000001" />
+            <node id="link_down" address="0x40000009" mask="0x00000002" />
+            <node id="link_full" address="0x40000009" mask="0x00000004" />
+        </node>
+        
+        <!--TTS STATUS-->
+        <node id="tts">
+            <node id="word" address="0x40000009" mask="0x000000f0" />
+            <node id="oos_valid_evt_error" address="0x40000009" mask="0x00000100" />
+            <node id="oos_valid_timeout" address="0x40000009" mask="0x00000200" />
+        </node>
+        <node id="ttc">
+            <node id="ready" address="0x40000009" mask="0x00000400" />
+            <node id="bc0" address="0x40000009" mask="0x00000800" />
+            <node id="ec0" address="0x40000009" mask="0x00001000" />
+            <node id="reset" address="0x40000009" mask="0x00002000" />
+        </node>
+
+        <node id="main_fifo_empty" address="0x40000009" mask="0x00010000" />
+        <node id="all_tbm_fifo_empty" address="0x40000009" mask="0x00020000" />
+
+        <node id="evt_err_nb">
+            <node id="tbm_ch_00" address="0x4000000a" mask="0x000000ff" />
+            <node id="tbm_ch_01" address="0x4000000a" mask="0x0000ff00" />
+            <node id="tbm_ch_02" address="0x4000000a" mask="0x00ff0000" />
+            <node id="tbm_ch_03" address="0x4000000a" mask="0xff000000" />
+
+            <node id="tbm_ch_04" address="0x4000000b" mask="0x000000ff" />
+            <node id="tbm_ch_05" address="0x4000000b" mask="0x0000ff00" />
+            <node id="tbm_ch_06" address="0x4000000b" mask="0x00ff0000" />
+            <node id="tbm_ch_07" address="0x4000000b" mask="0xff000000" />
+
+            <node id="tbm_ch_08" address="0x4000000c" mask="0x000000ff" />
+            <node id="tbm_ch_09" address="0x4000000c" mask="0x0000ff00" />
+            <node id="tbm_ch_10" address="0x4000000c" mask="0x00ff0000" />
+            <node id="tbm_ch_11" address="0x4000000c" mask="0xff000000" />
+            
+            <node id="tbm_ch_12" address="0x4000000d" mask="0x000000ff" />
+            <node id="tbm_ch_13" address="0x4000000d" mask="0x0000ff00" />
+            <node id="tbm_ch_14" address="0x4000000d" mask="0x00ff0000" />
+            <node id="tbm_ch_15" address="0x4000000d" mask="0xff000000" />
+            
+            <node id="tbm_ch_16" address="0x4000000e" mask="0x000000ff" />
+            <node id="tbm_ch_17" address="0x4000000e" mask="0x0000ff00" />
+            <node id="tbm_ch_18" address="0x4000000e" mask="0x00ff0000" />
+            <node id="tbm_ch_19" address="0x4000000e" mask="0xff000000" />
+            
+            <node id="tbm_ch_20" address="0x4000000f" mask="0x000000ff" />
+            <node id="tbm_ch_21" address="0x4000000f" mask="0x0000ff00" />
+            <node id="tbm_ch_22" address="0x4000000f" mask="0x00ff0000" />
+            <node id="tbm_ch_23" address="0x4000000f" mask="0xff000000" />
+            
+            <node id="tbm_ch_24" address="0x40000010" mask="0x000000ff" />
+            <node id="tbm_ch_25" address="0x40000010" mask="0x0000ff00" />
+            <node id="tbm_ch_26" address="0x40000010" mask="0x00ff0000" />
+            <node id="tbm_ch_27" address="0x40000010" mask="0xff000000" />
+            
+            <node id="tbm_ch_28" address="0x40000011" mask="0x000000ff" />
+            <node id="tbm_ch_29" address="0x40000011" mask="0x0000ff00" />
+            <node id="tbm_ch_30" address="0x40000011" mask="0x00ff0000" />
+            <node id="tbm_ch_31" address="0x40000011" mask="0xff000000" />
+            
+            <node id="tbm_ch_32" address="0x40000012" mask="0x000000ff" />
+            <node id="tbm_ch_33" address="0x40000012" mask="0x0000ff00" />
+            <node id="tbm_ch_34" address="0x40000012" mask="0x00ff0000" />
+            <node id="tbm_ch_35" address="0x40000012" mask="0xff000000" />
+            
+            <node id="tbm_ch_36" address="0x40000013" mask="0x000000ff" />
+            <node id="tbm_ch_37" address="0x40000013" mask="0x0000ff00" />
+            <node id="tbm_ch_38" address="0x40000013" mask="0x00ff0000" />
+            <node id="tbm_ch_39" address="0x40000013" mask="0xff000000" />
+            
+            <node id="tbm_ch_40" address="0x40000014" mask="0x000000ff" />
+            <node id="tbm_ch_41" address="0x40000014" mask="0x0000ff00" />
+            <node id="tbm_ch_42" address="0x40000014" mask="0x00ff0000" />
+            <node id="tbm_ch_43" address="0x40000014" mask="0xff000000" />
+            
+            <node id="tbm_ch_44" address="0x40000015" mask="0x000000ff" />
+            <node id="tbm_ch_45" address="0x40000015" mask="0x0000ff00" />
+            <node id="tbm_ch_46" address="0x40000015" mask="0x00ff0000" />
+            <node id="tbm_ch_47" address="0x40000015" mask="0xff000000" />
+        </node>
+
+        <node id="timeout_nb" address="0x40000016" mask="0x000000ff" />
     </node>
 
     <!-- CTRL - REGISTER MAPPING - from pixfed_ctrl_regs: CTRL & CMD => RD/WR -->
-    <node id="pixfed_ctrl_regs">
+    <node id="pixfed_ctrl_regs" permission="rw">
         <node id="PC_CONFIG_OK" address="0x40010000" mask="0x00000001" />
         <node id="CMD_START_BY_PC" address="0x40010000" mask="0x00000002" />
         <node id="TRIGGER_SEL" address="0x40010000" mask="0x00000004" />
@@ -206,19 +294,15 @@
         <node id="data_type" address="0x40010000" mask="0x00070000" />
         <node id="trig_6to9" address="0x40010000" mask="0x00700000" />
         <node id="trig_10to12" address="0x40010000" mask="0x07000000" />
-        <node id="8sfp_scope_index" address="0x40010000" mask="0xf0000000" />
         <node id="PACKET_NB" address="0x40010001" mask="0x001fffff" />
         <node id="fitel_config_req" address="0x40010002" mask="0x00000003" />
         <node id="fitel_i2c_addr" address="0x40010002" mask="0x000007f0" />
         <node id="fitel_i2c_cmd_reset" address="0x40010002" mask="0x00000800" />
-        <node id="chipscope_tbm_index" address="0x40010003" mask="0x0000007f" />
-        <node id="rx_index_sel" address="0x40010003" mask="0x00000300" />
-        <node id="rx_index_sel_en" address="0x40010003" mask="0x00000400" />
         <node id="TBM_MASK_1" address="0x40010004" mask="0xffffffff" />
-        <node id="TBM_MASK_2" address="0x40010005" mask="0xffffffff" />
-        <!-- <node id="TBM_MASK_3" address="0x40010006" mask="0xffffffff" /> -->
+        <node id="TBM_MASK_2" address="0x40010005" mask="0x0000ffff" />
+        <node id="tbm_trailer_status_mask" address="0x40010009" mask="0x000000ff" permission="rw" />
 
-        <node id="acq_ctrl">
+        <node id="acq_ctrl" permission="rw">
             <!--bit0 = TBM fifo + ddr + ipbus -->
             <!--bit1 = slink data + ddr + ipbus-->
             <!--bit2 = slink data + FEROL IP-->
@@ -226,14 +310,23 @@
             <node id="calib_mode" address="0x40010007" mask="0x00000100" />
             <node id="calib_mode_NEvents" address="0x40010007" mask="0x0ffff000" />
         </node>
-        <node id="slink_ctrl" address="0x40010008">
+        <node id="slink_ctrl" address="0x40010008" permission="rw">
             <node id="privateEvtNb" mask="0x000000ff" />
             <node id="slinkFormatH_source_id" mask="0x000fff00" />
             <node id="slinkFormatH_FOV" mask="0x00f00000" />
             <node id="slinkFormatH_Evt_ty" mask="0x0f000000" />
             <node id="slinkFormatH_Evt_stat" mask="0xf0000000" />
         </node>
-        <node id="tbm_trailer_status_mask" address="0x40010009" mask="0x000000ff" permission="rw" />
+        <node id="slink_core_status_addr" address="0x4001000a" mask="0x0000ffff" permission="rw" />
+        
+        <node id="tts">
+            <node id="evt_err_nb_oos_thresh" address="0x40010009" mask="0x0000ff00" permission="rw" />
+            <node id="timeout_nb_oos_thresh" address="0x40010009" mask="0x00ff0000" permission="rw" />
+            <node id="timeout_check_valid" address="0x40010009" mask="0x01000000" permission="rw" />
+            <node id="bc0_ec0_polar" address="0x40010009" mask="0x02000000" permission="rw" />
+        </node>
+        <node id="timeout_value" address="0x4001000c" mask="0x000000ff" permission="rw" />
+
     </node>
     <!-- MISC -->
     <node id="fitel_config_fifo_tx" address="0x40100000" mode="non-incremental" size="512" permission="rw" />
