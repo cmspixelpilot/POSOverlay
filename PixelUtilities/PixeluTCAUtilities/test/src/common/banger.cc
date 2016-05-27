@@ -1,5 +1,6 @@
 // need to fix the Makefile and the stupid version.cc shit
-// cd $BUILD_HOME/pixel/PixelUtilities/PixeluTCAUtilities/test/src/common/ ; g++ -I${BUILD_HOME}/pixel -I/opt/cactus/include -L/opt/cactus/lib -lboost_system banger.cc -lcactus_uhal_uhal ../../../src/common/RegManager.cc -o banger.exe ; cd -
+// cd $BUILD_HOME/pixel/PixelUtilities/PixeluTCAUtilities/test/src/common/ ; g++ -I${BUILD_HOME}/pixel -I/opt/cactus/include -L/opt/cactus/lib -lboost_system banger.cc -lcactus_uhal_uhal ../../../src/common/PixelUhalLogSetter.cc  ../../../src/common/RegManager.cc -o banger.exe ; cd -
+// $BUILD_HOME/pixel/PixelUtilities/PixeluTCAUtilities/test/src/common/banger.exe board chtcp-2.0://localhost:10203?target=fed02:50001 $BUILD_HOME/pixel/PixelFEDInterface/dat/address_table.xml read pixfed_stat_regs.ttc.ec0
 
 #include <iostream>
 #include <iomanip>
