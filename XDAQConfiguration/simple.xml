@@ -40,6 +40,7 @@
 	<Mask xsi:type="xsd:string">3,5,9,11</Mask>
 	<CalBX xsi:type="xsd:unsignedInt">381</CalBX>
 	<L1ADelay xsi:type="xsd:unsignedInt">123</L1ADelay>
+        <NewWay xsi:type="xsd:boolean">false</NewWay>
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>

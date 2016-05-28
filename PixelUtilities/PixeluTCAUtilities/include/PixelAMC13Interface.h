@@ -38,6 +38,7 @@ class PixelAMC13Interface {
   void SetDebugPrints(bool v) { fDebugPrints = v; }
   void SetCalBX(unsigned v) { fCalBX = v; }
   void SetL1ADelay(unsigned v) { fL1ADelay = v; }
+  void SetNewWay(bool v) { fNewWay = v; }
 
   void DoResets();
 
@@ -73,6 +74,7 @@ class PixelAMC13Interface {
   bool fDebugPrints;
   uint32_t fCalBX;
   uint32_t fL1ADelay;
+  bool fNewWay;
 
   int countLevelOne;
 };

@@ -19,7 +19,8 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fMask(0),
     fDebugPrints(false),
     fCalBX(381),
-    fL1ADelay(123)
+    fL1ADelay(123),
+    fNewWay(false)
 {
 }
 
@@ -32,7 +33,8 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fMask(0),
     fDebugPrints(false),
     fCalBX(381),
-    fL1ADelay(123)
+    fL1ADelay(123),
+    fNewWay(false)
 {
 }
 
@@ -79,6 +81,15 @@ void PixelAMC13Interface::Configure() {
   }
 
   ConfigureBGO(0, BGO(0x2c, false,  false,  0, fCalBX)); // CAL
+  if (fNewWay) {
+    fAMC13->write(amc13::AMC13Simple::T1, 0x24, 0x80000000 | ((fCalBX & 0xFFF) << 16));
+    fAMC13->write(amc13::AMC13Simple::T1, 0x2e, fL1ADelay);
+  }
+  else {
+    fAMC13->write(amc13::AMC13Simple::T1, 0x24, 0x00000000 | ((fCalBX & 0xFFF) << 16));
+    if (fAMC13->read(amc13::AMC13Simple::T1, 0x24) & 0x80000000)
+      std::cout << "\033[1m\033[31mSOMEHOW THE BIT31 GOT SET QUICKLY\033[0m" << std::endl;
+  }
   ConfigureBGO(1, BGO(0x14, false, false,  0, 100));    // RESET TBM
   ConfigureBGO(2, BGO(0x1c, false, false,  0, 100));    // RESET ROC
 
@@ -98,12 +109,16 @@ void PixelAMC13Interface::Reset() {
 
 void PixelAMC13Interface::CalSync() {
   if (fDebugPrints) std::cout << "CalSync" << std::endl;
-  fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
-  usleep(1000);
-  fAMC13->sendL1ABurst();
-  usleep(1000);
-  fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
-  usleep(1000);
+  if (fNewWay)
+    FireBGO(0);
+  else {
+    fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
+    usleep(1000);
+    fAMC13->sendL1ABurst();
+    usleep(1000);
+    fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
+    usleep(1000);
+  }
 }
 
 void PixelAMC13Interface::LevelOne() {
@@ -280,4 +295,7 @@ void PixelAMC13Interface::FireBGO(unsigned i) {
   fAMC13->write(amc13::AMC13Simple::T1, cmds[i], 0); 
   //}
   //while (fAMC13->read(amc13::AMC13Simple::T1, cmds[i]) == 1);
+
+  if (!fNewWay && (fAMC13->read(amc13::AMC13Simple::T1, 0x24 + i) & 0x80000000))
+    std::cout << "\033[1m\033[31mSOMEHOW THE BIT31 for " << i << " GOT SET\033[0m" << std::endl;
 }
