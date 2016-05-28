@@ -977,9 +977,8 @@ std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 
 int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
-  //std::cout << "slink64call #" << slink64calls << std::endl;
 
-  //usleep(1000);
+  usleep(2000);
 
   uhal::ValWord<uint32_t> cVal = 0;
   //uint32_t mycntword = 0;int sleepcnt=0;
@@ -1013,12 +1012,15 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   for (size_t j = 0; j < ndata64; ++j)
     data[j] = (uint64_t(cData[j*2]) << 32) | cData[j*2+1];
 
+  const uint32_t evnum = cData[0] & 0xFFFFFF;
+  std::cout << "slink64call #" << slink64calls << ", fed event #" << evnum << " ";
+  if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE\033[0m";
+  std::cout << "; blocksize: " << cBlockSize << std::endl;
+
 #if 0
-  std::cout << "Read " << cNWords32 << " 32 bit words from DDR0; block size = " << cBlockSize << "\n"
-            << "slink 32-bit words from FW:\n";
+  std::cout << "slink 32-bit words from FW:\n";
   for (size_t i = 0; i < ndata; ++i)
     std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
-  std::cout << "event number: " << (cData[0] & 0xFFFFFF) << std::endl;
 
   std::cout << "packed 64 bit:\n";
   for (size_t j = 0; j < ndata64; ++j) {
