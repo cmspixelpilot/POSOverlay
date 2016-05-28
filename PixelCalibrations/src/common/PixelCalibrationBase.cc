@@ -185,7 +185,6 @@ void PixelCalibrationBase::sendTTCCalSync(){
   if (useTTC_){
     uint64_t l1a_count_0;
     uint64_t l1a_count_1;
-    uint64_t l1a_count_2;
     if (dumbAMC13) {
       l1a_count_0 = getL1ACountFromAMC13();
       if (dumbAMC13prints) printf("before CalSync call: %llu\n", (unsigned long long)l1a_count_0);
