@@ -796,66 +796,63 @@ int PixelFEDInterfacePh1::drainSpyFifo(uint32_t* data) {
   return ie;
 }
 
-PixelFEDInterfacePh1::encfifo1 PixelFEDInterfacePh1::prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os)
-{
-  PixelFEDInterfacePh1::encfifo1 r;
-  if (getPrintlevel()&16) os << "----------------------------------------------------------------------------------" << std::endl;
-    for (uint32_t cIndex = 0; cIndex < pFifoVec.size(); cIndex++ )
-    {
-        if (pMarkerVec.at(cIndex) == 8)
-        {
-            // Event Header
-            if (getPrintlevel()&16) os << std::dec << "    Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_H: " <<  ( (pFifoVec.at(cIndex) >> 9) & 0xff ) << " EVT Nr: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
-	    //assert(!r.found);
-	    r.found = true;
-	    r.event = pFifoVec.at(cIndex) & 0xff;
-        }
+PixelFEDInterfacePh1::encfifo1 PixelFEDInterfacePh1::decodeFIFO1Stream(const std::vector<uint32_t>& fifo, const std::vector<uint32_t>& markers) {
+  encfifo1 f;
 
-        if (pMarkerVec.at(cIndex) == 12)
-        {
-            if (getPrintlevel()&16) os << std::dec << "ROC Header: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f  ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " Status: " << (  (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
-        }
+  for (size_t i = 0, ie = fifo.size(); i < ie; ++i) {
+    const uint32_t word = fifo[i];
+    const uint32_t marker = markers[i];
 
-        if (pMarkerVec.at(cIndex) == 1)
-        {
-	  PixelFEDInterfacePh1::encfifo1hit h;
-	  h.ch = (pFifoVec.at(cIndex) >> 26) & 0x3f;
-	  h.roc = (pFifoVec.at(cIndex) >> 21) & 0x1f;
-	  h.dcol = (pFifoVec.at(cIndex) >> 16) & 0x1f;
-	  h.pxl = (pFifoVec.at(cIndex) >> 8) & 0xff;
-	  h.ph = (pFifoVec.at(cIndex)) & 0xff;
-	  r.hits.push_back(h);
-            if (getPrintlevel()&16) os  << std::dec << "            CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ROC Nr: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " DC: " <<  ( (pFifoVec.at(cIndex) >> 16) & 0x1f ) << " PXL: " <<  ( (pFifoVec.at(cIndex) >> 8) & 0xff ) <<  " PH: " <<  ( (pFifoVec.at(cIndex)) & 0xff ) << std::endl;
-        }
-
-        if (pMarkerVec.at(cIndex) == 4)
-        {
-            // TBM Trailer
-            if (getPrintlevel()&16) os << std::dec << "   Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " TBM_T2: " <<  ( (pFifoVec.at(cIndex) >> 12) & 0xff ) << " TBM_T1: " <<  ( (pFifoVec.at(cIndex)) & 0xff )  << std::endl;
-        }
-
-        if (pMarkerVec.at(cIndex) == 6)
-        {
-            // Event Trailer
-            if (getPrintlevel()&16) os << std::dec << "Event Trailer: " << "CH: " << ( (pFifoVec.at(cIndex) >> 26) & 0x3f ) << " ID: " <<  ( (pFifoVec.at(cIndex) >> 21) & 0x1f ) << " marker: " <<  ( (pFifoVec.at(cIndex)) & 0x1fffff )  << std::endl;
-        }
+    if (marker == 8) {
+      f.found = true;
+      f.ch = (word >> 26) & 0x3f;
+      f.id_tbm_h = (word >> 21) & 0x1f;
+      f.tbm_h = (word >> 9) & 0xff;
+      f.event = word & 0xff;
     }
-    if (getPrintlevel()&16) os << "----------------------------------------------------------------------------------" << std::endl;
-return r;
+    else if (marker == 12) {
+      encfifo1roc r;
+      r.ch = (word >> 26) & 0x3f;
+      r.roc = (word >> 21) & 0x1f;
+      r.rb = word & 0xff;
+      f.rocs.push_back(r);
+    }
+    else if (marker == 1) {
+      encfifo1hit h;
+      h.ch = (word >> 26) & 0x3f;
+      h.roc = (word >> 21) & 0x1f;
+      h.dcol = (word >> 16) & 0x1f;
+      h.pxl = (word >> 8) & 0xff;
+      h.ph = (word) & 0xff;
+      f.hits.push_back(h);
+    }
+    else if (marker == 4) {
+      f.ch_tbm_t = (word >> 26) & 0x3f;
+      f.tbm_t1 = word & 0xff;
+      f.tbm_t2 = (word >> 12) & 0xff;
+      f.id_tbm_t = (word >> 21) & 0x1f;
+    }
+    else if (marker == 6) {
+      f.ch_evt_t = (word >> 26) & 0x3f;
+      assert(f.ch == f.ch_evt_t);
+      f.id_evt_t = (word >> 21) & 0x1f;
+      f.marker = word & 0x1fffff;
+    }
+  }
+
+  return f;
 }
 
 PixelFEDInterfacePh1::digfifo1 PixelFEDInterfacePh1::readFIFO1() {
   digfifo1 df;
+
   df.cFifo1A  = regManager->ReadBlockRegValue("fifo.spy_1_A", 2048);
   df.cMarkerA = regManager->ReadBlockRegValue("fifo.spy_1_A_marker", 2048);
   df.cFifo1B  = regManager->ReadBlockRegValue("fifo.spy_1_B", 2048);
   df.cMarkerB = regManager->ReadBlockRegValue("fifo.spy_1_B_marker", 2048);
 
-  if (getPrintlevel()&16) std::cout << std::endl <<  "FIFO 1 Channel A: " << std::endl;
-  // JMTBAD UNTANGLE THE SIDE EFFECTS
-  df.a = prettyprintFIFO1(df.cFifo1A, df.cMarkerA, std::cout); 
-  if (getPrintlevel()&16) std::cout << std::endl << "FIFO 1 Channel B: " << std::endl;
-  df.b = prettyprintFIFO1(df.cFifo1B, df.cMarkerB, std::cout);
+  df.a = decodeFIFO1Stream(df.cFifo1A, df.cMarkerA);
+  df.b = decodeFIFO1Stream(df.cFifo1B, df.cMarkerB);
   //  assert(df.a.event == 0 || df.b.event == 0 || df.a.event == df.b.event);
 
   return df;
@@ -1017,6 +1014,13 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE by " << evnum - slink64calls << "\033[0m";
   std::cout << "; blocksize: " << cBlockSize << std::endl;
 
+  //readSpyFIFO();
+  digfifo1 f = readFIFO1();
+  assert(f.a.tbm_t1 == f.b.tbm_t1 &&
+         f.a.tbm_t2 == f.b.tbm_t2);
+  if (!(f.b.tbm_t1 & 0x2))
+    std::cout << "\033[1m\033[34mNO CAL IN TRAILER 0x" << std::hex << f.b.tbm_t1 << std::dec << "\033[0m";
+
 #if 0
   std::cout << "slink 32-bit words from FW:\n";
   for (size_t i = 0; i < ndata; ++i)
@@ -1043,9 +1047,6 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
 #endif
 
 #if 0
-  readSpyFIFO();
-  PixelFEDInterfacePh1::digfifo1 f = readFIFO1();
-
   if (f.a.hits.size() + f.b.hits.size() != decode3.nhits()) {
     std::cout << "********************************************************************************\n";
     std::cout << "********************************************************************************\n";
@@ -1115,11 +1116,9 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
     // maybe we trashed the 5 in the msb, it's all the decoder cares about...
     data[0] = 0x5000000000000000 | (data[0] & 0xFFFFFFFFFFFFFFF);
 
-    if (getPrintlevel()&16) {
-      std::cout << "my fake fifo3:\n";
-      for (size_t i = 0; i < j; ++i)
-        std::cout << std::hex << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
-    }
+    std::cout << "my fake fifo3:\n";
+    for (size_t i = 0; i < j; ++i)
+      std::cout << std::hex << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
   }
 #endif
 
