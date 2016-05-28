@@ -215,7 +215,10 @@ void ControlNetwork::Execute(SysCommand *command){
 
     }else if (command->Keyword("inject","trigger")){    interface->injecttrigger(mfec, 1);
     }else if (command->Keyword("inject","cal")){        interface->injectrstcsr(mfec, 1);
-    
+
+    }else if (command->Keyword("disable","cal")){  interface->enablecallatency(mfec, 0);
+    }else if (command->Keyword("enable","cal")){   interface->enablecallatency(mfec, 1);
+    }else if (command->Keyword("cal", "latency", &bit)){ interface->callatencycount(mfec, *bit);
 
     } //#####################################################
     else if (command->Keyword("local")){
@@ -253,6 +256,8 @@ void ControlNetwork::Execute(SysCommand *command){
 
  
 void ControlNetwork::init(){
+  cout << "HI in INIT\n";
+
   //unsigned long data = 0;
   // What does this realy do?
   // Internal triggers work for both settings
@@ -269,9 +274,9 @@ void ControlNetwork::init(){
   //  <<  aFECInterface.getCsReg(mfec)<<dec<<endl;
     
   // Settings for internal triggers
-  interface->enablecallatency(mfec, 0);  // 1=generate cal+trig, 0=cal only
+  interface->enablecallatency(mfec, 1);  // 1=generate cal+trig, 0=cal only
   // Strange but for CAL only something has to be written into the COUNT register
-  interface->callatencycount(mfec, 1); // cal-trig delay in bx
+  interface->callatencycount(mfec, 187); // cal-trig delay in bx
   //aFECInterface.callatencycount(i, 150); // cal-trig delay in bx
 
 
