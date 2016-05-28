@@ -3,7 +3,7 @@
 XDAQ_INSTANTIATOR_IMPL(PixelAMC13Controller)
 
 namespace {
-  const bool PRINT = true;
+  const bool PRINT = false;
 
   // stolen from stack overflow yay
   std::string commaify(unsigned value) {
@@ -47,6 +47,7 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   getApplicationInfoSpace()->fireItemAvailable("AddressT2", &addressT2);
   getApplicationInfoSpace()->fireItemAvailable("Mask", &mask);
   getApplicationInfoSpace()->fireItemAvailable("CalBX", &calBX);
+  getApplicationInfoSpace()->fireItemAvailable("L1ADelay", &L1ADelay);
 }
 
 void PixelAMC13Controller::InitAMC13() {
@@ -54,7 +55,7 @@ void PixelAMC13Controller::InitAMC13() {
   amc13->SetMask(mask);
   amc13->SetDebugPrints(PRINT);
   amc13->SetCalBX(calBX);
-  //amc13->SetL1ABurstDelay(10);
+  amc13->SetL1ADelay(L1ADelay);
 }
 
 void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
