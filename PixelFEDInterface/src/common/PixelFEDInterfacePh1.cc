@@ -1014,7 +1014,7 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
 
   const uint32_t evnum = cData[0] & 0xFFFFFF;
   std::cout << "slink64call #" << slink64calls << ", fed event #" << evnum << " ";
-  if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE\033[0m";
+  if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE by " << evnum - slink64calls << "\033[0m";
   std::cout << "; blocksize: " << cBlockSize << std::endl;
 
 #if 0
