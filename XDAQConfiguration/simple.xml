@@ -1,11 +1,11 @@
 <?xml version='1.0'?>
 <xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
 	
-  <xc:Context id="0" url="http://vandyfpixutca:1973/">
+  <xc:Context id="0" url="http://mp72.lns.cornell.edu:1973/">
 
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
 
-    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vandyfpixutca" port="1914" network="xmas"/>
+    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="mp72.lns.cornell.edu" port="1914" network="xmas"/>
 
     <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq">
       <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
@@ -32,9 +32,10 @@
     <xc:Application class="SimpleSOAPSender" id="666" instance="0" network="local"/>
     <xc:Application class="PixelAMC13Controller" id="90" instance="0" network="local" group="daq">
       <properties xmlns="urn:xdaq-application:PixelAMC13Controller" xsi:type="soapenc:Struct">
-	<Uri1 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T1:50001</Uri1>
+        <DoNothing xsi:type="xsd:boolean">false</DoNothing>
+	<Uri1 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=192.168.3.253:50001</Uri1>
 	<AddressT1 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
-	<Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T2:50001</Uri2>
+	<Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=192.168.3.252:50001</Uri2>
 	<AddressT2 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
 	<Mask xsi:type="xsd:string">3,5,9,11</Mask>
 	<CalBX xsi:type="xsd:unsignedInt">381</CalBX>

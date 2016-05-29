@@ -32,6 +32,7 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
  public:
   XDAQ_INSTANTIATOR();
 
+  xdata::Boolean doNothing;
   xdata::String uri1;
   xdata::String uri2;
   xdata::String addressT1;

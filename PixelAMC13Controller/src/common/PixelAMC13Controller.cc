@@ -40,6 +40,7 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   xoap::bind(this, &PixelAMC13Controller::Stop, "stop", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Suspend, "suspend", XDAQ_NS_URI);  
  
+  getApplicationInfoSpace()->fireItemAvailable("DoNothing", &doNothing);
   getApplicationInfoSpace()->fireItemAvailable("Uri1", &uri1);
   getApplicationInfoSpace()->fireItemAvailable("Uri2", &uri2);
   getApplicationInfoSpace()->fireItemAvailable("AddressT1", &addressT1);
@@ -84,12 +85,24 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 
   if (!amc13) return;
   
-  *out << "<table><tr>\n"; 
+  //*out << "<table><tr>\n"; 
   *out << "L1A count: "
        << commaify(amc13->GetL1ACount()) << "<br>\n";
 
   *out << "L1A rate: "
        << commaify(amc13->GetL1ARate()) << " Hz<br>\n";
+
+  *out << "CalSync count: "
+       << commaify(amc13->GetCalSyncCount()) << "<br>\n";
+
+  *out << "LevelOne count: "
+       << commaify(amc13->GetLevelOneCount()) << "<br>\n";
+
+  *out << "ResetROC count: "
+       << commaify(amc13->GetResetROCCount()) << "<br>\n";
+
+  *out << "ResetTBM count: "
+       << commaify(amc13->GetResetTBMCount()) << "<br>\n";
 
   *out << "Input clock frequency measurement: "
        << commaify(amc13->GetClockFreq())
@@ -98,17 +111,23 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 
   amc13->Get()->getStatus()->SetHTML();
   *out << "T1 Firmware Version: "
-       << amc13->Get()->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS") << "<br>\n";
+       << "0x" << std::hex << amc13->Get()->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS") << std::dec << "<br>\n";
   *out << "T2 Firmware Version: "
-       << amc13->Get()->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS") << "<br>\n";
+       << "0x" << std::hex << amc13->Get()->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS") << std::dec << "<br>\n";
+  *out << "TTCLOOP: "
+       << amc13->Get()->read(amc13::AMC13Simple::T1, "CONF.DIAG.FAKE_TTC_ENABLE") << "<br>\n";
+  *out << "FAKE: "
+       << amc13->Get()->read(amc13::AMC13Simple::T1, "CONF.LOCAL_TRIG.FAKE_DATA_ENABLE") << "<br>\n";
 
   std::stringstream ss;
   //*out << amc13->Get()->getStatus()->ReportHeader() << "\n";
   //*out << amc13->Get()->getStatus()->ReportStyle() << "\n";
   
   amc13->Get()->getStatus()->Report(99, ss, "TTC_BGO");
-  amc13->Get()->getStatus()->Report(99, ss, "TTC_History");
-  amc13->Get()->getStatus()->Report(99, ss, "TTC_History_conf");
+
+  //amc13->Get()->getStatus()->Report(99, ss, "TTC_History");
+  //amc13->Get()->getStatus()->Report(99, ss, "TTC_History_conf");
+
   amc13->Get()->getStatus()->Report(99, ss, "Temps_Voltages");
 
   *out << ss.str();
@@ -160,24 +179,40 @@ void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) thr
   } catch (std::exception e) {
     *out << "<br><br><h1>SOME PROBLEM WITH STATUS</h1>\n";
   }
+  for (int i = 0; i < amc13->Get()->getStatus()->GetTableColumns("0_Board").size(); ++i) {
+    *out << amc13->Get()->getStatus()->GetTableColumns("0_Board")[i] << "\n";
+  }
+  *out << amc13->Get()->getStatus()->GetCell("0_Board", "INFO", "T1_VER")->Print(-1, true) << "\n";
   *out << ss.str();
   amc13->Get()->getStatus()->UnsetHTML(); 
 }
 
 xoap::MessageReference PixelAMC13Controller::Reset(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Reset" << std::endl;
-  if (!amc13) InitAMC13();
-  amc13->Configure();
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+    if (!amc13) InitAMC13();
+    amc13->Configure();
+  }
   return MakeSOAPMessageReference("TTCciControlFSMReset");
 }
 
 xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Configuration(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("ParameterSetResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Configure (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Configure(MAGIC HAPPENS IN RESET)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("configureResponse");
 }
 
@@ -189,33 +224,49 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
 
   if (PRINT) std::cout << "PixelAMC13Controller::userCommand(" << parameters[0].value_ << ", " << parameters[1].value_ << ")" << std::endl;
 
-  if (parameters[1].value_ == "CalSync")
-    amc13->CalSync();
-  else if (parameters[1].value_ == "LevelOne")
-    amc13->LevelOne();
-  else if (parameters[1].value_ == "ResetROC")
-    amc13->ResetROC();
-  else if (parameters[1].value_ == "ResetTBM")
-    amc13->ResetTBM();
-  else if (parameters[1].value_ == "ResetCounters")
-    amc13->ResetCounters();
-  else
-    XCEPT_RAISE(xoap::exception::Exception, "Don't know anything about command " + parameters[1].value_);
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+    if (parameters[1].value_ == "CalSync")
+      amc13->CalSync();
+    else if (parameters[1].value_ == "LevelOne")
+      amc13->LevelOne();
+    else if (parameters[1].value_ == "ResetROC")
+      amc13->ResetROC();
+    else if (parameters[1].value_ == "ResetTBM")
+      amc13->ResetTBM();
+    else if (parameters[1].value_ == "ResetCounters")
+      amc13->ResetCounters();
+    else
+      XCEPT_RAISE(xoap::exception::Exception, "Don't know anything about command " + parameters[1].value_);
+  }
   
   return MakeSOAPMessageReference("userTTCciControlResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Enable(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Enable(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("enableResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Stop(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Stop(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("stopResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Suspend (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Suspend(IMPLEMENT ME)" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+  }
   return MakeSOAPMessageReference("suspendResponse");
 }

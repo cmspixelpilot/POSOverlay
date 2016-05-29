@@ -72,7 +72,6 @@ int PixelFEDInterfacePh1::setup() {
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
     {"pixfed_ctrl_regs.PC_CONFIG_OK",    0},
-    {"pixfed_ctrl_regs.rx_index_sel_en", 0},
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
     {"pixfed_ctrl_regs.acq_ctrl.calib_mode", 1}, 
@@ -81,7 +80,7 @@ int PixelFEDInterfacePh1::setup() {
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
     {"pixfed_ctrl_regs.TBM_MASK_1", uint32_t(pixelFEDCard.cntrl_utca & 0xFFFFFFFFULL)},
-    {"pixfed_ctrl_regs.TBM_MASK_2", uint32_t((pixelFEDCard.cntrl_utca & 0xFFFFFFFF00000000ULL) >> 32)},
+    {"pixfed_ctrl_regs.TBM_MASK_2", uint32_t((pixelFEDCard.cntrl_utca & 0xFFFF00000000ULL) >> 32)},
     {"pixfed_ctrl_regs.tbm_trailer_status_mask", 0x0},
     {"pixfed_ctrl_regs.slink_ctrl.privateEvtNb", 0x00},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_source_id", pixelFEDCard.fedNumber},
@@ -687,6 +686,7 @@ void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
 
 void PixelFEDInterfacePh1::prepareCalibrationMode(unsigned nevents) {
   last_calib_mode_nevents = nevents;
+  return;
 
   std::cout << "Requesting " << nevents << " Events from FW!" << std::endl;
 
@@ -977,21 +977,23 @@ std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 
 int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
-  if (getPrintlevel()&16) std::cout << "slink64call #" << slink64calls << std::endl;
+  //std::cout << "slink64call #" << slink64calls << std::endl;
 
-  usleep(1000);
+  //usleep(1000);
 
   uhal::ValWord<uint32_t> cVal = 0;
+  //uint32_t mycntword = 0;int sleepcnt=0;
   do {
     cVal = regManager->ReadReg("pixfed_stat_regs.DDR0_full");
     if (cVal == 0) usleep(10);
+    //sleepcnt++;
+    //if(sleepcnt>1000)mycntword=regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
+    //if(mycntword>5){cout<<mycntword<<" words in the ddr"<<endl; usleep(300000);}
   }
   while ( cVal == 0 );
 
-  uint32_t cNWords32 = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
-  std::cout << "Reading " << cNWords32 << " 32 bit words from DDR " << 0 << std::endl;
-  uint32_t cBlockSize = cNWords32 + (2 * 2 * last_calib_mode_nevents);
-  std::cout << "This translates into " << cBlockSize << " words" << std::endl;
+  const uint32_t cNWords32 = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
+  const uint32_t cBlockSize = cNWords32 + (2 * 2 * last_calib_mode_nevents);
   usleep(10);
   std::vector<uint32_t> cData = regManager->ReadBlockRegValue("DDR0", cBlockSize);
   usleep(10);
@@ -1003,26 +1005,26 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
 
   regManager->WriteReg("pixfed_ctrl_regs.DDR0_end_readout", 0);
 
-  size_t ndata = cData.size();
+  const size_t ndata = cData.size();
   assert(ndata % 2 == 0);
   size_t ndata64 = ndata / 2; // + (ndata % 2 ? 1 : 0);
   //std::vector<uint64_t> data64(ndata64, 0ULL);
 
-  std::cout << "slink 32-bit words from FW:\n";
+  for (size_t j = 0; j < ndata64; ++j)
+    data[j] = (uint64_t(cData[j*2]) << 32) | cData[j*2+1];
+
+#if 0
+  std::cout << "Read " << cNWords32 << " 32 bit words from DDR0; block size = " << cBlockSize << "\n"
+            << "slink 32-bit words from FW:\n";
   for (size_t i = 0; i < ndata; ++i)
-    std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << std::endl;
+    std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
+  std::cout << "event number: " << (cData[0] & 0xFFFFFF) << std::endl;
 
   std::cout << "packed 64 bit:\n";
   for (size_t j = 0; j < ndata64; ++j) {
-    data[j] = (uint64_t(cData[j*2]) << 32) | cData[j*2+1];
     std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::dec << std::endl;
     //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::dec << std::endl;
   }
-
-  // JMTBAD fake event number until they give it to us
-  data[0] &= 0xFF000000FFFFFFFF;
-  data[0] |= (slink64calls & 0xFFFFFFULL) << 32;
-  std::cout << "faking event number from # spy64 calls: header is now 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[0]>>32) << " " << std::setw(8) << std::setfill('0') << (data[0] & 0xFFFFFFFF) << std::dec << std::endl;
 
   FIFO3Decoder decode3(data);
   //for (size_t i = 0; i <= ndata64; ++i)
@@ -1036,7 +1038,9 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
               << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
               << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
   }
+#endif
 
+#if 0
   readSpyFIFO();
   PixelFEDInterfacePh1::digfifo1 f = readFIFO1();
 
@@ -1115,13 +1119,7 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
         std::cout << std::hex << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
     }
   }
-
-  regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
-  usleep(10);
-  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK",0);
-  usleep(10);
-  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK",1);
-  usleep(10);
+#endif
 
   //std::vector<uint32_t> cData = ReadData(1024);
   //cData = ReadData(1024);
