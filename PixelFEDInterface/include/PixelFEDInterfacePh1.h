@@ -197,6 +197,8 @@ struct digfifo1 {
   bool runDegraded_;
 
   uint64_t slink64calls;
+
+  std::vector<uint32_t> bxs;
 };
 
 #endif

@@ -1010,9 +1010,18 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
     data[j] = (uint64_t(cData[j*2]) << 32) | cData[j*2+1];
 
   const uint32_t evnum = cData[0] & 0xFFFFFF;
+  const uint32_t bxnum = cData[1] >> 20;
+  bxs.push_back(bxnum);
+  if (bxs.size() == 1000) {
+    printf("last 1000 bxnums: [");
+    for (int ibx = 0; ibx < 1000; ++ibx)
+      printf("%u,", bxs[ibx]);
+    printf("]\n");
+    bxs.clear();
+  }
   std::cout << "slink64call #" << slink64calls << ", fed event #" << evnum << " ";
-  if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE by " << evnum - slink64calls << "\033[0m";
-  std::cout << "; blocksize: " << cBlockSize << std::endl;
+  if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m";
+  std::cout << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
 
   //readSpyFIFO();
   digfifo1 f = readFIFO1();
