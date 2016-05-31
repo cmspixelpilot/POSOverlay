@@ -40,34 +40,10 @@
 	<Mask xsi:type="xsd:string">3,5,9,11</Mask>
 	<CalBX xsi:type="xsd:unsignedInt">381</CalBX>
 	<L1ADelay xsi:type="xsd:unsignedInt">123</L1ADelay>
-        <NewWay xsi:type="xsd:boolean">false</NewWay>
+        <NewWay xsi:type="xsd:boolean">true</NewWay>
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>
 
   </xc:Context>
-
-<!--
-  <xc:Context id="1" url="http://cms-sidet003.fnal.gov:1973/">
-    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="cms-sidet003.fnal.gov" port="1914" network="xmas"/>
-
-    <xc:Application class="ttc::TTCciControl" id="90" instance="0" network="local" group="daq">
-      <properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
-        <name xsi:type="xsd:string">Board 1</name>
-        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
-        <Location xsi:type="xsd:integer">2</Location>
-        <Configuration xsi:type="xsd:string">[file=/home/fnaltest/TriDAS/Config/ttcciconfig/0/TTCciConfiguration.txt]</Configuration> 
-        <group xsi:type="xsd:string">Pixel</group>
-        <system xsi:type="xsd:string">CR</system>
-        <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
-        <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
-        <DisableMonitoring xsi:type="xsd:boolean">true</DisableMonitoring>
-      </properties>
-    </xc:Application>
-    <xc:Module>${XDAQ_ROOT}/lib/libttcttcci.so</xc:Module>  
-    <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
-
-
-  </xc:Context>
--->
 </xc:Partition>
