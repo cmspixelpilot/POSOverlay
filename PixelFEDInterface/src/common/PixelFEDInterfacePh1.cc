@@ -8,6 +8,7 @@
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO3Decoder.h"
+#include "PixelUtilities/PixelFEDDataTools/include/ErrorFIFODecoder.h"
 
 using namespace std;
 
@@ -751,9 +752,9 @@ void prettyprintSpyFIFO(const std::vector<uint32_t>& pVec)
     for (size_t i = 0; i < pVec.size(); ++i)
     {
       uint32_t cWord = pVec[i];
-        if (cWord != 0)
+      //if (cWord != 0)
         {
-            if ((cWord & 0xff) != 0) std::cout << std::hex << (cWord & 0xff) << " " ;
+          if ((cWord & 0xff) != 0) std::cout << std::hex << (cWord & 0xff) << std::dec << " " ;
             if (((cWord & cMask) >> 4) == 11 ) std::cout << " " << std::endl;
             if (((cWord & cMask) >> 4) == 6 ) std::cout << " " << std::endl;
             if (((cWord & cMask) >> 4) == 7 ) std::cout << " " << std::endl;
@@ -850,7 +851,57 @@ PixelFEDInterfacePh1::encfifo1 PixelFEDInterfacePh1::decodeFIFO1Stream(const std
   return f;
 }
 
-PixelFEDInterfacePh1::digfifo1 PixelFEDInterfacePh1::readFIFO1() {
+void PixelFEDInterfacePh1::prettyprintFIFO1Stream( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec) {
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+
+    for (uint32_t cIndex = 0; cIndex < pFifoVec.size(); cIndex++ )
+    {
+      if (pFifoVec[cIndex] != 0 || pMarkerVec[cIndex] != 0)
+        std::cout << "word #" << cIndex << ": 0x" << std::hex << pFifoVec[cIndex] << "  marker: 0x" << pMarkerVec[cIndex] << std::dec << std::endl;
+        if (pMarkerVec.at (cIndex) == 8)
+        {
+            // Event Header
+            std::cout << std::dec << "    Header: "
+               << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
+               << " ID: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
+               << " TBM_H: " <<  ( (pFifoVec.at (cIndex) >> 9) & 0xff )
+               << " EVT Nr: " <<  ( (pFifoVec.at (cIndex) ) & 0xff ) << std::endl;
+        }
+
+        if (pMarkerVec.at (cIndex) == 12)
+            std::cout << std::dec << "ROC Header: "
+               << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f  )
+               << " ROC Nr: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
+               << " Status: " << (  (pFifoVec.at (cIndex) ) & 0xff ) << std::endl;
+
+        if (pMarkerVec.at (cIndex) == 1)
+            std::cout  << std::dec << "            "
+                << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
+                << " ROC Nr: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
+                << " DC: " <<  ( (pFifoVec.at (cIndex) >> 16) & 0x1f )
+                << " PXL: " <<  ( (pFifoVec.at (cIndex) >> 8) & 0xff )
+                <<  " PH: " <<  ( (pFifoVec.at (cIndex) ) & 0xff ) << std::endl;
+
+        if (pMarkerVec.at (cIndex) == 4)
+            // TBM Trailer
+            std::cout << std::dec << "   Trailer: "
+               << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
+               << " ID: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
+               << " TBM_T2: " <<  ( (pFifoVec.at (cIndex) >> 12) & 0xff )
+               << " TBM_T1: " <<  ( (pFifoVec.at (cIndex) ) & 0xff ) << std::endl;
+
+        if (pMarkerVec.at (cIndex) == 6)
+            // Event Trailer
+            std::cout << std::dec << "Event Trailer: "
+               << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
+               << " ID: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
+               << " marker: " <<  ( (pFifoVec.at (cIndex) ) & 0x1fffff ) << std::endl;
+    }
+
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+}
+
+PixelFEDInterfacePh1::digfifo1 PixelFEDInterfacePh1::readFIFO1(bool print) {
   digfifo1 df;
 
   df.cFifo1A  = regManager->ReadBlockRegValue("fifo.spy_1_A", 2048);
@@ -861,6 +912,12 @@ PixelFEDInterfacePh1::digfifo1 PixelFEDInterfacePh1::readFIFO1() {
   df.a = decodeFIFO1Stream(df.cFifo1A, df.cMarkerA);
   df.b = decodeFIFO1Stream(df.cFifo1B, df.cMarkerB);
   //  assert(df.a.event == 0 || df.b.event == 0 || df.a.event == df.b.event);
+  if (print) {
+    std::cout << "FIFO1 for A:\n";
+    prettyprintFIFO1Stream(df.cFifo1A, df.cMarkerA);
+    std::cout << "FIFO1 for B:\n";
+    prettyprintFIFO1Stream(df.cFifo1B, df.cMarkerB);
+  }
 
   return df;
 }
@@ -981,20 +1038,28 @@ std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 
 int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
+  std::cout << "slink64call #" << slink64calls << std::endl;
+  //readSpyFIFO();
+  //readFIFO1(true);
 
   usleep(2000);
 
   uhal::ValWord<uint32_t> cVal = 0;
-  //uint32_t mycntword = 0;int sleepcnt=0;
+  uint32_t mycntword = 0;int sleepcnt=0;
+  bool our_timeout = false;
   do {
     cVal = regManager->ReadReg("pixfed_stat_regs.DDR0_full");
-    if (cVal == 0) usleep(10);
-    //sleepcnt++;
-    //if(sleepcnt>1000)mycntword=regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
-    //if(mycntword>5){cout<<mycntword<<" words in the ddr"<<endl; usleep(300000);}
+    if (cVal == 0) usleep(100);
+    sleepcnt++;
+    //if(sleepcnt > 1000) mycntword = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
+    //if(mycntword>5){std::cout<<mycntword<<" words in the ddr"<<std::endl; usleep(300000);}
+    if (sleepcnt > 20000) {
+      cout << "\033[1m\033[32mSOFTWARE TIMEOUT\033[0m" << std::endl;
+      our_timeout = true;
+      break;
+    }
   }
   while ( cVal == 0 );
-
   const uint32_t cNWords32 = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
   const uint32_t cBlockSize = cNWords32 + (2 * 2 * last_calib_mode_nevents);
   usleep(10);
@@ -1002,6 +1067,12 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   usleep(10);
   regManager->WriteReg("pixfed_ctrl_regs.DDR0_end_readout", 1);
   usleep(10);
+  if (our_timeout) {
+    std::cout << "error decoder:\n";
+    ErrorFIFODecoder ed(&cData[2], cData.size()-4);
+    ed.printToStream(std::cout);
+    return 0;
+  }
 
   while (regManager->ReadReg("pixfed_stat_regs.DDR0_full") == 1)
     usleep(10);
@@ -1030,17 +1101,14 @@ int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m";
   std::cout << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
 
-  //readSpyFIFO();
-  digfifo1 f = readFIFO1();
-  assert(f.a.tbm_t1 == f.b.tbm_t1 &&
-         f.a.tbm_t2 == f.b.tbm_t2);
-  if (!(f.b.tbm_t1 & 0x2))
-    std::cout << "\033[1m\033[34mNO CAL IN TRAILER 0x" << std::hex << f.b.tbm_t1 << std::dec << "\033[0m";
-
-#if 0
+#if 1
   std::cout << "slink 32-bit words from FW:\n";
   for (size_t i = 0; i < ndata; ++i)
     std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
+
+  std::cout << "error decoder:\n";
+  ErrorFIFODecoder ed(&cData[2], cData.size()-4);
+  ed.printToStream(std::cout);
 
   std::cout << "packed 64 bit:\n";
   for (size_t j = 0; j < ndata64; ++j) {

@@ -104,7 +104,8 @@ struct digfifo1 {
   std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
   encfifo1 decodeFIFO1Stream(const std::vector<uint32_t>& fifo, const std::vector<uint32_t>& markers);
-  digfifo1 readFIFO1();
+  void prettyprintFIFO1Stream(const std::vector<uint32_t>& fifo, const std::vector<uint32_t>& markers);
+  digfifo1 readFIFO1(bool print);
   int drainFifo1(uint32_t* data);
   int drainTBMFifo(uint32_t* data);
   int drainErrorFifo(uint32_t* data);
