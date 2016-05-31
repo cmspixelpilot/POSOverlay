@@ -21,6 +21,30 @@ class RegManager {
   uhal::HwInterface fBoard; /*!< Board in use*/
  public:
   /*!
+   * \brief Read from an address
+   * \param pAddr the address
+   */
+  virtual uhal::ValWord<uint32_t> Read(const uint32_t pAddr);
+  /*!
+   * \brief Read from an address
+   * \param pAddr the address
+   * \param pMask the mask
+   */
+  virtual uhal::ValWord<uint32_t> Read(const uint32_t pAddr, const uint32_t pMask);
+  /*!
+   * \brief Write to an address
+   * \param pAddr the address
+   * \param pVal the value
+   */
+  virtual bool Write(const uint32_t pAddr, const uint32_t pVal);
+  /*!
+   * \brief Write to an address
+   * \param pAddr the address
+   * \param pVal the value
+   * \param pMask the mask
+   */
+  virtual bool Write(const uint32_t pAddr, const uint32_t pVal, const uint32_t pMask);
+  /*!
    * \brief Write a register
    * \param pRegNode : Node of the register to write
    * \param pVal : Value to write

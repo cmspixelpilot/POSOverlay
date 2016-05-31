@@ -15,6 +15,66 @@ RegManager::RegManager(const std::string& pBoardId, const std::string& pURI, con
     fBoard(uhal::ConnectionManager::getDevice(pBoardId, pURI, pAddressTableFn))
 {}
 
+uhal::ValWord<uint32_t> RegManager::Read(const uint32_t pAddr) {
+  uhal::ValWord<uint32_t> v = fBoard.getClient().read(pAddr);
+  fBoard.dispatch();
+  return v;
+}
+
+uhal::ValWord<uint32_t> RegManager::Read(const uint32_t pAddr, const uint32_t pMask) {
+  uhal::ValWord<uint32_t> v = fBoard.getClient().read(pAddr, pMask);
+  fBoard.dispatch();
+  return v;
+}
+
+bool RegManager::Write(const uint32_t pAddr, const uint32_t pVal) {
+  fBoard.getClient().write(pAddr, pVal);
+  fBoard.dispatch();
+
+  if (fVerifyWrites) {
+    uhal::ValWord<uint32_t> reply = fBoard.getClient().read(pAddr);
+    fBoard.dispatch();
+            
+    if (!reply.valid()) {
+      std::cout << fUniqueId << " Read invalid for addr " << pAddr << std::endl;
+      return false;
+    }
+    else if (reply.value() == pVal) {
+      std::cout << fUniqueId << " Values written correctly !" << " addr 0x" << std::hex << pAddr << " = 0x" << pVal << std::dec << std::endl;
+    }
+    else {
+      std::cout << fUniqueId << " Values written INCORRECTLY !" << " addr 0x" << std::hex << pAddr << " = 0x" << reply.value() << " != " << pVal << std::dec << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool RegManager::Write(const uint32_t pAddr, const uint32_t pVal, const uint32_t pMask) {
+  fBoard.getClient().write(pAddr, pVal, pMask);
+  fBoard.dispatch();
+
+  if (fVerifyWrites) {
+    uhal::ValWord<uint32_t> reply = fBoard.getClient().read(pAddr, pMask);
+    fBoard.dispatch();
+            
+    if (!reply.valid()) {
+      std::cout << fUniqueId << " Read invalid for addr " << pAddr << std::endl;
+      return false;
+    }
+    else if (reply.value() == pVal) {
+      std::cout << fUniqueId << " Values written correctly !" << " addr 0x" << std::hex << pAddr << " = 0x" << pVal << std::dec << std::endl;
+    }
+    else {
+      std::cout << fUniqueId << " Values written INCORRECTLY !" << " addr 0x" << std::hex << pAddr << " = 0x" << reply.value() << " != " << pVal << std::dec << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool RegManager::WriteReg(const std::string& pRegNode, const uint32_t& pVal) {
   if (fDebugPrints)
     std::cout << fUniqueId << " WriteReg " << pRegNode << " 0x" << std::hex << pVal << std::dec << std::endl;
