@@ -69,6 +69,10 @@ int PixelFEDInterfacePh1::setup() {
     }
   }
 
+  const uint32_t tbm_mask_1((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) & 0xFFFFFFFFULL);
+  const uint32_t tbm_mask_2(((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) >> 32) & 0xFFFF);
+  std::cout << "TBM mask 1: 0x" << std::hex << tbm_mask_1 << "  2: 0x" << tbm_mask_2 << std::dec << std::endl;
+
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
     {"pixfed_ctrl_regs.PC_CONFIG_OK",    0},
@@ -79,14 +83,17 @@ int PixelFEDInterfacePh1::setup() {
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
-    {"pixfed_ctrl_regs.TBM_MASK_1", uint32_t(pixelFEDCard.cntrl_utca & 0xFFFFFFFFULL)},
-    {"pixfed_ctrl_regs.TBM_MASK_2", uint32_t((pixelFEDCard.cntrl_utca & 0xFFFF00000000ULL) >> 32)},
+    {"pixfed_ctrl_regs.TBM_MASK_1", tbm_mask_1},
+    {"pixfed_ctrl_regs.TBM_MASK_2", tbm_mask_2},
     {"pixfed_ctrl_regs.tbm_trailer_status_mask", 0x0},
     {"pixfed_ctrl_regs.slink_ctrl.privateEvtNb", 0x00},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_source_id", pixelFEDCard.fedNumber},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_FOV", 0xe},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_Evt_ty", 0},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_Evt_stat", 0xf},
+    {"pixfed_ctrl_regs.tts.timeout_check_valid", pixelFEDCard.timeout_checking_enabled},
+    {"pixfed_ctrl_regs.timeout_value", pixelFEDCard.timeout_counter_start},
+    {"pixfed_ctrl_regs.tts.timeout_nb_oos_thresh", pixelFEDCard.timeout_number_oos_threshold},
     {"fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}, // set 192val
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"pixfed_ctrl_regs.data_type", 0}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
