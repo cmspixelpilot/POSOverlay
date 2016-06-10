@@ -1,17 +1,17 @@
 <?xml version='1.0'?>
 <xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
 	
-  <xc:Context id="0" url="http://mp72.lns.cornell.edu:1973/">
+  <xc:Context id="0" url="http://vandyfpixutca:1973/">
 
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
 
-    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="mp72.lns.cornell.edu" port="1914" network="xmas"/>
+    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vandyfpixutca" port="1914" network="xmas"/>
 
     <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq">
       <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
         <UseTCDS xsi:type="xsd:boolean">false</UseTCDS>
         <UseTTC xsi:type="xsd:boolean">true</UseTTC>
-        <TTCSupervisorApplicationName xsi:type="xsd:string">PixelAMC13Controller</TTCSupervisorApplicationName>
+        <TTCSupervisorApplicationName xsi:type="xsd:string">ttc::TTCciControl</TTCSupervisorApplicationName>-->
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
@@ -28,22 +28,28 @@
 
     <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq"/>
     <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
+  </xc:Context>
 
-    <xc:Application class="SimpleSOAPSender" id="666" instance="0" network="local"/>
-    <xc:Application class="PixelAMC13Controller" id="90" instance="0" network="local" group="daq">
-      <properties xmlns="urn:xdaq-application:PixelAMC13Controller" xsi:type="soapenc:Struct">
-        <DoNothing xsi:type="xsd:boolean">false</DoNothing>
-	<Uri1 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=192.168.3.253:50001</Uri1>
-	<AddressT1 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
-	<Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=192.168.3.252:50001</Uri2>
-	<AddressT2 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
-	<Mask xsi:type="xsd:string">3,5,9,11</Mask>
-	<CalBX xsi:type="xsd:unsignedInt">381</CalBX>
-	<L1ADelay xsi:type="xsd:unsignedInt">123</L1ADelay>
-        <NewWay xsi:type="xsd:boolean">true</NewWay>
+  <xc:Context id="1" url="http://cms-sidet003.fnal.gov:1973/">
+    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="cms-sidet003.fnal.gov" port="1914" network="xmas"/>
+
+    <xc:Application class="ttc::TTCciControl" id="90" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:ttc::TTCciControl" xsi:type="soapenc:Struct">
+        <name xsi:type="xsd:string">Board 1</name>
+        <BusAdapter xsi:type="xsd:string">CAENPCI</BusAdapter>
+        <Location xsi:type="xsd:integer">2</Location>
+        <Configuration xsi:type="xsd:string">[file=/home/fnaltest/TriDAS/Config/ttcciconfig/0/TTCciConfiguration.txt]</Configuration> 
+        <group xsi:type="xsd:string">Pixel</group>
+        <system xsi:type="xsd:string">CR</system>
+        <BTimeCorrection xsi:type="xsd:unsignedInt">100</BTimeCorrection>
+        <DelayT2Correction xsi:type="xsd:unsignedInt">3</DelayT2Correction>
+        <DisableMonitoring xsi:type="xsd:boolean">true</DisableMonitoring>
       </properties>
     </xc:Application>
-    <xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libttcttcci.so</xc:Module>  
+    <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
+
 
   </xc:Context>
+
 </xc:Partition>

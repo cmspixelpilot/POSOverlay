@@ -112,6 +112,7 @@ namespace pos{
     // Ph1 FED: same as N/NC/SC/Scntrl, but all in one word. Assumes we won't do 96-ch fed.
     uint64_t cntrl_utca;
     uint64_t cntrl_utca_original;
+    int cntrl_utca_override; // use _original instead of respecting the PixelConfigurationVerifier choice
 
     //The values as read from file so that they can be restored after
     //calibration
@@ -184,7 +185,12 @@ namespace pos{
     int which_FMC;
 
     // Ph1 FED: whether to swap channel order for fitel
-    bool swap_Fitel_order;
+    int swap_Fitel_order;
+
+    // Ph1 FED: whether timeout checking enabled, where to start the counter, and how many timeouts in a row before going OOS 
+    int timeout_checking_enabled;
+    int timeout_counter_start;
+    int timeout_number_oos_threshold;
 
     // Most recent additions requested by Will and Danek (Dario)
     int BusyHoldMin       ;

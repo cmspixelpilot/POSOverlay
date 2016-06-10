@@ -185,7 +185,6 @@ void PixelCalibrationBase::sendTTCCalSync(){
   if (useTTC_){
     uint64_t l1a_count_0;
     uint64_t l1a_count_1;
-    uint64_t l1a_count_2;
     if (dumbAMC13) {
       l1a_count_0 = getL1ACountFromAMC13();
       if (dumbAMC13prints) printf("before CalSync call: %llu\n", (unsigned long long)l1a_count_0);
@@ -213,6 +212,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
       if (dumbAMC13prints) printf("after CalSync call: %llu\n", (unsigned long long)l1a_count_1);
       if (l1a_count_1 == l1a_count_0) {
         printf("\033[1m\033[31mL1A DIDN'T GO THROUGH, count %i\033[0m\n", gotocount);
+        usleep(10000);
         if (gotocount == 100000) {
           printf("DYING\n");
           assert(0);

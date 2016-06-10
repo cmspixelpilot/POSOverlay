@@ -46,6 +46,7 @@ void ErrorFIFODecoder::printToStream (std::ostream& out)
     case 0x1c: out<<" : Nearly Full. TTCrx Event #"<<ttcrxEvent<<", Nearly Full on Channel "<<dataWord<<std::endl; break;
     case 0x1b: out<<" : Dummy"<<std::endl; break;
     case 0x1a: out<<" : Gap"<<std::endl; break;
+    default: out << " ???" << std::endl; break;
     }
     
   }

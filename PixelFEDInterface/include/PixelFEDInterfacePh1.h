@@ -68,9 +68,25 @@ struct encfifo1hit {
   unsigned pxl;
   unsigned ph;
 };
+struct encfifo1roc {
+  unsigned ch;
+  unsigned roc;
+  unsigned rb;
+};
 struct encfifo1 {
-  unsigned event;
   bool found;
+  unsigned ch; // from tbm header
+  unsigned ch_tbm_t;
+  unsigned ch_evt_t;
+  unsigned tbm_h;
+  unsigned event;
+  unsigned id_tbm_h;
+  unsigned id_tbm_t;
+  unsigned id_evt_t;
+  unsigned tbm_t1;
+  unsigned tbm_t2;
+  unsigned marker;
+  std::vector<encfifo1roc> rocs;
   std::vector<encfifo1hit> hits;
   encfifo1() : found(false) {}
 };
@@ -87,8 +103,9 @@ struct digfifo1 {
   int drainTransparentFifo(uint32_t* data);
   std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
-  digfifo1 readFIFO1();
-  encfifo1 prettyprintFIFO1( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec, std::ostream& os);
+  encfifo1 decodeFIFO1Stream(const std::vector<uint32_t>& fifo, const std::vector<uint32_t>& markers);
+  void prettyprintFIFO1Stream(const std::vector<uint32_t>& fifo, const std::vector<uint32_t>& markers);
+  digfifo1 readFIFO1(bool print);
   int drainFifo1(uint32_t* data);
   int drainTBMFifo(uint32_t* data);
   int drainErrorFifo(uint32_t* data);
@@ -181,6 +198,8 @@ struct digfifo1 {
   bool runDegraded_;
 
   uint64_t slink64calls;
+
+  std::vector<uint32_t> bxs;
 };
 
 #endif

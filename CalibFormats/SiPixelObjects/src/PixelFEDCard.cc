@@ -667,6 +667,9 @@ PixelFEDCard::PixelFEDCard(string fileName):
     fscanf(infile, "Control bits: %llx\n", (unsigned long long*)&cntrl_utca);
     if (localDEBUG) printf("Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
 
+    fscanf(infile, "Control bits override: %d\n", &cntrl_utca_override);
+    if (localDEBUG) printf("Control bits override: %d\n", cntrl_utca_override);
+
     fscanf(infile, "Transparent+scope channel: %u\n", &TransScopeCh);
     if (localDEBUG) printf("Transparent+scope channel: %u\n", TransScopeCh);
 
@@ -676,10 +679,17 @@ PixelFEDCard::PixelFEDCard(string fileName):
     fscanf(infile, "Which FMC (lower = 0): %d\n", &which_FMC);
     if (localDEBUG) printf("Which FMC (lower = 0): %d\n", which_FMC);
 
-    int tmp = 0;
-    fscanf(infile, "Fitel channel order swapped: %d\n", &tmp);
-    swap_Fitel_order = tmp;
+    fscanf(infile, "Fitel channel order swapped: %d\n", &swap_Fitel_order);
     if (localDEBUG) printf("Fitel channel order swapped: %d\n", swap_Fitel_order);
+
+    fscanf(infile, "Timeout checking enabled: %d\n", &timeout_checking_enabled);
+    if (localDEBUG) printf("Timeout checking enabled: %d\n", timeout_checking_enabled);
+
+    fscanf(infile, "Timeout counter start: %d\n", &timeout_counter_start);
+    if (localDEBUG) printf("Timeout counter start: %d\n", timeout_counter_start);
+
+    fscanf(infile, "Timeout number OOS threshold: %d\n", &timeout_number_oos_threshold);
+    if (localDEBUG) printf("Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
 
     getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
   }
@@ -1325,10 +1335,14 @@ void PixelFEDCard::writeASCII(std::string dir) const{
   else if (type == CTA) {
     fprintf(outfile, "Type: CTA\n");
     fprintf(outfile, "Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
+    fprintf(outfile, "Control bits override: %d\n", cntrl_utca_override);
     fprintf(outfile, "Transparent+scope channel: %u\n", TransScopeCh);
     fprintf(outfile, "PACKET_NB: %x\n", PACKET_NB);
     fprintf(outfile, "Which FMC (lower = 0): %d\n", which_FMC);
     fprintf(outfile, "Fitel channel order swapped: %d\n", swap_Fitel_order);
+    fprintf(outfile, "Timeout checking enabled: %d\n", timeout_checking_enabled);
+    fprintf(outfile, "Timeout counter start: %d\n", timeout_counter_start);
+    fprintf(outfile, "Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
   }
   else
     fprintf(outfile, "Type: VME\n");

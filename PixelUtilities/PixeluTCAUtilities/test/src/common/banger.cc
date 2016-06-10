@@ -24,7 +24,19 @@ int main(int argc, char** argv) {
   //std::cout << "cmd: " << cmd << std::endl;
   //std::cout << "node: " << node << std::endl;
 
-  if (cmd == "read")
+  if (cmd == "readaddr") {
+    uint32_t addr = strtoul(argv[5], 0, 16);
+    std::cout << "value @ 0x" << std::hex << addr << ": 0x" << rm.Read(addr) << std::dec << std::endl;
+  }
+  else if (cmd == "writeaddr") {
+    uint32_t addr = strtoul(argv[5], 0, 16);
+    assert(argc >= 7);
+    uint32_t val = strtoul(argv[6], 0, 16);
+    std::cout << "value @ 0x" << std::hex << addr << ": 0x" << rm.Write(addr, val) << std::dec << std::endl;
+    uint32_t val2 = rm.Read(addr);
+    std::cout << "write val @ 0x" << std::hex << addr << ": 0x" << val << " readback 0x" << val2 << std::dec << std::endl;
+  }
+  else if (cmd == "read")
     std::cout << "value: 0x" << std::hex << rm.ReadReg(node) << std::dec << std::endl;
   else if (cmd == "readstr")
     std::cout << "value as str: " << rm.ReadRegAsString(node) << std::endl;
