@@ -95,6 +95,18 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   *out << "L1A rate: "
        << commaify(amc13->GetL1ARate()) << " Hz<br>\n";
 
+  *out << "CalSync count: "
+       << commaify(amc13->GetCalSyncCount()) << "<br>\n";
+
+  *out << "LevelOne count: "
+       << commaify(amc13->GetLevelOneCount()) << "<br>\n";
+
+  *out << "ResetROC count: "
+       << commaify(amc13->GetResetROCCount()) << "<br>\n";
+
+  *out << "ResetTBM count: "
+       << commaify(amc13->GetResetTBMCount()) << "<br>\n";
+
   *out << "Input clock frequency measurement: "
        << commaify(amc13->GetClockFreq())
        << " &plusmn; 50 Hz<br>\n";
@@ -102,17 +114,23 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 
   amc13->Get()->getStatus()->SetHTML();
   *out << "T1 Firmware Version: "
-       << amc13->Get()->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS") << "<br>\n";
+       << "0x" << std::hex << amc13->Get()->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS") << std::dec << "<br>\n";
   *out << "T2 Firmware Version: "
-       << amc13->Get()->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS") << "<br>\n";
+       << "0x" << std::hex << amc13->Get()->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS") << std::dec << "<br>\n";
+  *out << "TTCLOOP: "
+       << amc13->Get()->read(amc13::AMC13Simple::T1, "CONF.DIAG.FAKE_TTC_ENABLE") << "<br>\n";
+  *out << "FAKE: "
+       << amc13->Get()->read(amc13::AMC13Simple::T1, "CONF.LOCAL_TRIG.FAKE_DATA_ENABLE") << "<br>\n";
 
   std::stringstream ss;
   //*out << amc13->Get()->getStatus()->ReportHeader() << "\n";
   //*out << amc13->Get()->getStatus()->ReportStyle() << "\n";
   
   amc13->Get()->getStatus()->Report(99, ss, "TTC_BGO");
+
   //amc13->Get()->getStatus()->Report(99, ss, "TTC_History");
   //amc13->Get()->getStatus()->Report(99, ss, "TTC_History_conf");
+
   amc13->Get()->getStatus()->Report(99, ss, "Temps_Voltages");
 
   *out << ss.str();
@@ -164,6 +182,10 @@ void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) thr
   } catch (std::exception e) {
     *out << "<br><br><h1>SOME PROBLEM WITH STATUS</h1>\n";
   }
+  for (int i = 0; i < amc13->Get()->getStatus()->GetTableColumns("0_Board").size(); ++i) {
+    *out << amc13->Get()->getStatus()->GetTableColumns("0_Board")[i] << "\n";
+  }
+  *out << amc13->Get()->getStatus()->GetCell("0_Board", "INFO", "T1_VER")->Print(-1, true) << "\n";
   *out << ss.str();
   amc13->Get()->getStatus()->UnsetHTML(); 
 }
@@ -204,6 +226,7 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
   Receive(msg, parameters);
 
   if (PRINT) std::cout << "PixelAMC13Controller::userCommand(" << parameters[0].value_ << ", " << parameters[1].value_ << ")" << std::endl;
+
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {

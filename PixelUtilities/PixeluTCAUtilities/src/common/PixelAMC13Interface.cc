@@ -62,6 +62,9 @@ void PixelAMC13Interface::DoResets() {
   fAMC13->setTTCHistoryEna(true);
   
   countLevelOne = 0;
+  countCalSync = 0;
+  countResetROC = 0;
+  countResetTBM = 0;
 
   for (int i = 0; i < 4; ++i)
     fAMC13->configureBGOShort(i, 0, 0, 0, true);
@@ -108,6 +111,7 @@ void PixelAMC13Interface::Reset() {
 }
 
 void PixelAMC13Interface::CalSync() {
+  ++countCalSync;
   if (fDebugPrints) std::cout << "CalSync" << std::endl;
   if (fNewWay)
     FireBGO(0);
@@ -128,11 +132,13 @@ void PixelAMC13Interface::LevelOne() {
 }
 
 void PixelAMC13Interface::ResetTBM() {
+  ++countResetTBM;
   if (fDebugPrints) std::cout << "ResetTBM" << std::endl;
   FireBGO(1);
 }
 
 void PixelAMC13Interface::ResetROC() {
+  ++countResetROC;
   if (fDebugPrints) std::cout << "ResetROC" << std::endl;
   FireBGO(2);
 }
@@ -140,6 +146,10 @@ void PixelAMC13Interface::ResetROC() {
 void PixelAMC13Interface::ResetCounters() {
   if (fDebugPrints) std::cout << "ResetCounters" << std::endl;
   fAMC13->resetCounters();
+  countCalSync = 0;
+  countLevelOne = 0;
+  countResetTBM = 0;
+  countResetROC = 0;
 }
 
 uint32_t PixelAMC13Interface::GetClockFreq() {
@@ -157,6 +167,30 @@ uint64_t PixelAMC13Interface::GetL1ACount() {
 uint32_t PixelAMC13Interface::GetL1ARate() {
   uint32_t v = fAMC13->read(amc13::AMC13Simple::T1, "STATUS.GENERAL.L1A_RATE_HZ");
   if (fDebugPrints) std::cout << "L1ARate " << v << std::endl;
+  return v;
+}
+
+uint64_t PixelAMC13Interface::GetLevelOneCount() {
+  uint64_t v = countLevelOne;
+  if (fDebugPrints) std::cout << "LevelOneCount " << v << std::endl;
+  return v;
+}
+
+uint64_t PixelAMC13Interface::GetCalSyncCount() {
+  uint64_t v = countCalSync;
+  if (fDebugPrints) std::cout << "CalSyncCount " << v << std::endl;
+  return v;
+}
+
+uint64_t PixelAMC13Interface::GetResetROCCount() {
+  uint64_t v = countResetROC;
+  if (fDebugPrints) std::cout << "ResetROCCount " << v << std::endl;
+  return v;
+}
+
+uint64_t PixelAMC13Interface::GetResetTBMCount() {
+  uint64_t v = countResetTBM;
+  if (fDebugPrints) std::cout << "ResetTBMCount " << v << std::endl;
   return v;
 }
 

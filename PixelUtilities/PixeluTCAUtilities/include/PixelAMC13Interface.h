@@ -55,6 +55,10 @@ class PixelAMC13Interface {
   uint32_t GetClockFreq();
   uint64_t GetL1ACount();
   uint32_t GetL1ARate();
+  uint64_t GetLevelOneCount();
+  uint64_t GetCalSyncCount();
+  uint64_t GetResetROCCount();
+  uint64_t GetResetTBMCount();
 
   void ClearL1AHistory();
   void ClearTTCHistory();
@@ -73,10 +77,12 @@ class PixelAMC13Interface {
   uint32_t fMask;
   bool fDebugPrints;
   uint32_t fCalBX;
+  uint64_t countLevelOne;
+  uint64_t countCalSync;
+  uint64_t countResetROC;
+  uint64_t countResetTBM;
   uint32_t fL1ADelay;
   bool fNewWay;
-
-  int countLevelOne;
 };
 
 #endif
