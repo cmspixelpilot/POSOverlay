@@ -65,6 +65,12 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   *out << cgicc::html().set("lang", "en").set("dir", "ltr") << std::endl;
   *out << cgicc::title("Pixel AMC13 Controller") << std::endl;
 
+  const std::string& URN = getApplicationDescriptor()->getURN();
+  *out <<
+    "<script type=\"text/javascript\">\n"
+    "window.history.pushState('Default', 'Title', '/" << URN << "');\n"
+    "</script>\n";
+
   std::vector<std::string> sends = {"reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM", "ResetCounters" };
 
   if (!amc13)
@@ -75,7 +81,7 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   for (std::vector<std::string>::const_iterator it = sends.begin(), ite = sends.end(); it != ite; ++it) {
     *out << "<td>";
     std::string url = "/";
-    url += getApplicationDescriptor()->getURN();
+    url += URN;
     url += "/StateMachineXgiHandler";
     *out << cgicc::form().set("method","get").set("action", url).set("enctype","multipart/form-data") << std::endl;
     *out << cgicc::input().set("type", "submit").set("name", "StateInput").set("value", *it);
@@ -136,7 +142,7 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   *out << ss.str();
   amc13->Get()->getStatus()->UnsetHTML();
   std::string urlAllAMC13Tables = "/";
-  urlAllAMC13Tables += getApplicationDescriptor()->getURN();
+  urlAllAMC13Tables += URN;
   urlAllAMC13Tables += "/AllAMC13Tables";
   *out << "<a href=\"" << urlAllAMC13Tables << "\"><h3>All AMC13 status tables</h3></a><br>\n";
 }
