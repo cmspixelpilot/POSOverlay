@@ -98,15 +98,12 @@ int PixelPh1FECInterface::getStatus(void) {
 //--------------------------------------------------------------------------
 int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
 
-    const string names[8] = {
-        "VERSIONM01",
-        "VERSIONM02",
-        "VERSIONM03",
-        "VERSIONM04",
-        "VERSIONM05",
-        "VERSIONM06",
-        "VERSIONM07",
-        "VERSIONM08"};
+    const string names[4] = {
+        "GenRegM1.VERSION",
+        "GenRegM2.VERSION",
+        "GenRegM3.VERSION",
+        "GenRegM4.VERSION"
+    };
     
     
     valword value;
@@ -120,31 +117,23 @@ int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
     return 0;
 }
 
-
-// Nik added these two function for GLIB/CTA board internal clk switch 
-
 void PixelPh1FECInterface::switchclk(unsigned int clk_word){
+  // JMTBAD just set that one bit
   if (PRINT) cout << "PixelPh1FECInterface: "  << "switchclk 0x" << std::hex << clk_word << std::dec << std::endl;
   outputwordhal("CLKReg", clk_word);
 }
 
-void PixelPh1FECInterface::enableinternalclk(){
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "enableinternalclk" << std::endl;
-  outputwordhal("CLKSWITCH.ENABLE", 0);
-  //outputwordhal("ctrl.ttc_xpoint_A_out3", 3); 
-}
-
-void PixelPh1FECInterface::disableinternalclk(){
-  outputwordhal("CLKSWITCH.DISABLE", 1);
-  //outputwordhal("ctrl.ttc_xpoint_A_out3", 0);
-}
-
 //----------------------------------------------------------------------------
 //
-int PixelPh1FECInterface::writeCSregister(int mfec, int fecchannel,
-                                       int cscommand) {
-    //const string names[8] = {"CSREGM1","CSREGM2","CSREGM3","CSREGM4",
-    //		   "CSREGM5","CSREGM6","CSREGM7","CSREGM8"};
+int PixelPh1FECInterface::writeCSregister(int mfec, int fecchannel, int cscommand) {
+    
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::writeCSregister -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
     // expect the lower 8 bits of the CS register (shift for other channel)
     uint32_t value;
     uint32_t value2;
@@ -186,28 +175,16 @@ int PixelPh1FECInterface::writeCSregister(int mfec, int fecchannel,
     value2 = value;
     switch (mfec) {
         case 1:
-            pRegManager->WriteReg("CSReg.CSREGM1", value2);
+            pRegManager->WriteReg("CSRegM1.CSREG", value2);
             break;
         case 2:
-            pRegManager->WriteReg("CSREGM2", value2);
+            pRegManager->WriteReg("CSRegM2.CSREG", value2);
             break;
         case 3:
-            pRegManager->WriteReg("CSREGM3", value2);
+            pRegManager->WriteReg("CSRegM3.CSREG", value2);
             break;
         case 4:
-            pRegManager->WriteReg("CSREGM4", value2);
-            break;
-        case 5:
-            pRegManager->WriteReg("CSREGM5", value2);
-            break;
-        case 6:
-            pRegManager->WriteReg("CSREGM6", value2);
-            break;
-        case 7:
-            pRegManager->WriteReg("CSREGM7", value2);
-            break;
-        case 8:
-            pRegManager->WriteReg("CSREGM8", value2);
+            pRegManager->WriteReg("CSRegM4.CSREG", value2);
             break;
     }
     
@@ -247,8 +224,12 @@ void PixelPh1FECInterface::haltest(void) {
 void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
                                  unsigned int *ch1, unsigned int *ch2) {
     
-    //const string names[8] = {"CSREGM1","CSREGM2","CSREGM3","CSREGM4",
-    //		   "CSREGM5","CSREGM6","CSREGM7","CSREGM8"};
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::mfecbusy -> User provided a wrong mfec number" <<endl;
+        return ;
+    }
+    
     
     valword value;
     int timeout;
@@ -258,28 +239,16 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
     
     switch (mfec) {
         case 1:
-            value = pRegManager->ReadReg("CSReg.CSREGM1");
+            value = pRegManager->ReadReg("CSRegM1.CSREG");
             break;
         case 2:
-            value = pRegManager->ReadReg("CSREGM2");
+            value = pRegManager->ReadReg("CSRegM2.CSREG");
             break;
         case 3:
-            value = pRegManager->ReadReg("CSREGM3");
+            value = pRegManager->ReadReg("CSRegM3.CSREG");
             break;
         case 4:
-            value = pRegManager->ReadReg("CSREGM4");
-            break;
-        case 5:
-            value = pRegManager->ReadReg("CSREGM5");
-            break;
-        case 6:
-            value = pRegManager->ReadReg("CSREGM6");
-            break;
-        case 7:
-            value = pRegManager->ReadReg("CSREGM7");
-            break;
-        case 8:
-            value = pRegManager->ReadReg("CSREGM8");
+            value = pRegManager->ReadReg("CSRegM4.CSREG");
             break;
     }
     
@@ -297,28 +266,16 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
         do {
             switch (mfec) {
                 case 1:
-                    value = pRegManager->ReadReg("CSReg.CSREGM1");
+                    value = pRegManager->ReadReg("CSRegM1.CSREG");
                     break;
                 case 2:
-                    value = pRegManager->ReadReg("CSREGM2");
+                    value = pRegManager->ReadReg("CSRegM2.CSREG");
                     break;
                 case 3:
-                    value = pRegManager->ReadReg("CSREGM3");
+                    value = pRegManager->ReadReg("CSRegM3.CSREG");
                     break;
                 case 4:
-                    value = pRegManager->ReadReg("CSREGM4");
-                    break;
-                case 5:
-                    value = pRegManager->ReadReg("CSREGM5");
-                    break;
-                case 6:
-                    value = pRegManager->ReadReg("CSREGM6");
-                    break;
-                case 7:
-                    value = pRegManager->ReadReg("CSREGM7");
-                    break;
-                case 8:
-                    value = pRegManager->ReadReg("CSREGM8");
+                    value = pRegManager->ReadReg("CSRegM4.CSREG");
                     break;
             }
             
@@ -349,28 +306,16 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
         do {
             switch (mfec) {
                 case 1:
-                    value = pRegManager->ReadReg("CSReg.CSREGM1");
+                    value = pRegManager->ReadReg("CSRegM1.CSREG");
                     break;
                 case 2:
-                    value = pRegManager->ReadReg("CSREGM2");
+                    value = pRegManager->ReadReg("CSRegM2.CSREG");
                     break;
                 case 3:
-                    value = pRegManager->ReadReg("CSREGM3");
+                    value = pRegManager->ReadReg("CSRegM3.CSREG");
                     break;
                 case 4:
-                    value = pRegManager->ReadReg("CSREGM4");
-                    break;
-                case 5:
-                    value = pRegManager->ReadReg("CSREGM5");
-                    break;
-                case 6:
-                    value = pRegManager->ReadReg("CSREGM6");
-                    break;
-                case 7:
-                    value = pRegManager->ReadReg("CSREGM7");
-                    break;
-                case 8:
-                    value = pRegManager->ReadReg("CSREGM8");
+                    value = pRegManager->ReadReg("CSRegM4.CSREG");
                     break;
             }
             *ch2 = (int) (value.value() >> 24) & 0x7F;
@@ -393,39 +338,32 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
     
     mfecCSregister[mfec] = value.value();
 }
+
 //--------------------------------------------------------------------------------
 // Finds out if *previous* transmission was received okay.
 // Reads the mfec combined control/status register which returns and sets
 // functions of ch1 and ch2 independently
 int PixelPh1FECInterface::getfecctrlstatus(const int mfec, unsigned long *data) {
-    //const string names[8] = {"CSREGM1","CSREGM2","CSREGM3","CSREGM4",
-    //		   "CSREGM5","CSREGM6","CSREGM7","CSREGM8"};
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::getfecctrlstatus -> User provided a wrong mfec number" <<endl;
+        return -1 ;
+    }
     
     valword value;
     switch (mfec) {
         case 1:
-            value = pRegManager->ReadReg("CSReg.CSREGM1");
+            value = pRegManager->ReadReg("CSRegM1.CSREG");
             break;
         case 2:
-            value = pRegManager->ReadReg("CSREGM2");
+            value = pRegManager->ReadReg("CSRegM2.CSREG");
             break;
         case 3:
-            value = pRegManager->ReadReg("CSREGM3");
+            value = pRegManager->ReadReg("CSRegM3.CSREG");
             break;
         case 4:
-            value = pRegManager->ReadReg("CSREGM4");
-            break;
-        case 5:
-            value = pRegManager->ReadReg("CSREGM5");
-            break;
-        case 6:
-            value = pRegManager->ReadReg("CSREGM6");
-            break;
-        case 7:
-            value = pRegManager->ReadReg("CSREGM7");
-            break;
-        case 8:
-            value = pRegManager->ReadReg("CSREGM8");
+            value = pRegManager->ReadReg("CSRegM4.CSREG");
             break;
     }
     *data = value.value();
@@ -446,10 +384,17 @@ void PixelPh1FECInterface::outputwordhal(const char *halname, unsigned int data)
 }
 
 void PixelPh1FECInterface::outputblock(const int mfec, const int fecchannel, std::vector<uint32_t> wordcont) {
- 
-    const string names[2][1] = {
-        {"BOUT_BUF1M1"},
-        {"BOUT_BUF2M1"} };
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::outputblock -> User provided a wrong mfec number" <<endl;
+        return ;
+    }
+    
+    const string names[2][4] = {
+        {"BOUT_BUF1M1","BOUT_BUF1M2","BOUT_BUF1M3","BOUT_BUF1M4"},
+        {"BOUT_BUF2M1","BOUT_BUF2M2","BOUT_BUF2M3","BOUT_BUF2M4"}
+    };
     
     // implement throw exception for the cases when mfec >/< bla and channel >/< bla
     //std::cout << "name " << names[fecchannel-1][mfec-1] << " size of the word vector " << wordcont.size()<< std::endl;
@@ -465,193 +410,237 @@ int PixelPh1FECInterface::resetdoh(const int mfec, const int fecchannel) {
 }
 
 int PixelPh1FECInterface::injectrstroc(const int mfec, const int bitstate) {
-  disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW changes
-  
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstroc(" << mfec << ", " << bitstate << ")" << endl;
-    //const string names[8] = {"INRSTROCM1","INRSTROCM2","INRSTROCM3","INRSTROCM4",
-    //		             "INRSTROCM5","INRSTROCM6","INRSTROCM7","INRSTROCM8"};
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::injectrstroc -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW changes
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstroc(" << mfec << ", " << bitstate << ")" << endl;
+    
     switch (mfec)
     {
-        case 1:   outputwordhal("GenReg.INRSTROCM1", bitstate); break;
-        case 2:   outputwordhal("INRSTROCM2", bitstate); break;
-        case 3:   outputwordhal("INRSTROCM3", bitstate); break;
-        case 4:   outputwordhal("INRSTROCM4", bitstate); break;
-        case 5:   outputwordhal("INRSTROCM5", bitstate); break;
-        case 6:   outputwordhal("INRSTROCM6", bitstate); break;
-        case 7:   outputwordhal("INRSTROCM7", bitstate); break;
-        case 8:   outputwordhal("INRSTROCM8", bitstate); break;
+        case 1:   outputwordhal("GenRegM1.INRSTROC", bitstate); break;
+        case 2:   outputwordhal("GenRegM2.INRSTROC", bitstate); break;
+        case 3:   outputwordhal("GenRegM3.INRSTROC", bitstate); break;
+        case 4:   outputwordhal("GenRegM4.INRSTROC", bitstate); break;
     }
-
+    
     disableexttrigger(mfec, 0);
     return 0;
 }
 int PixelPh1FECInterface::injecttrigger(const int mfec, const int bitstate) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "injecttrigger(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::injecttrigger -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "injecttrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:   outputwordhal("GenReg.INTRIGM1", bitstate); break;
-        case 2:   outputwordhal("INTRIGM2", bitstate); break;
-        case 3:   outputwordhal("INTRIGM3", bitstate); break;
-        case 4:   outputwordhal("INTRIGM4", bitstate); break;
-        case 5:   outputwordhal("INTRIGM5", bitstate); break;
-        case 6:   outputwordhal("INTRIGM6", bitstate); break;
-        case 7:   outputwordhal("INTRIGM7", bitstate); break;
-        case 8:   outputwordhal("INTRIGM8", bitstate); break;
+        case 1:   outputwordhal("GenRegM1.INTRIG", bitstate); break;
+        case 2:   outputwordhal("GenRegM2.INTRIG", bitstate); break;
+        case 3:   outputwordhal("GenRegM3.INTRIG", bitstate); break;
+        case 4:   outputwordhal("GenRegM4.INTRIG", bitstate); break;
+            
     }
     return 0;
 }
+
 int PixelPh1FECInterface::injectrsttbm(const int mfec, const int bitstate) {
-  disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW chang 
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrsttbm(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::injectrsttbm -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW chang
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrsttbm(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.INRSTTBMM1", bitstate); break;
-        case 2:  outputwordhal("INRSTTBMM2", bitstate); break;
-        case 3:  outputwordhal("INRSTTBMM3", bitstate); break;
-        case 4:  outputwordhal("INRSTTBMM4", bitstate); break;
-        case 5:  outputwordhal("INRSTTBMM5", bitstate); break;
-        case 6:  outputwordhal("INRSTTBMM6", bitstate); break;
-        case 7:  outputwordhal("INRSTTBMM7", bitstate); break;
-        case 8:  outputwordhal("INRSTTBMM8", bitstate); break;
+        case 1:  outputwordhal("GenRegM1.INRSTTBM", bitstate); break;
+        case 2:  outputwordhal("GenRegM2.INRSTTBM", bitstate); break;
+        case 3:  outputwordhal("GenRegM3.INRSTTBM", bitstate); break;
+        case 4:  outputwordhal("GenRegM4.INRSTTBM", bitstate); break;
+            
     }
     disableexttrigger(mfec, 0);
     return 0;
 }
+
 int PixelPh1FECInterface::injectrstcsr(const int mfec, const int bitstate) {
-  disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW chang 
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstcsr(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::injectrstcsr -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    disableexttrigger(mfec, 1); // JMTBAD to be taken out if FW chang
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "injectrstcsr(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.INRSTCSRM1", bitstate); break;
-        case 2:  outputwordhal("INRSTCSRM2", bitstate); break;
-        case 3:  outputwordhal("INRSTCSRM3", bitstate); break;
-        case 4:  outputwordhal("INRSTCSRM4", bitstate); break;
-        case 5:  outputwordhal("INRSTCSRM5", bitstate); break;
-        case 6:  outputwordhal("INRSTCSRM6", bitstate); break;
-        case 7:  outputwordhal("INRSTCSRM7", bitstate); break;
-        case 8:  outputwordhal("INRSTCSRM8", bitstate); break;
+        case 1:  outputwordhal("GenRegM1.INRSTCSR", bitstate); break;
+        case 2:  outputwordhal("GenRegM2.INRSTCSR", bitstate); break;
+        case 3:  outputwordhal("GenRegM3.INRSTCSR", bitstate); break;
+        case 4:  outputwordhal("GenRegM4.INRSTCSR", bitstate); break;
     }
-    disableexttrigger(mfec, 0); // JMTBAD to be taken out if FW chang 
+    disableexttrigger(mfec, 0); // JMTBAD to be taken out if FW chang
     return 0;
 }
+
 int PixelPh1FECInterface::enablecallatency(const int mfec, const int bitstate) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "enablecallatency(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::enablecallatency -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "enablecallatency(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.ENCALLATENCYM1", bitstate); break;
-        case 2:  outputwordhal("ENCALLATENCYM2", bitstate); break;
-        case 3:  outputwordhal("ENCALLATENCYM3", bitstate); break;
-        case 4:  outputwordhal("ENCALLATENCYM4", bitstate); break;
-        case 5:  outputwordhal("ENCALLATENCYM5", bitstate); break;
-        case 6:  outputwordhal("ENCALLATENCYM6", bitstate); break;
-        case 7:  outputwordhal("ENCALLATENCYM7", bitstate); break;
-        case 8:  outputwordhal("ENCALLATENCYM8", bitstate); break;
+        case 1:  outputwordhal("GenRegM1.ENCALLATENCY", bitstate); break;
+        case 2:  outputwordhal("GenRegM2.ENCALLATENCY", bitstate); break;
+        case 3:  outputwordhal("GenRegM3.ENCALLATENCY", bitstate); break;
+        case 4:  outputwordhal("GenRegM4.ENCALLATENCY", bitstate); break;
     }
     return 0;
 }
+
 int PixelPh1FECInterface::disableexttrigger(const int mfec, const int bitstate) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "disableexttrigger(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::disableexttrigger -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "disableexttrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.DISEXTTRIGM1", bitstate); break;
-        case 2:  outputwordhal("DISEXTTRIGM2", bitstate); break;
-        case 3:  outputwordhal("DISEXTTRIGM3", bitstate); break;
-        case 4:  outputwordhal("DISEXTTRIGM4", bitstate); break;
-        case 5:  outputwordhal("DISEXTTRIGM5", bitstate); break;
-        case 6:  outputwordhal("DISEXTTRIGM6", bitstate); break;
-        case 7:  outputwordhal("DISEXTTRIGM7", bitstate); break;
-        case 8:  outputwordhal("DISEXTTRIGM8", bitstate); break;
+        case 1:  outputwordhal("GenRegM1.DISEXTTRIG", bitstate); break;
+        case 2:  outputwordhal("GenRegM2.DISEXTTRIG", bitstate); break;
+        case 3:  outputwordhal("GenRegM3.DISEXTTRIG", bitstate); break;
+        case 4:  outputwordhal("GenRegM4.DISEXTTRIG", bitstate); break;
     }
     return 0;
 }
 int PixelPh1FECInterface::loopnormtrigger(const int mfec, const int bitstate) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "loopnormtrigger(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::loopnormtrigger -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "loopnormtrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.LOOPNORMTRIGM1", bitstate); break;
-        case 2:  outputwordhal("LOOPNORMTRIGM2", bitstate); break;
-        case 3:  outputwordhal("LOOPNORMTRIGM3", bitstate); break;
-        case 4:  outputwordhal("LOOPNORMTRIGM4", bitstate); break;
-        case 5:  outputwordhal("LOOPNORMTRIGM5", bitstate); break;
-        case 6:  outputwordhal("LOOPNORMTRIGM6", bitstate); break;
-        case 7:  outputwordhal("LOOPNORMTRIGM7", bitstate); break;
-        case 8:  outputwordhal("LOOPNORMTRIGM8", bitstate); break;
+        case 1:  outputwordhal("GenRegM1.LOOPNORMTRIG", bitstate); break;
+        case 2:  outputwordhal("GenRegM2.LOOPNORMTRIG", bitstate); break;
+        case 3:  outputwordhal("GenRegM3.LOOPNORMTRIG", bitstate); break;
+        case 4:  outputwordhal("GenRegM4.LOOPNORMTRIG", bitstate); break;
     }
     return 0;
 }
 int PixelPh1FECInterface::loopcaltrigger(const int mfec, const int bitstate) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "loopcaltrigger(" << mfec << ", " << bitstate << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::loopcaltrigger -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "loopcaltrigger(" << mfec << ", " << bitstate << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.LOOPCALTRIGM1", bitstate); break;
-        case 2:  outputwordhal("LOOPCALTRIGM2", bitstate); break;
-        case 3:  outputwordhal("LOOPCALTRIGM3", bitstate); break;
-        case 4:  outputwordhal("LOOPCALTRIGM4", bitstate); break;
-        case 5:  outputwordhal("LOOPCALTRIGM5", bitstate); break;
-        case 6:  outputwordhal("LOOPCALTRIGM6", bitstate); break;
-        case 7:  outputwordhal("LOOPCALTRIGM7", bitstate); break;
-        case 8:  outputwordhal("LOOPCALTRIGM8", bitstate); break;
+        case 1:  outputwordhal("GenRegM1.LOOPCALTRIG", bitstate); break;
+        case 2:  outputwordhal("GenRegM2.LOOPCALTRIG", bitstate); break;
+        case 3:  outputwordhal("GenRegM3.LOOPCALTRIG", bitstate); break;
+        case 4:  outputwordhal("GenRegM4.LOOPCALTRIG", bitstate); break;
+            
     }
     return 0;
 }
 int PixelPh1FECInterface::callatencycount(const int mfec, const int latency) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "callatencycount(" << mfec << ", " << latency << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::callatencycount -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "callatencycount(" << mfec << ", " << latency << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.CALLATCNTM1", latency); break;
-        case 2:  outputwordhal("CALLATCNTM2", latency); break;
-        case 3:  outputwordhal("CALLATCNTM3", latency); break;
-        case 4:  outputwordhal("CALLATCNTM4", latency); break;
-        case 5:  outputwordhal("CALLATCNTM5", latency); break;
-        case 6:  outputwordhal("CALLATCNTM6", latency); break;
-        case 7:  outputwordhal("CALLATCNTM7", latency); break;
-        case 8:  outputwordhal("CALLATCNTM8", latency); break;
+        case 1:  outputwordhal("GenRegM1.CALLATCNT", latency); break;
+        case 2:  outputwordhal("GenRegM2.CALLATCNT", latency); break;
+        case 3:  outputwordhal("GenRegM3.CALLATCNT", latency); break;
+        case 4:  outputwordhal("GenRegM4.CALLATCNT", latency); break;
     }
     return 0;
 }
+
 int PixelPh1FECInterface::FullBufRDaDisable(const int mfec, const int disable) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "FullBufRDaDisable(" << mfec << ", " << disable << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::FullBufRDaDisable -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "FullBufRDaDisable(" << mfec << ", " << disable << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.DISRDACHECKM1", disable); break;
-        case 2:  outputwordhal("DISRDACHECKM2", disable); break;
-        case 3:  outputwordhal("DISRDACHECKM3", disable); break;
-        case 4:  outputwordhal("DISRDACHECKM4", disable); break;
-        case 5:  outputwordhal("DISRDACHECKM5", disable); break;
-        case 6:  outputwordhal("DISRDACHECKM6", disable); break;
-        case 7:  outputwordhal("DISRDACHECKM7", disable); break;
-        case 8:  outputwordhal("DISRDACHECKM8", disable); break;
+        case 1:  outputwordhal("GenRegM1.DISRDACHECK", disable); break;
+        case 2:  outputwordhal("GenRegM2.DISRDACHECK", disable); break;
+        case 3:  outputwordhal("GenRegM3.DISRDACHECK", disable); break;
+        case 4:  outputwordhal("GenRegM4.DISRDACHECK", disable); break;
     }
     return 0;
 }
+
 int PixelPh1FECInterface::AllRDaDisable(const int mfec, const int disable) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "AllRDaDisable(" << mfec << ", " << disable << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::AllRDaDisable -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "AllRDaDisable(" << mfec << ", " << disable << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.DISRDAM1", disable); break;
-        case 2:  outputwordhal("DISRDAM2", disable); break;
-        case 3:  outputwordhal("DISRDAM3", disable); break;
-        case 4:  outputwordhal("DISRDAM4", disable); break;
-        case 5:  outputwordhal("DISRDAM5", disable); break;
-        case 6:  outputwordhal("DISRDAM6", disable); break;
-        case 7:  outputwordhal("DISRDAM7", disable); break;
-        case 8:  outputwordhal("DISRDAM8", disable); break;
+        case 1:  outputwordhal("GenRegM1.DISRDA", disable); break;
+        case 2:  outputwordhal("GenRegM2.DISRDA", disable); break;
+        case 3:  outputwordhal("GenRegM3.DISRDA", disable); break;
+        case 4:  outputwordhal("GenRegM4.DISRDA", disable); break;
     }
     return 0;
 }
 
 int PixelPh1FECInterface::testFiberEnable(const int mfec, const int enable) {
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "testFiberEnable(" << mfec << ", " << enable << ")" << endl;
+    
+    if(mfec < 1 || mfec > 4){
+        
+        cerr << "PixelPh1FECInterface::testFiberEnable -> User provided a wrong mfec number" <<endl;
+        return -1;
+    }
+    
+    if (PRINT) cout << "PixelPh1FECInterface: "  << "testFiberEnable(" << mfec << ", " << enable << ")" << endl;
     switch (mfec)
     {
-        case 1:  outputwordhal("GenReg.TESTFIBERM1", enable); break;
-        case 2:  outputwordhal("TESTFIBERM2", enable); break;
-        case 3:  outputwordhal("TESTFIBERM3", enable); break;
-        case 4:  outputwordhal("TESTFIBERM4", enable); break;
-        case 5:  outputwordhal("TESTFIBERM5", enable); break;
-        case 6:  outputwordhal("TESTFIBERM6", enable); break;
-        case 7:  outputwordhal("TESTFIBERM7", enable); break;
-        case 8:  outputwordhal("TESTFIBERM8", enable); break;
+        case 1:  outputwordhal("GenRegM1.TESTFIBER", enable); break;
+        case 2:  outputwordhal("GenRegM2.TESTFIBER", enable); break;
+        case 3:  outputwordhal("GenRegM3.TESTFIBER", enable); break;
+        case 4:  outputwordhal("GenRegM4.TESTFIBER", enable); break;
     }
     return 0;
 }
@@ -660,22 +649,20 @@ int PixelPh1FECInterface::testFiberEnable(const int mfec, const int enable) {
 // To read back the information from the mFEC input FIFOs
 // Return the word from the FIFO
 int PixelPh1FECInterface::readback(const int mfec, const int channel) {
-
-    const string names[2][8] = {
-        {"InFIFOCh1.INP_BUF1M1","INP_BUF1M2","INP_BUF1M3","INP_BUF1M4",
-         "INP_BUF1M5","INP_BUF1M6","INP_BUF1M7","INP_BUF1M8"},
-        {"InFIFOCh2.INP_BUF2M1","INP_BUF2M2","INP_BUF2M3","INP_BUF2M4",
-         "INP_BUF2M5","INP_BUF2M6","INP_BUF2M7","INP_BUF2M8"} };
     
-    
-    if(mfec<1 || mfec>8) {
-        cout<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
+    if(mfec<1 || mfec>4) {
+        cerr<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
         return 3;
     }
     if(channel<1 || channel>2) {
         cout<<" PixelPh1FECInterface: Wrong mfec channel number "<<channel<<endl;
         return 2;
     }
+    
+    const string names[2][4] = {
+        {"INP_BUF1M1","INP_BUF1M2","INP_BUF1M3","INP_BUF1M4"},
+        {"INP_BUF2M1","INP_BUF2M2","INP_BUF2M3","INP_BUF2M4"}
+    };
     
     valword value = pRegManager->ReadReg(names[channel-1][mfec-1]);
     if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FIFO readback register: 0x" << std::hex << value << std::dec <<endl;
@@ -691,13 +678,10 @@ int PixelPh1FECInterface::readback(const int mfec, const int channel) {
 // byte = 2 - transmitted byte COUNT
 // byte = 3 - received byte COUNT
 // byte = 4 - return the full word
-int PixelPh1FECInterface::getByteHubCount(const int mfec, const int channel,
-                                       const int byte, int * data) {
-    const string names[2][8] = {
-        {"StatCh1.STAT1_M1","STAT1_M2","STAT1_M3","STAT1_M4",
-         "STAT1_M5","STAT1_M6","STAT1_M7","STAT1_M8"},
-        {"StatCh2.STAT2_M1","STAT2_M2","STAT2_M3","STAT2_M4",
-         "STAT2_M5","STAT2_M6","STAT2_M7","STAT2_M8"} };
+int PixelPh1FECInterface::getByteHubCount(const int mfec,
+                                          const int channel,
+                                          const int byte,
+                                          int * data) {
     
     valword value;
     int ret = 0;
@@ -711,7 +695,12 @@ int PixelPh1FECInterface::getByteHubCount(const int mfec, const int channel,
         cout<<" PixelPh1FECInterface: Wrong mfec channel number "<<channel<<endl;
         return 2;
     }
-
+    
+    const string names[2][4] = {
+        {"STAT_M1.StatCh1","STAT_M2.StatCh1","STAT_M3.StatCh1","STAT_M4.StatCh1"},
+        {"STAT_M1.StatCh2","STAT_M2.StatCh2","STAT_M3.StatCh2","STAT_M4.StatCh2"}
+    };
+    
     value = pRegManager->ReadReg(names[channel-1][mfec-1]);
     if (PRINT) cout << hex << "0x" << value << dec << endl;
     if(byte<0||byte>4) {*data=0; ret=1;}   // signal out of range, return 0
