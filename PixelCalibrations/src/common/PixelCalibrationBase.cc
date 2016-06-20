@@ -45,12 +45,20 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
 
   percentageOfJob_=0;
 
-  if (dumbAMC13)
-    AMC13 = new amc13::AMC13("chtcp-2.0://localhost:10203?target=amc13_T1:50001",
-                             "/opt/cactus/etc/amc13/AMC13XG_T1.xml",
-                             "chtcp-2.0://localhost:10203?target=amc13_T2:50001",
-                             "/opt/cactus/etc/amc13/AMC13XG_T2.xml");
-  
+  if (dumbAMC13) {
+    const char* dumb_connect_t1 = getenv("POS_DUMB_AMC13_CONNECT_T1");
+    const char* dumb_connect_t2 = getenv("POS_DUMB_AMC13_CONNECT_T2");
+    const char* dumb_xml_t1 = getenv("POS_DUMB_AMC13_XML_T1");
+    const char* dumb_xml_t2 = getenv("POS_DUMB_AMC13_XML_T2");
+    if (!dumb_connect_t1 || !dumb_connect_t2 || !dumb_xml_t1 || !dumb_xml_t2) {
+      std::cout << "Need to set POS_DUMB_AMC13 vars!\n";
+      assert(0);
+    }
+
+    AMC13 = new amc13::AMC13(dumb_connect_t1, dumb_xml_t1,
+                             dumb_connect_t2, dumb_xml_t2);
+  }
+
   if(dynamic_cast <PixelCalibConfiguration*> (theCalibObject_)==0) 
     { 
       sendingMode_="yes";
