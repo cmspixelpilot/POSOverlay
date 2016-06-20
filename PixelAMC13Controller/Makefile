@@ -35,7 +35,7 @@ LibraryDirs =
 
 UserSourcePath = 
 
-UserCFlags = -O
+UserCFlags = -O0
 UserCCFlags = -std=c++0x -g
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
