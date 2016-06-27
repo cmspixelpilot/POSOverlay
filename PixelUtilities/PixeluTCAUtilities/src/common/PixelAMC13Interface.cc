@@ -323,7 +323,7 @@ void PixelAMC13Interface::FireBGO(unsigned i) {
   //}
   //while (fAMC13->read(amc13::AMC13Simple::T1, cmds[i]) == 0);
   
-  fAMC13->write(amc13::AMC13Simple::T1, "ACTION.TTC.SINGLE_COMMAND", 1);
+  fAMC13->sendBGO(); //writeMask(amc13::AMC13Simple::T1, "ACTION.TTC.SINGLE_COMMAND");
 
   //do {
   fAMC13->write(amc13::AMC13Simple::T1, cmds[i], 0); 

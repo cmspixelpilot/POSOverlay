@@ -136,55 +136,142 @@
    </node>
 
 
+   <!-- global registers  -->
+   <!-- JMTBAD use of CLKReg should be replaced with just setting ctrl.ttc_xpoint_A_out3 to 1 -->
+   <node id="CLKReg" address="0x00000004" mode="single" permission="rw" description="For internal/external clock"/>
 
     <!-- for testing purposes, send a single word to the FIFO  --> 
     <node id="SOUT_BUF1M1" address="0x40000000" permission="rw" description="Chan1 Out FIFO MFEC01 "/> 
   
-    <node id="BOUT_BUF1M1" address="0x40000000" mode="non-incremental" permission="rw" size="16384" description="Chan1 Out FIFO MFEC01 "/>
-    <node id="BOUT_BUF2M1" address="0x40000001" mode="non-incremental" permission="rw" size="16384" description="Chan2 Out FIFO MFEC01 "/>
-    <node id="CONFIG00" address="0x00000000" mode="single" permission="rw" description="for setssid(), check what this is!!! "/>
-    <node id="SSID" address="0x00000000" mode="single" permission="rw" description="for setssid(), check what this is!!! "/>
-    <node id="VERSIONM01" address="0x4000001C" mode="single" permission="rw" description="Firmware version"/>
-    <node id="CLKReg" address="0x00000004" mode="single" permission="rw" description="For internal/external clock!!! "/>
-    <node id="CLKSWITCH" address="0x00000004" mode="single" permission="rw" >
-        <node id="ENABLE"   mask="0x00030000"  description="Enable GLIB/CTA internal CLK"/>
-        <node id="DISABLE"  mask="0x00030000"  description="Disable GLIB/CTA internal CLK"/>
+    <!-- Output FIFO (Russell calls it Input FIFO)  -->
+    <node id="BOUT_BUF1M1" address="0x40000000" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC01" />
+    <node id="BOUT_BUF2M1" address="0x40000001" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC01" />
+    <node id="BOUT_BUF1M2" address="0x40000002" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC02" />
+    <node id="BOUT_BUF2M2" address="0x40000003" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC02" />
+    <node id="BOUT_BUF1M3" address="0x40000004" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC03" />
+    <node id="BOUT_BUF2M3" address="0x40000005" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC03" />
+    <node id="BOUT_BUF1M4" address="0x40000006" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC04" />
+    <node id="BOUT_BUF2M4" address="0x40000007" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC04" />
+
+   <!-- Input FIFO (Russell calls it Output FIFO)  -->
+   <node id="INP_BUF1M1" address="0x40000008" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC01" />
+   <node id="INP_BUF2M1" address="0x40000009" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC01" />
+   <node id="INP_BUF1M2" address="0x4000000A" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC02" />
+   <node id="INP_BUF2M2" address="0x4000000B" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC02" />
+   <node id="INP_BUF1M3" address="0x4000000D" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC03" />
+   <node id="INP_BUF2M3" address="0x4000000D" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC03" />
+   <node id="INP_BUF1M4" address="0x4000000E" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC04" />
+   <node id="INP_BUF2M4" address="0x4000000F" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC04" />
+   
+   
+   <!-- General Registers  -->
+   <node id="GenRegM1" address="0x4000001C" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC01" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC01" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC01" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC01" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC01" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC01 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC01" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC01" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC01" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC01" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC01" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC01" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC01" />
+   </node>
+   
+   <node id="GenRegM2" address="0x4000001D" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC02" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC02" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC02" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC02" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC02" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC02 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC02" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC02" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC02" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC02" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC02" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC02" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC02" />
+   </node>
+
+
+   <node id="GenRegM3" address="0x4000001E" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC03" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC03" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC03" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC03" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC03" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC03 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC03" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC03" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC03" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC03" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC03" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC03" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC03" />
+   </node>
+
+
+   <node id="GenRegM4" address="0x4000001F" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC04" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC04" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC04" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC04" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC04" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC04 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC04" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC04" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC04" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC04" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC04" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC04" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC04" />
+   </node>
+
+
+    <!--  Control-Status Registers  -->
+	<!-- JMTBAD let's make these not have sub nodes -->
+    <node id="CSRegM1" address="0x40000018" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec1" />
     </node>
- <!--   <node id="OutFIFOCh1" address="0x40000000" permission="rw" mode="single">
-        <node id="BOUT_BUF1M1"       mask="0xFFFFFFFF" description="Chan1 Out FIFO MFEC01" />
+    <node id="CSRegM2" address="0x40000019" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec2" />
     </node>
-    <node id="OutFIFOCh2" address="0x40000001" permission="w" mode="single">
-        <node id="BOUT_BUF2M1"       mask="0xFFFFFFFF" description="Chan2 Out FIFO MFEC01" />
-    </node> -->
-  
-  <node id="InFIFOCh1.INP_BUF1M1" address="0x40000008" permission="r" size="128" mode="non-incremental">
- <!--        <node id="INP_BUF1M1"       mask="0xFFFFFFFF" description="Chan1 Input FIFO MFEC01" /> -->
+    <node id="CSRegM3" address="0x4000001A" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec3" />
     </node>
-     <node id="InFIFOCh2.INP_BUF2M1" address="0x40000009" permission="r" size="128" mode="non-incremental">
-<!--        <node id="INP_BUF2M1"       mask="0xFFFFFFFF" description="Chan2 Input FIFO MFEC01" /> -->
+    <node id="CSRegM4" address="0x4000001B" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec4" />
     </node>
-    <node id="StatCh1" address="0x40000010" permission="r" mode="single">
-        <node id="STAT1_M1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC01" />
+
+
+    <!--  Hub/Port Register (Fiber Test Registers)  -->
+    <node id="STAT_M1" address="0x40000010" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC01" />
     </node>
-    <node id="StatCh2" address="0x40000011" permission="r" mode="single">
-        <node id="STAT2_M1"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC01" />
+    <node id="STAT_M1" address="0x40000011" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC01" />
     </node>
-    <node id="CSReg" address="0x40000018" permission="rw" mode="single">
-        <node id="CSREGM1"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec1" />
+    <node id="STAT_M2" address="0x40000012" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC02" />
     </node>
-    <node id="GenReg" address="0x4000001C" permission="rw" mode="single">
-        <node id="INRSTROCM1"       mask="0x00000001" description="Inject RST ROC MFEC01" />
-        <node id="INTRIGM1"         mask="0x00000002" description="Inject Trigger MFEC01" />
-        <node id="INRSTTBMM1"       mask="0x00000004" description="Inject RST TBM MFEC01" />
-        <node id="INRSTCSRM1"       mask="0x00000008" description="Inject RST TBM MFEC01" />
-        <node id="ENCALLATENCYM1"   mask="0x00000010" description="Inject RST CSR MFEC01" />
-        <node id="DISEXTTRIGM1"     mask="0x00000020" description="Disable Ext Trigger MFEC01 -- > disables AMC13 trigger" />
-        <node id="LOOPNORMTRIGM1"   mask="0x00000040" description="Loop Normal Trigger MFEC01" />
-        <node id="LOOPCALTRIGM1"    mask="0x00000080" description="Loop Cal Trigger MFEC01" />
-        <node id="CALLATCNTM1"      mask="0x0000FF00" description="Cal Latency Count MFEC01" />
-        <node id="DISRDACHECKM1"    mask="0x00100000" description="Disable RDa Check  MFEC01" />
-        <node id="DISRDAM1"         mask="0x00200000" description="Disable RDa MFEC01" />
-        <node id="TESTFIBERM1"      mask="0x00400000" description="Test Fiber MFEC01" />
-        <node id="VERSIONM01"       mask="0xFF000000" description="Version Number  MFEC01" />
+    <node id="STAT_M2" address="0x40000013" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC02" />
     </node>
+    <node id="STAT_M3" address="0x40000014" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC03" />
+    </node>
+    <node id="STAT_M3" address="0x40000015" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC03" />
+    </node>
+    <node id="STAT_M4" address="0x40000016" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC04" />
+    </node>
+    <node id="STAT_M4" address="0x40000017" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC04" />
+    </node>
+
 </node>

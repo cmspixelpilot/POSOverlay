@@ -216,8 +216,8 @@ void PixelRootDirectoryMaker::cdDirectory(unsigned int fedNumber, unsigned int c
 std::string PixelRootDirectoryMaker::getPath(std::string name){
   //This method gives back the new path assuming that we are looking for a path related to the ROC naming scheme
 	//removing the last ROC part.
-	//FPix_BpO_D1_BLD9_PNL2_PLQ3_ROC2 will become
-	//FPix/FPix_BpO/FPix_BpO_D1/FPix_BpO_D1_BLD9/FPix_BpO_D1_BLD9_PNL2/FPix_BpO_D1_BLD9_PNL2_PLQ3
+	//FPix_BpO_D1_BLD9_PNL2_rng3_ROC2 will become
+	//FPix/FPix_BpO/FPix_BpO_D1/FPix_BpO_D1_BLD9/FPix_BpO_D1_BLD9_PNL2/FPix_BpO_D1_BLD9_PNL2_rng3
 	string path = "";
 	for (unsigned int i=0;i<name.size();i++){
     if (name[i]=='_') {

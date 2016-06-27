@@ -2297,7 +2297,8 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
       if (feccrate==crate_) {
 
         std::string modulePath=module_name->modulename();
-        std::string powerCoordinate = "Pilt_BmI";  //Only one partition for pilot because of the bs connect we have to do  //modulePath.substr(0, 8);
+        //std::string powerCoordinate = "Pilt_BmI";  //Only one partition for pilot because of the bs connect we have to do  
+	std::string powerCoordinate = modulePath.substr(0, 8);
 
         TriVoltage power=powerMap_.getVoltage(powerCoordinate, std::cout);
 	BiVoltage powerHV=powerMap_.getHVoltage(powerCoordinate, std::cout); //get HV status
@@ -2491,7 +2492,9 @@ void PixelFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fsm)
         configTBMTimer.stop();
 
 	if (PixelDCSFSMInterface_!=0) {
-	  std::string powerCoordinate= "Pilt_BmI"; //Only one partition for pilot because of the bs connect we have to do // modulePath.substr(0, 8);
+	  //std::string powerCoordinate= "Pilt_BmI"; //Only one partition for pilot because of the bs connect we have to do 
+	  std::string powerCoordinate= modulePath.substr(0, 8);//Get the module Path+quadrant
+
 	  BiVoltage powerHV=powerMap_.getHVoltage(powerCoordinate, std::cout); //get HV status
 	  configDACTimer.start();
 	  if (physics) {
@@ -2718,7 +2721,8 @@ std::string const msg_debug_wxp = "Will reconfigure with global key = " + string
 
 	dacProgTimer.start();
 	if (PixelDCSFSMInterface_!=0) {
-	  string powerCoordinate="Pilt_BmI";  //Only one partition for pilot because of the bs connect we have to do // modulePath.substr(0, 8);
+	  //string powerCoordinate="Pilt_BmI";  //Only one partition for pilot because of the bs connect we have to do 
+	  string powerCoordinate =  modulePath.substr(0, 8); //Get the Subdetector and quadrant
 	  powerMapLast_.setHVoltage(powerCoordinate, HV_OFF, std::cout); //act like HV is off no matter what
 	  //cout<<" CALL DACS ======================================================= 7"<<endl;
 
@@ -3759,7 +3763,8 @@ void PixelFECSupervisor::startupHVCheck(bool startingRun, bool doReset) {
       if (feccrate==crate_) {
 
         std::string modulePath=module_name->modulename();
-        std::string powerCoordinate= "Pilt_BmI";//Only one partition for pilot because of the bs connect we have to do //modulePath.substr(0, 8);
+//        std::string powerCoordinate= "Pilt_BmI";//Only one partition for pilot because of the bs connect we have to do 
+	std::string powerCoordinate = modulePath.substr(0, 8);
 	BiVoltage powerHV=powerMap_.getHVoltage(powerCoordinate, std::cout); //get HV status
 	//compare this to powerMapLast_
 //update -- NO LONGER USE lastHVstate. Just always program

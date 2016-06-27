@@ -515,9 +515,9 @@ class PixelConfigDBInterface{
 /* 	      std::cout << "FIRST: " << currentModule << std::endl ; */
 	      currentModule.replace(currentModule.find("_ROC"), currentModule.size() - currentModule.find("_ROC"), "") ;
 /* 	      std::cout << "SECOND: " << currentModule << std::endl ; */
-	      if(currentModule.find("_PLQ") != std::string::npos)
+	      if(currentModule.find("_RNG") != std::string::npos)
 		{
-		  currentModule.replace(currentModule.find("_PLQ"), currentModule.size() - currentModule.find("_PLQ"), "") ;
+		  currentModule.replace(currentModule.find("_RNG"), currentModule.size() - currentModule.find("_RNG"), "") ;
 /* 		  std::cout << "THIRD: " << currentModule << std::endl ; */
 		}
 	      while(1)
@@ -526,9 +526,9 @@ class PixelConfigDBInterface{
 		  if(r == databaseTable.size()) break ;
 		  string newCurrentModule = databaseTable[r][colM["ROC_NAME"]] ;
 		  newCurrentModule.replace(newCurrentModule.find("_ROC"), newCurrentModule.size() - newCurrentModule.find("_ROC"), "") ;
-		  if(newCurrentModule.find("_PLQ") != std::string::npos)
+		  if(newCurrentModule.find("_RNG") != std::string::npos)
 		    {
-		      newCurrentModule.replace(newCurrentModule.find("_PLQ"), newCurrentModule.size() - newCurrentModule.find("_PLQ"), "") ;
+		      newCurrentModule.replace(newCurrentModule.find("_RNG"), newCurrentModule.size() - newCurrentModule.find("_RNG"), "") ;
 /* 		      std::cout << "THIRD: " << newCurrentModule << std::endl ; */
 		    }
 /* 		  std::cout << "******* Comparing: |" << currentModule << "| vs |" << newCurrentModule << "|" << std::endl ; */

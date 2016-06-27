@@ -554,7 +554,7 @@ void PixelHistoPicGen::fillFPixColors(){
 string PixelHistoPicGen::getFPixStandardName(int disc, int panel,
 		int halfDisc, int blade, int roc){
 
-	//FPix B(p,m)(I,O) D(1-3) BLD(1-12) PNL(1,2) PLQ(1-(3,4)) ROC(0-(1,4,5,7,9))
+	//FPix B(p,m)(I,O) D(1-3) BLD(1-12) PNL(1,2) RNG(1-(3,4)) ROC(0-(1,4,5,7,9))
 	
 	string stdName = "FPix_B";
 	char intString[3];
@@ -570,7 +570,7 @@ string PixelHistoPicGen::getFPixStandardName(int disc, int panel,
 	stdName += "_PNL";
 	sprintf(intString,"%d",panel+1);
 	stdName += intString; 																 //panel 1-2
-	stdName += "_PLQ";
+	stdName += "_RNG";
 	sprintf(intString,"%d",panel == 0 		? (
 																roc < 2 ? 1 :
 																roc < 8 ? 2 :
@@ -645,15 +645,15 @@ void PixelHistoPicGen::getFPixIndices(string stdName, int &disc, int &panel,
 	blade = atoi(intString) - 1;
 	
 		//roc -------------------------------------
-	int plqLoc = stdName.find("_PLQ");
-	if(plqLoc < 0){
+	int rngLoc = stdName.find("_RNG");
+	if(rngLoc < 0){
 		cout << mthn << "Invalid Plaquette." << endl;
 		disc = -1;
 		return;
 	}
-	plqLoc += 4;
-	sprintf(intString,"%c",stdName[plqLoc]);
-	int plaquette = atoi(intString)-1; 
+	rngLoc += 4;
+	sprintf(intString,"%c",stdName[rngLoc]);
+	int ring = atoi(intString)-1; 
 	
 	int rocLoc = stdName.find("_ROC");
 	if(rocLoc < 0){
@@ -665,13 +665,13 @@ void PixelHistoPicGen::getFPixIndices(string stdName, int &disc, int &panel,
 	sprintf(intString,"%c",stdName[rocLoc]);
 	int rocLabel = atoi(intString); 
 	
-	if(panel == 0){ //4 plaquette panel
+	if(panel == 0){ //4 ring panel
 		int rocsPerPlaq[] = {0,2,8,16};
-		roc = rocsPerPlaq[plaquette] + rocLabel;
+		roc = rocsPerPlaq[ring] + rocLabel;
 	}
-	else{ //3 plaquette panel
+	else{ //3 ring panel
 		int rocsPerPlaq[] = {0,6,14};
-		roc = rocsPerPlaq[plaquette] + rocLabel;
+		roc = rocsPerPlaq[ring] + rocLabel;
 	}
 
 }

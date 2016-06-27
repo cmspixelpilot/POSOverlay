@@ -357,7 +357,7 @@ string PixelModuleName::modulename() const{
 ostream& pos::operator<<(ostream& s, const PixelModuleName& pixelroc){
 
 
-    // FPix_BpR_D1_BLD1_PNL1_PLQ1_ROC1
+    // FPix_BpR_D1_BLD1_PNL1_RNG1_ROC1
 
     s<<pixelroc.modulename();
 
