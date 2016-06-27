@@ -198,14 +198,14 @@ xoap::MessageReference PixelDCSCreateDataPoints::createDataPointsFED(xoap::Messa
       unsigned int diskNumber = (*readOutChip)->disk();
       unsigned int bladeNumber = (*readOutChip)->blade();
       unsigned int panelNumber = (*readOutChip)->panel();
-      unsigned int plaquetteNumber = (*readOutChip)->plaquet();
+      unsigned int ringNumber = (*readOutChip)->ring();
       unsigned int rocNumber = (*readOutChip)->roc();
       
       unsigned int readOutGroupNumber = (bladeNumber/3);
       
       char logicalName[100];
-      sprintf(logicalName, "CMS_Pixel/HalfCylinder/D%d/ROG%d/BLD%d/PNL%d/PLQ%d/ROC%d", 
-	      diskNumber, readOutGroupNumber, bladeNumber, panelNumber, plaquetteNumber, rocNumber);
+      sprintf(logicalName, "CMS_Pixel/HalfCylinder/D%d/ROG%d/BLD%d/PNL%d/RNG%d/ROC%d", 
+	      diskNumber, readOutGroupNumber, bladeNumber, panelNumber, ringNumber, rocNumber);
 
       std::string dpName = hardwareName; // name of data-point in PVSS "hardware" view
       //std::string dpAlias = (*readOutChip)->rocname(); // name of data-point (alias) in PVSS "logical" view

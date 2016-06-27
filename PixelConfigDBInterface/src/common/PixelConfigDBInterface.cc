@@ -236,7 +236,7 @@ void PixelConfigDBInterface::getPixelTrimBitsTable(vector< vector<string> >&  ta
         DATA_FILE                                          VARCHAR2(200)
         TRIM_CLOB                                          CLOB
   */
-  //where["ROC_NAME"] = module+"_PLQ2" ;
+  //where["ROC_NAME"] = module+"_RNG2" ;
    
   clause << key.key() ;
   where["CONFIG_KEY"] = clause.str() ; // theTrueDBKey_  ;//clause.str() ;
@@ -3274,7 +3274,7 @@ void PixelConfigDBInterface::fillTRIMCache(vector< vector<string> > & dt)
       faster. We now store the base name of each ROC as the main
       map-cache key, not the full ROC name. For the Forward
       detector, this means going from
-      FPix_BmO_D2_BLD8_PNL2_PLQ1_ROC0 to FPix_BmO_D2_BLD8_PNL2,
+      FPix_BmO_D2_BLD8_PNL2_RNG1_ROC0 to FPix_BmO_D2_BLD8_PNL2,
       while for the Barrel case this means going from
       BPix_BpO_SEC8_LYR3_LDR21F_MOD4_ROC0 to
       BPix_BpO_SEC8_LYR3_LDR21F_MOD4. This means that whenever a
@@ -3286,7 +3286,7 @@ void PixelConfigDBInterface::fillTRIMCache(vector< vector<string> > & dt)
       taken in properly dropping the unused part of the ROC name
       to obtain the correct baseName. Due to the way they are
       assembled, first we need to remove the common _ROC part and
-      only after the additional PLQ part for the FPix case. We
+      only after the additional RNG part for the FPix case. We
       also add the METADATA row for each basename entry, so that
       we can void copying around the vectors and use just
       references tot he cache, which will have everything
@@ -3532,7 +3532,7 @@ void PixelConfigDBInterface::getAllTRIMDataSets(string koc, unsigned int GK, vec
 	6 ROC_NAME
 	7 TRIM_BITS
   */
-  //where["ROC_NAME"] = module+"_PLQ2" ;
+  //where["ROC_NAME"] = module+"_RNG2" ;
    
   clause << GK ;
   where["CONFIG_KEY"] = clause.str() ; // theTrueDBKey_  ;//clause.str() ;
@@ -3664,6 +3664,6 @@ void PixelConfigDBInterface::baseNameFromFullName(std::string & fullName)
 {
   size_t found;
   fullName.replace(fullName.rfind("_ROC"), fullName.length(), "");
-  if ((found=fullName.rfind("_PLQ")) != std::string::npos)
+  if ((found=fullName.rfind("_RNG")) != std::string::npos)
     fullName.replace(found, fullName.length(), "");
 }

@@ -27,7 +27,7 @@ PixelROCName::PixelROCName(std::string rocname)
 }
 
 void PixelROCName::setIdPilot(char np, char LR,int disk,
-			      int blade, int panel, int plaquet, int roc){
+			      int blade, int panel, int ring, int roc){
 
     std::string mthn = "[PixelROCName::setIdPilot()]\t\t\t\t    " ;
     id_=0;
@@ -39,7 +39,7 @@ void PixelROCName::setIdPilot(char np, char LR,int disk,
     //std::cout << __LINE__ << "]\t" << mthn << "disk  : " << disk   << std::endl;
     //std::cout << __LINE__ << "]\t" << mthn << "blade  : " << blade   << std::endl;
     //std::cout << __LINE__ << "]\t" << mthn << "panel  : " << panel   << std::endl;
-    //std::cout << __LINE__ << "]\t" << mthn << "plaquet  : " << plaquet   << std::endl;
+    //std::cout << __LINE__ << "]\t" << mthn << "ring  : " << ring   << std::endl;
     //std::cout << __LINE__ << "]\t" << mthn << "roc  : " << roc   << std::endl;
 
     assert(roc>=0&&roc<16);
@@ -54,7 +54,7 @@ void PixelROCName::setIdPilot(char np, char LR,int disk,
     //std::cout<< __LINE__ << "]\t" << mthn <<"5 id_="<<std::hex<<id_<<std::dec<<std::endl; 
     id_=(id_|((panel-1)<<6));
     //std::cout<< __LINE__ << "]\t" << mthn <<"6 id_="<<std::hex<<id_<<std::dec<<std::endl; 
-    id_=(id_|((plaquet-1)<<4));
+    id_=(id_|((ring-1)<<4));
     //std::cout<< __LINE__ << "]\t" << mthn <<"7 id_="<<std::hex<<id_<<std::dec<<std::endl; 
     id_=(id_|roc);
 
@@ -63,7 +63,7 @@ void PixelROCName::setIdPilot(char np, char LR,int disk,
 }
 
 void PixelROCName::setIdFPix(char np, char LR,int disk,
-			 int blade, int panel, int plaquet, int roc){
+			 int blade, int panel, int ring, int roc){
 
     std::string mthn = "[PixelROCName::setIdFPix()]\t\t\t\t    " ;
     id_=0;
@@ -73,10 +73,10 @@ void PixelROCName::setIdFPix(char np, char LR,int disk,
     //std::cout << __LINE__ << "]\t" << mthn << "disk  : " << disk   << std::endl;
     //std::cout << __LINE__ << "]\t" << mthn << "blade  : " << blade   << std::endl;
     //std::cout << __LINE__ << "]\t" << mthn << "panel  : " << panel   << std::endl;
-    //std::cout << __LINE__ << "]\t" << mthn << "plaquet  : " << plaquet   << std::endl;
+    //std::cout << __LINE__ << "]\t" << mthn << "ring  : " << ring   << std::endl;
     //std::cout << __LINE__ << "]\t" << mthn << "roc  : " << roc   << std::endl;
 
-    assert(roc>=0&&roc<10);
+    assert(roc>=0&&roc<16);
 
     if (np=='p') id_=(id_|0x40000000);
     //std::cout<< __LINE__ << "]\t" << mthn <<"2 id_="<<std::hex<<id_<<std::dec<<std::endl; 
@@ -88,7 +88,7 @@ void PixelROCName::setIdFPix(char np, char LR,int disk,
     //std::cout<< __LINE__ << "]\t" << mthn <<"5 id_="<<std::hex<<id_<<std::dec<<std::endl; 
     id_=(id_|((panel-1)<<6));
     //std::cout<< __LINE__ << "]\t" << mthn <<"6 id_="<<std::hex<<id_<<std::dec<<std::endl; 
-    id_=(id_|((plaquet-1)<<4));
+    id_=(id_|((ring-1)<<4));
     //std::cout<< __LINE__ << "]\t" << mthn <<"7 id_="<<std::hex<<id_<<std::dec<<std::endl; 
     id_=(id_|roc);
 
@@ -154,7 +154,7 @@ void PixelROCName::parsename(std::string name){
    //
     // The name should be on the format
     //
-    // FPix_BpR_D1_BLD1_PNL1_PLQ1_ROC1
+    // FPix_BpR_D1_BLD1_PNL1_RNG1_ROC1
     //
 
     
@@ -199,12 +199,12 @@ void PixelROCName::parsename(std::string name){
 	digit[0]=name[20+offset];
 	int pnl=atoi(digit);
 	check(name[21+offset]=='_',name);
-	check(name[22+offset]=='P',name);
-	check(name[23+offset]=='L',name);
-	check(name[24+offset]=='Q',name);
+	check(name[22+offset]=='R',name);
+	check(name[23+offset]=='N',name);
+	check(name[24+offset]=='G',name);
 	check(std::isdigit(name[25+offset]),name);
 	digit[0]=name[25+offset];
-	int plq=atoi(digit);
+	int rng=atoi(digit);
 	check(name[26+offset]=='_',name);
 	check(name[27+offset]=='R',name);
 	check(name[28+offset]=='O',name);
@@ -217,11 +217,11 @@ void PixelROCName::parsename(std::string name){
 	    roc=roc*10+atoi(digit);
 	}
     
-	setIdFPix(np,LR,disk,bld,pnl,plq,roc);
+	setIdFPix(np,LR,disk,bld,pnl,rng,roc);
     }
     else if (name[0]=='P'){
         //01234567890123456789012345678901
-        //Pilt_BmI_D3_BLD2_PNL1_PLQ1_ROC10
+        //Pilt_BmI_D3_BLD2_PNL1_RNG1_ROC10
 	check(name[0]=='P',name);
 	check(name[1]=='i',name);
 	check(name[2]=='l',name);
@@ -268,8 +268,8 @@ void PixelROCName::parsename(std::string name){
 	check(name[24+offset]=='Q',name);
 	check(std::isdigit(name[25+offset]),name);
 	digit[0]=name[25+offset];
-	int plq=atoi(digit);
-	check(plq==1,name);
+	int rng=atoi(digit);
+	check(rng==1,name);
 	check(name[26+offset]=='_',name);
 	check(name[27+offset]=='R',name);
 	check(name[28+offset]=='O',name);
@@ -282,7 +282,7 @@ void PixelROCName::parsename(std::string name){
 	    roc=roc*10+atoi(digit);
 	}
 	
-	setIdPilot(np,LR,disk,bld,pnl,plq,roc);
+	setIdPilot(np,LR,disk,bld,pnl,rng,roc);
     }
     else{
 	check(name[0]=='B',name);
@@ -376,12 +376,12 @@ std::string PixelROCName::rocname() const{
 	s1<<blade();
 	s1<<"_PNL";
 	s1<<panel();
-	s1<<"_PLQ";
-	s1<<plaquet();
+	s1<<(detsub() == 'F'?"_RNG":"_PLQ");
+	s1<<ring();
 	s1<<"_ROC";
 	s1<<roc();
 
-	assert(roc()>=0&&roc()<=(detsub()=='F'?10:15));
+	assert(roc()>=0&&roc()<=(detsub()=='F'?15:15));
     }
     else{
 	s1<<"BPix"; 
@@ -414,7 +414,7 @@ std::string PixelROCName::rocname() const{
 std::ostream& pos::operator<<(std::ostream& s, const PixelROCName& pixelroc){
 
 
-    // FPix_BpR_D1_BLD1_PNL1_PLQ1_ROC1
+    // FPix_BpR_D1_BLD1_PNL1_RNG1_ROC1
 
     s<<pixelroc.rocname();
 

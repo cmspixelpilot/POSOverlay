@@ -315,7 +315,7 @@ PixelDACSettings::PixelDACSettings(std::vector< std::vector<std::string> > &tabl
     //currentRocName << "FPix_BmI_D" << tableMat[r][colM["HDISK_POSN"]]                 
     //	   << "_BLD"       << tableMat[r][colM["BLD_POSN"]]                  
     //	   << "_PNL"       << tableMat[r][colM["PANEL_POSITION"]]            
-    //	   << "_PLQ"       << tableMat[r][colM["PLAQ_POS"]]                 
+    //	   << "_RNG"       << tableMat[r][colM["RNG_POS"]]                 
     //	   << "_ROC"       << tableMat[r][colM["ROC_POSN"]];                
 		   
     // modified by MR on 25-02-2008 10:04:55

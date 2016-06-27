@@ -108,7 +108,7 @@ cout << "[PixelFEDROCDelay25Calibration]:  beginCalibration entered" << endl;
       for(aROCName_iter = ROCsOnThisChannel.begin(); aROCName_iter != ROCsOnThisChannel.end(); ++aROCName_iter){
         if(theROCsMap.find(*aROCName_iter) != theROCsMap.end()){
           newTempString = aROCName_iter->rocname().substr(0, aROCName_iter->rocname().find("_ROC"));
-          newTempString = newTempString.substr(0, newTempString.find("_PLQ"));
+          newTempString = newTempString.substr(0, newTempString.find("_RNG"));
           thePortCardMap_->getName(newTempString, tempString);
           theROCsOnThisFEDMap_[tempString][*aROCName_iter] = 1;
           theROCsOnThisFED_.push_back(*aROCName_iter);
@@ -473,7 +473,7 @@ void PixelFEDROCDelay25Calibration::readAssignLastDAC(unsigned int passedRunNumb
         tempROCName = theNameTranslation_->ROCNameFromFEDChannelROC(fedNumber, list_LDACR_iter->getFEDChannel(), 
                                                                     list_LDACR_iter->getReadOutChipId() - 1);
         tempString = tempROCName.rocname().substr(0, tempROCName.rocname().find("_ROC"));
-        tempString = tempString.substr(0, tempString.find("_PLQ"));
+        tempString = tempString.substr(0, tempString.find("_RNG"));
         thePortCardMap_->getName(tempString, tempPCName);
         tempDACValuesByPC[tempPCName][tempROCName] = list_LDACR_iter->getDACValue();
       } else {

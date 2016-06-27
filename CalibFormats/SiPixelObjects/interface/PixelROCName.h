@@ -42,7 +42,7 @@ namespace pos{
     int disk() const {assert((id_&0x80000000)==0); return (id_>>12)&0x3;}    
     int blade() const {assert((id_&0x80000000)==0); return (id_>>7)&0x1f;}    
     int panel() const {assert((id_&0x80000000)==0); return ((id_>>6)&0x1)+1;}    
-    int plaquet() const {assert((id_&0x80000000)==0); return ((id_>>4)&0x3)+1;}    
+    int ring() const {assert((id_&0x80000000)==0); return ((id_>>4)&0x3)+1;}    
 
     //These methods only for BPix
     int sec() const {assert((id_&0x80000000)!=0); return ((id_>>14)&0x7)+1;}    
@@ -101,7 +101,7 @@ namespace pos{
     //bit [31] = 1
 
 
-    //FPix_BpI_D1_BLD1_PNL1_PLQ1_ROC1
+    //FPix_BpI_D1_BLD1_PNL1_RNG1_ROC1
 
     //The id_ holds the following values for FPix
     //bit [0,1,2,3] the ROC #
@@ -114,11 +114,11 @@ namespace pos{
     //bit [30] m or p (0 or 1)
     //bit [31] = 0
 
-    //Pilt_BmI_D3_BLD2_PNL1_PLQ1_ROC1
+    //Pilt_BmI_D3_BLD2_PNL1_RNG1_ROC1
 
     //The id_ holds the following values for Pilot
     //bit [0,1,2,3] the ROC #
-    //bit [4,5] the plaquet# -> always PLQ1 = 0 for Pilot (no plaquet for Pilot)
+    //bit [4,5] the plaquet# -> always RNG1 = 0 for Pilot (no plaquet for Pilot)
     //bit [6] the panel# -> always 1 or 2 for Pilot
     //bit [7,8,9,10,11] the blade# -> always 2 or 3 for Pilot
     //bit [12,13] the disk# D3 -> always 3 for Pilot
