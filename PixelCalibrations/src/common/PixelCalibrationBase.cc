@@ -188,7 +188,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
   // JMT will this work putting it here always? Sleep after?
   prepareFEDCalibrationMode(1);
 
-  usleep(1000);
+  usleep(20);
 
   if (useTTC_){
     uint64_t l1a_count_0;
@@ -232,7 +232,7 @@ void PixelCalibrationBase::sendTTCCalSync(){
       }
     }
 
-    usleep(1000);
+    usleep(20);
   }
   
   
