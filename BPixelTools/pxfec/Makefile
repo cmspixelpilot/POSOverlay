@@ -44,26 +44,28 @@ OBJ=objects
 OBJECTS=$(OBJ)/SysCommand.o $(OBJ)/Module.o $(OBJ)/TBM.o $(OBJ)/Roc.o $(OBJ)/ControlNetwork.o
 
 
-pxfec:	src/pxfec.cxx $(OBJECTS)  ../tools/lib/libSockets.so
+pxfec:	dirs src/pxfec.cxx $(OBJECTS)  ../tools/lib/libSockets.so
 	g++ $(CFLAGS) -o bin/pxfec src/pxfec.cxx $(OBJECTS) $(INC) $(LIBS)  
 
-objects/SysCommand.o: src/SysCommand.cc include/SysCommand.h
+objects/SysCommand.o: dirs src/SysCommand.cc include/SysCommand.h
 	g++ $(CFLAGS) -c  src/SysCommand.cc -o  $@ -I include -I $(PIXEL_INCLUDE)
 
-objects/ControlNetwork.o:	src/ControlNetwork.cc include/ControlNetwork.h include/Module.h include/SysCommand.h
+objects/ControlNetwork.o:	dirs src/ControlNetwork.cc include/ControlNetwork.h include/Module.h include/SysCommand.h
 	g++ $(CFLAGS) -c src/ControlNetwork.cc -oobjects/ControlNetwork.o $(INC)
 
-objects/Module.o:	src/Module.cc include/Module.h include/Roc.h include/TBM.h include/SysCommand.h
+objects/Module.o:	dirs src/Module.cc include/Module.h include/Roc.h include/TBM.h include/SysCommand.h
 	g++ $(CFLAGS) -c src/Module.cc -o  $@ $(INC)
 
-objects/TBM.o:	src/TBM.cc include/TBM.h include/SysCommand.h
+objects/TBM.o:	dirs src/TBM.cc include/TBM.h include/SysCommand.h
 	g++ $(CFLAGS) -c src/TBM.cc -o  $@ $(INC)
 
-objects/Roc.o:	src/Roc.cc include/Roc.h include/SysCommand.h
+objects/Roc.o:	dirs src/Roc.cc include/Roc.h include/SysCommand.h
 	g++ $(CFLAGS) -c src/Roc.cc -o  $@ $(INC)
 
 ../tools/lib/libSockets.so:
 	(cd ../tools; make; cd ../ccu)
+dirs:
+	mkdir -p lib objects bin
 clean:	
 	rm -r $(OBJECTS) bin/pxfec 
 

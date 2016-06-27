@@ -26,16 +26,18 @@ LIBDIRS=\
 Libraries = -lpthread -ldl -lxerces-c -lGenericHAL -lconfig -lxcept -lCAENLinuxBusAdapter -lCAENVME -lDeviceAccess -ltoolbox -llog4cplus -lasyncresolv -luuid -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal
 
 
-ccu:	src/ccu.cxx objects/ServerAccess.o ../tools/lib/libSockets.so
+ccu:	dirs src/ccu.cxx objects/ServerAccess.o ../tools/lib/libSockets.so
 	g++ $(CRAZYFLAGS) src/ccu.cxx -std=c++0x objects/ServerAccess.o -o bin/ccu $(INCLUDES) -L../tools/lib -lSockets $(LIBDIRS) $(Libraries)
 
-objects/ServerAccess.o: src/ServerAccess.cc include/ServerAccess.h
+objects/ServerAccess.o: dirs src/ServerAccess.cc include/ServerAccess.h
 	g++ $(CRAZYFLAGS) -c src/ServerAccess.cc -std=c++0x -o $@ $(INCLUDES)
 
 ../tools/lib/libSockets.so:
 	(cd ../tools; make; cd ../ccu)
 path:
 	echo $(PATH)
+dirs:
+	mkdir -p lib objects bin
 
 clean:
 	rm -r bin/ccu objects/ServerAccess.o
