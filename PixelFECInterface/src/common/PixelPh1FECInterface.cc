@@ -60,7 +60,7 @@ PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
     PRINT_ON();
     unsigned long data;
     getversion(&data);
-    getGeneral();
+    //getGeneral();
     PRINT_RESTORE();
     
 }
@@ -82,7 +82,7 @@ unsigned PixelPh1FECInterface::getGeneral() {
 
 int PixelPh1FECInterface::getversion(unsigned long *data) {
     valword value;
-    value = pRegManager->ReadReg("GenReg.VERSIONM01");
+    value = pRegManager->ReadReg("GenRegM1.VERSION");
     *data = value.value();
     if (PRINT) cout << "PixelPh1FECInterface: " <<"Get FEC version finds firmware version: "<<value.value()<<endl;
     return value;
