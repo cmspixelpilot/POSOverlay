@@ -1,1 +1,0 @@
-sampleConfigurationFiles/portcard_FPix_BmI_D1_PRT1.dat
