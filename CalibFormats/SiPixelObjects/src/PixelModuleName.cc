@@ -26,7 +26,7 @@ PixelModuleName::PixelModuleName(PixelROCName roc)
 
   unsigned int id=roc.id();
   unsigned int idtmp=(id&0x0FFFFFFF)>>4;
-  if ((id&0x80000000)==0) idtmp=(idtmp&0xFFFFFFFC);
+  //JMTBAD make this garbage backward compatible    if ((id&0x80000000)==0) idtmp=(idtmp&0xFFFFFFFC); // JMT this drops plaquet bits for fpix
 
   id_=idtmp|(id&0xF0000000);
 
@@ -68,7 +68,7 @@ void PixelModuleName::setIdPilot(char np, char LR,int disk,
 
 
 void PixelModuleName::setIdFPix(char np, char LR,int disk,
-			 int blade, int panel){
+                                int blade, int panel, int ring){
 
     std::string mthn = "[PixelModuleName::setIdFPix()]\t\t\t    " ;
     id_=0;
@@ -89,6 +89,8 @@ void PixelModuleName::setIdFPix(char np, char LR,int disk,
     //cout<< __LINE__ << "]\t" << mthn <<"5 id_=" << hex << id_ << dec << endl;
     id_=(id_|((panel-1)<<2));
     //cout<< __LINE__ << "]\t" << mthn <<"6 id_=" << hex << id_ << dec << endl;
+    id_=(id_|(ring-1));
+    //cout<< __LINE__ << "]\t" << mthn <<"7 id_=" << hex << id_ << dec << endl;
 
 }
 
@@ -186,8 +188,16 @@ void PixelModuleName::parsename(string name){
 	check(isdigit(name[20+offset]),name);
 	digit[0]=name[20+offset];
 	int pnl=atoi(digit);
+
+	check(name[21+offset]=='_',name);
+	check(name[22+offset]=='R',name);
+	check(name[23+offset]=='N',name);
+	check(name[24+offset]=='G',name);
+	check(isdigit(name[25+offset]),name);
+	digit[0]=name[25+offset];
+	int rng=atoi(digit);
     
-	setIdFPix(np,LR,disk,bld,pnl);
+	setIdFPix(np,LR,disk,bld,pnl,rng);
     }
     else if (name[0]=='P'){
 	check(name[0]=='P',name);
@@ -314,7 +324,8 @@ string PixelModuleName::modulename() const{
 	s1<<blade();
 	s1<<"_PNL";
 	s1<<panel();
-
+        s1<<"_RNG";
+	s1<<ring();
     }
     else if (detsub()=='P') {
 	s1<<"Pilt"; 

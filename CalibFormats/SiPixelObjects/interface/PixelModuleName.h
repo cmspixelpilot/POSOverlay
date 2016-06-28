@@ -46,6 +46,7 @@ namespace pos{
     int disk() const {assert((id_&0x80000000)==0); return (id_>>8)&0x3;}    
     int blade() const {assert((id_&0x80000000)==0); return (id_>>3)&0x1f;}    
     int panel() const {assert((id_&0x80000000)==0); return ((id_>>2)&0x1)+1;} 
+    int ring() const {assert((id_&0x80000000)==0); return ((id_)&0x3)+1;} 
 
     //These methods only for BPix
     int sec() const {assert((id_&0x80000000)!=0); return ((id_>>10)&0x7)+1;} 
@@ -77,7 +78,7 @@ namespace pos{
 		    int blade, int panel);
 
     void setIdFPix(char np, char LR,int disk,
-		   int blade, int panel);
+		   int blade, int panel, int ring);
 
     void setIdBPix(char np, char LR,int sec,
 		   int layer, int ladder, char HF, 
@@ -104,6 +105,7 @@ namespace pos{
 
     //The id_ holds the following values for FPix
     //JMT 20140828 these were wrong at least with respect to the actual code... fixed
+    //bit [0,1] the ring#
     //bit [2] the panel#
     //bit [3,4,5,6,7] the blade#
     //bit [8,9] the disk#
