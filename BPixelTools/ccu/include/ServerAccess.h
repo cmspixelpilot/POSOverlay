@@ -623,5 +623,14 @@ std::string CtrlRegE (FecAccess *fecAccess,
 		    tscType8 channelAddress=0x30, 
 		    int value=0xFF);
 
+std::string pixDCDCCommand(FecAccess* fecAccess,
+			   tscType8 fecAddress,
+			   tscType8 ringAddress,
+			   tscType8 ccuAddressEnable,
+			   tscType8 ccuAddressPgood,
+			   tscType8 piaChannelAddress,
+			   bool turnOn,
+			   unsigned int portNumber);
+
 #endif
 

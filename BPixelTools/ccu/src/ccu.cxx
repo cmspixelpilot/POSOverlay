@@ -142,19 +142,19 @@ void readAddressMaps(const string filename){
 
 /* this function handles client requests passed on to it as a string and
    returns a response string that is going to be sent back to the client */
-string handle(vector<string> tokens, string sector, string group, FecAccess *fecAccess, unsigned int fecAddress, unsigned int ringAddress, unsigned int ccuAddress, unsigned int channelAddress, long loop ){
+string handle(vector<string> tokens, string sector, string group, FecAccess *fecAccess, unsigned int fecAddress, unsigned int ringAddress, unsigned int ccuAddress, unsigned int channelAddress, unsigned int piaChannelAddress, long loop ) {
   ////////////////////////////////////
   //Default settings
   unsigned int deviceAddress = 0x0 ;
 
   std::map<std::string,unsigned int> pohAddressesMap;
-  pohAddressesMap["poh1"] = poh1deviceAddress;
-  pohAddressesMap["poh2"] = poh2deviceAddress;
-  pohAddressesMap["poh3"] = poh3deviceAddress;
-  pohAddressesMap["poh4"] = poh4deviceAddress;
-  pohAddressesMap["poh5"] = poh5deviceAddress;
-  pohAddressesMap["poh6"] = poh6deviceAddress;
-  pohAddressesMap["poh7"] = poh7deviceAddress;
+//  pohAddressesMap["poh1"] = poh1deviceAddress;
+//  pohAddressesMap["poh2"] = poh2deviceAddress;
+//  pohAddressesMap["poh3"] = poh3deviceAddress;
+//  pohAddressesMap["poh4"] = poh4deviceAddress;
+//  pohAddressesMap["poh5"] = poh5deviceAddress;
+//  pohAddressesMap["poh6"] = poh6deviceAddress;
+//  pohAddressesMap["poh7"] = poh7deviceAddress;
  
   // To loop on a command
   unsigned long tms  = 0 ;  // wait tms microseconds
@@ -203,6 +203,14 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     o << "\t no option needed\n" ; 
     o << "\t\t get the channel address\n\n" ;
 
+    o << "piaChannel <PIA channel address>\n";
+    o << "\t <PIA channel address>: channel address in hex\n" ; 
+    o << "\t\t set the channel address\n\n" ;
+
+    o << "which piaChannel\n";
+    o << "\t no option needed\n" ; 
+    o << "\t\t get the PIA channel address\n\n" ;
+
     o << "group <group description>\n";
     o << "\t <group description>: -6PL12, -6PL3, ...\n" ; 
     o << "\t\t set the group\n\n" ;
@@ -250,6 +258,11 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     o << "status\n";
     o << "\t no option is needed\n" ; 
     o << "\t\t print the status of the FEC\n\n" ;
+
+    o << "pia get|set status|gcr|ddr|data hex_value\n";
+    o << "\t Fiddle with the PIA channels.\n";
+    o << "\t\t get: all targets status, gcr, ddr, data registers valid (and no further arg).\n";
+    o << "\t\t set: can write to gcr, ddr, data registers the value in hex_value\n\n";
 
     o << "piareset [option]\n";
     o << "\t options:\n" ; 
@@ -362,6 +375,10 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     o << "\t\t <register> : options: r0, r1, r2, r3 \n" ; 
     o << "\t\t <value> : value to write to the register" ; 
     o << "\t\t access i2c register of DOH\n\n" ;  
+
+    o << "pixdcdc on|off portNumber\n";
+    o << "\t turn on or off the DC-DC converter attached to the CCU PIA port and read back the PGOOD status\n";
+    o << "\t portNumber : 0 (J1+J4), 1 (J2+J5), or 2 (J3+J6)\n\n";
      
     return o.str();
 
@@ -378,12 +395,14 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     else if (tokens[1]=="ring")  o << "RING " << std::dec << ringAddress << std::endl;
     else if (tokens[1]=="ccu")  o  << "CCU 0x"  << std::hex << ccuAddress << std::endl; 
     else if (tokens[1]=="channel")  o  << "channel 0x"  << std::hex << channelAddress << std::endl;
+    else if (tokens[1]=="piaChannel")  o  << "PIA channel 0x"  << std::hex << piaChannelAddress << std::endl;
     else if (tokens[1]=="addresses")  {
       o  << "Group  "  << group << std::endl;
       o  << "FEC "  << std::dec << fecAddress << std::endl; 
       o  << "RING " << std::dec << ringAddress << std::endl;
       o  << "CCU  0x"  << std::hex << ccuAddress << std::endl;
       o  << "channel 0x"  << std::hex << channelAddress << std::endl;
+      o  << "PIA channel 0x"  << std::hex << piaChannelAddress << std::endl;
     }
     else if (tokens[1]=="group")  o  << "Group  "  << group << std::endl; 
     else if (tokens[1]=="sector")  o  << "Sector  "  << sector << std::endl; 
@@ -604,6 +623,103 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   
   } 
 
+  //************************************pia
+  //************************************
+  else if (tokens[0] == "pia") {
+    if (tokens.size() < 3)
+      return "format: pia get|set status|gcr|ddr|data hex_value";
+
+    keyType myKey = buildCompleteKey(fecAddress, ringAddress, ccuAddress, piaChannelAddress, 0) ;
+
+    std::ostringstream ret;
+
+    try {
+      fecAccess->addPiaAccess(myKey, MODE_SHARE); // JMTBAD use PiaChannelAccess
+
+      ret << "CCU " << std::hex << ccuAddress << " PIA ch " << std::hex << piaChannelAddress << ": ";
+
+      if (tokens[1] == "get") {
+       ret << "get ";
+
+       if (tokens[2] == "gcr") {
+         ret << "GCR: " << std::hex << int(fecAccess->getPiaChannelGCR(myKey));
+       }
+       else if (tokens[2] == "ddr") {
+         ret << "DDR: " << std::hex << int(fecAccess->getPiaChannelDDR(myKey));
+       }
+       else if (tokens[2] == "data") {
+         ret << "Data: " << std::hex << int(fecAccess->getPiaChannelDataReg(myKey));
+       }
+       else if (tokens[2] == "status") {
+         ret << "status: " << std::hex << int(fecAccess->getPiaChannelStatus(myKey));
+       }
+      }
+      else if (tokens[1] == "set") {
+       ret << "set ";
+
+       if (tokens.size() < 4)
+         return "must have value";
+
+       unsigned setVal = strtol(tokens[3].c_str(), NULL, 16);
+
+       if (tokens[2] == "gcr") {
+         ret << "GCR: " << std::hex << setVal;
+         fecAccess->setPiaChannelGCR(myKey, setVal);
+       }
+       else if (tokens[2] == "ddr") {
+         ret << "DDR: " << std::hex << setVal;
+         fecAccess->setPiaChannelDDR(myKey, setVal);
+       }
+       else if (tokens[2] == "data") {
+         ret << "Data: " << std::hex << setVal;
+         fecAccess->setPiaChannelDataReg(myKey, setVal);
+       }
+       else if (tokens[2] == "status") {
+         ret << "status: means nothing";
+       }
+      }
+
+      fecAccess->removePiaAccess(myKey);
+    }
+    catch (FecExceptionHandler e) {
+      ret << std::string("Exception caught when doing PIA access: ") + e.what();
+    }
+    
+    return ret.str();
+  }
+
+  //************************************control of pixel pilot DC-DC via PIA
+  //************************************
+  else if (tokens[0]=="pixdcdc") {
+    if (tokens.size() < 3)
+      return string("format: pixdcdc on|off portNumber [CCU address for enable] [CCU address for disable]");
+
+    bool turnOn = tokens[1] == "on";
+    if (!turnOn && tokens[1] != "off")
+      return "must either specify  on  or  off";
+
+    unsigned int portNumber = strtol(tokens[2].c_str(), NULL, 16);
+    if (portNumber > 2)
+      return "portNumber must be 0 (J1+J4), 1 (J2+J5), or 2 (J3+J6)";
+
+    unsigned int ccuAddressEnable  = 0x7e;
+    unsigned int ccuAddressPgood = 0x7d;
+
+    if (tokens.size() > 3)
+      ccuAddressEnable = strtol(tokens[3].c_str(), NULL, 16);
+    if (tokens.size() > 4)
+      ccuAddressPgood = strtol(tokens[4].c_str(), NULL, 16);
+      
+    std::ostringstream ret;
+    const char* Jstr[3] = { "J1+J4", "J2+J5", "J3+J6" };
+    ret << "Turning " << (turnOn ? "ON" : "OFF") << " the DC-DC attached to port number "
+       << portNumber << "(" << Jstr[portNumber] << ") of CCUs 0x" << std::hex << ccuAddressEnable << ", 0x" << std::hex << ccuAddressPgood << "\n";
+
+    ret << pixDCDCCommand(fecAccess, fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, turnOn, portNumber);
+
+    return ret.str();
+  }
+
   //************************************PIA RESET
   //************************************
   else if (tokens[0]=="piareset" ){
@@ -777,6 +893,15 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     
   }
 
+  else if (tokens[0]=="i2cr"){
+    if ( tokens.size()>2) { 
+      unsigned int AddressChannel = strtol (tokens[1].c_str(),NULL,16); 
+      deviceAddress = strtol (tokens[2].c_str(),NULL,16); 
+      return getI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, AddressChannel, deviceAddress, modeType, loop, tms) ;
+    }    
+    else 
+      return string("wrong number of parameters! i2cr needs 2 parameters");
+  }
 
   //************************************display register of i2c devices
   //************************************
@@ -1697,10 +1822,11 @@ int main(int argc, char *argv[])
   int cnt; 
   
   // FEC Address and Ring Address
-  unsigned int fecAddress = 0 ;
-  unsigned int ringAddress = 0 ;
-  unsigned int channelAddress = 0x11 ; 
-  unsigned int ccuAddress = 0x7c;
+  unsigned int fecAddress = 9 ;
+  unsigned int ringAddress = 8 ;
+  unsigned int channelAddress = 0x10 ; 
+  unsigned int ccuAddress = 0x7c ;
+  unsigned int piaChannelAddress = 0x30 ;
   long loop = 1 ;
   string sector = "+1P";
   string group = "+1PL12";
@@ -1720,7 +1846,7 @@ int main(int argc, char *argv[])
   }
   else if ((argc > 1) && ((strcasecmp (argv[1],"-vmecaenpci") == 0))) { // If pci
     cout << "vmecaenpci mode " << endl; 
-    fecAddress = 21 ;
+    fecAddress = 9 ;
     ringAddress = 0x8 ;
   }
   else {
@@ -1730,7 +1856,7 @@ int main(int argc, char *argv[])
 
   //create fec access
   try {
-    fecAccess = createFecAccess ( argc, argv, &cnt, 20 ) ;  // fecslot
+    fecAccess = createFecAccess ( argc, argv, &cnt, 9 ) ;  // fecslot
   }
   catch (FecExceptionHandler e) {
       
@@ -1743,8 +1869,9 @@ int main(int argc, char *argv[])
 
   fecAccess->setForceAcknowledge (fack) ;
   fecAccess->seti2cChannelSpeed (i2cSpeed) ;
-  resetPlxFec ( fecAccess, fecAddress, ringAddress, loop, 0 );
-  testScanCCU ( fecAccess, fecAddress, ringAddress, false );
+  printf("\n\n\nJMT JMT JMT NO RESET\n\n\n");
+  //resetPlxFec ( fecAccess, fecAddress, ringAddress, loop, 0 );
+  //testScanCCU ( fecAccess, fecAddress, ringAddress, false );
   
   lock.release();
   
@@ -1805,6 +1932,14 @@ int main(int argc, char *argv[])
       else 
 	cout << "wrong number of parameters! channel needs 1 parameter" << endl;
     }
+    else if(tokens[0]=="piaChannel"){
+      if (tokens.size()>1) {
+       piaChannelAddress = strtol (tokens[1].c_str(),NULL,16); 
+       cout << "PIA Channel Address set to 0x" << std::hex << piaChannelAddress << endl;
+      } 
+      else 
+       cout << "wrong number of parameters! piaChannel needs 1 parameter" << endl;
+    }
     else if(tokens[0]=="loop"){
       if (tokens.size()>1) {
 	loop = atoi(tokens[1].c_str());
@@ -1827,7 +1962,7 @@ int main(int argc, char *argv[])
 	  ringAddress = ringAddressMap[sector] ;
 	  ccuAddress = ccuAddressMap[sector];
 	  channelAddress = channelAddressMap[group] ; 
-	  cout << "Group set to " << group << endl;
+	  cout << "Group set to " << group << endl << "\t but caution: PIA address unchanged." << endl;
 	}
       }else{
 	cout << "wrong number of parameters! group needs 1 parameter" << endl;
@@ -1856,7 +1991,7 @@ int main(int argc, char *argv[])
     // handle the request
     }else {
       lock.acquire();
-      response=handle(tokens, sector, group, fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, loop);
+      response=handle(tokens, sector, group, fecAccess, fecAddress, ringAddress, ccuAddress, channelAddress, piaChannelAddress, loop);
       cout << response << endl;
       lock.release();
     }

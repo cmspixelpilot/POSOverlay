@@ -1,5 +1,4 @@
 #
-source ${HOME}/build/TriDAS/setenv.sh
 source ../setup.bsh
 export ENV_CMS_TK_FEC_ROOT=${TRIDAS_ROOT}/FecSoftwareV3_0
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${XDAQ_ROOT}/lib:${ENV_CMS_TK_FEC_ROOT}/lib:${BPIXELTOOLS}/tools/lib
