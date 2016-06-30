@@ -80,9 +80,9 @@ def foo2(in_fn, out_dir):
 
     f = ROOT.TFile(in_fn)
 
-    for which in 'IO':
+    for which in 'I':
         html.write('<h1>Bm%s</h1>\n' % which)
-        foo(f, 'Pilt/Pilt_Bm%s/Pilt_Bm%s_D3' % (which, which), out_dir, html)
+        foo(f, 'FPix/FPix_Bm%s/FPix_Bm%s_D3' % (which, which), out_dir, html)
     
     html.write('</body></html>\n')
     html.close()
