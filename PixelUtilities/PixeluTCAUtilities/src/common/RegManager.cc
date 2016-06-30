@@ -222,6 +222,13 @@ uhal::ValWord<uint32_t> RegManager::ReadReg(const std::string& pRegNode) {
         
   return cValRead;
 }
+
+uint64_t RegManager::ReadRegsAs64(const std::string& node_msb, const std::string& node_lsb) {
+  uhal::ValWord<uint32_t> msb = fBoard.getNode(node_msb).read();
+  uhal::ValWord<uint32_t> lsb = fBoard.getNode(node_lsb).read();
+  fBoard.dispatch();
+  return uint64_t(msb.value()) << 32 | lsb.value();
+}
     
 uhal::ValWord<uint32_t> RegManager::ReadAtAddress(uint32_t uAddr, uint32_t uMask) {
   uhal::ValWord<uint32_t> cValRead = fBoard.getClient().read(uAddr, uMask);

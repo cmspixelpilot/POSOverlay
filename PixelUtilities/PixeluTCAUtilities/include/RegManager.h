@@ -83,6 +83,14 @@ class RegManager {
   virtual uhal::ValWord<uint32_t> ReadReg(const std::string& pRegNode);
 
   /*!
+   * \brief Read two 32-bit words and return them as a 64-bit value
+   * \param node_msb the Node for the 32 most significant bits
+   * \param node_lsb the Node for the 32 least significant bits
+   * \return uint64_t the 64-bit value msb << 32 | lsb
+   */
+  virtual uint64_t ReadRegsAs64(const std::string& node_msb, const std::string& node_lsb);
+
+  /*!
    * \brief Read a value at a given address
    * \param uAddr 32-bit address
    * \param uMask 32-bit mask
