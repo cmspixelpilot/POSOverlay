@@ -124,7 +124,8 @@ int PixelFEDInterfacePh1::setup() {
 
   getBoardInfo();
 
-  //  readPhases(true, true);
+  if ((pixelFEDCard.cntrl_utca & 0xffffffffffffULL) != 0xffffffffffffULL)
+    readPhases(true, true);
 
   return cDDR3calibrated;
 }
