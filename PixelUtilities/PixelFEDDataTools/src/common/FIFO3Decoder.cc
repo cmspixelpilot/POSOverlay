@@ -13,7 +13,7 @@ FIFO3Decoder::FIFO3Decoder(uint64_t *buffer)
   
   unsigned int counter=1;
 
-  while ((buffer[counter]>>60)!=0xa){
+  while ((buffer[counter] >> 56) != 0xa0) {
 
     for(unsigned int index=counter*2;index<counter*2+2;index++){
 
