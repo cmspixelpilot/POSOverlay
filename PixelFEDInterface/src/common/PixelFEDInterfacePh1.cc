@@ -1133,7 +1133,6 @@ void PixelFEDInterfacePh1::prepareCalibrationMode(unsigned nevents) {
 
 std::vector<uint32_t> PixelFEDInterfacePh1::readTransparentFIFO()
 {
-    regManager->WriteReg ("fe_ctrl_regs.decode_reg_reset", 1);
     std::vector<uint32_t> cFifoVec = regManager->ReadBlockRegValue ( "fifo.bit_stream", 512 );
     //vectors to pass to the NRZI decoder as reference to be filled by that
     std::vector<uint8_t> c5bSymbol, c5bNRZI, c4bNRZI;
