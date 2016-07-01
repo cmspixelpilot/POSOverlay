@@ -114,7 +114,7 @@ int PixelFEDInterfacePh1::setup() {
     {"pixfed_ctrl_regs.tts.bc0_ec0_polar", 0},
     {"pixfed_ctrl_regs.tts.force_RDY", 1},
     {"fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}, // set 192val
-    {"fe_ctrl_regs.fifo_config.TBM_old_new", 0x1}, // 0x1 = PSI46dig, 0x0 = PROC600 // JMTBAD this needs to be a per channel thing if the bpix boards distribute the layer-1 occupancy
+    {"fe_ctrl_regs.fifo_config.TBM_old_new", 0x0}, // 0x0 = PSI46dig, 0x1 = PROC600 // JMTBAD this needs to be a per channel thing if the bpix boards distribute the layer-1 occupancy
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"fe_ctrl_regs.decode_reg_reset", 1}, // init FE spy fifos etc JMTBAD take out if this doesn't work any more
     {"REGMGR_DISPATCH", 1000}, // JMTBAD there were two separate WriteStackReg calls, take this out if it doesn't matter, the 1000 means sleep 1 ms
@@ -1328,7 +1328,7 @@ void PixelFEDInterfacePh1::prettyPrintTransparentFIFO (const std::vector<uint32_
 
         std::cout << std::endl << "               ";
 
-        //now the line with TBM Core A word
+        //now the line with TBM Core B word
         for (uint32_t i = 0; i < 16; i++)
         {
             std::cout << " " << std::bitset<1> ( ( ( (p4bNRZI.at (i + (j * 16) ) >> 2) & 0x1) ^ 0x1) );
@@ -1627,6 +1627,7 @@ std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
   std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
+  //readTransparentFIFO();
   //readSpyFIFO();
   readFIFO1(true);
 
