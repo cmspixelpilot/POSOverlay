@@ -42,9 +42,10 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
   void DecodeFitelReg( FitelRegItem& pRegItem, uint8_t pFMCId, uint8_t pFitelId, uint32_t pWord );
   void i2cRelease(uint32_t pTries);
   bool polli2cAcknowledge(uint32_t pTries);
+  bool WriteFitelReg (const std::string& pRegNode, int cFMCId, int cFitelId, uint8_t pValue, bool pVerifLoop);
   bool WriteFitelBlockReg(std::vector<uint32_t>& pVecReq);
   bool ReadFitelBlockReg(std::vector<uint32_t>& pVecReq);
-  std::pair<bool, std::vector<double> > ReadADC( const uint8_t pFMCId, const uint8_t pFitelId);
+  std::pair<bool, std::vector<double> > ReadADC( int channel, const uint8_t pFMCId, const uint8_t pFitelId, const bool verbose);
 
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
   int reset(); // resets everything
@@ -56,6 +57,13 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
   uint32_t readOSDFifo(int channel);
 
   void readPhases(bool verbose, bool override_timeout);
+
+  uint8_t getTTSState();
+  void printTTSState();
+
+  void getSFPStatus(uint8_t pFMCId);
+
+  void PrintSlinkStatus();
 
   uint32_t last_calib_mode_nevents;
   void prepareCalibrationMode(unsigned nevents);
@@ -101,6 +109,9 @@ struct digfifo1 {
 
   std::vector<uint32_t> readTransparentFIFO();
   int drainTransparentFifo(uint32_t* data);
+  void decodeTransparentSymbols (const std::vector<uint32_t>& pInData, std::vector<uint8_t>& p5bSymbol, std::vector<uint8_t>& p5bNRZI, std::vector<uint8_t>& p4bNRZI);
+  void prettyPrintTransparentFIFO (const std::vector<uint32_t>& pFifoVec, const std::vector<uint8_t>& p5bSymbol, const std::vector<uint8_t>& p5bNRZI, const std::vector<uint8_t>& p4bNRZI);
+
   std::vector<uint32_t> readSpyFIFO();
   int drainSpyFifo(uint32_t* data);
   encfifo1 decodeFIFO1Stream(const std::vector<uint32_t>& fifo, const std::vector<uint32_t>& markers);
@@ -178,8 +189,12 @@ struct digfifo1 {
   int FitelMapNum( int cFMCId, int cFitelId ) const { return 2*cFMCId + cFitelId; }
   std::string fitel_fn_base;
   std::string fRegMapFilename[nFitels];
+  FitelRegItem& GetFitelRegItem(const std::string& node, int cFMCId, int cFitelId);
   void LoadFitelRegMap(int cFMCId, int cFitelId);
   void ConfigureFitel(int cFMCId, int cFitelId, bool pVerifLoop);
+
+  int maybeSwapFitelChannels(int ch);
+  std::string fitelChannelName(int ch);
 
   unsigned long long fNthAcq; // for keeping track of reading from ddr0/1
   std::string fStrDDR;

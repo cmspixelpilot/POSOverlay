@@ -34,6 +34,21 @@ int PixelFEDInterfacePh1::setup(pos::PixelFEDCard c) {
   return setup();
 }
 
+int PixelFEDInterfacePh1::maybeSwapFitelChannels(int ch) {
+  assert(1 <= ch && ch <= 12);
+  if (pixelFEDCard.swap_Fitel_order)
+    return 12 - ch + 1;
+  else
+    return ch;
+}
+
+std::string PixelFEDInterfacePh1::fitelChannelName(int ch) {
+  const int ch2 = maybeSwapFitelChannels(ch);
+  char ch_name[16];
+  snprintf(ch_name, 16, "Ch%02d_ConfigReg", ch2);
+  return std::string(ch_name);
+}
+
 int PixelFEDInterfacePh1::setup() {
   // Could possibly want to set different registers for different FMC?
   // And just load the regmaps for both fmc0 and 1 even if we don't have e.g. the upper one
@@ -60,13 +75,9 @@ int PixelFEDInterfacePh1::setup() {
     if (!(pixelFEDCard.cntrl_utca & (1ULL << channel))) {
       const int which_Fitel = channel < 24;
       const int which_map = FitelMapNum(pixelFEDCard.which_FMC, which_Fitel);
-      int ch = channel % 24 / 2 + 1;
-      if (pixelFEDCard.swap_Fitel_order)
-        ch = 12 - ch + 1;
-      char ch_name[16];
-      snprintf(ch_name, 16, "Ch%02d_ConfigReg", ch);
+      const std::string ch_name = fitelChannelName(channel % 24 / 2 + 1);
       std::cout << "Fitel " << which_Fitel << " map " << which_map << " " << ch_name << " -> 0x08" << std::endl;
-      fRegMap[which_map][std::string(ch_name)].fValue = 0x08;
+      fRegMap[which_map][ch_name].fValue = 0x08;
     }
   }
 
@@ -76,32 +87,39 @@ int PixelFEDInterfacePh1::setup() {
 
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
-    {"pixfed_ctrl_regs.PC_CONFIG_OK",    0},
+    {"pixfed_ctrl_regs.PC_CONFIG_OK", 0},
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
+    {"pixfed_ctrl_regs.acq_ctrl.acq_mode", 2},  // 1: TBM fifo, 2: Slink FIFO, 4: FEROL
     {"pixfed_ctrl_regs.acq_ctrl.calib_mode", 1}, 
-    {"pixfed_ctrl_regs.acq_ctrl.acq_mode", 2},
+    {"pixfed_ctrl_regs.acq_ctrl.calib_mode_NEvents", 0}, // = nevents - 1
+    {"pixfed_ctrl_regs.data_type", 0}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
+    {"ctrl.mgt_xpoint_out1", 3}, // 2 to have 156 MHz clock (obligatory for 10G sling), 3 for 125Mhz clock for 5g on SLink
     {"pixfed_ctrl_regs.TBM_MASK_1", tbm_mask_1},
     {"pixfed_ctrl_regs.TBM_MASK_2", tbm_mask_2},
     {"pixfed_ctrl_regs.tbm_trailer_status_mask", 0x0},
-    {"pixfed_ctrl_regs.slink_ctrl.privateEvtNb", 0x00},
+    {"pixfed_ctrl_regs.slink_ctrl.privateEvtNb", 0x01},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_source_id", pixelFEDCard.fedNumber},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_FOV", 0xe},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_Evt_ty", 0},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_Evt_stat", 0xf},
     {"pixfed_ctrl_regs.tts.timeout_check_valid", pixelFEDCard.timeout_checking_enabled},
-    {"pixfed_ctrl_regs.timeout_value", pixelFEDCard.timeout_counter_start},
+    {"pixfed_ctrl_regs.tts.timeout_value", pixelFEDCard.timeout_counter_start},
     {"pixfed_ctrl_regs.tts.timeout_nb_oos_thresh", pixelFEDCard.timeout_number_oos_threshold},
+    {"pixfed_ctrl_regs.tts.event_cnt_check_valid", 0},
+    {"pixfed_ctrl_regs.tts.evt_err_nb_oos_thresh", 255},
+    {"pixfed_ctrl_regs.tts.bc0_ec0_polar", 0},
+    {"pixfed_ctrl_regs.tts.force_RDY", 1},
     {"fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}, // set 192val
+    {"fe_ctrl_regs.fifo_config.TBM_old_new", 0x1}, // 0x1 = PSI46dig, 0x0 = PROC600 // JMTBAD this needs to be a per channel thing if the bpix boards distribute the layer-1 occupancy
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
-    {"pixfed_ctrl_regs.data_type", 0}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
     {"fe_ctrl_regs.decode_reg_reset", 1}, // init FE spy fifos etc JMTBAD take out if this doesn't work any more
     {"REGMGR_DISPATCH", 1000}, // JMTBAD there were two separate WriteStackReg calls, take this out if it doesn't matter, the 1000 means sleep 1 ms
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0},
-    {"pixfed_ctrl_regs.fitel_config_req", 0},
+    {"pixfed_ctrl_regs.fitel_rx_i2c_req", 0},
     {"pixfed_ctrl_regs.PC_CONFIG_OK", 1},
   };
 
@@ -127,6 +145,18 @@ int PixelFEDInterfacePh1::setup() {
   if ((pixelFEDCard.cntrl_utca & 0xffffffffffffULL) != 0xffffffffffffULL)
     readPhases(true, true);
 
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 1);
+  usleep(10000);
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 1);
+  usleep(10000);
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 0);
+  usleep(10000);
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 0);
+  std::cout << "Slink status after configure:" << std::endl;
+  PrintSlinkStatus();
+
+  printTTSState();
+
   return cDDR3calibrated;
 }
 
@@ -135,7 +165,7 @@ void PixelFEDInterfacePh1::loadFPGA() {
 
 void PixelFEDInterfacePh1::getBoardInfo()
 {
-    std::cout << std::endl << "Board Type: " << regManager->ReadRegAsString("board_id") << std::endl;
+  std::cout << std::endl << "Board info for FED#" << pixelFEDCard.fedNumber << "\nBoard Type: " << regManager->ReadRegAsString("board_id") << std::endl;
     std::cout << "Revision id: " << regManager->ReadRegAsString("rev_id") << std::endl;
     std::cout << "Firmware id: " << std::hex << regManager->ReadReg("firmware_id") << std::dec << " : " << regManager->ReadRegAsString("firmware_id") << std::endl;
     std::cout << "MAC & IP Source: " << regManager->ReadReg("mac_ip_source") << std::endl;
@@ -231,6 +261,12 @@ void PixelFEDInterfacePh1::checkIfUploading()
 }
 */
 
+PixelFEDInterfacePh1::FitelRegItem& PixelFEDInterfacePh1::GetFitelRegItem(const std::string& node, int cFMCId, int cFitelId) {
+  FitelRegMap::iterator i = fRegMap[FitelMapNum(cFMCId, cFitelId)].find( node );
+  assert(i != fRegMap[FitelMapNum(cFMCId, cFitelId)].end());
+  return i->second;
+}
+
 void PixelFEDInterfacePh1::LoadFitelRegMap(int cFMCId, int cFitelId) {
   const std::string& filename = fRegMapFilename[FitelMapNum(cFMCId, cFitelId)];
   std::ifstream file( filename.c_str(), std::ios::in );
@@ -275,8 +311,8 @@ void PixelFEDInterfacePh1::i2cRelease(uint32_t pTries)
 {
     uint32_t cCounter = 0;
     // release
-    regManager->WriteReg("pixfed_ctrl_regs.fitel_config_req", 0);
-    while (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") != 0)
+    regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 0);
+    while (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") != 0)
     {
         if (cCounter > pTries)
         {
@@ -296,7 +332,7 @@ bool PixelFEDInterfacePh1::polli2cAcknowledge(uint32_t pTries)
     bool cSuccess = false;
     uint32_t cCounter = 0;
     // wait for command acknowledge
-    while (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 0)
+    while (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0)
     {
         if (cCounter > pTries)
         {
@@ -312,15 +348,102 @@ bool PixelFEDInterfacePh1::polli2cAcknowledge(uint32_t pTries)
     }
 
     // check the value of that register
-    if (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 1)
+    if (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 1)
     {
         cSuccess = true;
     }
-    else if (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 3)
+    else if (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 3)
     {
         cSuccess = false;
     }
     return cSuccess;
+}
+
+bool PixelFEDInterfacePh1::WriteFitelReg (const std::string& pRegNode, int cFMCId, int cFitelId,
+                                          uint8_t pValue, bool pVerifLoop) {
+
+  // warning: this does not change the fRegMap items!
+
+  FitelRegItem cRegItem = GetFitelRegItem(pRegNode, cFMCId, cFitelId);
+    std::vector<uint32_t> cVecWrite;
+    std::vector<uint32_t> cVecRead;
+
+    cRegItem.fValue = pValue;
+
+    EncodeFitelReg ( cRegItem, cFMCId, cFitelId, cVecWrite );
+
+    WriteFitelBlockReg ( cVecWrite );
+
+#ifdef COUNT_FLAG
+    fRegisterCount++;
+    fTransactionCount++;
+#endif
+
+    if ( pVerifLoop )
+    {
+        cRegItem.fValue = 0;
+
+        EncodeFitelReg ( cRegItem, cFMCId, cFitelId, cVecRead );
+
+        ReadFitelBlockReg ( cVecRead );
+
+        bool cAllgood = false;
+
+        if ( cVecWrite != cVecRead )
+        {
+            int cIterationCounter = 1;
+
+            while ( !cAllgood )
+            {
+                if ( cAllgood ) break;
+
+                std::vector<uint32_t> cWrite_again;
+                std::vector<uint32_t> cRead_again;
+
+                FitelRegItem cReadItem;
+                FitelRegItem cWriteItem;
+                DecodeFitelReg ( cWriteItem, cFMCId, cFitelId, cVecWrite.at ( 0 ) );
+                DecodeFitelReg ( cReadItem, cFMCId, cFitelId, cVecRead.at ( 0 ) );
+                // pFitel->setReg( pRegNode, cReadItem.fValue );
+
+                if ( cIterationCounter == 5 )
+                {
+                    std::cout << "ERROR !!!\nReadback Value still different after 5 iterations for Register : " << pRegNode << "\n" << std::hex << "Written Value : 0x" << +pValue << "\nReadback Value : 0x" << int ( cRegItem.fValue ) << std::dec << std::endl;
+                    std::cout << "Register Adress : " << int ( cRegItem.fAddress ) << std::endl;
+                    std::cout << "Fitel Id : " << +cFitelId << std::endl << std::endl;
+                    std::cout << "Failed to write register in " << cIterationCounter << " trys! Giving up!" << std::endl;
+                }
+
+                EncodeFitelReg ( cWriteItem, cFMCId, cFitelId, cWrite_again );
+                cReadItem.fValue = 0;
+                EncodeFitelReg ( cReadItem, cFMCId, cFitelId, cRead_again );
+
+                WriteFitelBlockReg ( cWrite_again );
+                ReadFitelBlockReg ( cRead_again );
+
+                if ( cWrite_again != cRead_again )
+                {
+                    if ( cIterationCounter == 5 ) break;
+
+                    cVecWrite.clear();
+                    cVecWrite = cWrite_again;
+                    cVecRead.clear();
+                    cVecRead = cRead_again;
+                    cIterationCounter++;
+                }
+                else
+                {
+                    std::cout << "Managed to write register correctly in " << cIterationCounter << " Iteration(s)!" << std::endl;
+                    cAllgood = true;
+                }
+            }
+        }
+        else cAllgood = true;
+
+        if ( cAllgood ) return true;
+        else return false;
+    }
+    else return true;
 }
 
 bool PixelFEDInterfacePh1::WriteFitelBlockReg(std::vector<uint32_t>& pVecReq) {
@@ -329,18 +452,18 @@ bool PixelFEDInterfacePh1::WriteFitelBlockReg(std::vector<uint32_t>& pVecReq) {
   // write the encoded registers in the tx fifo
   regManager->WriteBlockReg("fitel_config_fifo_tx", pVecReq);
   // sent an I2C write request
-  regManager->WriteReg("pixfed_ctrl_regs.fitel_config_req", 1);
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 1);
 
   // wait for command acknowledge
-  while (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 0) usleep(100);
+  while (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep(100);
 
-  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_config_ack");
-  //if (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 1)
+  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack");
+  //if (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 1)
   if (cVal == 1)
     {
       cSuccess = true;
     }
-  //else if (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 3)
+  //else if (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 3)
   else if (cVal == 3)
     {
       std::cout << "Error writing Registers!" << std::endl;
@@ -361,18 +484,18 @@ bool PixelFEDInterfacePh1::ReadFitelBlockReg(std::vector<uint32_t>& pVecReq)
   // write the encoded registers in the tx fifo
   regManager->WriteBlockReg("fitel_config_fifo_tx", pVecReq);
   // sent an I2C write request
-  regManager->WriteReg("pixfed_ctrl_regs.fitel_config_req", 3);
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 3);
 
   // wait for command acknowledge
-  while (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 0) usleep(100);
+  while (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep(100);
 
-  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_config_ack");
-  //if (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 1)
+  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack");
+  //if (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 1)
   if (cVal == 1)
     {
       cSuccess = true;
     }
-  //else if (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 3)
+  //else if (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 3)
   else if (cVal == 3)
     {
       cSuccess = false;
@@ -486,7 +609,7 @@ void PixelFEDInterfacePh1::ConfigureFitel(int cFMCId, int cFitelId , bool pVerif
                     }
                     else
                     {
-                      //                        std::cout << "Managed to write all registers correctly in " << cIterationCounter << " Iteration(s)!" << RESET << std::endl;
+                      //                        std::cout << "Managed to write all registers correctly in " << cIterationCounter << " Iteration(s)!" << std::endl;
                         cAllgood = true;
                     }
                 }
@@ -495,17 +618,28 @@ void PixelFEDInterfacePh1::ConfigureFitel(int cFMCId, int cFitelId , bool pVerif
     }
 }
 
-std::pair<bool, std::vector<double> > PixelFEDInterfacePh1::ReadADC( const uint8_t pFMCId, const uint8_t pFitelId) {
+std::pair<bool, std::vector<double> > PixelFEDInterfacePh1::ReadADC(int channel, const uint8_t pFMCId, const uint8_t pFitelId, const bool verbose) {
+  channel = channel % 12 + 1;
+
+  std::cout << std::endl << "Reading ADC Values on FMC " << +pFMCId << " Fitel " << +pFitelId << " Channel " << channel << std::endl;
+
+  const std::string ch_name = fitelChannelName(channel);
+  const uint8_t old_value = fRegMap[FitelMapNum(pFMCId, pFitelId)][ch_name].fValue;
+  assert(old_value == 0x2 || old_value == 0x8);
+  WriteFitelReg(ch_name, pFMCId, pFitelId, 0xc, true); // to be set back to what it was in the reg map!
+  sleep(1); // don't try to 0.5 this thing...
+
   // the Fitel FMC needs to be set up to be able to read the RSSI on a given Channel:
   // I2C register 0x1: set to 0x4 for RSSI, set to 0x5 for Die Temperature of the Fitel
   // Channel Control Registers: set to 0x02 to disable RSSI for this channel, set to 0x0c to enable RSSI for this channel
   // the ADC always reads the sum of all the enabled channels!
   //initial FW setup
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1);
+  sleep(1);
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0);
 
   std::vector<std::pair<std::string, uint32_t> > cVecReg;
-  cVecReg.push_back({"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0});
-  cVecReg.push_back({"pixfed_ctrl_regs.fitel_config_req", 0});
+  cVecReg.push_back({"pixfed_ctrl_regs.fitel_rx_i2c_req", 0});
   cVecReg.push_back({"pixfed_ctrl_regs.fitel_i2c_addr", 0x77});
 
   regManager->WriteStackReg(cVecReg);
@@ -524,59 +658,65 @@ std::pair<bool, std::vector<double> > PixelFEDInterfacePh1::ReadADC( const uint8
   regManager->WriteBlockReg("fitel_config_fifo_tx", cVecWrite);
 
   // sent an I2C write request
-  regManager->WriteReg("pixfed_ctrl_regs.fitel_config_req", 1);
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 1);
 
   // wait for command acknowledge
-  while (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 0) usleep(100);
+  while(regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep(100);
 
-  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_config_ack");
+  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack");
   bool success = cVal != 3;
+  if (!success) std::cout << "Error reading registers!" << std::endl;
 
   // release
   i2cRelease(10);
+  sleep(2);
 
   //now prepare the read-back of the values
   uint8_t cNWord = 10;
+
   for (uint8_t cIndex = 0; cIndex < cNWord; cIndex++)
-    {
       cVecRead.push_back( pFMCId << 24 | pFitelId << 20 | (0x6 + cIndex ) << 8 | 0 );
-    }
+
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_addr", 0x4c);
 
   regManager->WriteBlockReg( "fitel_config_fifo_tx", cVecRead );
   // sent an I2C write request
-  regManager->WriteReg("pixfed_ctrl_regs.fitel_config_req", 3);
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 3);
 
   // wait for command acknowledge
-  while (regManager->ReadReg("pixfed_stat_regs.fitel_config_ack") == 0) usleep(100);
+  while (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep(100);
 
-  cVal = regManager->ReadReg("pixfed_stat_regs.fitel_config_ack");
+  cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack");
+  if (cVal == 3)
+    std::cout << "Error reading registers!" << std::endl;
   success = success && cVal != 3;
+
+  cVecRead = regManager->ReadBlockRegValue("fitel_config_fifo_rx", cNWord);
 
   // release
   i2cRelease(10);
-
-  // clear the vector & read the data from the fifo
-  cVecRead = regManager->ReadBlockRegValue("fitel_config_fifo_rx", cVecRead.size());
+  usleep(500);
 
   // now convert to Voltages!
   std::vector<double> cLTCValues(cNWord / 2, 0);
 
   double cConstant = 0.00030518;
   // each value is hidden in 2 I2C words
-  for (int cMeasurement = 0; cMeasurement < cNWord / 2; cMeasurement++)
-    {
-      // build the values
-      uint16_t cValue = ((cVecRead.at(2 * cMeasurement) & 0x7F) << 8) + (cVecRead.at(2 * cMeasurement + 1) & 0xFF);
-      uint8_t cSign = (cValue >> 14) & 0x1;
+  for (int cMeasurement = 0; cMeasurement < cNWord / 2; cMeasurement++) {
+    // build the values
+    uint16_t cValue = ((cVecRead.at(2 * cMeasurement) & 0x7F) << 8) + (cVecRead.at(2 * cMeasurement + 1) & 0xFF);
+    uint8_t cSign = (cValue >> 14) & 0x1;
 
-      //now the conversions are different for each of the voltages, so check by cMeasurement
-      if (cMeasurement == 4)
-        cLTCValues.at(cMeasurement) = (cSign == 0b1) ? (-( 32768 - cValue ) * cConstant + 2.5) : (cValue * cConstant + 2.5);
+    //now the conversions are different for each of the voltages, so check by cMeasurement
+    if (cMeasurement == 4)
+      cLTCValues.at(cMeasurement) = (cSign == 0b1) ? (-( 32768 - cValue ) * cConstant + 2.5) : (cValue * cConstant + 2.5);
 
-      else
-        cLTCValues.at(cMeasurement) = (cSign == 0b1) ? (-( 32768 - cValue ) * cConstant) : (cValue * cConstant);
-    }
+    else
+      cLTCValues.at(cMeasurement) = (cSign == 0b1) ? (-( 32768 - cValue ) * cConstant) : (cValue * cConstant);
+
+    if (verbose)
+      std::cout << "V" << cMeasurement + 1 << " = " << std::setw(15) << cLTCValues.at(cMeasurement) << " ";
+  }
 
   // now I have all 4 voltage values in a vector of size 5
   // V1 = cLTCValues[0]
@@ -586,9 +726,16 @@ std::pair<bool, std::vector<double> > PixelFEDInterfacePh1::ReadADC( const uint8
   // Vcc = cLTCValues[4]
   //
   // the RSSI value = fabs(V3-V4) / R=150 Ohm [in Amps]
-  //double cADCVal = fabs(cLTCValues.at(2) - cLTCValues.at(3)) / 150.0;
+  if (verbose) {
+    const double cADCVal = fabs(cLTCValues.at(2) - cLTCValues.at(3)) / 150.0;
+    std::cout << " RSSI " << cADCVal * 1000  << " mA" << std::endl;
+  }
+
+  WriteFitelReg(ch_name, pFMCId, pFitelId, old_value, true);
+
   return std::make_pair(success, cLTCValues);
 }
+
 
 int PixelFEDInterfacePh1::reset() {
   // JMTBAD from fedcard
@@ -611,20 +758,26 @@ uint32_t PixelFEDInterfacePh1::readOSDFifo(int channel) {
   return 0;
 }
 
-void prettyprintPhase(const std::vector<uint32_t>& pData, int pChannel)
-{
-    std::cout <<  "Fibre: " << std::setw(2) <<  pChannel + 1 << "    " <<
-              std::bitset<1>( (pData.at( (pChannel * 4 ) + 0 ) >> 10 ) & 0x1 )   << "    " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 0 ) >> 5  ) & 0x1f )  << "    " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 0 )       ) & 0x1f ) << "    " <<
-      std::bitset<32>( pData.at( (pChannel * 4 ) + 1 )) << "    " <<
-              std::bitset<1>( (pData.at( (pChannel * 4 ) + 2 ) >> 31 ) & 0x1 )  << " " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 2 ) >> 23 ) & 0x1f)  << " " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 2 ) >> 18 ) & 0x1f)  << " " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 2 ) >> 13 ) & 0x1f ) << " " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 2 ) >> 8  ) & 0x1f ) << " " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 2 ) >> 5  ) & 0x7  ) << " " << std::setw(2) <<
-              ((pData.at( (pChannel * 4 ) + 2 )       ) & 0x1f ) << std::endl;
+void prettyprintPhase(const std::vector<uint32_t>& pData, int pChannel) {
+  int channelToPrint = pChannel + 1;
+  int index = pChannel * 4;
+  if (pChannel < 0) {
+    channelToPrint = -pChannel;
+    index = 0;
+  }
+  
+  std::cout << "Fibre: " << std::setw(2) <<  channelToPrint << "    " <<
+              std::bitset<1>( (pData.at( (index ) + 0 ) >> 10 ) & 0x1 )   << "    " << std::setw(2) <<
+              ((pData.at( (index ) + 0 ) >> 5  ) & 0x1f )  << "    " << std::setw(2) <<
+              ((pData.at( (index ) + 0 )       ) & 0x1f ) << "    " <<
+              std::bitset<32>( pData.at( (index ) + 1 )) << "    " <<
+              std::bitset<1>( (pData.at( (index ) + 2 ) >> 31 ) & 0x1 )  << " " << std::setw(2) <<
+              ((pData.at( (index ) + 2 ) >> 23 ) & 0x1f)  << " " << std::setw(2) <<
+              ((pData.at( (index ) + 2 ) >> 18 ) & 0x1f)  << " " << std::setw(2) <<
+              ((pData.at( (index ) + 2 ) >> 13 ) & 0x1f ) << " " << std::setw(2) <<
+              ((pData.at( (index ) + 2 ) >> 8  ) & 0x1f ) << " " << std::setw(2) <<
+              ((pData.at( (index ) + 2 ) >> 5  ) & 0x7  ) << " " << std::setw(2) <<
+              ((pData.at( (index ) + 2 )       ) & 0x1f ) << std::endl;
 }
 
 void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
@@ -644,7 +797,6 @@ void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
     // set the parameters for IDELAY scan
     std::vector<uint32_t> cValVec;
     for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
-        // create a Value Vector that contains the write value for each channel
         cValVec.push_back( 0x80000000 );
     regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
     cValVec.clear();
@@ -662,35 +814,302 @@ void PixelFEDInterfacePh1::readPhases(bool verbose, bool override_timeout) {
     cValVec.clear();
 
     // initialize Phase Finding
+    regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
     regManager->WriteReg("fe_ctrl_regs.initialize_swap", 1);
-    std::cout << "Initializing Phase Finding ..." << std::endl << std::endl;
-    sleep(3);
-
-    //here I might do the print loop again as Helmut does it in the latest version of the PixFED python script
     regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
 
-    sleep(3);
-
-    std::cout <<  "Phase finding Results: " << std::endl;
+    std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::endl << std::endl;
+    PixelTimer timer;
+    timer.start();
+    while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x0)
+      usleep (1000);
+    timer.stop();
+    
+    std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Time to run the initial phase finding: " << timer.tottime() << "; swapping phases ... " << std::endl;
+    timer.reset();
+    timer.start();
+    while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x2)
+      usleep (1000);
+    timer.stop();
+    std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Swap fininshed, additional time: " << timer.tottime() << "; phase finding results: " << std::endl;
 
     uint32_t cNChannel = 24;
-    std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue( "idel_individual_stat_block", cNChannel * 4 );
-
+    std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue ( "idel_individual_stat_block", cNChannel * 4 );
     std::cout << "FIBRE CTRL_RDY CNTVAL_Hi CNTVAL_Lo   pattern:                     S H1 L1 H0 L0   W R" << std::endl;
-    //for(uint32_t cChannel = 0; cChannel < 48; cChannel++){
     for (uint32_t cChannel = 0; cChannel < cNChannel; cChannel++)
-    {
-        prettyprintPhase(cReadValues, cChannel);
+      prettyprintPhase(cReadValues, cChannel);
+
+    // JMTBAD this not needed anymore?
+//    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 0} );
+//    regManager->WriteStackReg(cVecReg);
+//    cVecReg.clear();
+//    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 1} );
+//    regManager->WriteStackReg(cVecReg);
+//    cVecReg.clear();
+}
+
+uint8_t PixelFEDInterfacePh1::getTTSState() {
+  return uint8_t(regManager->ReadReg("pixfed_stat_regs.tts.word") & 0x0000000F);
+}
+
+void PixelFEDInterfacePh1::printTTSState() {
+  const uint8_t cWord = getTTSState();
+  std::cout << "FED#" << pixelFEDCard.fedNumber << " TTS State: ";
+  if      (cWord == 8)  std::cout << "RDY";
+  else if (cWord == 4)  std::cout << "BSY";
+  else if (cWord == 2)  std::cout << "OOS";
+  else if (cWord == 1)  std::cout << "OVF";
+  else if (cWord == 0)  std::cout << "DIC";
+  else if (cWord == 12) std::cout << "ERR";
+  std::cout << std::endl;
+}
+
+void PixelFEDInterfacePh1::getSFPStatus(uint8_t pFMCId) {
+    std::cout << "Initializing SFP+ for SLINK" << std::endl;
+
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1);
+    sleep (0.5);
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0);
+
+    std::vector<std::pair<std::string, uint32_t> > cVecReg;
+    cVecReg.push_back ({"pixfed_ctrl_regs.fitel_sfp_i2c_req", 0});
+    cVecReg.push_back ({"pixfed_ctrl_regs.fitel_rx_i2c_req", 0});
+
+    cVecReg.push_back ({"pixfed_ctrl_regs.fitel_i2c_addr", 0x38});
+
+    regManager->WriteStackReg (cVecReg);
+
+    // Vectors for write and read data!
+    std::vector<uint32_t> cVecWrite;
+    std::vector<uint32_t> cVecRead;
+
+    //encode them in a 32 bit word and write, no readback yet
+    cVecWrite.push_back (  pFMCId  << 24 |   0x00 );
+    regManager->WriteBlockReg ("fitel_config_fifo_tx", cVecWrite);
+
+
+    // sent an I2C write request
+    // Edit G. Auzinger
+    // write 1 to sfp_i2c_reg to trigger an I2C write transaction - Laurent's BS python script is ambiguous....
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_sfp_i2c_req", 1);
+
+    // wait for command acknowledge
+    while (regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep (100);
+
+    uint32_t cVal = regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack");
+
+    if (cVal == 3)
+        std::cout << "Error during i2c write!" << cVal << std::endl;
+
+    //release handshake with I2C
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_sfp_i2c_req", 0);
+
+    // wait for command acknowledge
+    while (regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack") != 0) usleep (100);
+
+    usleep (500);
+    //////////////////////////////////////////////////
+    ////THIS SHOULD BE THE END OF THE WRITE OPERATION, BUS SHOULD BE IDLE
+    /////////////////////////////////////////////////
+
+    //regManager->WriteReg ("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1);
+    //sleep (0.5);
+    //regManager->WriteReg ("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0);
+
+    //std::vector<std::pair<std::string, uint32_t> > cVecReg;
+    //cVecReg.push_back ({"pixfed_ctrl_regs.fitel_sfp_i2c_req", 0});
+    //cVecReg.push_back ({"pixfed_ctrl_regs.fitel_rx_i2c_req", 0});
+    //cVecReg.push_back ({"pixfed_ctrl_regs.fitel_i2c_addr", 0x38});
+    //regManager->WriteStackReg (cVecReg);
+    //cVecReg.clear();
+
+    //Vector for the reply
+    //std::vector<uint32_t> cVecRead;
+    cVecRead.push_back ( pFMCId << 24 | 0x00 );
+    regManager->WriteBlockReg ("fitel_config_fifo_tx", cVecRead);
+    //this issues an I2C read request via FW
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_sfp_i2c_req", 3);
+
+    // wait for command acknowledge
+    while (regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep (100);
+
+    cVal = regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack");
+
+    if (cVal == 3)
+        std::cout << "Error during i2c write!" << cVal << std::endl;
+
+    cVecRead.clear();
+    //only read 1 word
+    cVecRead = regManager->ReadBlockRegValue ("fitel_config_fifo_rx", cVecWrite.size() );
+
+    std::cout << "SFP+ Status of FMC " << +pFMCId << std::endl;
+
+    for (size_t i = 0; i < cVecRead.size(); ++i) {
+      uint32_t cRead = cVecRead[i];
+        cRead = cRead & 0xF;
+        std::cout << "-> SFP_MOD_ABS:  "  << (cRead >> 0 & 0x1) << std::endl;
+        std::cout << "-> SFP_TX_DIS:   "   << (cRead >> 1 & 0x1) << std::endl;
+        std::cout << "-> SFP_TX_FAULT: " << (cRead >> 2 & 0x1) << std::endl;
+        std::cout << "-> SFP_RX_LOS:   "  << (cRead >> 3 & 0x1) << std::endl;
     }
 
-    //std::this_thread::sleep_for( cWait );
+    //release handshake with I2C
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_sfp_i2c_req", 0);
 
-    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 0} );
-    regManager->WriteStackReg(cVecReg);
-    cVecReg.clear();
-    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 1} );
-    regManager->WriteStackReg(cVecReg);
-    cVecReg.clear();
+    // wait for command acknowledge
+    while (regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack") != 0) usleep (100);
+
+    printTTSState();
+}
+
+void PixelFEDInterfacePh1::PrintSlinkStatus()
+{
+
+  printTTSState();
+
+    for (int i = 0; i < 50; i++)
+        std::cout << " *";
+
+    std::cout << std::endl;
+
+    //check the link status
+    uint8_t sync_loss =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.sync_loss");
+    uint8_t link_down =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.link_down");
+    uint8_t link_full =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.link_full");
+    std::cout << "PixFED SLINK information : ";
+    (sync_loss == 1) ? std::cout << "SERDES out of sync" : std::cout << "SERDES OK";
+    std::cout << " | ";
+    (link_down == 1) ? std::cout << "Link up" : std::cout << "Link down";
+    std::cout << " | ";
+    (link_full == 1) ? std::cout << "ready for data" : std::cout << "max 16 words left";
+    std::cout << std::endl;
+
+
+
+    //LINK status
+    std::cout << "SLINK core status        : ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x1);
+    //    std::cout << "data_31to0 " <<  regManager->ReadReg("pixfed_stat_regs.slink_core_status.data_31to0") << std::endl;
+    uint32_t cLinkStatus =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.data_31to0") ;
+    ( (cLinkStatus & 0x80000000) >> 31) ? std::cout << "Test mode |" : std::cout << "FED data  |";
+    ( (cLinkStatus & 0x40000000) >> 30) ? std::cout << " Link up |" : std::cout << " Link down |";
+    ( (cLinkStatus & 0x20000000) >> 29) ? std::cout << "\0 |"  : std::cout << " Link backpressured |";
+    ( (cLinkStatus & 0x10000000) >> 28) ? std::cout << " >= 1 block free for data |" : std::cout << "\0 |";
+    ( (cLinkStatus & 0x00000040) >> 6) ? std::cout << " 2 fragments with the same trigger number |" : std::cout << "\0 |";
+    ( (cLinkStatus & 0x00000020) >> 5) ? std::cout << " Trailer duplicated |" : std::cout << "\0 |";
+    ( (cLinkStatus & 0x00000010) >> 4) ? std::cout << " Header duplicated |" : std::cout << "\0 |";
+    ( (cLinkStatus & 0x00000008) >> 3) ? std::cout << "   Between header and trailer |" << std::endl : std::cout << "\0 |";
+
+    if ( (cLinkStatus & 0x00000007) == 1)
+        std::cout << "   State machine: idle" << std::endl;
+    else if ( (cLinkStatus & 0x00000007) == 2)
+        std::cout << "   State machine: Read data from FED" << std::endl;
+    else if ( (cLinkStatus & 0x00000007) == 4)
+        std::cout << "   State machine: Closing block" << std::endl;
+    else
+        std::cout << "   State machine: fucked (Return value: " <<  (cLinkStatus & 0x00000007) << ")" << std::endl;
+
+
+    //Status CORE
+    std::cout << "Status CORE: " ;
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x6);
+    cLinkStatus = regManager->ReadReg ("pixfed_stat_regs.slink_core_status.data_31to0");
+    ( (cLinkStatus & 0x80000000) >> 31) ? std::cout << "   Core initialized" << std::endl : std::cout << "   Core not initialized" << std::endl;
+
+    //Data counter
+    std::cout << "Input Counters : ";
+    std::cout << "Data counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x2);
+    uint64_t val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << " | ";
+
+    //Event counter
+    std::cout << "Event counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x3);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << " | ";
+
+    //Block counter
+    std::cout << "Block counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x4);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << " | ";
+
+    //Packets recieved counter
+    std::cout << "Pckt rcv counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x5);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << std::endl;
+
+    //Packets send counter
+    std::cout << "Output Counter : ";
+    std::cout << "Pckt send counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x7);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << " | ";
+
+    //Status build
+    std::cout << "Status build: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x8);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << " | ";
+
+    //Back pressure counter
+    std::cout << "BackP counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0x9);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << std::endl;
+
+    //Version number
+    //std::cout << "Version number: ";
+    //regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0xa);
+    //val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    //std::cout <<  val << std::endl;
+
+    //SERDES status
+    //std::cout << "SERDES status: ";
+    //regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0xb);
+    //val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    //std::cout <<  val << std::endl;
+
+    //Retransmitted packages counter
+    std::cout << "Error Counters : ";
+    std::cout << "Retrans pkg counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0xc);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << " | ";
+
+    //FED CRC error
+    std::cout << "FED CRC error counter: ";
+    regManager->WriteReg ("pixfed_ctrl_regs.slink_core_status_addr", 0xd);
+    val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
+    std::cout <<  val << std::endl;
+
+    std::cout << "Data transfer block status: " << std::endl;
+    std::cout << "      Block1: ";
+    ( (cLinkStatus & 0x00000080) >> 7) ? std::cout << "ready    " : std::cout << "not ready";
+    std::cout << " | Block2: ";
+    ( (cLinkStatus & 0x00000040) >> 6) ? std::cout << "ready    " : std::cout << "not ready";
+    std::cout << " | Block3: ";
+    ( (cLinkStatus & 0x00000020) >> 5) ? std::cout << "ready    " : std::cout << "not ready";
+    std::cout << " | Block4: ";
+    ( (cLinkStatus & 0x00000010) >> 4) ? std::cout << "ready" : std::cout << "not ready" << std::endl;
+
+    std::cout << "Data transfer block usage: " << std::endl;
+    std::cout << "      Block1: ";
+    ( (cLinkStatus & 0x00000008) >> 3) ? std::cout << "used    " : std::cout << "not used ";
+    std::cout << " | Block2: ";
+    ( (cLinkStatus & 0x00000004) >> 2) ? std::cout << "used    " : std::cout << "not used ";
+    std::cout << " | Block3: ";
+    ( (cLinkStatus & 0x00000002) >> 1) ? std::cout << "used    " : std::cout << "not used ";
+    std::cout << " | Block4: ";
+    ( (cLinkStatus & 0x00000001) >> 0) ? std::cout << "used    " : std::cout << "not used " << std::endl;
+
+    for (int i = 0; i < 50; i++)
+        std::cout << " *";
+
+    std::cout << std::endl;
+
 }
 
 void PixelFEDInterfacePh1::prepareCalibrationMode(unsigned nevents) {
@@ -714,27 +1133,12 @@ void PixelFEDInterfacePh1::prepareCalibrationMode(unsigned nevents) {
 
 std::vector<uint32_t> PixelFEDInterfacePh1::readTransparentFIFO()
 {
-    //regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
-    //std::vector<uint32_t> cFifoVec = ReadBlockRegValue( "fifo.bit_stream", 32 );
-  //    std::cout << std::endl << BOLDBLUE <<  "Transparent FIFO: " << RESET << std::endl;
-
-    //for (auto& cWord : cFifoVec)
-    //std::cout << GREEN << std::bitset<30>(cWord) << RESET << std::endl;
-
-    std::vector<uint32_t> cFifoVec;
-    //std::cout << "DEBUG: Helmut's way:" << std::endl;
-    for (int i = 0; i < 32; i++)
-    {
-        uint32_t cWord = regManager->ReadReg("fifo.bit_stream");
-        cFifoVec.push_back(cWord);
-//        std::cout << GREEN << std::bitset<30>(cWord) << RESET << std::endl;
-//        for (int iBit = 29; iBit >= 0; iBit--)
-//        {
-//            if (std::bitset<30>(cWord)[iBit] == 0) std::cout << GREEN << "_";
-//            else std::cout << "-";
-//        }
-    }
-    //    std::cout << RESET << std::endl;
+    regManager->WriteReg ("fe_ctrl_regs.decode_reg_reset", 1);
+    std::vector<uint32_t> cFifoVec = regManager->ReadBlockRegValue ( "fifo.bit_stream", 512 );
+    //vectors to pass to the NRZI decoder as reference to be filled by that
+    std::vector<uint8_t> c5bSymbol, c5bNRZI, c4bNRZI;
+    decodeTransparentSymbols (cFifoVec, c5bSymbol, c5bNRZI, c4bNRZI);
+    prettyPrintTransparentFIFO (cFifoVec, c5bSymbol, c5bNRZI, c4bNRZI);
     return cFifoVec;
 }
 
@@ -747,29 +1151,213 @@ int PixelFEDInterfacePh1::drainTransparentFifo(uint32_t* data) {
   return ie;
 }
 
-void prettyprintSpyFIFO(const std::vector<uint32_t>& pVec)
+void PixelFEDInterfacePh1::decodeTransparentSymbols (const std::vector<uint32_t>& pInData, std::vector<uint8_t>& p5bSymbol, std::vector<uint8_t>& p5bNRZI, std::vector<uint8_t>& p4bNRZI)
 {
-    uint32_t cMask = 0xf0;
-    for (size_t i = 0; i < pVec.size(); ++i)
+    //first, clear all the non-const references
+    p5bSymbol.clear();
+    p5bNRZI.clear();
+    p4bNRZI.clear();
+
+    //ok, then internally generate a vector of 5b Symbols and use a uint8_t for that
+    for (size_t i = 0; i < pInData.size(); ++i)
     {
-      uint32_t cWord = pVec[i];
-      //if (cWord != 0)
+      uint32_t cWord = pInData[i];
+        cWord &= 0x0000001f;
+
+        p5bSymbol.push_back (cWord);
+
+        //next, fill the 5bNRZI 4bNRZI with 0 symbols with 0x1f
+        p5bNRZI.push_back (0x1f);
+        p4bNRZI.push_back (0);
+    }
+
+
+    for (uint32_t i = 1; i < pInData.size(); i++)
+    {
+
+        if (p5bSymbol[i] == 0x1f) p5bNRZI[i] = 0x16; //print 10110
+
+        if (p5bSymbol[i] == 0)    p5bNRZI[i] = 0x16; //print 10110
+
+        //if( i > 0 )
+        //{
+
+        if ( (p5bSymbol[i] == 0x14) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x1e; //# print '11110'
+
+        if ( (p5bSymbol[i] == 0x0e) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x09; //# print '01001'
+
+        if ( (p5bSymbol[i] == 0x18) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x14; //# print '10100'
+
+        if ( (p5bSymbol[i] == 0x19) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x15; //# print '10101'
+
+        if ( (p5bSymbol[i] == 0x0c) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x0a; //# print '01010'
+
+        if ( (p5bSymbol[i] == 0x0d) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x0b; //# print '01011'
+
+        if ( (p5bSymbol[i] == 0x0b) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x0e; //# print '01110'
+
+        if ( (p5bSymbol[i] == 0x0a) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x0f; //# print '01111'
+
+        if ( (p5bSymbol[i] == 0x1c) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x12; //# print '10010'
+
+        if ( (p5bSymbol[i] == 0x1d) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x13; //# print '10011'
+
+        if ( (p5bSymbol[i] == 0x1b) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x16; //# print '10110'
+
+        if ( (p5bSymbol[i] == 0x1a) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x17; //# print '10111'
+
+        if ( (p5bSymbol[i] == 0x13) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x1a; //# print '11010'
+
+        if ( (p5bSymbol[i] == 0x12) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x1b; //# print '11011'
+
+        if ( (p5bSymbol[i] == 0x17) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x1c; //# print '11100'
+
+        if ( (p5bSymbol[i] == 0x16) && ( (p5bSymbol[i - 1] & 0x1) == 0) )  p5bNRZI[i] = 0x1d; //# print '11101'
+
+        if ( (p5bSymbol[i] == 0x0b) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x1e; //# print '11110'
+
+        if ( (p5bSymbol[i] == 0x11) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x09; //# print '01001'
+
+        if ( (p5bSymbol[i] == 0x07) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x14; //# print '10100'
+
+        if ( (p5bSymbol[i] == 0x06) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x15; //# print '10101'
+
+        if ( (p5bSymbol[i] == 0x13) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x0a; //# print '01010'
+
+        if ( (p5bSymbol[i] == 0x12) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x0b; //# print '01011'
+
+        if ( (p5bSymbol[i] == 0x14) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x0e; //# print '01110'
+
+        if ( (p5bSymbol[i] == 0x15) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x0f; //# print '01111'
+
+        if ( (p5bSymbol[i] == 0x03) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x12; //# print '10010'
+
+        if ( (p5bSymbol[i] == 0x02) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x13; //# print '10011'
+
+        if ( (p5bSymbol[i] == 0x04) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x16; //# print '10110'
+
+        if ( (p5bSymbol[i] == 0x05) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x17; //# print '10111'
+
+        if ( (p5bSymbol[i] == 0x0c) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x1a; //# print '11010'
+
+        if ( (p5bSymbol[i] == 0x0d) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x1b; //# print '11011'
+
+        if ( (p5bSymbol[i] == 0x08) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x1c; //# print '11100'
+
+        if ( (p5bSymbol[i] == 0x09) && ( (p5bSymbol[i - 1] & 0x1) == 1) )  p5bNRZI[i] = 0x1d; //# print '11101'
+    }
+
+    for (uint32_t i = 0; i < pInData.size(); i++)
+    {
+        if (p5bNRZI[i] == 0x1e)  p4bNRZI[i] = 0x0; // #
+
+        if (p5bNRZI[i] == 0x09)  p4bNRZI[i] = 0x1; // #
+
+        if (p5bNRZI[i] == 0x14)  p4bNRZI[i] = 0x2; // #
+
+        if (p5bNRZI[i] == 0x15)  p4bNRZI[i] = 0x3; // #
+
+        if (p5bNRZI[i] == 0x0a)  p4bNRZI[i] = 0x4; // #
+
+        if (p5bNRZI[i] == 0x0b)  p4bNRZI[i] = 0x5; // #
+
+        if (p5bNRZI[i] == 0x0e)  p4bNRZI[i] = 0x6; // #
+
+        if (p5bNRZI[i] == 0x0f)  p4bNRZI[i] = 0x7; // #
+
+        if (p5bNRZI[i] == 0x12)  p4bNRZI[i] = 0x8; // #
+
+        if (p5bNRZI[i] == 0x13)  p4bNRZI[i] = 0x9; // #
+
+        if (p5bNRZI[i] == 0x16)  p4bNRZI[i] = 0xa; // #
+
+        if (p5bNRZI[i] == 0x17)  p4bNRZI[i] = 0xb; // #
+
+        if (p5bNRZI[i] == 0x1a)  p4bNRZI[i] = 0xc; // #
+
+        if (p5bNRZI[i] == 0x1b)  p4bNRZI[i] = 0xd; // #
+
+        if (p5bNRZI[i] == 0x1c)  p4bNRZI[i] = 0xe; // #
+
+        if (p5bNRZI[i] == 0x1d)  p4bNRZI[i] = 0xf; // #
+
+        if (p5bNRZI[i] == 0x1f)  p4bNRZI[i] = 0x0; // #error
+    }
+}
+
+void PixelFEDInterfacePh1::prettyPrintTransparentFIFO (const std::vector<uint32_t>& pFifoVec, const std::vector<uint8_t>& p5bSymbol, const std::vector<uint8_t>& p5bNRZI, const std::vector<uint8_t>& p4bNRZI)
+{
+    std::cout << std::endl <<  "Transparent FIFO: "  << std::endl
+              << " Timestamp      5b Symbol " << std::endl
+              << "                5b NRZI   " << std::endl
+              << "                4b NRZI   " << std::endl
+              << "                TBM Core A" << std::endl
+              << "                TBM Core B" << std::endl;
+
+    // now print and decode the FIFO data
+    for (uint32_t j = 0; j < 32; j++)
+    {
+        //first line with the timestamp
+        std::cout << "          " << ( (pFifoVec.at ( (j * 16) ) >> 20 ) & 0xfff) << ": ";
+
+        for (uint32_t i = 0; i < 16; i++)
+            std::cout << " " << std::bitset<5> ( ( (p5bSymbol.at (i + (j * 16) ) >> 0) & 0x1f) );
+
+        std::cout << std::endl << "               ";
+
+        //now the line with the 5bNRZI word
+        for (uint32_t i = 0; i < 16; i++)
         {
-          if ((cWord & 0xff) != 0) std::cout << std::hex << (cWord & 0xff) << std::dec << " " ;
-            if (((cWord & cMask) >> 4) == 11 ) std::cout << " " << std::endl;
-            if (((cWord & cMask) >> 4) == 6 ) std::cout << " " << std::endl;
-            if (((cWord & cMask) >> 4) == 7 ) std::cout << " " << std::endl;
-            if (((cWord & cMask) >> 4) == 15 ) std::cout << " " << std::endl;
+            if (p5bNRZI.at (i + j * 16) == 0x1f) std::cout << " " << "ERROR";
+            else std::cout << " " << std::bitset<5> ( ( (p5bNRZI.at (i + (j * 16) ) >> 0) & 0x1f) );
         }
 
+        std::cout << std::endl << "               ";
+
+        //now the line with the 4bNRZI word
+        for (uint32_t i = 0; i < 16; i++)
+            std::cout << " " << std::bitset<4> ( ( (p4bNRZI.at (i + (j * 16) ) >> 0) & 0x1f) ) << " ";
+
+        std::cout << std::endl << "               ";
+
+        //now the line with TBM Core A word
+        for (uint32_t i = 0; i < 16; i++)
+        {
+            std::cout << " " << std::bitset<1> ( ( (p4bNRZI.at (i + (j * 16) ) >> 3) & 0x1) );
+            std::cout << " " << std::bitset<1> ( ( (p4bNRZI.at (i + (j * 16) ) >> 1) & 0x1) );
+        }
+
+        std::cout << std::endl << "               ";
+
+        //now the line with TBM Core A word
+        for (uint32_t i = 0; i < 16; i++)
+        {
+            std::cout << " " << std::bitset<1> ( ( ( (p4bNRZI.at (i + (j * 16) ) >> 2) & 0x1) ^ 0x1) );
+            std::cout << " " << std::bitset<1> ( ( ( (p4bNRZI.at (i + (j * 16) ) >> 0) & 0x1) ^ 0x1) );
+        }
+
+        std::cout << std::endl << std::endl;
     }
+}
+
+
+
+void prettyprintSpyFIFO(const std::vector<uint32_t>& pVec) {
+  for (size_t i = 0; i < pVec.size(); ++i)    {
+    uint32_t cWord = pVec[i];
+    const uint32_t timestamp = (cWord >> 20) & 0xfff;
+    const uint32_t marker = (cWord & 0xf0) >> 4;
+    if ((cWord & 0xff) != 0) std::cout << std::hex << (cWord & 0xff) << std::dec << " " ;
+    if (marker == 0xb || marker == 6 || marker == 7 || marker == 0xf)
+      std::cout << "       " << timestamp << std::endl;
+  }
 }
 
 std::vector<uint32_t> PixelFEDInterfacePh1::readSpyFIFO()
 {
   
   std::vector<uint32_t> cSpy[2];
-  const size_t N = 4096;
+  const size_t N = 320;
   for (int i = 0; i < 2; ++i) {
     { //while (1) {
       std::vector<uint32_t> tmp = regManager->ReadBlockRegValue(i == 0 ? "fifo.spy_A" : "fifo.spy_B", N);
@@ -1039,14 +1627,15 @@ std::vector<uint32_t> PixelFEDInterfacePh1::ReadData(uint32_t cBlockSize)
 
 int PixelFEDInterfacePh1::spySlink64(uint64_t *data) {
   ++slink64calls;
-  std::cout << "slink64call #" << slink64calls << std::endl;
+  std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
   //readSpyFIFO();
-  //readFIFO1(true);
+  readFIFO1(true);
 
   usleep(2000);
 
   uhal::ValWord<uint32_t> cVal = 0;
-  uint32_t mycntword = 0;int sleepcnt=0;
+  //uint32_t mycntword = 0;
+  int sleepcnt=0;
   bool our_timeout = false;
   do {
     cVal = regManager->ReadReg("pixfed_stat_regs.DDR0_full");
