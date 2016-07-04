@@ -176,6 +176,8 @@
         <node id="fitel_i2c_ack" address="0x40000004" mask="0x00000300" permission="r" />
         <node id="fitel_config_fifo_rx_empty" address="0x40000004" mask="0x00000400" permission="r" />
         <node id="calibModeOvf" address="0x40000004" mask="0x00000800" permission="r" />
+        <node id="TTS_FSM_STAGE" address="0x40000004" mask="0x00007000" permission="r" />
+        <node id="DAQ_FEROL_VALID" address="0x40000004" mask="0x00008000" permission="r" />
         <!--FSM flags-->
         <node id="fsm_flags" address="0x40000005" permission="r">
             <node id="ddr3_ctrl_fsm_flag_0" mask="0xff" />
@@ -209,6 +211,8 @@
         </node>
         <node id="main_fifo_empty" address="0x40000009" mask="0x00010000" />
         <node id="all_tbm_fifo_empty" address="0x40000009" mask="0x00020000" />
+        <node id="error_fifo_read_rdy" address="0x40000009" mask="0x00040000" />
+        <node id="error_fifo_wr_data_count" address="0x40000009" mask="0x3FF80000" />
         <node id="evt_err_nb">
             <node id="tbm_ch_00" address="0x4000000a" mask="0x000000ff" />
             <node id="tbm_ch_01" address="0x4000000a" mask="0x0000ff00" />
@@ -259,6 +263,56 @@
             <node id="tbm_ch_46" address="0x40000015" mask="0x00ff0000" />
             <node id="tbm_ch_47" address="0x40000015" mask="0xff000000" />
         </node>
+        <node id="evt_timeout_nb">
+            <node id="tbm_ch_00" address="0x40000016" mask="0x000000ff" />
+            <node id="tbm_ch_01" address="0x40000016" mask="0x0000ff00" />
+            <node id="tbm_ch_02" address="0x40000016" mask="0x00ff0000" />
+            <node id="tbm_ch_03" address="0x40000016" mask="0xff000000" />
+            <node id="tbm_ch_04" address="0x40000017" mask="0x000000ff" />
+            <node id="tbm_ch_05" address="0x40000017" mask="0x0000ff00" />
+            <node id="tbm_ch_06" address="0x40000017" mask="0x00ff0000" />
+            <node id="tbm_ch_07" address="0x40000017" mask="0xff000000" />
+            <node id="tbm_ch_08" address="0x40000018" mask="0x000000ff" />
+            <node id="tbm_ch_09" address="0x40000018" mask="0x0000ff00" />
+            <node id="tbm_ch_10" address="0x40000018" mask="0x00ff0000" />
+            <node id="tbm_ch_11" address="0x40000018" mask="0xff000000" />
+            <node id="tbm_ch_12" address="0x40000019" mask="0x000000ff" />
+            <node id="tbm_ch_13" address="0x40000019" mask="0x0000ff00" />
+            <node id="tbm_ch_14" address="0x40000019" mask="0x00ff0000" />
+            <node id="tbm_ch_15" address="0x40000019" mask="0xff000000" />
+            <node id="tbm_ch_16" address="0x4000001a" mask="0x000000ff" />
+            <node id="tbm_ch_17" address="0x4000001a" mask="0x0000ff00" />
+            <node id="tbm_ch_18" address="0x4000001a" mask="0x00ff0000" />
+            <node id="tbm_ch_19" address="0x4000001a" mask="0xff000000" />
+            <node id="tbm_ch_20" address="0x4000001b" mask="0x000000ff" />
+            <node id="tbm_ch_21" address="0x4000001b" mask="0x0000ff00" />
+            <node id="tbm_ch_22" address="0x4000001b" mask="0x00ff0000" />
+            <node id="tbm_ch_23" address="0x4000001b" mask="0xff000000" />
+            <node id="tbm_ch_24" address="0x4000001c" mask="0x000000ff" />
+            <node id="tbm_ch_25" address="0x4000001c" mask="0x0000ff00" />
+            <node id="tbm_ch_26" address="0x4000001c" mask="0x00ff0000" />
+            <node id="tbm_ch_27" address="0x4000001c" mask="0xff000000" />
+            <node id="tbm_ch_28" address="0x4000001d" mask="0x000000ff" />
+            <node id="tbm_ch_29" address="0x4000001d" mask="0x0000ff00" />
+            <node id="tbm_ch_30" address="0x4000001d" mask="0x00ff0000" />
+            <node id="tbm_ch_31" address="0x4000001d" mask="0xff000000" />
+            <node id="tbm_ch_32" address="0x4000001e" mask="0x000000ff" />
+            <node id="tbm_ch_33" address="0x4000001e" mask="0x0000ff00" />
+            <node id="tbm_ch_34" address="0x4000001e" mask="0x00ff0000" />
+            <node id="tbm_ch_35" address="0x4000001e" mask="0xff000000" />
+            <node id="tbm_ch_36" address="0x4000001f" mask="0x000000ff" />
+            <node id="tbm_ch_37" address="0x4000001f" mask="0x0000ff00" />
+            <node id="tbm_ch_38" address="0x4000001f" mask="0x00ff0000" />
+            <node id="tbm_ch_39" address="0x4000001f" mask="0xff000000" />
+            <node id="tbm_ch_40" address="0x40000020" mask="0x000000ff" />
+            <node id="tbm_ch_41" address="0x40000020" mask="0x0000ff00" />
+            <node id="tbm_ch_42" address="0x40000020" mask="0x00ff0000" />
+            <node id="tbm_ch_43" address="0x40000020" mask="0xff000000" />
+            <node id="tbm_ch_44" address="0x40000021" mask="0x000000ff" />
+            <node id="tbm_ch_45" address="0x40000021" mask="0x0000ff00" />
+            <node id="tbm_ch_46" address="0x40000021" mask="0x00ff0000" />
+            <node id="tbm_ch_47" address="0x40000021" mask="0xff000000" />
+        </node>
         <node id="timeout_nb" address="0x40000016" mask="0x000000ff" />
     </node>
     <!-- CTRL - REGISTER MAPPING - from pixfed_ctrl_regs: CTRL & CMD => RD/WR -->
@@ -288,6 +342,7 @@
         <node id="TBM_MASK_1" address="0x40010004" mask="0xffffffff" />
         <node id="TBM_MASK_2" address="0x40010005" mask="0x0000ffff" />
         <node id="tbm_trailer_status_mask" address="0x40010009" mask="0x000000ff" permission="rw" />
+        <node id="tbm_trailer_status_mask2" address="0x4001000a" mask="0x80000000" permission="rw" />
         <node id="acq_ctrl" permission="rw">
             <!--bit0 = TBM fifo + ddr + ipbus -->
             <!--bit1 = slink data + ddr + ipbus-->
@@ -315,13 +370,66 @@
             <node id="event_cnt_check_valid" address="0x40010009" mask="0x04000000" permission="rw" />
             <node id="bc0_ec0_polar" address="0x40010009" mask="0x02000000" permission="rw" />
             <node id="force_RDY" address="0x40010009" mask="0x08000000" permission="rw" />
+            <node id="evt_timeout_value">
+                <node id="tbm_ch_00" address="0x4001000c" mask="0x000000ff" />
+                <node id="tbm_ch_01" address="0x4001000c" mask="0x0000ff00" />
+                <node id="tbm_ch_02" address="0x4001000c" mask="0x00ff0000" />
+                <node id="tbm_ch_03" address="0x4001000c" mask="0xff000000" />
+                <node id="tbm_ch_04" address="0x4001000d" mask="0x000000ff" />
+                <node id="tbm_ch_05" address="0x4001000d" mask="0x0000ff00" />
+                <node id="tbm_ch_06" address="0x4001000d" mask="0x00ff0000" />
+                <node id="tbm_ch_07" address="0x4001000d" mask="0xff000000" />
+                <node id="tbm_ch_08" address="0x4001000e" mask="0x000000ff" />
+                <node id="tbm_ch_09" address="0x4001000e" mask="0x0000ff00" />
+                <node id="tbm_ch_10" address="0x4001000e" mask="0x00ff0000" />
+                <node id="tbm_ch_11" address="0x4001000e" mask="0xff000000" />
+                <node id="tbm_ch_12" address="0x4001000f" mask="0x000000ff" />
+                <node id="tbm_ch_13" address="0x4001000f" mask="0x0000ff00" />
+                <node id="tbm_ch_14" address="0x4001000f" mask="0x00ff0000" />
+                <node id="tbm_ch_15" address="0x4001000f" mask="0xff000000" />
+                <node id="tbm_ch_16" address="0x40010010" mask="0x000000ff" />
+                <node id="tbm_ch_17" address="0x40010010" mask="0x0000ff00" />
+                <node id="tbm_ch_18" address="0x40010010" mask="0x00ff0000" />
+                <node id="tbm_ch_19" address="0x40010011" mask="0xff000000" />
+                <node id="tbm_ch_20" address="0x40010011" mask="0x000000ff" />
+                <node id="tbm_ch_21" address="0x40010011" mask="0x0000ff00" />
+                <node id="tbm_ch_22" address="0x40010011" mask="0x00ff0000" />
+                <node id="tbm_ch_23" address="0x40010011" mask="0xff000000" />
+                <node id="tbm_ch_24" address="0x40010012" mask="0x000000ff" />
+                <node id="tbm_ch_25" address="0x40010012" mask="0x0000ff00" />
+                <node id="tbm_ch_26" address="0x40010012" mask="0x00ff0000" />
+                <node id="tbm_ch_27" address="0x40010012" mask="0xff000000" />
+                <node id="tbm_ch_28" address="0x40010013" mask="0x000000ff" />
+                <node id="tbm_ch_29" address="0x40010013" mask="0x0000ff00" />
+                <node id="tbm_ch_30" address="0x40010013" mask="0x00ff0000" />
+                <node id="tbm_ch_31" address="0x40010013" mask="0xff000000" />
+                <node id="tbm_ch_32" address="0x40010014" mask="0x000000ff" />
+                <node id="tbm_ch_33" address="0x40010014" mask="0x0000ff00" />
+                <node id="tbm_ch_34" address="0x40010014" mask="0x00ff0000" />
+                <node id="tbm_ch_35" address="0x40010014" mask="0xff000000" />
+                <node id="tbm_ch_36" address="0x40010015" mask="0x000000ff" />
+                <node id="tbm_ch_37" address="0x40010015" mask="0x0000ff00" />
+                <node id="tbm_ch_38" address="0x40010015" mask="0x00ff0000" />
+                <node id="tbm_ch_39" address="0x40010015" mask="0xff000000" />
+                <node id="tbm_ch_40" address="0x40010016" mask="0x000000ff" />
+                <node id="tbm_ch_41" address="0x40010016" mask="0x0000ff00" />
+                <node id="tbm_ch_42" address="0x40010016" mask="0x00ff0000" />
+                <node id="tbm_ch_43" address="0x40010016" mask="0xff000000" />
+                <node id="tbm_ch_44" address="0x40010017" mask="0x000000ff" />
+                <node id="tbm_ch_45" address="0x40010017" mask="0x0000ff00" />
+                <node id="tbm_ch_46" address="0x40010017" mask="0x00ff0000" />
+                <node id="tbm_ch_47" address="0x40010017" mask="0xff000000" />
+            </node>
         </node>
+        <node id="error_fifo_force_read" address="0x40010009" mask="0x40000000" />
+        <node id="error_fifo_read_done" address="0x40010009" mask="0x80000000" />
     </node>
     <!-- MISC -->
     <node id="fitel_config_fifo_tx" address="0x40100000" mode="non-incremental" size="512" permission="rw" />
     <node id="fitel_config_fifo_rx" address="0x40100001" mode="non-incremental" size="512" permission="r" />
     <node id="DDR0" address="0x60000000" mode="block" size="0x01000000" permission="rw" />
     <node id="DDR1" address="0x61000000" mode="block" size="0x01000000" permission="rw" />
+    <node id="ERROR_fifo" address="0x40100002" mode="non-incremental" size="4092" permission="r" />
     <!-- HEPHY STATUS REGISERS -->
     <node id="hephy_firmware_version" address="0x40020000" mask="0xffffffff" permission="r" />
     <node id="idel_individual_stat_block" address="0x40020001" mode="block" size="192" permission="r" />
@@ -366,7 +474,6 @@
             <node id="TBM_old_new" mask="0x80000000" />
         </node>
     </node>
-
     <!-- HEPHY SPY FIFOs -->
     <node id="fifo" permission="r">
         <node id="bit_stream" address="0x40040000" mode="non-incremental" size="512" />
