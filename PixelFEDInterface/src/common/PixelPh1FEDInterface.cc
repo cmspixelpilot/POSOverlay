@@ -123,6 +123,16 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.PC_CONFIG_OK", 1},
   };
 
+  for (int i = 0; i < 48; ++i) {
+    char buf[256];
+    snprintf(buf, 256, "pixfed_ctrl_regs.tts.evt_timeout_value.tbm_ch_%02i", i);
+    cVecReg.push_back(std::make_pair(std::string(buf), uint32_t(pixelFEDCard.timeout_counter_start)));
+  }
+
+  std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
+  for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
+    std::cout << std::setw(60) << cVecReg[i].first << ": 0x" << std::hex << cVecReg[i].second << std::dec << "\n";
+
   regManager->WriteStackReg(cVecReg);
 
   usleep(200000);
@@ -1681,7 +1691,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   const uint32_t bxnum = cData[1] >> 20;
   bxs.push_back(bxnum);
   if (bxs.size() == 1000) {
-    printf("fed#%i last 1000 bxnums: [", pixelFEDCard.fedNumber);
+    printf("fed#%lu last 1000 bxnums: [", pixelFEDCard.fedNumber);
     for (int ibx = 0; ibx < 1000; ++ibx)
       printf("%u,", bxs[ibx]);
     printf("]\n");
