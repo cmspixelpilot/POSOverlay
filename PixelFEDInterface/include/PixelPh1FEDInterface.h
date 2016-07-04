@@ -1,5 +1,5 @@
-#ifndef PixelFEDInterface_PixelFEDInterfacePh1_h
-#define PixelFEDInterface_PixelFEDInterfacePh1_h
+#ifndef PixelFEDInterface_PixelPh1FEDInterface_h
+#define PixelFEDInterface_PixelPh1FEDInterface_h
 
 #include <bitset>
 #include <map>
@@ -9,7 +9,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/RegManager.h"
 
-class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
+class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
  public:
   struct FitelRegItem {
     uint8_t fAddress;
@@ -22,8 +22,8 @@ class PixelFEDInterfacePh1 : public PixelFEDInterfaceBase {
 
   typedef std::bitset<48> enbable_t;
 
-  PixelFEDInterfacePh1(RegManager*, const std::string&);
-  ~PixelFEDInterfacePh1();
+  PixelPh1FEDInterface(RegManager*, const std::string&);
+  ~PixelPh1FEDInterface();
 
   int setup(const std::string& fileName); 
   int setup(pos::PixelFEDCard pfc); 

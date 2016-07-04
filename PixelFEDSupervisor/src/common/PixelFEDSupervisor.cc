@@ -33,7 +33,7 @@
 #include "PixelCalibrations/include/PixelCalibrationFactory.h"
 
 #include "PixelFEDInterface/include/PixelFEDFifoData.h"
-#include "PixelFEDInterface/include/PixelFEDInterfacePh1.h"
+#include "PixelFEDInterface/include/PixelPh1FEDInterface.h"
 
 #include "xdaq/Application.h"
 #include "xdaq/ApplicationGroup.h"
@@ -2328,7 +2328,7 @@ bool PixelFEDSupervisor::job_Configure ()
         //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
         //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
       
-        FEDInterface_[vmeBaseAddress]=new PixelFEDInterfacePh1(RegMgr_[vmeBaseAddress], datbase_);
+        FEDInterface_[vmeBaseAddress]=new PixelPh1FEDInterface(RegMgr_[vmeBaseAddress], datbase_);
       }
       else {
         assert(fedtype == "VME" || fedtype == "VMEPiggy");
