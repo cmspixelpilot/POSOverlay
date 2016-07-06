@@ -1888,8 +1888,9 @@ int main(int argc, char *argv[])
 
   fecAccess->setForceAcknowledge (fack) ;
   fecAccess->seti2cChannelSpeed (i2cSpeed) ;
-  resetPlxFec ( fecAccess, fecAddress, ringAddress, loop, 0 );
-  testScanCCU ( fecAccess, fecAddress, ringAddress, false );
+  printf("\n\n\nJMT JMT JMT NO RESET\n\n\n");
+  //resetPlxFec ( fecAccess, fecAddress, ringAddress, loop, 0 );
+  //testScanCCU ( fecAccess, fecAddress, ringAddress, false );
   //pixDCDCCommand(fecAccess, fecAddress, ringAddress, 0x7e, 0x7d, 0x30, true, 0);
   ////pixDCDCCommand(fecAccess, fecAddress, ringAddress, 0x7e, 0x7d, 0x30, true, 1);
   
