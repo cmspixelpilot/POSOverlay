@@ -46,7 +46,8 @@ bool PixelTBMDelayCalibration::execute() {
 
   if (firstOfPattern) {
     //commandToAllFEDCrates("JMTJunk");
-    usleep(100000);
+    std::cout << "Sleeping 5 seconds for feds to re-acquire phases" << std::endl;
+    sleep(5);
   }
 
   //if (DelayEveryTrigger || (DelayBeforeFirstTrigger && firstOfPattern))
