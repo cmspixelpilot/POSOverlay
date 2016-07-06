@@ -29,7 +29,6 @@
     <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq"/>
     <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
 
-    <xc:Application class="SimpleSOAPSender" id="666" instance="0" network="local"/>
     <xc:Application class="PixelAMC13Controller" id="90" instance="0" network="local" group="daq">
       <properties xmlns="urn:xdaq-application:PixelAMC13Controller" xsi:type="soapenc:Struct">
         <DoNothing xsi:type="xsd:boolean">false</DoNothing>
@@ -37,10 +36,11 @@
 	<AddressT1 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T1.xml</AddressT1>
 	<Uri2 xsi:type="xsd:string">chtcp-2.0://localhost:10203?target=amc13_T2:50001</Uri2>
 	<AddressT2 xsi:type="xsd:string">/opt/cactus/etc/amc13/AMC13XG_T2.xml</AddressT2>
-	<Mask xsi:type="xsd:string">3,5,9,11</Mask>
+	<Mask xsi:type="xsd:string">1-12</Mask>
 	<CalBX xsi:type="xsd:unsignedInt">381</CalBX>
 	<L1ADelay xsi:type="xsd:unsignedInt">106</L1ADelay>
         <NewWay xsi:type="xsd:boolean">true</NewWay>
+        <VerifyL1A xsi:type="xsd:boolean">true</VerifyL1A>
       </properties>
     </xc:Application>
     <xc:Module>${BUILD_HOME}/pixel/PixelAMC13Controller/lib/linux/x86_64_slc6/libPixelAMC13Controller.so</xc:Module>

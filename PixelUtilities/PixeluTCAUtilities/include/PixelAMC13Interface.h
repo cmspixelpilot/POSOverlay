@@ -39,6 +39,7 @@ class PixelAMC13Interface {
   void SetCalBX(unsigned v) { fCalBX = v; }
   void SetL1ADelay(unsigned v) { fL1ADelay = v; }
   void SetNewWay(bool v) { fNewWay = v; }
+  void SetVerifyL1A(bool v) { fVerifyL1A = v; }
 
   void DoResets();
 
@@ -83,6 +84,12 @@ class PixelAMC13Interface {
   uint64_t countResetTBM;
   uint32_t fL1ADelay;
   bool fNewWay;
+
+  bool fVerifyL1A;
+  uint64_t previousL1ACount;
+  int nL1ARetries;
+  void VerifyL1ASetup();
+  bool VerifyL1ACheck();
 };
 
 #endif

@@ -41,6 +41,7 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
   xdata::UnsignedInteger calBX;
   xdata::UnsignedInteger L1ADelay;
   xdata::Boolean newWay;
+  xdata::Boolean verifyL1A;
 
   PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);
   ~PixelAMC13Controller() { delete amc13; }

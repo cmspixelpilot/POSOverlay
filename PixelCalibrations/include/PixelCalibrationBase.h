@@ -15,7 +15,6 @@
 #include "PixelSupervisorConfiguration/include/PixelSupervisorConfiguration.h"
 
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
-#include "amc13/AMC13.hh"
 
 // temporary DiagSystem wrapper
 #include "PixelCalibrations/include/DiagWrapper.h"
@@ -24,12 +23,10 @@ class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCom
 {
  public:
 
-  amc13::AMC13* AMC13;
-
   PixelCalibrationBase( const PixelSupervisorConfiguration &,
 			const SOAPCommander& soapCommander);
 
-  virtual ~PixelCalibrationBase();
+  virtual ~PixelCalibrationBase() {}
 
   virtual void beginCalibration();
 
@@ -74,8 +71,6 @@ class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCom
   void commandToAllFECCrates( std::string command, Attribute_Vector parameters = Attribute_Vector(0) );
   void commandToAllFEDCrates( std::string command, Attribute_Vector parameters = Attribute_Vector(0) );
   void commandToAllFEDChannels( std::string command );
-
-  uint64_t getL1ACountFromAMC13();
 
   //Send ROCReset to all TTC supervisors
   void sendTTCROCReset();

@@ -20,7 +20,8 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fDebugPrints(false),
     fCalBX(381),
     fL1ADelay(123),
-    fNewWay(false)
+    fNewWay(false),
+    fVerifyL1A(false)
 {
 }
 
@@ -34,7 +35,8 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fDebugPrints(false),
     fCalBX(381),
     fL1ADelay(123),
-    fNewWay(false)
+    fNewWay(false),
+    fVerifyL1A(false)
 {
 }
 
@@ -110,25 +112,68 @@ void PixelAMC13Interface::Reset() {
   DoResets();
 }
 
+void PixelAMC13Interface::VerifyL1ASetup() {
+  previousL1ACount = 0;
+  nL1ARetries = 0;
+  if (fVerifyL1A)
+    previousL1ACount = GetL1ACount();
+}
+
+bool PixelAMC13Interface::VerifyL1ACheck() {
+  if (!fVerifyL1A)
+    return true;
+
+  const uint64_t L1ACount = GetL1ACount();
+  if (fDebugPrints) std::cout << "before, L1A count was " << previousL1ACount << "; after it is " << L1ACount << std::endl;
+  if (L1ACount > previousL1ACount + 1)
+    std::cout << "\033[1m\033[31mmore than one L1A? before " << previousL1ACount << " after " << L1ACount << std::endl;
+  if (L1ACount == previousL1ACount) {
+    std::cout << "\033[1m\033[31mL1A DIDN'T GO THROUGH, # retries = " << nL1ARetries++ << "\033[0m" << std::endl;
+    if (nL1ARetries == 10000) {
+      std::cout << "\033[1m\033[31mGIVING UP after 10000 retries\033[0m" << std::endl;
+      return true;
+    }
+    return false;
+  }
+  else
+    return true;
+}
+
 void PixelAMC13Interface::CalSync() {
   ++countCalSync;
   if (fDebugPrints) std::cout << "CalSync" << std::endl;
-  if (fNewWay)
-    FireBGO(0);
-  else {
-    fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
-    usleep(1000);
-    fAMC13->sendL1ABurst();
-    usleep(1000);
-    fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
-    usleep(1000);
+
+  VerifyL1ASetup();
+
+  while (1) {
+    if (fNewWay)
+      FireBGO(0);
+    else {
+      fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 1);
+      usleep(1000);
+      fAMC13->sendL1ABurst();
+      usleep(1000);
+      fAMC13->write(amc13::AMC13Simple::T1, "CONF.TTC.BGO0.ENABLE", 0);
+      usleep(1000);
+    }
+
+    usleep(1);
+
+    if (VerifyL1ACheck())
+      break;
   }
 }
 
 void PixelAMC13Interface::LevelOne() {
   ++countLevelOne;
   if (fDebugPrints) std::cout << "LevelOne" << countLevelOne << std::endl;
-  fAMC13->sendL1ABurst();
+  VerifyL1ASetup();
+  while (1) {
+    fAMC13->sendL1ABurst();
+    usleep(1);
+    if (VerifyL1ACheck())
+      break;
+  }
 }
 
 void PixelAMC13Interface::ResetTBM() {

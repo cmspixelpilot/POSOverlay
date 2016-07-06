@@ -49,6 +49,7 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   getApplicationInfoSpace()->fireItemAvailable("CalBX", &calBX);
   getApplicationInfoSpace()->fireItemAvailable("L1ADelay", &L1ADelay);
   getApplicationInfoSpace()->fireItemAvailable("NewWay", &newWay);
+  getApplicationInfoSpace()->fireItemAvailable("VerifyL1A", &verifyL1A);
 }
 
 void PixelAMC13Controller::InitAMC13() {
@@ -58,6 +59,7 @@ void PixelAMC13Controller::InitAMC13() {
   amc13->SetCalBX(calBX);
   amc13->SetL1ADelay(L1ADelay);
   amc13->SetNewWay(newWay);
+  amc13->SetVerifyL1A(verifyL1A);
 }
 
 void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
