@@ -1,3 +1,4 @@
+#include "CalibFormats/SiPixelObjects/interface/PixelAMC13Config.h"
 #include "PixelAMC13Controller/include/PixelAMC13Controller.h"
 
 XDAQ_INSTANTIATOR_IMPL(PixelAMC13Controller)
@@ -25,8 +26,7 @@ namespace {
 
 PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception)
   : xdaq::Application(s),
-    SOAPCommander(this),
-    amc13(0)
+    SOAPCommander(this)
 {
   xgi::bind(this, &PixelAMC13Controller::Default, "Default");
   xgi::bind(this, &PixelAMC13Controller::StateMachineXgiHandler, "StateMachineXgiHandler");
@@ -39,10 +39,12 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   xoap::bind(this, &PixelAMC13Controller::Enable, "enable", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Stop, "stop", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Suspend, "suspend", XDAQ_NS_URI);  
- 
+
   getApplicationInfoSpace()->fireItemAvailable("DoNothing", &doNothing);
-  getApplicationInfoSpace()->fireItemAvailable("Uri1", &uri1);
-  getApplicationInfoSpace()->fireItemAvailable("Uri2", &uri2);
+
+  // these only used from xml to talk to one amc13 if we haven't been configured yet
+  getApplicationInfoSpace()->fireItemAvailable("UriT1", &uriT1);
+  getApplicationInfoSpace()->fireItemAvailable("UriT2", &uriT2);
   getApplicationInfoSpace()->fireItemAvailable("AddressT1", &addressT1);
   getApplicationInfoSpace()->fireItemAvailable("AddressT2", &addressT2);
   getApplicationInfoSpace()->fireItemAvailable("Mask", &mask);
@@ -52,14 +54,39 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   getApplicationInfoSpace()->fireItemAvailable("VerifyL1A", &verifyL1A);
 }
 
-void PixelAMC13Controller::InitAMC13() {
-  amc13 = new PixelAMC13Interface(uri1, addressT1, uri2, addressT2);
-  amc13->SetMask(mask);
+PixelAMC13Controller::~PixelAMC13Controller() {
+  DelAMC13s();
+}
+
+void PixelAMC13Controller::DelAMC13s() {
+  for (size_t i = 0; i < amc13s.size(); ++i)
+    delete amc13s[i];
+  amc13s.clear();
+}
+
+void PixelAMC13Controller::AddAMC13(const pos::PixelAMC13Parameters& p) {
+  const std::string addrT1 = p.getAddressT1() != "" ? p.getAddressT1() : std::string(addressT1);
+  const std::string addrT2 = p.getAddressT2() != "" ? p.getAddressT2() : std::string(addressT2);
+  PixelAMC13Interface* amc13 = new PixelAMC13Interface(p.getUriT1(), addrT1, p.getUriT2(), addrT2);
   amc13->SetDebugPrints(PRINT);
-  amc13->SetCalBX(calBX);
-  amc13->SetL1ADelay(L1ADelay);
-  amc13->SetNewWay(newWay);
-  amc13->SetVerifyL1A(verifyL1A);
+  amc13->SetMask(p.getSlotMask());
+  amc13->SetCalBX(p.getCalBX());
+  amc13->SetL1ADelay(p.getL1ADelay());
+  amc13->SetNewWay(p.getNewWay());
+  amc13->SetVerifyL1A(p.getVerifyL1A());
+  amc13s.push_back(amc13);
+}
+
+void PixelAMC13Controller::InitAMC13s() {
+  DelAMC13s();
+
+  if (amc13_cfgs.size() == 0) {
+    pos::PixelAMC13Parameters p(-1, uriT1, uriT2, addressT1, addressT2, mask, calBX, L1ADelay, newWay, verifyL1A);
+    amc13_cfgs.push_back(p);
+  }
+
+  for (size_t i = 0; i < amc13_cfgs.size(); ++i)
+    AddAMC13(amc13_cfgs[i]);
 }
 
 void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
@@ -75,7 +102,9 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
 
   std::vector<std::string> sends = {"reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM", "ResetCounters" };
 
-  if (!amc13)
+  const size_t namc13s = amc13s.size();
+
+  if (namc13s == 0)
     *out << "not yet initialized!<br>";
 
   *out << "<h3>Commands:</h3>\n"
@@ -90,45 +119,33 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
     *out << cgicc::p() << std::endl;
     *out << cgicc::form() << std::endl;
     *out << "</td>\n";
-    if (!amc13) break;
+    if (namc13s == 0) break;
   }
   *out << "</tr></table><br>\n";
 
-  if (!amc13) return;
+  if (namc13s == 0) return;
   
   //*out << "<table><tr>\n"; 
-  *out << "L1A count: "
-       << commaify(amc13->GetL1ACount()) << "<br>\n";
 
-  *out << "L1A rate: "
-       << commaify(amc13->GetL1ARate()) << " Hz<br>\n";
+  *out << "Status summary:<br>\n";
+  *out << "<table><tr><td></td>\n";
 
-  *out << "CalSync count: "
-       << commaify(amc13->GetCalSyncCount()) << "<br>\n";
+  for (size_t i = 0; i < namc13s; ++i) *out << "<td>Crate " << amc13_cfgs[i].getCrate() << "</td>\n";
 
-  *out << "LevelOne count: "
-       << commaify(amc13->GetLevelOneCount()) << "<br>\n";
+  *out << "<tr><td>T1 ver:</td>\n";             for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << std::hex << amc13s[i]->GetT1Version() << std::dec << "</td>\n";
+  *out << "<tr><td>T2 ver:</td>\n";             for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << std::hex << amc13s[i]->GetT2Version() << std::dec << "</td>\n";
+  *out << "<tr><td>Slot mask:</td>\n";          for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << std::hex << amc13s[i]->GetSlotMask()  << std::dec << "</td>\n";
+  *out << "<tr><td>TTC sim. ena.:</td>\n";      for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << amc13s[i]->GetTTCSimulator()            << "</td>\n";
+  *out << "<tr><td># L1A:</td>\n";              for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetL1ACount())      << "</td>\n";
+  *out << "<tr><td>L1A rate (Hz):</td>\n";      for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetL1ARate())       << "</td>\n";
+  *out << "<tr><td># CalSync:</td>\n";          for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetCalSyncCount())  << "</td>\n";
+  *out << "<tr><td># LevelOne:</td>\n";         for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetLevelOneCount()) << "</td>\n";
+  *out << "<tr><td># ResetROC:</td>\n";         for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetResetROCCount()) << "</td>\n";
+  *out << "<tr><td># ResetTBM:</td>\n";         for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetResetTBMCount()) << "</td>\n";
+  *out << "<tr><td>Input clock (Hz):</td>\n";   for (size_t i = 0; i < namc13s; ++i) *out << "<td>" << commaify(amc13s[i]->GetClockFreq())     << "</td>\n";
 
-  *out << "ResetROC count: "
-       << commaify(amc13->GetResetROCCount()) << "<br>\n";
-
-  *out << "ResetTBM count: "
-       << commaify(amc13->GetResetTBMCount()) << "<br>\n";
-
-  *out << "Input clock frequency measurement: "
-       << commaify(amc13->GetClockFreq())
-       << " &plusmn; 50 Hz<br>\n";
-
-
+#if 0
   amc13->Get()->getStatus()->SetHTML();
-  *out << "T1 Firmware Version: "
-       << "0x" << std::hex << amc13->Get()->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS") << std::dec << "<br>\n";
-  *out << "T2 Firmware Version: "
-       << "0x" << std::hex << amc13->Get()->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS") << std::dec << "<br>\n";
-  *out << "TTCLOOP: "
-       << amc13->Get()->read(amc13::AMC13Simple::T1, "CONF.DIAG.FAKE_TTC_ENABLE") << "<br>\n";
-  *out << "FAKE: "
-       << amc13->Get()->read(amc13::AMC13Simple::T1, "CONF.LOCAL_TRIG.FAKE_DATA_ENABLE") << "<br>\n";
 
   std::stringstream ss;
   //*out << amc13->Get()->getStatus()->ReportHeader() << "\n";
@@ -147,6 +164,7 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
   urlAllAMC13Tables += URN;
   urlAllAMC13Tables += "/AllAMC13Tables";
   *out << "<a href=\"" << urlAllAMC13Tables << "\"><h3>All AMC13 status tables</h3></a><br>\n";
+#endif
 }
 
 void PixelAMC13Controller::StateMachineXgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception) {
@@ -158,7 +176,7 @@ void PixelAMC13Controller::StateMachineXgiHandler(xgi::Input *in, xgi::Output *o
   attrib[1].name_="xdaq:sequence_name";
   attrib[1].value_=cgi.getElement("StateInput")->getValue();
 
-  if (!amc13 && attrib[1].value_ != "reset") {
+  if (!AMC13sReady() && attrib[1].value_ != "reset") {
     *out << "<h1>won't do anything before reset</h1>\n";
     this->Default(in, out);
     return;
@@ -177,6 +195,7 @@ void PixelAMC13Controller::StateMachineXgiHandler(xgi::Input *in, xgi::Output *o
 }
 
 void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+#if 0
   if (!amc13) {
     *out << "<h1>won't do anything before reset</h1>\n";
     return;
@@ -196,6 +215,7 @@ void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) thr
   *out << amc13->Get()->getStatus()->GetCell("0_Board", "INFO", "T1_VER")->Print(-1, true) << "\n";
   *out << ss.str();
   amc13->Get()->getStatus()->UnsetHTML(); 
+#endif
 }
 
 xoap::MessageReference PixelAMC13Controller::Reset(xoap::MessageReference msg) throw (xoap::exception::Exception) {
@@ -203,26 +223,64 @@ xoap::MessageReference PixelAMC13Controller::Reset(xoap::MessageReference msg) t
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {
-    if (!amc13) InitAMC13();
-    amc13->Configure();
+    if (amc13_cfgs.size() == 0) {
+      InitAMC13s();
+      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->Configure();
+    }
   }
   return MakeSOAPMessageReference("TTCciControlFSMReset");
 }
 
 xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  if (PRINT) std::cout << "PixelAMC13Controller::Configuration(IMPLEMENT ME)" << std::endl;
+  if (PRINT) std::cout << "PixelAMC13Controller::Configuration()" << std::endl;
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {
+    std::stringstream ss(msg->getSOAPPart().getEnvelope().getTextContent());
+    std::string line;
+    bool first = true;
+    if (PRINT) std::cout << "content:\n";
+    while (std::getline(ss, line, '\n')) {
+      if (PRINT) std::cout << line << std::endl;
+      // If we're acting as both the amc13 backplane configurator and
+      // the ttc, then we'll get a configuration twice. first will be
+      // the amc13 config, the second will be some ttcciconfig that we
+      // ignore.
+      if (first) {
+        first = false;
+
+        if (line.find("AMC13 magic string") == std::string::npos) {
+          if (PRINT) std::cout << "uh uh uh, you didn't say the magic words\n";
+          break;
+        }
+        else if (PRINT) {
+          std::cout << "magic words found!\n";
+          amc13_cfgs.clear();
+          continue;
+        }
+      }
+
+      std::pair<bool, pos::PixelAMC13Parameters> p = pos::PixelAMC13Config::parse_line(line);
+      if (p.first) { // if it was a blank or comment line, will be false
+        amc13_cfgs.push_back(p.second);
+        if (PRINT) std::cout << "successfully parsed: crate: " << amc13_cfgs.back().getCrate() << "\n";
+      }
+      else if (PRINT)
+        std::cout << "didn't get anything out of this line!\n";
+    }
+
+    InitAMC13s();
   }
+
   return MakeSOAPMessageReference("ParameterSetResponse");
 }
 
 xoap::MessageReference PixelAMC13Controller::Configure (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  if (PRINT) std::cout << "PixelAMC13Controller::Configure(MAGIC HAPPENS IN RESET)" << std::endl;
+  if (PRINT) std::cout << "PixelAMC13Controller::Configure()" << std::endl;
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {
+    for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->Configure();
   }
   return MakeSOAPMessageReference("configureResponse");
 }
@@ -239,15 +297,15 @@ xoap::MessageReference PixelAMC13Controller::userCommand (xoap::MessageReference
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {
     if (parameters[1].value_ == "CalSync")
-      amc13->CalSync();
+      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->CalSync();
     else if (parameters[1].value_ == "LevelOne")
-      amc13->LevelOne();
+      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->LevelOne();
     else if (parameters[1].value_ == "ResetROC")
-      amc13->ResetROC();
+      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->ResetROC();
     else if (parameters[1].value_ == "ResetTBM")
-      amc13->ResetTBM();
+      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->ResetTBM();
     else if (parameters[1].value_ == "ResetCounters")
-      amc13->ResetCounters();
+      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->ResetCounters();
     else
       XCEPT_RAISE(xoap::exception::Exception, "Don't know anything about command " + parameters[1].value_);
   }

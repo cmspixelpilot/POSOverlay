@@ -29,6 +29,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelNameTranslation.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDetectorConfig.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelAMC13Config.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTKFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDConfig.h"
@@ -100,6 +101,7 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
               PixelLTCSupervisors_,
               PixelTTCSupervisors_,
               PixelTTCControllers_,
+              PixelAMC13Controllers_,
               PixelDCSSupervisors_,
               PixelDCStoTrkFECDpInterface_,
               PixelDCSFSMInterface_,
@@ -124,6 +126,7 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
   pos::PixelFEDConfig *theFEDConfiguration_;
   pos::PixelLTCConfig* theLTCConfig_;
   pos::PixelTTCciConfig* theTTCciConfig_;
+  pos::PixelAMC13Config* theAMC13Config_;
   pos::PixelPortcardMap *thePortcardMap_;
   // DiagBagWizard* diagService_;
   DiagWrapper* diagService_;

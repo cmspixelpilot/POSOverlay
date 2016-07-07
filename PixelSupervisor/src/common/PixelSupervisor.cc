@@ -239,6 +239,7 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   theCalibObject_=0;
   theCalibAlgorithm_=0;
   theTTCciConfig_=0;
+  theAMC13Config_=0;
 
   calibWorkloop_ = toolbox::task::getWorkLoopFactory()->getWorkLoop("WaitingWorkLoop", "waiting");
   calibJob_ = toolbox::task::bind(this, &PixelSupervisor::CalibRunning, "CalibRunning");
@@ -1055,6 +1056,23 @@ std::string const msg_info_ioo = "Created TCDS session ID: "+TCDSSessionID_;
     }
 
   fillBadAliasList(); //method of PixelSupervisorConfiguration, to be run once per POS session
+
+  try {
+    std::set<xdaq::ApplicationDescriptor*> set_PixelAMC13Controller = getApplicationContext()->getDefaultZone()->getApplicationGroup("daq")->getApplicationDescriptors("PixelAMC13Controller");
+    for (std::set<xdaq::ApplicationDescriptor*>::iterator i_set_PixelAMC13Controller=set_PixelAMC13Controller.begin();
+         i_set_PixelAMC13Controller!=set_PixelAMC13Controller.end();
+         ++i_set_PixelAMC13Controller) {
+      PixelAMC13Controllers_.insert(make_pair((*i_set_PixelAMC13Controller)->getInstance(), *(i_set_PixelAMC13Controller)));
+    }
+    std::string const msg_info_kob = stringF(PixelAMC13Controllers_.size()) + " AMC13Controller(s) of type PixelAMC13Controller found in the \"daq\" group in the Configuration XML file";
+    LOG4CPLUS_INFO(sv_logger_,msg_info_kob);
+    *console_<<msg_info_kob<<std::endl;
+  } catch (xdaq::exception::Exception& e) {
+    std::string const msg_error_brr = "No AMC13Controller of type PixelAMC13Controller found in the \"daq\" group in the Configuration XML file";
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_brr);
+    XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_brr, e);
+    this->notifyQualified("fatal",f);
+  }
 
   // Get all TTCciControls/PixelTTCSupervisors in the "daq" group.
 
@@ -3408,6 +3426,22 @@ this->notifyQualified("fatal",f);
 
 void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 {
+  // PixelAMC13Controller
+  PixelConfigInterface::get(theAMC13Config_, "pixel/amc13/", *theGlobalKey_);
+  if (theAMC13Config_==0)  XCEPT_RAISE (xdaq::exception::Exception,"Failed to load PixelAMC13Config configuration data");
+  //if (1) std::cout << "The AMC13 config:\n" << theAMC13Config_->toASCII() << std::endl;
+  // gonna parse it again in PixelAMC13Controller since I don't want to make the latter know about config interface etc.
+  // (vague idea that it might become a standalone component usable by other detectors...)
+  for (Supervisors::iterator i_PixelAMC13Controller=PixelAMC13Controllers_.begin();i_PixelAMC13Controller!=PixelAMC13Controllers_.end();++i_PixelAMC13Controller) {
+    std::string app_class_name = "PixelAMC13Controller";
+    std::string parameter_name = "Configuration";
+    std::string config = "# AMC13 magic string\n" + theAMC13Config_->toASCII();
+    xoap::MessageReference msg = MakeSOAPConfigMessage(app_class_name,parameter_name, config);
+    std::string reply = Send(i_PixelAMC13Controller->second, msg);
+    //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
+    if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
+  }
+
 
   // this is all in one function, but practically one supervisor is configured after the other
 

@@ -26,6 +26,7 @@
 #include "xdata/String.h"
 
 #include "PixelUtilities/PixelSOAPUtilities/include/SOAPCommander.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelAMC13Parameters.h"
 #include "PixelUtilities/PixeluTCAUtilities/include/PixelAMC13Interface.h"
 
 class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
@@ -33,8 +34,8 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
   XDAQ_INSTANTIATOR();
 
   xdata::Boolean doNothing;
-  xdata::String uri1;
-  xdata::String uri2;
+  xdata::String uriT1;
+  xdata::String uriT2;
   xdata::String addressT1;
   xdata::String addressT2;
   xdata::String mask;
@@ -44,7 +45,7 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
   xdata::Boolean verifyL1A;
 
   PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);
-  ~PixelAMC13Controller() { delete amc13; }
+  ~PixelAMC13Controller();
 
   void Default(xgi::Input* in, xgi::Output* out) throw (xgi::exception::Exception);
   void StateMachineXgiHandler(xgi::Input* in, xgi::Output* out) throw (xgi::exception::Exception);
@@ -59,8 +60,12 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
   xoap::MessageReference Suspend(xoap::MessageReference msg) throw (xoap::exception::Exception);
 
  private:
-  PixelAMC13Interface* amc13;
-  void InitAMC13();
+  std::vector<pos::PixelAMC13Parameters> amc13_cfgs;
+  std::vector<PixelAMC13Interface*> amc13s;
+  void AddAMC13(const pos::PixelAMC13Parameters& p);
+  void InitAMC13s();
+  bool AMC13sReady() { return bool(amc13s.size()); }
+  void DelAMC13s();
 };
 
 #endif
