@@ -12,20 +12,6 @@ namespace {
 }
 
 PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
-                                         const std::string& uriT2)
-
-  : fAMC13(new amc13::AMC13(uriT1, "/opt/cactus/etc/amc13/AMC13XG_T1.xml",
-                            uriT2, "/opt/cactus/etc/amc13/AMC13XG_T2.xml")),
-    fMask(0),
-    fDebugPrints(false),
-    fCalBX(381),
-    fL1ADelay(123),
-    fNewWay(false),
-    fVerifyL1A(false)
-{
-}
-
-PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
                                          const std::string& addressT1,
                                          const std::string& uriT2,
                                          const std::string& addressT2)
@@ -36,7 +22,11 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fCalBX(381),
     fL1ADelay(123),
     fNewWay(false),
-    fVerifyL1A(false)
+    fVerifyL1A(false),
+    countLevelOne(0),
+    countCalSync(0),
+    countResetTBM(0),
+    countResetROC(0)
 {
 }
 

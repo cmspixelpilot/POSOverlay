@@ -27,7 +27,6 @@ class PixelAMC13Interface {
     unsigned fBX;
   };
 
-  PixelAMC13Interface(const std::string& uriT1, const std::string& uriT2);
   PixelAMC13Interface(const std::string& uriT1, const std::string& addressT1, const std::string& uriT2, const std::string& addressT2);
   ~PixelAMC13Interface();
 
@@ -83,10 +82,6 @@ class PixelAMC13Interface {
   uint32_t fMask;
   bool fDebugPrints;
   uint32_t fCalBX;
-  uint64_t countLevelOne;
-  uint64_t countCalSync;
-  uint64_t countResetROC;
-  uint64_t countResetTBM;
   uint32_t fL1ADelay;
   bool fNewWay;
 
@@ -95,6 +90,11 @@ class PixelAMC13Interface {
   int nL1ARetries;
   void VerifyL1ASetup();
   bool VerifyL1ACheck();
+
+  uint64_t countLevelOne;
+  uint64_t countCalSync;
+  uint64_t countResetTBM;
+  uint64_t countResetROC;
 };
 
 #endif
