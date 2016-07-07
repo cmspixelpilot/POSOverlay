@@ -3426,22 +3426,6 @@ this->notifyQualified("fatal",f);
 
 void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 {
-  // PixelAMC13Controller
-  PixelConfigInterface::get(theAMC13Config_, "pixel/amc13/", *theGlobalKey_);
-  if (theAMC13Config_==0)  XCEPT_RAISE (xdaq::exception::Exception,"Failed to load PixelAMC13Config configuration data");
-  //if (1) std::cout << "The AMC13 config:\n" << theAMC13Config_->toASCII() << std::endl;
-  // gonna parse it again in PixelAMC13Controller since I don't want to make the latter know about config interface etc.
-  // (vague idea that it might become a standalone component usable by other detectors...)
-  for (Supervisors::iterator i_PixelAMC13Controller=PixelAMC13Controllers_.begin();i_PixelAMC13Controller!=PixelAMC13Controllers_.end();++i_PixelAMC13Controller) {
-    std::string app_class_name = "PixelAMC13Controller";
-    std::string parameter_name = "Configuration";
-    std::string config = "# AMC13 magic string\n" + theAMC13Config_->toASCII();
-    xoap::MessageReference msg = MakeSOAPConfigMessage(app_class_name,parameter_name, config);
-    std::string reply = Send(i_PixelAMC13Controller->second, msg);
-    //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
-    if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
-  }
-
 
   // this is all in one function, but practically one supervisor is configured after the other
 
@@ -3537,7 +3521,6 @@ std::string const msg_info_xql = "[PixelSupervisor::stateConfiguring] DCS Interf
     }
   }
 
-
   if (useTCDS_) {
 
     Supervisors::iterator i_PixelLTCSupervisor;
@@ -3557,6 +3540,23 @@ std::string const msg_info_xql = "[PixelSupervisor::stateConfiguring] DCS Interf
 
 
   if (!configuredTTCs) {
+    if (!PixelAMC13Controllers_.empty()) {
+      PixelConfigInterface::get(theAMC13Config_, "pixel/amc13/", *theGlobalKey_);
+      if (theAMC13Config_==0)  XCEPT_RAISE (xdaq::exception::Exception,"Failed to load PixelAMC13Config configuration data");
+      //if (1) std::cout << "The AMC13 config:\n" << theAMC13Config_->toASCII() << std::endl;
+      // gonna parse it again in PixelAMC13Controller since I don't want to make the latter know about config interface etc.
+      // (vague idea that it might become a standalone component usable by other detectors...)
+      for (Supervisors::iterator i_PixelAMC13Controller=PixelAMC13Controllers_.begin();i_PixelAMC13Controller!=PixelAMC13Controllers_.end();++i_PixelAMC13Controller) {
+        std::string app_class_name = "PixelAMC13Controller";
+        std::string parameter_name = "Configuration";
+        std::string config = "# AMC13 magic string\n" + theAMC13Config_->toASCII();
+        xoap::MessageReference msg = MakeSOAPConfigMessage(app_class_name,parameter_name, config);
+        std::string reply = Send(i_PixelAMC13Controller->second, msg);
+        //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
+        if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
+      }
+    }
+
     if (!PixelTTCSupervisors_.empty()) {
       // Send a SOAP message to PixelTTCSupervisor
       //if(useTTC_){
