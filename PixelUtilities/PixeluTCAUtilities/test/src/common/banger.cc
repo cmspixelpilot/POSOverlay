@@ -36,8 +36,10 @@ int main(int argc, char** argv) {
     uint32_t val2 = rm.Read(addr);
     std::cout << "write val @ 0x" << std::hex << addr << ": 0x" << val << " readback 0x" << val2 << std::dec << std::endl;
   }
-  else if (cmd == "read")
-    std::cout << "value: 0x" << std::hex << rm.ReadReg(node) << std::dec << std::endl;
+  else if (cmd == "read") {
+    uint32_t val = rm.ReadReg(node);
+    std::cout << "value: " << val << " = 0x" << std::hex << val << std::dec << std::endl;
+  }
   else if (cmd == "readstr")
     std::cout << "value as str: " << rm.ReadRegAsString(node) << std::endl;
   else if (cmd == "write") {
