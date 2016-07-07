@@ -49,6 +49,7 @@
        <node id="mgt_xpoint_out2" mask="0x0c000000" permission="rw" description="osc_xpoint_ctrl[3:2]" />
        <node id="mgt_xpoint_out3" mask="0x30000000" permission="rw" description="osc_xpoint_ctrl[5:4]" />
        <node id="mgt_xpoint_out4" mask="0xc0000000" permission="rw" description="osc_xpoint_ctrl[7:6]" />
+
    </node>
    <!-- CONTROL_2 -->
    <node id="ctrl_2" address="0x00000005">
@@ -129,17 +130,7 @@
    <!-- ICAP MEMORY SPACE -->
    <node id="icap" address="0x00000200" mask="0xffffffff" permission="rw" />
 
-   <node id="buf_cta" address="0x0000400" class="MmcPipeInterface" description="UC link buffer test register" size="0x3" tags="slave">
-     <node id="FPGAtoMMCcounters" address="0x0"/>
-     <node id="MMCtoFPGAcounters" address="0x1"/>
-     <node id="FIFO" address="0x2" mode="non-incremental" size="512" />
-   </node>
-
-
    <!-- global registers  -->
-   <!-- JMTBAD use of CLKReg should be replaced with just setting ctrl.ttc_xpoint_A_out3 to 1 -->
-   <node id="CLKReg" address="0x00000004" mode="single" permission="rw" description="For internal/external clock"/>
-
     <!-- for testing purposes, send a single word to the FIFO  --> 
     <node id="SOUT_BUF1M1" address="0x40000000" permission="rw" description="Chan1 Out FIFO MFEC01 "/> 
   
@@ -273,5 +264,25 @@
     <node id="STAT_M4" address="0x40000017" permission="r" mode="single">
         <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC04" />
     </node>
+
+   <node id="Board0" address="0x40000020" permission="rw" mode="single">
+       <node id="TTCatLHC"       mask="0x00000001" description="TTC at LHC frequency?" />
+       <node id="TTCrst"         mask="0x00000002" description="TTC_rst" />
+       <node id="TransTestCfg0"  mask="0x00000004" description="Trans Test Config0" />
+       <node id="TransTestCfg1"  mask="0x00000008" description="Trans Test Config1" />
+       <node id="TransTestM1C1"  mask="0x00000010" description="Trans Test M1 C1" />
+       <node id="TransTestM1C2"  mask="0x00000020" description="Trans Test M1 C2" />
+       <node id="TransTestM2C1"  mask="0x00000040" description="Trans Test M2 C1" />
+       <node id="TransTestM2C2"  mask="0x00000080" description="Trans Test M2 C2" />
+       <node id="TransTestM3C1"  mask="0x00000100" description="Trans Test M3 C1" />
+       <node id="TransTestM3C2"  mask="0x00000200" description="Trans Test M3 C2" />
+       <node id="TransTestM4C1"  mask="0x00000400" description="Trans Test M4 C1" />
+       <node id="TransTestM4C2"  mask="0x00000800" description="Trans Test M4 C2" />
+       <node id="TTCLostLHC"     mask="0x00001000" description="Trans Test M4 C2" />
+       <node id="RstTTCLostLHC"  mask="0x00002000" description="Trans Test M4 C2" />
+   </node>
+
+   <node id="LHCCount" address="0x40000021" permission="r" mode="single"/>
+   <node id="Version" address="0x40000101" permission="r" mode="single"/>
 
 </node>

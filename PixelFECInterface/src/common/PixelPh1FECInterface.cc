@@ -54,15 +54,7 @@ PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
         }
     }
 
-    //disableinternalclk();
-    switchclk(0xFF7CFFD8);
-
-    PRINT_ON();
-    unsigned long data;
-    getversion(&data);
-    //getGeneral();
-    PRINT_RESTORE();
-    
+    pRegManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0);
 }
 
 //-------------------------------------------------------------------------
@@ -115,12 +107,6 @@ int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
     
     if (PRINT) cout << "PixelPh1FECInterface: " <<"Get FEC version finds firmware version: "<<*data<<endl;
     return 0;
-}
-
-void PixelPh1FECInterface::switchclk(unsigned int clk_word){
-  // JMTBAD just set that one bit
-  if (PRINT) cout << "PixelPh1FECInterface: "  << "switchclk 0x" << std::hex << clk_word << std::dec << std::endl;
-  outputwordhal("CLKReg", clk_word);
 }
 
 //----------------------------------------------------------------------------

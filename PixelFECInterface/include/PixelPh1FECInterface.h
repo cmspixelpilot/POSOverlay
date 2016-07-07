@@ -42,11 +42,6 @@ public:
     int getStatus(void);
     unsigned getGeneral();
 
-    // Nik added these two 
-    void switchclk(unsigned int clk_word);
-    void enableinternalclk();
-    void disableinternalclk();
-    
     int writeCSregister(int mfec, int fecchannel, int cscommand);
     
     void mfecbusy(int mfec, int fecchannel, unsigned int *cs1,unsigned int *cs2);
