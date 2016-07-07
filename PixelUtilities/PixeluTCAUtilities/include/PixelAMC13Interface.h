@@ -56,6 +56,11 @@ class PixelAMC13Interface {
   uint32_t GetClockFreq();
   uint64_t GetL1ACount();
   uint32_t GetL1ARate();
+  uint32_t GetT1Version();
+  uint32_t GetT2Version();
+  uint32_t GetSlotMask();
+  bool GetTTCSimulator();
+
   uint64_t GetLevelOneCount();
   uint64_t GetCalSyncCount();
   uint64_t GetResetROCCount();

@@ -215,6 +215,31 @@ uint32_t PixelAMC13Interface::GetL1ARate() {
   return v;
 }
 
+uint32_t PixelAMC13Interface::GetT1Version() {
+  uint32_t v = fAMC13->read(amc13::AMC13Simple::T1, "STATUS.FIRMWARE_VERS");
+  if (fDebugPrints) std::cout << "T1Version " << v << std::endl;
+  return v;
+}
+
+uint32_t PixelAMC13Interface::GetT2Version() {
+  uint32_t v = fAMC13->read(amc13::AMC13Simple::T2, "STATUS.FIRMWARE_VERS");
+  if (fDebugPrints) std::cout << "T2Version " << v << std::endl;
+  return v;
+}
+
+uint32_t PixelAMC13Interface::GetSlotMask() {
+  uint32_t v = fAMC13->read(amc13::AMC13Simple::T1, "CONF.AMC.ENABLE_MASK");
+  if (fDebugPrints) std::cout << "SlotMask " << v << std::endl;
+  return v;
+}
+
+bool PixelAMC13Interface::GetTTCSimulator() {
+  uint32_t v = fAMC13->read(amc13::AMC13Simple::T1, "CONF.DIAG.FAKE_TTC_ENABLE");
+  if (fDebugPrints) std::cout << "TTCSimulator " << v << std::endl;
+  assert(v == 0 || v == 1);
+  return bool(v);
+}
+
 uint64_t PixelAMC13Interface::GetLevelOneCount() {
   uint64_t v = countLevelOne;
   if (fDebugPrints) std::cout << "LevelOneCount " << v << std::endl;
