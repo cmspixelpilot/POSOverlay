@@ -180,29 +180,7 @@ int PixelPh1FECInterface::writeCSregister(int mfec, int fecchannel, int cscomman
     }
     return value;
 }
-//----------------------------------------------------------------
 
-// To implement this later!!! Check with Russell!!!
-void PixelPh1FECInterface::haltest(void) {
-    unsigned long int data;
-    data = 0x01020304;
-    pRegManager->WriteReg("SOUT_BUF1M1", data);
-      
-    sleep(1);
-/*
-    sleep(1);
-    data = 0x01020304;
-    sleep(1);
-    pRegManager->WriteReg("TESTREG1", data);
-    data = 0x05060708;
-    sleep(1);
-    pRegManager->WriteReg("TESTREG1", data);
-    data = 0x090a0b0c;
-    sleep(1);
-    pRegManager->WriteReg("TESTREG1", data);
-    sleep(1);
-  */  
-}
 //-------------------------------------------------------------------------------
 // mfecbusy reads the csreg and waits if the send_started is still
 // in effect.  This should change state on it's own.  Timeout used in
@@ -1730,7 +1708,6 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
         // Now load the data to the word container
         for (int i=0;i<ndata;i+=4) {
             iword = (unsigned int*) &txdata[i];
-//            outputwordhal("SOUT_BUF1M1", *iword);
             wordvec.push_back( *iword );
             if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped " << flipByte(*iword)  <<dec<<endl;
         }
@@ -2600,7 +2577,6 @@ int PixelPh1FECInterface::tbmcmd(int mfec, int fecchannel,
     // Now load the data to the word container
     for (i=0;i<ndata;i+=4) {
         iword = (unsigned int*) &txdata[i];
-//        outputwordhal("SOUT_BUF1M1",*iword);
         wordvec.push_back( *iword );
         if (PRINT) cout << "PixelPh1FECInterface: " <<"Final FEC data (ndata:"<<hex<<ndata<<")  ("<<i<<"): "<< *iword << " flipped  " << flipByte(*iword) <<dec<<endl;
     }

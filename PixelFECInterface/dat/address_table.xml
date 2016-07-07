@@ -130,10 +130,8 @@
    <!-- ICAP MEMORY SPACE -->
    <node id="icap" address="0x00000200" mask="0xffffffff" permission="rw" />
 
-   <!-- global registers  -->
-    <!-- for testing purposes, send a single word to the FIFO  --> 
-    <node id="SOUT_BUF1M1" address="0x40000000" permission="rw" description="Chan1 Out FIFO MFEC01 "/> 
-  
+   <!-- pixel fec registers  -->
+
     <!-- Output FIFO (Russell calls it Input FIFO)  -->
     <node id="BOUT_BUF1M1" address="0x40000000" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC01" />
     <node id="BOUT_BUF2M1" address="0x40000001" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC01" />
@@ -149,7 +147,7 @@
    <node id="INP_BUF2M1" address="0x40000009" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC01" />
    <node id="INP_BUF1M2" address="0x4000000A" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC02" />
    <node id="INP_BUF2M2" address="0x4000000B" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC02" />
-   <node id="INP_BUF1M3" address="0x4000000D" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC03" />
+   <node id="INP_BUF1M3" address="0x4000000C" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC03" />
    <node id="INP_BUF2M3" address="0x4000000D" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC03" />
    <node id="INP_BUF1M4" address="0x4000000E" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC04" />
    <node id="INP_BUF2M4" address="0x4000000F" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC04" />

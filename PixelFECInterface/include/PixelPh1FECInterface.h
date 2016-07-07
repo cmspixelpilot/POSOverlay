@@ -22,8 +22,6 @@ class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
 public:
   PixelPh1FECInterface(RegManager* const RegManagerPtr, const char* boardid);
     
-    void haltest(void);
-    
     int senddata(const int mfec, const int fecchannel);
     int injectrstroc(const int mfec, const int bitstate);
     int injecttrigger(const int mfec, const int bitstate);
