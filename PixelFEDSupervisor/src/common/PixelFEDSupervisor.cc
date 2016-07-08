@@ -2584,7 +2584,9 @@ bool PixelFEDSupervisor::PhysicsRunning(toolbox::task::WorkLoop *w1) {
   bool readTTSFifo = true; //not a const so we can make it true at the beginning of a run, for instance.
   const bool readBaselineCorr = false;
   const bool fifo3errcntr = false;
+#ifdef READ_LASTDAC
   const bool readLastDACFifo  = true;
+#endif
   const bool readFifoStatusAndLFF = true;
   const bool useSEURecovery = true; // Enable SEU recovery mechanism
   const bool doSEURecovery = true; // Do SEU recovery mechanism (added 6/9, dk.)
@@ -4538,8 +4540,12 @@ xoap::MessageReference PixelFEDSupervisor::ReadOSDFifo(xoap::MessageReference ms
   uint32_t data = FEDInterface_[VMEBaseAddress]->readOSDFifo(channel);
   std::cout << "ReadOSDFifo: channel: " << channel << " RocHi: " << ((data & 0xFFFF0000) >> 16) << " RocLo: " << (data & 0xFFFF) << std::endl;
 
-  xoap::MessageReference reply=MakeSOAPMessageReference("ReadOSDFifoDone");
-  return reply;
+  Attribute_Vector returnValues(1);
+  returnValues[0].name_="Value";
+  char buf[64];
+  snprintf(buf, 64, "%u", data);
+  returnValues[0].value_=buf;
+  return MakeSOAPMessageReference("ReadOSDFifoDone", returnValues);
 }
 
 xoap::MessageReference PixelFEDSupervisor::SetPhasesDelays (xoap::MessageReference msg) throw (xoap::exception::Exception) {
