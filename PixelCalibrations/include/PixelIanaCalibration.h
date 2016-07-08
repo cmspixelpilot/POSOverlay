@@ -45,6 +45,8 @@ class PixelIanaCalibration: public PixelCalibrationBase {
   std::map<std::string, std::vector<pos::PixelROCName> > dpMap_;
   //        dpName                   
   std::map<std::string, std::vector<std::vector<Moments> > > Iana_;
+
+  std::map<std::string, std::vector<std::vector<Moments> > > Iana_OSD_;
   //        dpName                   
   unsigned int maxROC_;
 
@@ -58,7 +60,9 @@ class PixelIanaCalibration: public PixelCalibrationBase {
   double ianares_;
   bool MixVanas_;
   bool TurnOffVsf_;
+  bool ReadCurrent_;
   bool ManualReads_;
+  bool UseOSD_;
 
    struct branch{
     float pass;
