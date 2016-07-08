@@ -4520,6 +4520,7 @@ xoap::MessageReference PixelFEDSupervisor::ArmOSDFifo(xoap::MessageReference msg
   unsigned int rochi = atoi(parametersReceived[2].value_.c_str());
   unsigned int roclo = atoi(parametersReceived[3].value_.c_str());
 
+  std::cout << "ArmOSDFifo: channel: " << channel << " RocHi: " << rochi << " RocLo: " << roclo << std::endl;
   FEDInterface_[VMEBaseAddress]->armOSDFifo(channel, rochi, roclo);
 
   xoap::MessageReference reply=MakeSOAPMessageReference("ArmOSDFifoDone");
@@ -4535,7 +4536,7 @@ xoap::MessageReference PixelFEDSupervisor::ReadOSDFifo(xoap::MessageReference ms
   unsigned int VMEBaseAddress = atoi(parametersReceived[0].value_.c_str());
   unsigned int channel = atoi(parametersReceived[1].value_.c_str());
   uint32_t data = FEDInterface_[VMEBaseAddress]->readOSDFifo(channel);
-  std::cout << "ReadOSDFifo: RocHi: " << ((data & 0xFFFF0000) >> 16) << " RocLo: " << (data & 0xFFFF) << std::endl;
+  std::cout << "ReadOSDFifo: channel: " << channel << " RocHi: " << ((data & 0xFFFF0000) >> 16) << " RocLo: " << (data & 0xFFFF) << std::endl;
 
   xoap::MessageReference reply=MakeSOAPMessageReference("ReadOSDFifoDone");
   return reply;
