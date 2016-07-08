@@ -33,19 +33,7 @@ PixelPh1FECInterface* initPixelFEC(int slot){
 
     cout<<"Init FEC in slot "<< slot <<endl;
     
-    const bool glib = false;
-    
     // tell the firmware explicitly to do all these actions. Arguments for all these functions are: mfec and set bit 0 or 1. There is no need for the fecchannel, it applied to both channels
-
-// JMT GLIB?
-//   aFECInterface->enableinternalclk();
-//    std::cout << "Switching to FCLKA" << std::endl;
-//    aFECInterface->disableinternalclk();
-
-	if (glib)
-      aFECInterface->switchclk(0x10BA3071);
-	else
-      aFECInterface->switchclk(0xFF7CFFD8);
 
     // disable AMC13 data
 
