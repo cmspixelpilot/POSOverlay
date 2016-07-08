@@ -16,17 +16,9 @@ os.system('mkdir -p %s' % out_dir)
 f = ROOT.TFile(in_fn)
 
 dirs = [
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL1/Pilt_BmO_D3_BLD10_PNL1_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL2/Pilt_BmO_D3_BLD10_PNL2_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL1/Pilt_BmO_D3_BLD11_PNL1_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL2/Pilt_BmO_D3_BLD11_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL1/Pilt_BmI_D3_BLD2_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL2/Pilt_BmI_D3_BLD2_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL1/Pilt_BmI_D3_BLD3_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL2/Pilt_BmI_D3_BLD3_PNL2_PLQ1',
+    'FPix/FPix_BmI/FPix_BmI_D3/FPix_BmI_D3_BLD1/FPix_BmI_D3_BLD1_PNL1/FPix_BmI_D3_BLD1_PNL1_RNG1',
     ]
 
-dirs += ['Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD%i/Pilt_BmI_D3_BLD%i_PNL1/Pilt_BmI_D3_BLD%i_PNL1_PLQ1' % (i,i,i) for i in xrange(1,15)]
 
 by_ntrigs = []
 first = True
