@@ -178,6 +178,56 @@ def configurations_txt():
                 e[line[0]] = line[1]
     return d
 
+class dac_dat:
+    DACS = ['Vdd', 'Vana', 'Vsh', 'Vcomp', 'VwllPr', 'VwllSh', 'VHldDel', 'Vtrim', 'VcThr', 'VIbias_bus', 'PHOffset', 'Vcomp_ADC', 'PHScale', 'VIColOr', 'Vcal', 'CalDel', 'TempRange', 'WBC', 'ChipContReg', 'Readback']
+
+    def __init__(self, fn):
+        self.fn = fn
+        self.basefn  = os.path.basename(fn)
+        self.dacs_by_roc = {}
+        this_roc = None
+        these_dacs = {}
+        def add():
+            global these_dacs, this_roc
+        for line in open(fn):
+            if line.startswith('ROC:'):
+                if these_dacs:
+                    assert this_roc is not None
+                    assert set(these_dacs.keys()) == set(self.DACS)
+                    self.dacs_by_roc[this_roc] = these_dacs
+                this_roc = line.split()[-1]
+                assert '_ROC' in this_roc
+                these_dacs = {}
+            else:
+                dacname, dacval = line.split()
+                assert dacname.endswith(':')
+                dacname = dacname.replace(':', '')
+                dacval = int(dacval)
+                these_dacs[dacname] = dacval
+        assert this_roc is not None
+        assert set(these_dacs.keys()) == set(self.DACS)
+        self.dacs_by_roc[this_roc] = these_dacs
+        assert len(self.dacs_by_roc) == 16
+
+    def write(self, f):
+        if type(f) == str:
+            fn = f
+            f = open(fn, 'wt')
+        elif type(f) == int:
+            fn = os.path.join(PIXELCONFIGURATIONBASE, 'dac/' + str(f) + '/' + self.basefn)
+            f = open(fn, 'wt')
+        elif not hasattr(f, 'write'):
+            raise TypeError("can't handle f %r" % f)
+
+        rocs = self.dacs_by_roc.keys()
+        rocs.sort(key=lambda x: int(x.split('_ROC')[1]))
+        for roc in rocs:
+            f.write('ROC:           %s\n' % roc)
+            dacs = self.dacs_by_roc[roc]
+            for dac in self.DACS:
+                f.write((dac + ':').ljust(15))
+                f.write('%i\n' % dacs[dac])
+
 #def translation_dat(key):
 #    fn = os.path.join(PIXELCONFIGURATIONBASE, 'nametranslation/%s/translation.dat')
 #    by_module = 
@@ -188,5 +238,5 @@ def configurations_txt():
 #def tbm(key):
     
 if __name__ == '__main__':
-    cfg = configurations_txt()
+    dacs = dac_dat('/home/fnaltest/TriDAS/Config/dac/8/ROC_DAC_module_FPix_BmI_D3_BLD1_PNL1_RNG1.dat')
     
