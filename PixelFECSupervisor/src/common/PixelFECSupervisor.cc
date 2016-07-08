@@ -2822,7 +2822,6 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
                                                       "file://" + datbase_ + "address_table.xml");
           //RegMgr_[vmeBaseAddress]->setDebugPrints(true);
           //RegMgr_[vmeBaseAddress]->setUniqueId("JMT");
-          int dummy = 0;
           tempFECInterface = new PixelPh1FECInterface(RegMgr_[fecVMEBaseAddress], boardid);
         }
         else {
