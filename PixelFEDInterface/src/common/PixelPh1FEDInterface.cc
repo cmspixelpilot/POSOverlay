@@ -762,10 +762,25 @@ void PixelPh1FEDInterface::sendResets(unsigned which) {
 }
 
 void PixelPh1FEDInterface::armOSDFifo(int channel, int rochi, int roclo) {
+  if (rochi != roclo)
+    std::cout << "warning: for uTCA FED the returned words are for the rocs on each tbm core, so only rochi = " << rochi << " will be used\n";
+  std::cout << "OSD Readback enabled for ROC " << rochi << std::endl;
+  regManager->WriteReg("fe_ctrl_regs.fifo_config.OSD_ROC_Nr", rochi & 0x1f);
 }
 
 uint32_t PixelPh1FEDInterface::readOSDFifo(int channel) {
-  return 0;
+  assert(channel >= 0 && channel <= 23);
+  char buf[32];
+  snprintf(buf, 32, "idel_individual_stat.CH%i", channel);
+  std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue(buf, 4);
+
+  const uint16_t cOSD_word_A = cReadValues[3] & 0xffff;
+  const uint16_t cOSD_word_B = (cReadValues[3] >> 16) & 0xffff;
+
+  std::cout << "TBM Core A: " << std::endl << "aaaarrrr87654321" << std::endl << std::bitset<16>(cOSD_word_A) << std::endl;
+  std::cout << "TBM Core B: " << std::endl << "aaaarrrr87654321" << std::endl << std::bitset<16>(cOSD_word_B) << std::endl;
+
+  return cReadValues[3];
 }
 
 void prettyprintPhase(const std::vector<uint32_t>& pData, int pChannel) {
