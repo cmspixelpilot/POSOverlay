@@ -34,6 +34,7 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
 
   xoap::bind(this, &PixelAMC13Controller::Reset, "reset", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Configuration, "ParameterSet", XDAQ_NS_URI);
+  xoap::bind(this, &PixelAMC13Controller::ConfigureFromXML, "ConfigureFromXML", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Configure, "configure", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::userCommand, "userCommand", XDAQ_NS_URI);
   xoap::bind(this, &PixelAMC13Controller::Enable, "enable", XDAQ_NS_URI);
@@ -52,6 +53,7 @@ PixelAMC13Controller::PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xda
   getApplicationInfoSpace()->fireItemAvailable("L1ADelay", &L1ADelay);
   getApplicationInfoSpace()->fireItemAvailable("NewWay", &newWay);
   getApplicationInfoSpace()->fireItemAvailable("VerifyL1A", &verifyL1A);
+  getApplicationInfoSpace()->fireItemAvailable("SimTTC", &simTTC);
 }
 
 PixelAMC13Controller::~PixelAMC13Controller() {
@@ -70,6 +72,7 @@ void PixelAMC13Controller::AddAMC13(const pos::PixelAMC13Parameters& p) {
   PixelAMC13Interface* amc13 = new PixelAMC13Interface(p.getUriT1(), addrT1, p.getUriT2(), addrT2);
   amc13->SetDebugPrints(PRINT);
   amc13->SetMask(p.getSlotMask());
+  amc13->SetSimTTC(simTTC);
   amc13->SetCalBX(p.getCalBX());
   amc13->SetL1ADelay(p.getL1ADelay());
   amc13->SetNewWay(p.getNewWay());
@@ -79,11 +82,6 @@ void PixelAMC13Controller::AddAMC13(const pos::PixelAMC13Parameters& p) {
 
 void PixelAMC13Controller::InitAMC13s() {
   DelAMC13s();
-
-  if (amc13_cfgs.size() == 0) {
-    pos::PixelAMC13Parameters p(-1, uriT1, uriT2, addressT1, addressT2, mask, calBX, L1ADelay, newWay, verifyL1A);
-    amc13_cfgs.push_back(p);
-  }
 
   for (size_t i = 0; i < amc13_cfgs.size(); ++i)
     AddAMC13(amc13_cfgs[i]);
@@ -100,7 +98,7 @@ void PixelAMC13Controller::Default(xgi::Input* in, xgi::Output* out ) throw (xgi
     "window.history.pushState('Default', 'Title', '/" << URN << "');\n"
     "</script>\n";
 
-  std::vector<std::string> sends = {"reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM", "ResetCounters" };
+  std::vector<std::string> sends = {"ConfigureFromXML", "reset", "CalSync", "LevelOne", "ResetROC", "ResetTBM", "ResetCounters" };
 
   const size_t namc13s = amc13s.size();
 
@@ -176,15 +174,15 @@ void PixelAMC13Controller::StateMachineXgiHandler(xgi::Input *in, xgi::Output *o
   attrib[1].name_="xdaq:sequence_name";
   attrib[1].value_=cgi.getElement("StateInput")->getValue();
 
-  if (!AMC13sReady() && attrib[1].value_ != "reset") {
-    *out << "<h1>won't do anything before reset</h1>\n";
+  if (!AMC13sReady() && attrib[1].value_ != "ConfigureFromXML") {
+    *out << "<h1>no amc13s configured</h1>\n";
     this->Default(in, out);
     return;
   }
 
-  if (attrib[1].value_ == "reset") {
-    xoap::MessageReference msg = MakeSOAPMessageReference("reset");
-    Reset(msg);
+  if (attrib[1].value_ == "ConfigureFromXML") {
+    xoap::MessageReference msg = MakeSOAPMessageReference("ConfigureFromXML");
+    ConfigureFromXML(msg);
   }
   else {
     xoap::MessageReference msg = MakeSOAPMessageReference("userCommand", attrib);
@@ -219,19 +217,15 @@ void PixelAMC13Controller::AllAMC13Tables(xgi::Input* in, xgi::Output* out ) thr
 }
 
 xoap::MessageReference PixelAMC13Controller::Reset(xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  if (PRINT) std::cout << "PixelAMC13Controller::Reset" << std::endl;
+  if (PRINT) std::cout << "PixelAMC13Controller::Reset(does nothing)" << std::endl;
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {
-    if (amc13_cfgs.size() == 0) {
-      InitAMC13s();
-      for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->Configure();
-    }
   }
   return MakeSOAPMessageReference("TTCciControlFSMReset");
 }
 
-xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReference msg) throw (xoap::exception::Exception) {
+xoap::MessageReference PixelAMC13Controller::Configuration(xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Configuration()" << std::endl;
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
@@ -246,6 +240,23 @@ xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReferen
       // the ttc, then we'll get a configuration twice. first will be
       // the amc13 config, the second will be some ttcciconfig that we
       // ignore.
+      //
+      // sequence where we're both:
+      //
+      // PixelSupervisor CONFIGURE
+      // PixelAMC13Controller::Configuration() -- this is our cfg
+      // PixelAMC13Controller::Reset
+      // PixelAMC13Controller::Configuration() -- this is the ttcci cfg
+      // PixelAMC13Controller::Configure() 
+      // PixelSupervisor HALT
+      // PixelAMC13Controller::Reset
+      // PixelSupervisor CONFIGURE
+      // PixelAMC13Controller::Configuration()
+      // PixelAMC13Controller::Reset
+      // PixelAMC13Controller::Configuration()
+      // PixelAMC13Controller::Configure()
+      // ...
+
       if (first) {
         first = false;
 
@@ -253,9 +264,17 @@ xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReferen
           if (PRINT) std::cout << "uh uh uh, you didn't say the magic words\n";
           break;
         }
-        else if (PRINT) {
-          std::cout << "magic words found!\n";
+        else {
+          if (PRINT) std::cout << "magic words found!\n";
           amc13_cfgs.clear();
+          std::getline(ss, line, '\n');
+          if (PRINT) std::cout << line << std::endl;
+          std::string nextmagic = "# TTCSupervisorApplicationName = ";
+          const size_t ndx = line.find(nextmagic);
+          assert(ndx != std::string::npos);
+          std::string ttc_app_name = line.substr(ndx + nextmagic.size());
+          simTTC = ttc_app_name == "PixelAMC13Controller";
+          if (PRINT) std::cout << "TTC app name is " << ttc_app_name << " simTTC " << simTTC << std::endl;
           continue;
         }
       }
@@ -275,12 +294,34 @@ xoap::MessageReference PixelAMC13Controller::Configuration (xoap::MessageReferen
   return MakeSOAPMessageReference("ParameterSetResponse");
 }
 
+xoap::MessageReference PixelAMC13Controller::ConfigureFromXML(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  if (PRINT) std::cout << "PixelAMC13Controller::ConfigureFromXML" << std::endl;
+  if (doNothing)
+    std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
+  else {
+    bool ok = true;
+    for (size_t i = 0; i < amc13_cfgs.size(); ++i)
+      if (amc13_cfgs[i].getCrate() == -1) {
+        std::cout << "PixelAMC13Controller::ConfigureFromXML refusing to add a second crate -1" << std::endl;
+        ok = false;
+      }
+
+    if (ok) {
+      pos::PixelAMC13Parameters p(-1, uriT1, uriT2, addressT1, addressT2, mask, calBX, L1ADelay, newWay, verifyL1A);
+      amc13_cfgs.push_back(p);
+      InitAMC13s();
+    }
+  }
+  return MakeSOAPMessageReference("ConfigureFromXMLResponse");
+}
+
 xoap::MessageReference PixelAMC13Controller::Configure (xoap::MessageReference msg) throw (xoap::exception::Exception) {
   if (PRINT) std::cout << "PixelAMC13Controller::Configure()" << std::endl;
   if (doNothing)
     std::cout << "PixelAMC13Controller: DO NOTHING" << std::endl;
   else {
-    for (size_t i = 0; i < amc13s.size(); ++i) amc13s[i]->Configure();
+    for (size_t i = 0; i < amc13s.size(); ++i)
+      amc13s[i]->Configure();
   }
   return MakeSOAPMessageReference("configureResponse");
 }

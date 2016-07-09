@@ -43,6 +43,7 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
   xdata::UnsignedInteger L1ADelay;
   xdata::Boolean newWay;
   xdata::Boolean verifyL1A;
+  xdata::Boolean simTTC;
 
   PixelAMC13Controller(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);
   ~PixelAMC13Controller();
@@ -54,6 +55,7 @@ class PixelAMC13Controller : public xdaq::Application, public SOAPCommander {
   xoap::MessageReference Reset(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference Configuration(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference Configure(xoap::MessageReference msg) throw (xoap::exception::Exception);
+  xoap::MessageReference ConfigureFromXML(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference userCommand(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference Enable(xoap::MessageReference msg) throw (xoap::exception::Exception);
   xoap::MessageReference Stop(xoap::MessageReference msg) throw (xoap::exception::Exception);
