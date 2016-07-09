@@ -3549,11 +3549,18 @@ std::string const msg_info_xql = "[PixelSupervisor::stateConfiguring] DCS Interf
       for (Supervisors::iterator i_PixelAMC13Controller=PixelAMC13Controllers_.begin();i_PixelAMC13Controller!=PixelAMC13Controllers_.end();++i_PixelAMC13Controller) {
         std::string app_class_name = "PixelAMC13Controller";
         std::string parameter_name = "Configuration";
-        std::string config = "# AMC13 magic string\n" + theAMC13Config_->toASCII();
+        std::string config = "# AMC13 magic string\n";
+        config += "# TTCSupervisorApplicationName = " + std::string(TTCSupervisorApplicationName_) + "\n";
+        config += theAMC13Config_->toASCII();
         xoap::MessageReference msg = MakeSOAPConfigMessage(app_class_name,parameter_name, config);
         std::string reply = Send(i_PixelAMC13Controller->second, msg);
         //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
         if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
+        if (TTCSupervisorApplicationName_ != app_class_name) {
+          reply = Send(i_PixelAMC13Controller->second, "configure");
+          //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
+          if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
+        }
       }
     }
 
