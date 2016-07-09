@@ -34,6 +34,7 @@ class PixelAMC13Interface {
 
   void SetMask(uint32_t v) { fMask = v; }
   void SetMask(const std::string& v) { fMask = fAMC13->parseInputEnableList(v, true); }
+  void SetSimTTC(bool v) { fSimTTC = v; }
   void SetDebugPrints(bool v) { fDebugPrints = v; }
   void SetCalBX(unsigned v) { fCalBX = v; }
   void SetL1ADelay(unsigned v) { fL1ADelay = v; }
@@ -80,6 +81,7 @@ class PixelAMC13Interface {
 
   amc13::AMC13* fAMC13;
   uint32_t fMask;
+  bool fSimTTC;
   bool fDebugPrints;
   uint32_t fCalBX;
   uint32_t fL1ADelay;

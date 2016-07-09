@@ -18,6 +18,7 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
 
   : fAMC13(new amc13::AMC13(uriT1, addressT1, uriT2, addressT2)),
     fMask(0),
+    fSimTTC(false),
     fDebugPrints(false),
     fCalBX(381),
     fL1ADelay(123),
@@ -65,7 +66,8 @@ void PixelAMC13Interface::DoResets() {
 void PixelAMC13Interface::Configure() {
   DoResets();
 
-  fAMC13->localTtcSignalEnable(true);
+  fAMC13->localTtcSignalEnable(fSimTTC);
+  fAMC13->fakeDataEnable(true);
 
   fAMC13->AMCInputEnable(fMask);
   if (fDebugPrints) {
