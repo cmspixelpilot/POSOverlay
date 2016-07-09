@@ -50,8 +50,10 @@ done
 cmd="-z pixel -p $port -c "
 
 TTCSupervisorApplicationName=PixelAMC13Controller
-if [ "$ttcci" -ne "0" ]; then
+SimTTC=true
+if [ "$ttcci" != "0" ]; then
     TTCSupervisorApplicationName=ttc::TTCciControl
+    SimTTC=false
 fi
 
 if [ "$xml" == "auto" ]; then
@@ -100,13 +102,14 @@ if [ "$xml" == "auto" ]; then
 	<L1ADelay xsi:type="xsd:unsignedInt">105</L1ADelay>
         <NewWay xsi:type="xsd:boolean">true</NewWay>
         <VerifyL1A xsi:type="xsd:boolean">true</VerifyL1A>
+        <SimTTC xsi:type="xsd:boolean">${SimTTC}</SimTTC>
       </properties>
     </xc:Application>
 
   </xc:Context>
 
 EOF
-    if [ "$ttcci" -ne "0" ]; then
+    if [ "$ttcci" != "0" ]; then
         cat >> auto.xml <<EOF
   <xc:Context id="1" url="http://${ttcci}:1973/">
     <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="${ttcci}" port="1914" network="xmas"/>
