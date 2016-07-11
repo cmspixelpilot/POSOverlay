@@ -96,7 +96,10 @@ struct encfifo1 {
   unsigned marker;
   std::vector<encfifo1roc> rocs;
   std::vector<encfifo1hit> hits;
-  encfifo1() : found(false) {}
+  encfifo1() : found(false), n_tbm_h(0), n_tbm_t(0), n_roc_h(0) {}
+  int n_tbm_h;
+  int n_tbm_t;
+  int n_roc_h;
 };
 struct digfifo1 {
   std::vector<uint32_t> cFifo1A;

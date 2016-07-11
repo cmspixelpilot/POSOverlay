@@ -120,7 +120,6 @@ int PixelPh1FEDInterface::setup() {
     {"REGMGR_DISPATCH", 1000}, // JMTBAD there were two separate WriteStackReg calls, take this out if it doesn't matter, the 1000 means sleep 1 ms
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0},
     {"pixfed_ctrl_regs.fitel_rx_i2c_req", 0},
-    {"pixfed_ctrl_regs.PC_CONFIG_OK", 1},
   };
 
   for (int i = 0; i < 48; ++i) {
@@ -128,6 +127,8 @@ int PixelPh1FEDInterface::setup() {
     snprintf(buf, 256, "pixfed_ctrl_regs.tts.evt_timeout_value.tbm_ch_%02i", i);
     cVecReg.push_back(std::make_pair(std::string(buf), uint32_t(pixelFEDCard.timeout_counter_start)));
   }
+
+  cVecReg.push_back(std::make_pair("pixfed_ctrl_regs.PC_CONFIG_OK", uint32_t(1)));
 
   std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
   for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
@@ -759,6 +760,10 @@ void PixelPh1FEDInterface::resetFED() {
 }
 
 void PixelPh1FEDInterface::sendResets(unsigned which) {
+  if (which == 3) {
+    regManager->WriteReg("fe_ctrl_regs.decode_reset", 1);
+    regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
+  }
 }
 
 void PixelPh1FEDInterface::armOSDFifo(int channel, int rochi, int roclo) {
@@ -1425,6 +1430,7 @@ PixelPh1FEDInterface::encfifo1 PixelPh1FEDInterface::decodeFIFO1Stream(const std
     const uint32_t marker = markers[i];
 
     if (marker == 8) {
+      ++f.n_tbm_h;
       f.found = true;
       f.ch = (word >> 26) & 0x3f;
       f.id_tbm_h = (word >> 21) & 0x1f;
@@ -1432,6 +1438,7 @@ PixelPh1FEDInterface::encfifo1 PixelPh1FEDInterface::decodeFIFO1Stream(const std
       f.event = word & 0xff;
     }
     else if (marker == 12) {
+      ++f.n_roc_h;
       encfifo1roc r;
       r.ch = (word >> 26) & 0x3f;
       r.roc = (word >> 21) & 0x1f;
@@ -1448,6 +1455,7 @@ PixelPh1FEDInterface::encfifo1 PixelPh1FEDInterface::decodeFIFO1Stream(const std
       f.hits.push_back(h);
     }
     else if (marker == 4) {
+      ++f.n_tbm_t;
       f.ch_tbm_t = (word >> 26) & 0x3f;
       f.tbm_t1 = word & 0xff;
       f.tbm_t2 = (word >> 12) & 0xff;
@@ -1464,41 +1472,43 @@ PixelPh1FEDInterface::encfifo1 PixelPh1FEDInterface::decodeFIFO1Stream(const std
   return f;
 }
 
-void PixelPh1FEDInterface::prettyprintFIFO1Stream( const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec) {
+void PixelPh1FEDInterface::prettyprintFIFO1Stream(const std::vector<uint32_t>& pFifoVec, const std::vector<uint32_t>& pMarkerVec) {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
 
-    for (uint32_t cIndex = 0; cIndex < pFifoVec.size(); cIndex++ ) {
-      if (pFifoVec[cIndex] != 0 || pMarkerVec[cIndex] != 0) {
-        std::cout << "word #" << std::setw(2) << cIndex << ": 0x" << std::hex << pFifoVec[cIndex] << "  marker: 0x" << pMarkerVec[cIndex] << std::dec << "   ";
-        if (pMarkerVec.at (cIndex) == 8)
+    for (size_t i = 0, ie = pFifoVec.size(); i < ie; ++i) {
+      const uint32_t d = pFifoVec[i];
+      const uint32_t m = pMarkerVec[i];
+      if (d != 0 || m != 0) {
+        std::cout << "word #" << std::setw(2) << i << ": 0x" << std::hex << d << "  marker: 0x" << m << std::dec << "   ";
+        if (m == 8)
           std::cout << std::dec << "    Header: "
-                    << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
-                    << " ID: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
-                    << " TBM_H: " <<  ( (pFifoVec.at (cIndex) >> 9) & 0xff )
-                    << " EVT Nr: " <<  ( (pFifoVec.at (cIndex) ) & 0xff );
-        else if (pMarkerVec.at (cIndex) == 12)
+                    << "CH: " << ( (d >> 26) & 0x3f )
+                    << " ID: " <<  ( (d >> 21) & 0x1f )
+                    << " TBM_H: " <<  ( (d >> 9) & 0xff )
+                    << " EVT Nr: " <<  ( (d ) & 0xff );
+        else if (m == 12)
           std::cout << std::dec << "ROC Header: "
-                    << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f  )
-                    << " ROC Nr: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
-                    << " Status: " << (  (pFifoVec.at (cIndex) ) & 0xff );
-        else if (pMarkerVec.at (cIndex) == 1)
+                    << "CH: " << ( (d >> 26) & 0x3f  )
+                    << " ROC Nr: " <<  ( (d >> 21) & 0x1f )
+                    << " Status: " << (  (d ) & 0xff );
+        else if (m == 1)
           std::cout  << std::dec << "            "
-                     << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
-                     << " ROC Nr: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
-                     << " DC: " <<  ( (pFifoVec.at (cIndex) >> 16) & 0x1f )
-                     << " PXL: " <<  ( (pFifoVec.at (cIndex) >> 8) & 0xff )
-                     <<  " PH: " <<  ( (pFifoVec.at (cIndex) ) & 0xff );
-        else if (pMarkerVec.at (cIndex) == 4)
+                     << "CH: " << ( (d >> 26) & 0x3f )
+                     << " ROC Nr: " <<  ( (d >> 21) & 0x1f )
+                     << " DC: " <<  ( (d >> 16) & 0x1f )
+                     << " PXL: " <<  ( (d >> 8) & 0xff )
+                     <<  " PH: " <<  ( (d ) & 0xff );
+        else if (m == 4)
           std::cout << std::dec << "   Trailer: "
-                    << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
-                    << " ID: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
-                    << " TBM_T2: " <<  ( (pFifoVec.at (cIndex) >> 12) & 0xff )
-                    << " TBM_T1: " <<  ( (pFifoVec.at (cIndex) ) & 0xff );
-        else if (pMarkerVec.at (cIndex) == 6)
+                    << "CH: " << ( (d >> 26) & 0x3f )
+                    << " ID: " <<  ( (d >> 21) & 0x1f )
+                    << " TBM_T2: " <<  ( (d >> 12) & 0xff )
+                    << " TBM_T1: " <<  ( (d ) & 0xff );
+        else if (m == 6)
           std::cout << std::dec << "Event Trailer: "
-                    << "CH: " << ( (pFifoVec.at (cIndex) >> 26) & 0x3f )
-                    << " ID: " <<  ( (pFifoVec.at (cIndex) >> 21) & 0x1f )
-                    << " marker: " <<  ( (pFifoVec.at (cIndex) ) & 0x1fffff );
+                    << "CH: " << ( (d >> 26) & 0x3f )
+                    << " ID: " <<  ( (d >> 21) & 0x1f )
+                    << " marker: " <<  ( (d ) & 0x1fffff );
         std::cout << std::endl;
       }
     }
@@ -1534,6 +1544,8 @@ int PixelPh1FEDInterface::drainFifo1(uint32_t *data) {
 
 
 int PixelPh1FEDInterface::drainErrorFifo(uint32_t *data) {
+  return 0;
+
   //    if (pForce)
   //    {
   //        std::cout << "Forcing read of ERROR Fifo!" << std::endl;
@@ -1690,10 +1702,10 @@ std::vector<uint32_t> PixelPh1FEDInterface::ReadData(uint32_t cBlockSize)
 
 int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   ++slink64calls;
-  std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
-  readTransparentFIFO();
-  readSpyFIFO();
-  readFIFO1(true);
+  //  std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
+  //readTransparentFIFO();
+  //readSpyFIFO();
+  //readFIFO1(true);
   //  drainErrorFifo(0);
 
   usleep(2000);
@@ -1753,11 +1765,13 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     printf("]\n");
     bxs.clear();
   }
-  std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " ";
-  if (evnum != slink64calls) std::cout << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m";
-  std::cout << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
+  //std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " ";
+  if (evnum != slink64calls)
+    std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " " << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m" << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
+  if (bxnum != 502 && bxnum != 503)
+    std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " \033[1m\033[31mWRONG BX\033[0m bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
 
-#if 1
+#if 0
   std::cout << "slink 32-bit words from FW:\n";
   for (size_t i = 0; i < ndata; ++i)
     std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
