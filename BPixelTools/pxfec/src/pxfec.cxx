@@ -20,6 +20,7 @@ using namespace std;
 //int32_t gBHandle=0;
 pos::PixelFECConfigInterface* pixelFECInterface[22]={0};
 ControlNetwork* cn[64]={0};
+std::string uri; // JMTBAD still not good enough re different slots
 
 PixelPh1FECInterface* initPixelFEC(int slot){
     
@@ -27,7 +28,6 @@ PixelPh1FECInterface* initPixelFEC(int slot){
     cout << fecBase << endl;
     std::string build_home(getenv("BUILD_HOME"));
     std::string datbase_ = build_home + "/pixel/PixelFECInterface/dat/";
-    std::string uri = "chtcp-2.0://localhost:10203?target=pxfec:50001";
     RegManager * pRegManager = new RegManager("board", uri, "file://" + datbase_ + "address_table.xml");
     PixelPh1FECInterface* aFECInterface = new PixelPh1FECInterface(pRegManager,"theboard");
 
@@ -108,9 +108,8 @@ int main(int argc, char **argv){
 
   // default configuration variables 
   int port=0;                      // port, 0= no port,    define with option -port
-  int VMEBoard=1; //CAEN interface   define with option -vmecaenpci or -vmecaenusb
   string file="data/d.ini";        // init file            define with option -file
-
+  uri="chtcp-2.0://localhost:10203?target=pxfec:50001";
 
   // parse command line arguments
   for(int i=1; i<argc; i++){
@@ -122,6 +121,13 @@ int main(int argc, char **argv){
 	cerr << "bad port number " << argv[i] << endl;
 	exit(1);
       }
+    }else if (strcmp(argv[i],"-uri")==0){
+      i++;
+      if(i<argc){
+	uri=(argv[i]);
+      }else{
+	cerr << "uri argument missing " << endl;
+      }
     }else if (strcmp(argv[i],"-init")==0){
       i++;
       if(i<argc){
@@ -129,12 +135,8 @@ int main(int argc, char **argv){
       }else{
 	cerr << "file argument missing " << endl;
       }
-    }else if(strcmp(argv[i],"-vmecaenpci")==0){
-      VMEBoard=1; // Optical CAEN interface
-    }else if(strcmp(argv[i],"-vmecaenusb")==0){
-      VMEBoard=2; // USB CAEN interface
     }else{
-      cerr << "usage: pxfec [-port <port>] [-vmecaenpci | -vmecaenusb] [-init <filename>]" << endl;
+      cerr << "usage: pxfec [-port <port>] [-uri uri] [-init <filename>]" << endl;
       exit(1);
     }
   }
