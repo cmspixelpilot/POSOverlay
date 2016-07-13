@@ -148,6 +148,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 
     if (OnlyFIFO1) {
       PixelPh1FEDInterface* f = dynamic_cast<PixelPh1FEDInterface*>(iFED);
+      f->readTransparentFIFO();
       f->readSpyFIFO();
       PixelPh1FEDInterface::digfifo1 d = f->readFIFO1(DumpFIFOs);
       printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
@@ -186,11 +187,14 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       FillEm(state, F1nBCorrectHits, correct[1]);
       FillEm(state, F1nBWrongHits,   wrong[1]);
 
+      const int shouldbe = 8 * int(colrows.size());
+      if (DumpFIFOs) printf("correct out of %lu: a: %i b: %i   wrong: a: %i b: %i\n", shouldbe, correct[0], correct[1], wrong[0], wrong[1]);
+
       FillEm(state, F1nOK,
              d.a.n_tbm_h == 1 && d.a.n_tbm_t == 1 && d.a.n_roc_h == 8 &&
              d.b.n_tbm_h == 1 && d.b.n_tbm_t == 1 && d.b.n_roc_h == 8 &&
-             correct[0] == colrows.size() &&
-             correct[1] == colrows.size() &&
+             correct[0] == shouldbe &&
+             correct[1] == shouldbe &&
              wrong[0] == 0 &&
              wrong[1] == 0);
     }
