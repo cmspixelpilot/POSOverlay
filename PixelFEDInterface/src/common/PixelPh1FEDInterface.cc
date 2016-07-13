@@ -1386,7 +1386,7 @@ std::vector<uint32_t> PixelPh1FEDInterface::readSpyFIFO()
 {
   
   std::vector<uint32_t> cSpy[2];
-  const size_t N = 320;
+  const size_t N = 2048;
   for (int i = 0; i < 2; ++i) {
     { //while (1) {
       std::vector<uint32_t> tmp = regManager->ReadBlockRegValue(i == 0 ? "fifo.spy_A" : "fifo.spy_B", N);
@@ -1451,6 +1451,8 @@ PixelPh1FEDInterface::encfifo1 PixelPh1FEDInterface::decodeFIFO1Stream(const std
       h.roc = (word >> 21) & 0x1f;
       h.dcol = (word >> 16) & 0x1f;
       h.pxl = (word >> 8) & 0xff;
+      h.col = h.dcol*2 + h.pxl%2;
+      h.row = 80 - h.pxl/2;
       h.ph = (word) & 0xff;
       f.hits.push_back(h);
     }
