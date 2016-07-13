@@ -189,7 +189,7 @@ bool PixelIanaCalibration::execute()
 	    usleep(10000);
 
 	    for (int itrig = 0; itrig < 48; ++itrig) {
-	      sendTTCLevelOne();
+	      sendTTCLevelOne(false);
 	      usleep(1000);
 	    }
 
