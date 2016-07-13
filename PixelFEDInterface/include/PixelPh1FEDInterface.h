@@ -75,6 +75,8 @@ struct encfifo1hit {
   unsigned dcol;
   unsigned pxl;
   unsigned ph;
+  unsigned col;
+  unsigned row;
 };
 struct encfifo1roc {
   unsigned ch;
@@ -108,6 +110,7 @@ struct digfifo1 {
   std::vector<uint32_t> cMarkerB;
   encfifo1 a;
   encfifo1 b;
+  encfifo1& aorb(int i) { return i ? b : a; }
 };
 
   std::vector<uint32_t> readTransparentFIFO();
