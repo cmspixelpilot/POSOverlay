@@ -477,8 +477,8 @@
     <!-- HEPHY SPY FIFOs -->
     <node id="fifo" permission="r">
         <node id="bit_stream" address="0x40040000" mode="non-incremental" size="512" />
-        <node id="spy_A" address="0x40040001" mode="non-incremental" size="4096" />
-        <node id="spy_B" address="0x40040002" mode="non-incremental" size="4096" />
+        <node id="spy_A" address="0x40040001" mode="non-incremental" size="2048" />
+        <node id="spy_B" address="0x40040002" mode="non-incremental" size="2048" />
         <node id="spy_1_A" address="0x40040003" mode="non-incremental" size="2048" />
         <node id="spy_1_B" address="0x40040004" mode="non-incremental" size="2048" />
         <node id="spy_1_A_marker" address="0x40040005" mode="non-incremental" size="2048" />
