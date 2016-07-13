@@ -1062,8 +1062,8 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 
   int mode=-1;
 
-  if (modeName=="maskAllPixel")  mode=0;
-  if (modeName=="useAllPixel"||modeName=="")  mode=1;
+  if (modeName=="maskAllPixel")  mode=0; // JMT this means use the masks, not "mask every single pixel away" like the name sounds like.
+  if (modeName=="useAllPixel"||modeName=="")  mode=1; // JMT the "" makes this the actual default!
   if (modeName=="default")  mode=2;
 
 //  cout << "SCANMODE IS " << modeName << " = " << mode << endl;
