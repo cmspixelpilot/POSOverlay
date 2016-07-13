@@ -4128,7 +4128,6 @@ std::string testScanPixelDevice ( FecAccess *fecAccess,
 #endif
 }
 
-
 /** <p> no command:
  * make a pia reset on all CCUs that can be found and make a PIA reset on all PIA channels
  * \param fecAccess - FEC Access object
@@ -6279,7 +6278,7 @@ std::string pixDCDCCommand(FecAccess* fecAccess,
       unsigned pgoodVal = fecAccess->getPiaChannelDataReg(pgoodKey);
       bool pgood = ((pgoodVal >> (portNumber * 2)) & 0x3) == 0x3;
       ret << "pgoodVal = 0x" << std::hex << pgoodVal << " = " << (pgood ? "PGOOD!" : "NOT PGOOD") << "\n";
-      if (turnOn + pgood != 1) {
+      if (turnOn + pgood == 1) {
 	ret << " but turning " << (turnOn ? "ON" : "OFF") << " ; problem!!!";
       }
     }
