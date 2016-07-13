@@ -113,6 +113,7 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.tts.evt_err_nb_oos_thresh", 255},
     {"pixfed_ctrl_regs.tts.bc0_ec0_polar", 0},
     {"pixfed_ctrl_regs.tts.force_RDY", 1},
+    //{"fe_ctrl_regs.disable_BE", 0},
     {"fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}, // set 192val
     {"fe_ctrl_regs.fifo_config.TBM_old_new", 0x0}, // 0x0 = PSI46dig, 0x1 = PROC600 // JMTBAD this needs to be a per channel thing if the bpix boards distribute the layer-1 occupancy
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
@@ -205,7 +206,7 @@ void PixelPh1FEDInterface::getBoardInfo()
 	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_day") << "."
 	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_month") << "."
 	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year") << std::endl;
-
+    std::cout << "actually: " << std::hex << "0x" << regManager->ReadReg("hephy_firmware_version") << std::dec << std::endl;
     std::cout << "FMC 8 Present : " << regManager->ReadReg("status.fmc_l8_present") << std::endl;
     std::cout << "FMC 12 Present : " << regManager->ReadReg("status.fmc_l12_present") << std::endl << std::endl;
 }
@@ -759,10 +760,16 @@ int PixelPh1FEDInterface::reset() {
 void PixelPh1FEDInterface::resetFED() {
 }
 
+void PixelPh1FEDInterface::disableBE(bool disable) {
+  regManager->WriteReg("fe_ctrl_regs.disable_BE", disable);
+}
+
 void PixelPh1FEDInterface::sendResets(unsigned which) {
   if (which == 3) {
-    regManager->WriteReg("fe_ctrl_regs.decode_reset", 1);
-    regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
+    //readPhases(true, true);
+    //setup();
+//    regManager->WriteReg("fe_ctrl_regs.decode_reset", 1);
+//    regManager->WriteReg("fe_ctrl_regs.decode_reg_reset", 1);
   }
 }
 
@@ -1701,15 +1708,59 @@ std::vector<uint32_t> PixelPh1FEDInterface::ReadData(uint32_t cBlockSize)
     return cData;
 }
 
+uint32_t PixelPh1FEDInterface::getScore(int channel) {
+  static const char* score_nodes[48] = {
+    "idel_individual_stat.score_CH0",  "idel_individual_stat.score_CH1",  "idel_individual_stat.score_CH2",
+    "idel_individual_stat.score_CH3",  "idel_individual_stat.score_CH4",  "idel_individual_stat.score_CH5",
+    "idel_individual_stat.score_CH6",  "idel_individual_stat.score_CH7",  "idel_individual_stat.score_CH8",
+    "idel_individual_stat.score_CH9",  "idel_individual_stat.score_CH10", "idel_individual_stat.score_CH11",
+    "idel_individual_stat.score_CH12", "idel_individual_stat.score_CH13", "idel_individual_stat.score_CH14",
+    "idel_individual_stat.score_CH15", "idel_individual_stat.score_CH16", "idel_individual_stat.score_CH17",
+    "idel_individual_stat.score_CH18", "idel_individual_stat.score_CH19", "idel_individual_stat.score_CH20",
+    "idel_individual_stat.score_CH21", "idel_individual_stat.score_CH22", "idel_individual_stat.score_CH23",
+    "idel_individual_stat.score_CH24", "idel_individual_stat.score_CH25", "idel_individual_stat.score_CH26",
+    "idel_individual_stat.score_CH27", "idel_individual_stat.score_CH28", "idel_individual_stat.score_CH29",
+    "idel_individual_stat.score_CH30", "idel_individual_stat.score_CH31", "idel_individual_stat.score_CH32",
+    "idel_individual_stat.score_CH33", "idel_individual_stat.score_CH34", "idel_individual_stat.score_CH35",
+    "idel_individual_stat.score_CH36", "idel_individual_stat.score_CH37", "idel_individual_stat.score_CH38",
+    "idel_individual_stat.score_CH39", "idel_individual_stat.score_CH40", "idel_individual_stat.score_CH41",
+    "idel_individual_stat.score_CH42", "idel_individual_stat.score_CH43", "idel_individual_stat.score_CH44",
+    "idel_individual_stat.score_CH45", "idel_individual_stat.score_CH46", "idel_individual_stat.score_CH47"
+  };
+
+  assert(channel >= 1 && channel <= 48);
+  const uint32_t v = regManager->ReadReg(score_nodes[channel-1]);
+  assert((v >> 20) == 0);
+  return v;
+}
 
 int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   ++slink64calls;
-  //  std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
-  //readTransparentFIFO();
-  //readSpyFIFO();
-  //readFIFO1(true);
+#if 0
+  std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
+  readTransparentFIFO();
+  readSpyFIFO();
+  digfifo1 f = readFIFO1(true);
+#endif
+
+#if 0
+  const uint32_t score25 = getScore(25);
+  const uint32_t score26 = getScore(26);
+  std::cout << "scores:\n"
+            << "ch 25: DDDDDDDDrrrrrrrrTH\n"
+            << "       " << std::bitset<18>(score25) << "\n"
+            << "ch 26: DDDDDDDDrrrrrrrrTH\n"
+            << "       " << std::bitset<18>(score26) << std::endl;
+#endif
+#if 0
+  std::cout << "scores:\n";
+  for (int i = 1; i <= 48; ++i)
+    std::cout << "ch " << std::setw(2) << i << ": DDDDDDDDrrrrrrrrTH\n"
+              << "       " << std::bitset<18>(getScore(i)) << "\n";
+#endif
   //  drainErrorFifo(0);
 
+#if 1
   usleep(2000);
 
   uhal::ValWord<uint32_t> cVal = 0;
@@ -1759,6 +1810,9 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
 
   const uint32_t evnum = cData[0] & 0xFFFFFF;
   const uint32_t bxnum = cData[1] >> 20;
+#endif
+
+#if 0
   bxs.push_back(bxnum);
   if (bxs.size() == 1000) {
     printf("fed#%lu last 1000 bxnums: [", pixelFEDCard.fedNumber);
@@ -1767,11 +1821,16 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     printf("]\n");
     bxs.clear();
   }
+#endif
+
+#if 1
   //std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " ";
   if (evnum != slink64calls)
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " " << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m" << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
   if (bxnum != 502 && bxnum != 503)
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " \033[1m\033[31mWRONG BX\033[0m bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
+
+#endif
 
 #if 0
   std::cout << "slink 32-bit words from FW:\n";
@@ -1818,8 +1877,11 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     std::cout << "********************************************************************************\n";
     std::cout << "********************************************************************************" << std::endl;
   }
+#endif
 
-  const bool myfakefifo3 = false;
+#if 0
+  const bool myfakefifo3 = true;
+  size_t ndata64 = 0;
   if (myfakefifo3) {
     data[0] = 0x5000000000000000;
     data[0] |= uint64_t(f.a.event & 0xffffff) << 32;

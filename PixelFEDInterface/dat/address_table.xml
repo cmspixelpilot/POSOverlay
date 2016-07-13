@@ -434,6 +434,7 @@
     <node id="hephy_firmware_version" address="0x40020000" mask="0xffffffff" permission="r" />
     <node id="idel_individual_stat_block" address="0x40020001" mode="block" size="192" permission="r" />
     <node id="idel_individual_stat" address="0x40020001" permission="r">
+        <!-- these are per *fiber* 0..23 -->
         <node id="CH0" address="0x00000000" mode="block" size="4" />
         <node id="CH1" address="0x00000004" mode="block" size="4" />
         <node id="CH2" address="0x00000008" mode="block" size="4" />
@@ -458,7 +459,56 @@
         <node id="CH21" address="0x00000054" mode="block" size="4" />
         <node id="CH22" address="0x00000058" mode="block" size="4" />
         <node id="CH23" address="0x0000005C" mode="block" size="4" />
-        <!-- more to come! -->
+
+        <!-- these are per channel 0..47 -->
+        <node id="score_CH0"  address="0x00000064" />
+        <node id="score_CH1"  address="0x00000065" />
+        <node id="score_CH2"  address="0x00000066" />
+        <node id="score_CH3"  address="0x00000067" />
+        <node id="score_CH4"  address="0x00000068" />
+        <node id="score_CH5"  address="0x00000069" />
+        <node id="score_CH6"  address="0x0000006a" />
+        <node id="score_CH7"  address="0x0000006b" />
+        <node id="score_CH8"  address="0x0000006c" />
+        <node id="score_CH9"  address="0x0000006d" />
+        <node id="score_CH10" address="0x0000006e" />
+        <node id="score_CH11" address="0x0000006f" />
+        <node id="score_CH12" address="0x00000070" />
+        <node id="score_CH13" address="0x00000071" />
+        <node id="score_CH14" address="0x00000072" />
+        <node id="score_CH15" address="0x00000073" />
+        <node id="score_CH16" address="0x00000074" />
+        <node id="score_CH17" address="0x00000075" />
+        <node id="score_CH18" address="0x00000076" />
+        <node id="score_CH19" address="0x00000077" />
+        <node id="score_CH20" address="0x00000078" />
+        <node id="score_CH21" address="0x00000079" />
+        <node id="score_CH22" address="0x0000007a" />
+        <node id="score_CH23" address="0x0000007b" />
+        <node id="score_CH24" address="0x0000007c" />
+        <node id="score_CH25" address="0x0000007d" />
+        <node id="score_CH26" address="0x0000007e" />
+        <node id="score_CH27" address="0x0000007f" />
+        <node id="score_CH28" address="0x00000080" />
+        <node id="score_CH29" address="0x00000081" />
+        <node id="score_CH30" address="0x00000082" />
+        <node id="score_CH31" address="0x00000083" />
+        <node id="score_CH32" address="0x00000084" />
+        <node id="score_CH33" address="0x00000085" />
+        <node id="score_CH34" address="0x00000086" />
+        <node id="score_CH35" address="0x00000087" />
+        <node id="score_CH36" address="0x00000088" />
+        <node id="score_CH37" address="0x00000089" />
+        <node id="score_CH38" address="0x0000008a" />
+        <node id="score_CH39" address="0x0000008b" />
+        <node id="score_CH40" address="0x0000008c" />
+        <node id="score_CH41" address="0x0000008d" />
+        <node id="score_CH42" address="0x0000008e" />
+        <node id="score_CH43" address="0x0000008f" />
+        <node id="score_CH44" address="0x00000090" />
+        <node id="score_CH45" address="0x00000091" />
+        <node id="score_CH46" address="0x00000092" />
+        <node id="score_CH47" address="0x00000093" />
     </node>
     <!-- HEPHY CONTROL REGISTERS -->
     <node id="fe_ctrl_regs">
@@ -466,13 +516,18 @@
         <node id="decode_reg_reset" address="0x40030000" mask="0x00000002" permission="w" />
         <node id="idel_ctrl_reset" address="0x40030000" mask="0x00000004" permission="w" />
         <node id="initialize_swap" address="0x40030000" mask="0x00000008" permission="w" />
+        <node id="software_trigger_out" address="0x40030000" mask="0x40000000" permission="w" />
         <node id="idel_individual_ctrl" address="0x40030001" mode="block" size="48" permission="w" />
         <node id="fifo_config" address="0x40030031" permission="rw">
             <node id="overflow_value" mask="0x000fffff" />
+            <node id="overflow_value_TBMa" mask="0x000003ff" />
+            <node id="overflow_value_TBMb" mask="0x000ffc00" />
             <node id="channel_of_interest" mask="0x03f00000" />
             <node id="OSD_ROC_Nr" mask="0x7c000000" />
             <node id="TBM_old_new" mask="0x80000000" />
         </node>
+        <node id="transparent_delay" address="0x40030032" mask="0x0000003f" permission="w" />
+        <node id="disable_BE" address="0x40030033" mask="0x00000001" permission="rw" />
     </node>
     <!-- HEPHY SPY FIFOs -->
     <node id="fifo" permission="r">
