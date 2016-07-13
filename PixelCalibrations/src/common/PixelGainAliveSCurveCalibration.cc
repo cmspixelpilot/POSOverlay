@@ -33,6 +33,8 @@ void PixelGainAliveSCurveCalibration::beginCalibration(){
   nConfigs_=tempCalibObject->nConfigurations();
   nTriggersTotal_=tempCalibObject->nTriggersTotal();
 
+  noCal_ = tempCalibObject->parameterValue("noCal") == "yes";
+
   useLTC_=false;
   if ( tempCalibObject->parameterValue("useLTC") == "yes" ){
     cout << "PixelGainAliveSCurveCalibrationWithSLink::beginCalibration "
@@ -109,7 +111,9 @@ bool PixelGainAliveSCurveCalibration::execute()
   if(useLTC_) {
     //int sentTriggers =
     sendLTCCalSync(1);
-  } else {
+  } else if (noCal_) {
+    sendTTCLevelOne(true);
+  }  else {
     sendTTCCalSync();
   }
   //} // end if 
