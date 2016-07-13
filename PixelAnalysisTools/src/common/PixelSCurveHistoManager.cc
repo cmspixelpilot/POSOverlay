@@ -408,7 +408,7 @@ void PixelSCurveHistoManager::fit(void){
 		 << mean << " "<<istat<<" "<<chi2<<" "<<prob<<endl;
 
 
-	  } else if(saveGoodFits_ && (--maxNumberOfHistos_/2)>=0 ) { // use only 1/2 of the space for good fits
+	  } else if(1) { //saveGoodFits_ && (--maxNumberOfHistos_/2)>=0 ) { // use only 1/2 of the space for good fits
 	    // good fits
 	    dirGoodFits_->cd();
 	    histoToSave = (TH1*)scurve->Clone();
@@ -430,7 +430,7 @@ void PixelSCurveHistoManager::fit(void){
       }
     }    
   }
-  saveGoodFits_ = false; 
+  //  saveGoodFits_ = false; 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
