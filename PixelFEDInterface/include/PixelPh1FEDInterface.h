@@ -29,6 +29,8 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
   int setup(pos::PixelFEDCard pfc); 
   int setup();  // run the setup 
 
+  void disableBE(bool disable);
+  uint32_t getScore(int channel);
   void getBoardInfo();
   void disableFMCs();
   void enableFMCs();
