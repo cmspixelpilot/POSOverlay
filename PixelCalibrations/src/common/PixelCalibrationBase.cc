@@ -153,7 +153,12 @@ void PixelCalibrationBase::prepareFEDCalibrationMode(unsigned int nevents) {
   sendToFED(cmd, parameters);
 }
 
-void PixelCalibrationBase::sendTTCLevelOne(){
+void PixelCalibrationBase::sendTTCLevelOne(bool prep_fed){
+  if (prep_fed) {
+    prepareFEDCalibrationMode(1);
+    usleep(20);
+  }
+
   if (useTTC_){
     Attribute_Vector parametersToTTC(2);
     parametersToTTC[0].name_="xdaq:CommandPar";
@@ -216,7 +221,6 @@ void PixelCalibrationBase::sendTTCLevelOne(){
 void PixelCalibrationBase::sendTTCCalSync(){
   // JMT will this work putting it here always? Sleep after?
   prepareFEDCalibrationMode(1);
-
   usleep(20);
 
   if (useTTC_){
