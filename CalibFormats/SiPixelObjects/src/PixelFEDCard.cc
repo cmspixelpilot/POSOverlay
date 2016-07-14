@@ -691,6 +691,9 @@ PixelFEDCard::PixelFEDCard(string fileName):
     fscanf(infile, "Timeout number OOS threshold: %d\n", &timeout_number_oos_threshold);
     if (localDEBUG) printf("Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
 
+    fscanf(infile, "Frontend disable backend: %d\n", &frontend_disable_backend);
+    if (localDEBUG) printf("Frontend disable backend: %d\n", frontend_disable_backend);
+
     getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
   }
   else {
@@ -1343,6 +1346,7 @@ void PixelFEDCard::writeASCII(std::string dir) const{
     fprintf(outfile, "Timeout checking enabled: %d\n", timeout_checking_enabled);
     fprintf(outfile, "Timeout counter start: %d\n", timeout_counter_start);
     fprintf(outfile, "Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
+    fprintf(outfile, "Frontend disable backend: %d\n", frontend_disable_backend);
   }
   else
     fprintf(outfile, "Type: VME\n");
