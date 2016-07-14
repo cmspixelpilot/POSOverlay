@@ -148,10 +148,21 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 
     if (OnlyFIFO1) {
       PixelPh1FEDInterface* f = dynamic_cast<PixelPh1FEDInterface*>(iFED);
-      f->readTransparentFIFO();
-      f->readSpyFIFO();
+      //f->readTransparentFIFO();
+      //f->readSpyFIFO();
       PixelPh1FEDInterface::digfifo1 d = f->readFIFO1(DumpFIFOs);
-      printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
+      const uint32_t score25 = f->getScore(25);
+      const uint32_t score26 = f->getScore(26);
+      if (DumpFIFOs) std::cout << "scores:\n"
+                << "ch 25: DDDDDDDDrrrrrrrrTH\n"
+                << "       " << std::bitset<18>(score25) << "\n"
+                << "ch 26: DDDDDDDDrrrrrrrrTH\n"
+                << "       " << std::bitset<18>(score26) << std::endl;
+      FillEm(state, FAscoreOK, score25 == 0x3FFFF);
+      FillEm(state, FBscoreOK, score26 == 0x3FFFF);
+      FillEm(state, FscoresOK, score25 == 0x3FFFF && score26 == 0x3FFFF);
+      
+      if (DumpFIFOs) printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
       FillEm(state, F1nTBMHeaders,  d.a.n_tbm_h + d.b.n_tbm_h);
       FillEm(state, F1nTBMTrailers, d.a.n_tbm_t + d.b.n_tbm_t);
       FillEm(state, F1nROCHeaders,  d.a.n_roc_h + d.b.n_roc_h);
@@ -188,7 +199,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       FillEm(state, F1nBWrongHits,   wrong[1]);
 
       const int shouldbe = 8 * int(colrows.size());
-      if (DumpFIFOs) printf("correct out of %lu: a: %i b: %i   wrong: a: %i b: %i\n", shouldbe, correct[0], correct[1], wrong[0], wrong[1]);
+      if (DumpFIFOs) printf("correct out of %i: a: %i b: %i   wrong: a: %i b: %i\n", shouldbe, correct[0], correct[1], wrong[0], wrong[1]);
 
       FillEm(state, F1nOK,
              d.a.n_tbm_h == 1 && d.a.n_tbm_t == 1 && d.a.n_roc_h == 8 &&
@@ -815,6 +826,7 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
     "FS3nTBMHeader", "FS3nTBMTrailer", "FS3nROCHeaders", "FS3wrongPix", "FS3rightPix", "FS3dangling",
     "FS5nTBMHeader", "FS5nTBMTrailer", "FS5nROCHeaders", "FS5wrongPix", "FS5rightPix", "FS5dangling",
     "FS7nTBMHeader", "FS7nTBMTrailer", "FS7nROCHeaders", "FS7wrongPix", "FS7rightPix", "FS7dangling",
+    "FAscoreOK", "FBscoreOK", "FscoresOK",
     "F1nTBMHeaders", "F1nTBMTrailers", "F1nROCHeaders", "F1nHits", "F1nCorrectHits", "F1nWrongHits",
     "F1nTBMAHeaders", "F1nTBMATrailers", "F1nROCAHeaders", "F1nAHits", "F1nACorrectHits", "F1nAWrongHits",
     "F1nTBMBHeaders", "F1nTBMBTrailers", "F1nROCBHeaders", "F1nBHits", "F1nBCorrectHits", "F1nBWrongHits", "F1nOK",

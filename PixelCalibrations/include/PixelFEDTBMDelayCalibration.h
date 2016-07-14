@@ -48,6 +48,7 @@ class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
     FS3nTBMHeader, FS3nTBMTrailer, FS3nROCHeaders, FS3wrongPix, FS3rightPix, FS3dangling,
     FS5nTBMHeader, FS5nTBMTrailer, FS5nROCHeaders, FS5wrongPix, FS5rightPix, FS5dangling,
     FS7nTBMHeader, FS7nTBMTrailer, FS7nROCHeaders, FS7wrongPix, FS7rightPix, FS7dangling,
+    FAscoreOK, FBscoreOK, FscoresOK,
     F1nTBMHeaders, F1nTBMTrailers, F1nROCHeaders, F1nHits, F1nCorrectHits, F1nWrongHits,
     F1nTBMAHeaders, F1nTBMATrailers, F1nROCAHeaders, F1nAHits, F1nACorrectHits, F1nAWrongHits,
     F1nTBMBHeaders, F1nTBMBTrailers, F1nROCBHeaders, F1nBHits, F1nBCorrectHits, F1nBWrongHits, F1nOK,
