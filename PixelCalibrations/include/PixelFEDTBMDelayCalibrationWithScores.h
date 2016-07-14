@@ -1,5 +1,5 @@
-#ifndef _PixelFEDTBMDelayCalibration_h_
-#define _PixelFEDTBMDelayCalibration_h_
+#ifndef _PixelFEDTBMDelayCalibrationWithScores_h_
+#define _PixelFEDTBMDelayCalibrationWithScores_h_
 
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "PixelCalibrations/include/PixelFEDCalibrationBase.h"
@@ -14,9 +14,9 @@ class TH1F;
 class TH2F;
 class TH3F;
 
-class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
+class PixelFEDTBMDelayCalibrationWithScores: public PixelFEDCalibrationBase {
  public:
-  PixelFEDTBMDelayCalibration(const PixelFEDSupervisorConfiguration&, SOAPCommander*);
+  PixelFEDTBMDelayCalibrationWithScores(const PixelFEDSupervisorConfiguration&, SOAPCommander*);
 
   virtual void initializeFED();
   virtual xoap::MessageReference beginCalibration(xoap::MessageReference msg);

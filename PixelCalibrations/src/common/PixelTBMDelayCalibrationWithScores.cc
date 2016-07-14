@@ -1,18 +1,18 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
-#include "PixelCalibrations/include/PixelTBMDelayCalibration.h"
+#include "PixelCalibrations/include/PixelTBMDelayCalibrationWithScores.h"
 
 //#include <toolbox/convertstring.h>
 
 using namespace pos;
 
-PixelTBMDelayCalibration::PixelTBMDelayCalibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
+PixelTBMDelayCalibrationWithScores::PixelTBMDelayCalibrationWithScores(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
   : PixelCalibrationBase(tempConfiguration, *mySOAPCmdr)
 {
-  std::cout << "Greetings from the PixelTBMDelayCalibration copy constructor." << std::endl;
+  std::cout << "Greetings from the PixelTBMDelayCalibrationWithScores copy constructor." << std::endl;
 }
 
-void PixelTBMDelayCalibration::beginCalibration() {
+void PixelTBMDelayCalibrationWithScores::beginCalibration() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
@@ -30,7 +30,7 @@ void PixelTBMDelayCalibration::beginCalibration() {
   DelayEveryTrigger = tempCalibObject->parameterValue("DelayEveryTrigger") == "yes";
 }
 
-bool PixelTBMDelayCalibration::execute() {
+bool PixelTBMDelayCalibrationWithScores::execute() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
@@ -65,7 +65,7 @@ bool PixelTBMDelayCalibration::execute() {
   return event_ + 1 < tempCalibObject->nTriggersTotal();
 }
 
-void PixelTBMDelayCalibration::endCalibration() {
+void PixelTBMDelayCalibrationWithScores::endCalibration() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
   assert(event_ == tempCalibObject->nTriggersTotal());
@@ -76,7 +76,7 @@ void PixelTBMDelayCalibration::endCalibration() {
   commandToAllFEDCrates("FEDCalibrations", parametersToFED);
 }
 
-std::vector<std::string> PixelTBMDelayCalibration::calibrated() {
+std::vector<std::string> PixelTBMDelayCalibrationWithScores::calibrated() {
   std::vector<std::string> tmp;
   return tmp;
 }

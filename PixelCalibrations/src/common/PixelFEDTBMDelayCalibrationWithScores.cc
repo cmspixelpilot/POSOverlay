@@ -1,6 +1,6 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
-#include "PixelCalibrations/include/PixelFEDTBMDelayCalibration.h"
+#include "PixelCalibrations/include/PixelFEDTBMDelayCalibrationWithScores.h"
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "PixelFEDInterface/include/PixelPh1FEDInterface.h"
 #include "PixelUtilities/PixelFEDDataTools/include/PixelFEDDataTypes.h"
@@ -18,18 +18,18 @@
 
 using namespace pos;
 
-PixelFEDTBMDelayCalibration::PixelFEDTBMDelayCalibration(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
+PixelFEDTBMDelayCalibrationWithScores::PixelFEDTBMDelayCalibrationWithScores(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
   : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr), rootf(0)
 {
-  std::cout << "In PixelFEDTBMDelayCalibration copy ctor()" << std::endl;
+  std::cout << "In PixelFEDTBMDelayCalibrationWithScores copy ctor()" << std::endl;
 }
 
-void PixelFEDTBMDelayCalibration::initializeFED() {
+void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
   setFEDModeAndControlRegister(0x8, 0x30010);
 }
 
-xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::MessageReference msg) {
-  std::cout << "In PixelFEDTBMDelayCalibration::beginCalibration()" << std::endl;
+xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::beginCalibration(xoap::MessageReference msg) {
+  std::cout << "In PixelFEDTBMDelayCalibrationWithScores::beginCalibration()" << std::endl;
 
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
@@ -63,7 +63,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
   return reply;
 }
 
-xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReference msg) {
+xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::execute(xoap::MessageReference msg) {
   Attribute_Vector parameters(2);
   parameters[0].name_ = "WhatToDo";
   parameters[1].name_ = "StateNum";
@@ -76,7 +76,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReferen
   else if (parameters[0].value_ == "Analyze")
     Analyze();
   else {
-    cout << "ERROR: PixelFEDTBMDelayCalibration::execute() does not understand the WhatToDo command, "<< parameters[0].value_ <<", sent to it.\n";
+    cout << "ERROR: PixelFEDTBMDelayCalibrationWithScores::execute() does not understand the WhatToDo command, "<< parameters[0].value_ <<", sent to it.\n";
     assert(0);
   }
 
@@ -84,13 +84,13 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::execute(xoap::MessageReferen
   return reply;
 }
 
-xoap::MessageReference PixelFEDTBMDelayCalibration::endCalibration(xoap::MessageReference msg) {
-  std::cout << "In PixelFEDTBMDelayCalibration::endCalibration()" << std::endl;
+xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoap::MessageReference msg) {
+  std::cout << "In PixelFEDTBMDelayCalibrationWithScores::endCalibration()" << std::endl;
   xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
   return reply;
 }
 
-void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
+void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
@@ -803,11 +803,11 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
   }
 }
 
-void PixelFEDTBMDelayCalibration::Analyze() {
+void PixelFEDTBMDelayCalibrationWithScores::Analyze() {
   CloseRootf();
 }
 
-void PixelFEDTBMDelayCalibration::CloseRootf() {
+void PixelFEDTBMDelayCalibrationWithScores::CloseRootf() {
   if (rootf) {
     rootf->Write();
     rootf->Close();
@@ -815,7 +815,7 @@ void PixelFEDTBMDelayCalibration::CloseRootf() {
   }
 }
 
-void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
+void PixelFEDTBMDelayCalibrationWithScores::BookEm(const TString& path) {
   TString root_fn;
   if (path == "")
     root_fn.Form("%s/TBMDelay.root", outputDir().c_str());
@@ -886,7 +886,7 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
   }
 }
 
-void PixelFEDTBMDelayCalibration::FillEm(unsigned state, int which, float c) {
+void PixelFEDTBMDelayCalibrationWithScores::FillEm(unsigned state, int which, float c) {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 

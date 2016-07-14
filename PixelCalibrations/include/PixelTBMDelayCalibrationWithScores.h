@@ -1,11 +1,11 @@
-#ifndef _PixelTBMDelayCalibration_h_
-#define _PixelTBMDelayCalibration_h_
+#ifndef _PixelTBMDelayCalibrationWithScores_h_
+#define _PixelTBMDelayCalibrationWithScores_h_
 
 #include "PixelCalibrations/include/PixelCalibrationBase.h"
 
-class PixelTBMDelayCalibration : public PixelCalibrationBase {
+class PixelTBMDelayCalibrationWithScores : public PixelCalibrationBase {
  public:
-  PixelTBMDelayCalibration(const PixelSupervisorConfiguration&, SOAPCommander*);
+  PixelTBMDelayCalibrationWithScores(const PixelSupervisorConfiguration&, SOAPCommander*);
 
   void beginCalibration();
   virtual bool execute();
