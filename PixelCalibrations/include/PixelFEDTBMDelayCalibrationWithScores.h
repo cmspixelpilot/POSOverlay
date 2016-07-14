@@ -3,6 +3,7 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "PixelCalibrations/include/PixelFEDCalibrationBase.h"
+#include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
 #include <fstream>
 
@@ -60,6 +61,8 @@ class PixelFEDTBMDelayCalibrationWithScores: public PixelFEDCalibrationBase {
 
   std::vector<TH1F*> scans1d[nDecode];
   std::vector<TH2F*> scans2d[nDecode];
+
+  PixelTimer timer;
 };
 
 #endif

@@ -40,6 +40,8 @@ void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
 xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::beginCalibration(xoap::MessageReference msg) {
   std::cout << "In PixelFEDTBMDelayCalibrationWithScores::beginCalibration()" << std::endl;
 
+  timer.setName("FED readout");
+
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
@@ -89,6 +91,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::execute(xoap::Mess
 
 xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoap::MessageReference msg) {
   std::cout << "In PixelFEDTBMDelayCalibrationWithScores::endCalibration()" << std::endl;
+  timer.printStats();
   xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
   return reply;
 }
@@ -126,6 +129,8 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
   }
 
   //////
+
+  timer.start();
 
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
@@ -232,6 +237,8 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
       printf("\n");
     }
   }
+
+  timer.stop();
 }
 
 void PixelFEDTBMDelayCalibrationWithScores::Analyze() {

@@ -18,6 +18,8 @@ class PixelTimer{
     double  avgtime() const;
     double  rms() const;
 
+    void printStats() const;
+
     bool started() {return startflag_;}
     void setVerbose(bool verbosity) {verbose_=verbosity;}
     void setName(std::string name) {name_=name;}

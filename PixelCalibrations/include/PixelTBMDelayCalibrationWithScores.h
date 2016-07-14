@@ -12,8 +12,8 @@ class PixelTBMDelayCalibrationWithScores : public PixelCalibrationBase {
   void endCalibration();
   virtual std::vector<std::string> calibrated();
 
-  bool DelayBeforeFirstTrigger;
-  bool DelayEveryTrigger;
+ private:
+  PixelTimer fec_timer, sleep_timer, trig_timer, fed_timer;
 };
 
 #endif
