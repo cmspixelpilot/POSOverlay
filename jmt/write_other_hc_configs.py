@@ -1,3 +1,31 @@
+# original map:
+# doh
+# 8 A -> fec 9 mfec 1 ch 1
+# 8 B -> fec 9 mfec 1 ch 2
+# 14 A -> fec 10 mfec 1 ch 1
+# 14 B -> fec 10 mfec 1 ch 2
+# poh
+# 0041 -> fed id 1294 receiver b
+# 0045 -> fed id 1294 receiver t
+# 0047 -> fed id 1295 receiver b
+# 0046 -> fed id 1295 receiver t
+# 0043 -> fed id 1296 receiver b
+# 0028 -> fed id 1296 receiver t
+# 0035 -> fed id 1297 receiver b
+# 0044 -> fed id 1297 receiver t
+# 0027 -> fed id 1298 receiver b
+# 0039 -> fed id 1298 receiver t
+# 0052 -> fed id 1299 receiver b
+# 0048 -> fed id 1299 receiver t
+# 0081 -> fed id 1300 receiver b
+# 0051 -> fed id 1300 receiver t
+
+# hack:
+# group 0, don't need to move anything, just plug in only DOH 8 A and B into fec 9 mfec 1 ch 1 and 2, and feds 1294-1296 + 0044 in 1297 receiver t
+# group 1:
+#  move mfec from fec 10 to fec 9
+#  move feds 1298-1300 to 1294-1296 (keep 0035 in 1297 receiver b constant)
+
 import sys, csv, os
 from collections import defaultdict
 
@@ -73,6 +101,7 @@ class Module:
         self.dcdc_j = d['DCDC J11/J12']
         assert self.dcdc_j in ['J11', 'J12']
 
+        self.doh_bundle = d['DOH bundle']
         self.doh = d['DOH A/B']
         assert self.doh in 'AB'
 
@@ -130,10 +159,46 @@ class Module:
     def portcard(self):
         return 'FPix_%s_D%i_PRT%i' % (self.hc, self.disk, self.portcardnum)
 
+    @property
+    def fec_ip(self):
+        return 'pxfec%02i' % self.fec
+
+    @property
+    def fec_uri(self):
+        return 'chtcp-2.0://localhost:10203?target=%s:50001' % self.fec_ip
+
+    @property
+    def fed_ip(self):
+        return 'fed%02i' % self.fed_id
+
+    @property
+    def fed_uri(self):
+        return 'chtcp-2.0://localhost:10203?target=%s:50001' % self.fed_ip
+
+
 modules = [] 
 modules_by_portcard_hj = defaultdict(list)
 modules_by_portcard = defaultdict(list)
 hubids_by_portcard = defaultdict(list)
+
+# D1, 5 feds, 1 fec mezzanine hack
+# and disconnected modules from too-short cables
+def portcardOK(pc):
+    #return True
+    return '_D1_' in pc
+def moduleOK(m):
+    #return True
+    if not (m.disk == 1 and m.poh_bundle not in [1,2,3,4,5,6,7]):
+        return False
+    not_connected = {
+        'TB': [2,6],
+        'TC': [6],
+        'TD': [2,4],
+        }        
+    return m.portcard_connection not in not_connected.get(m.portcard_hj[-2:], [])
+
+seen_poh = set()
+seen_doh = set()
         
 for r in rows:
     if not r[0].strip():
@@ -142,6 +207,20 @@ for r in rows:
 
     m = Module(r)
 
+    if m.poh_sn not in seen_poh:
+        print m.poh_sn, '->', 'fed id %i receiver %s' % (m.fed_id, 'bt'[m.fed_receiver])
+        seen_poh.add(m.poh_sn)
+    if (m.doh_bundle, m.doh) not in seen_doh:
+        print m.doh_bundle, m.doh, '->', 'fec %i mfec %i ch %i' % (m.fec, m.mfec, m.mfecchannel)
+        seen_doh.add((m.doh_bundle, m.doh))
+
+    # D1, 5 feds, 1 fec mezzanine hack
+    if moduleOK(m):
+        if m.fec == 10:
+            m.fec = 9
+        if m.fed_id in [1298, 1299, 1300]:
+            m.fed_id -= 4
+        
     modules.append(m)
     modules_by_portcard_hj[m.portcard_hj].append(m)
     modules_by_portcard[m.portcard].append(m)
@@ -176,11 +255,15 @@ assert len(set(portcards)) == 12
 # poh numbers unique?
 assert len(set((m.portcard, m.poh_num) for m in modules)) == 12*14
 
-feds = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules]))
-assert len(feds) == 7
+#feds = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules]))
+#assert len(feds) == 7
+feds_used = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules if moduleOK(m)]))
+assert len(feds_used) == 4
 
-fecs = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules]))
-assert len(fecs) == 2
+#fecs = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules]))
+#assert len(fecs) == 2
+fecs_used = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules if moduleOK(m)]))
+assert len(fecs_used) == 1
 
 t_portcard = '''Name: %(portcard)s
 Type: phase1
@@ -247,6 +330,7 @@ f.write('# Portcard              Module                     AOH channel\n')
 portcardmap = [(m.portcard, m.name, m.poh_num) for m in modules]
 portcardmap.sort(key=lambda x: (x[0],x[2]))
 for m in portcardmap:
+    if not portcardOK(m[0]): continue
     f.write('%s\t%s\t%s\n' % m)
 f.close()
 
@@ -270,6 +354,7 @@ fmt = \
 header = tuple('#name A/B FEC mfec mfecch hubid port rocid FEDid FEDch roc#'.split())
 f.write(fmt % header)
 for m in modules:
+    if not moduleOK(m): continue
     for iroc in xrange(16):
         fields = (
             m.name, 
@@ -296,6 +381,7 @@ fn = os.path.join(path, 'detectconfig.dat')
 f = open(fn, 'wt')
 f.write('Rocs:\n')
 for m in modules:
+    if not moduleOK(m): continue
     for iroc in xrange(16):
         f.write('%s\n' % m.name)
 f.close()
@@ -324,7 +410,7 @@ if not os.path.isdir(path):
 fn = os.path.join(path, 'fedconfig.dat')
 f = open(fn, 'wt')
 f.write('#FED number     crate     vme base address     type    URI\n')
-for fed_id, fed_crate, fed_uri in feds:
+for fed_id, fed_crate, fed_uri in feds_used:
     f.write('%s\t%s\t%s\tCTA\t%s\n' % (fed_id, fed_crate, fed_id, fed_uri))
 f.close()
 
@@ -334,7 +420,7 @@ if not os.path.isdir(path):
 fn = os.path.join(path, 'fecconfig.dat')
 f = open(fn, 'wt')
 f.write('#FEC number     crate     vme base address     type    URI\n')
-for fec_id, fec_crate, fec_uri in fecs:
+for fec_id, fec_crate, fec_uri in fecs_used:
     f.write('%s\t%s\t%s\tCTA\t%s\n' % (fec_id, fec_crate, fec_id, fec_uri))
 f.close()
 
@@ -2458,7 +2544,7 @@ Spare fedcard input 10:0
 path = os.path.join(HC, 'fedcard')
 if not os.path.isdir(path):
     os.makedirs(path)
-for fed_id, fed_crate, fed_uri in feds:
+for fed_id, fed_crate, fed_uri in feds_used:
     fn = os.path.join(path, 'params_fed_%i.dat' % fed_id)
     open(fn, 'wt').write(t_fedcard % locals())
 
