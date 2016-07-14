@@ -1729,9 +1729,7 @@ uint32_t PixelPh1FEDInterface::getScore(int channel) {
   };
 
   assert(channel >= 1 && channel <= 48);
-  const uint32_t v = regManager->ReadReg(score_nodes[channel-1]);
-  assert((v >> 20) == 0);
-  return v;
+  return regManager->ReadReg(score_nodes[channel-1]);
 }
 
 int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
