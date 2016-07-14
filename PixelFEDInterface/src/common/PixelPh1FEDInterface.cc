@@ -1472,7 +1472,7 @@ PixelPh1FEDInterface::encfifo1 PixelPh1FEDInterface::decodeFIFO1Stream(const std
     }
     else if (marker == 6) {
       f.ch_evt_t = (word >> 26) & 0x3f;
-      assert(f.ch == f.ch_evt_t);
+      //assert(f.ch == f.ch_evt_t);
       f.id_evt_t = (word >> 21) & 0x1f;
       f.marker = word & 0x1fffff;
     }
