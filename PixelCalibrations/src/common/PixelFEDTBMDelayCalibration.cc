@@ -153,14 +153,27 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       PixelPh1FEDInterface::digfifo1 d = f->readFIFO1(DumpFIFOs);
       const uint32_t score25 = f->getScore(25);
       const uint32_t score26 = f->getScore(26);
-      if (DumpFIFOs) std::cout << "scores:\n"
-                << "ch 25: DDDDDDDDrrrrrrrrTH\n"
-                << "       " << std::bitset<18>(score25) << "\n"
-                << "ch 26: DDDDDDDDrrrrrrrrTH\n"
-                << "       " << std::bitset<18>(score26) << std::endl;
-      FillEm(state, FAscoreOK, score25 == 0x3FFFF);
-      FillEm(state, FBscoreOK, score26 == 0x3FFFF);
-      FillEm(state, FscoresOK, score25 == 0x3FFFF && score26 == 0x3FFFF);
+      if (DumpFIFOs) {
+        std::cout << "scores:\n"
+                  << "ch 25: wc DDDDDDDD rrrrrrrr RRRRRRRR TH\n"
+                  << "       " << std::setw(2) << (score25 >> 26) << " "
+                  << std::bitset<8>((score25 >> 18) & 0xFF) << " "
+                  << std::bitset<8>((score25 >> 10) & 0xFF) << " "
+                  << std::bitset<8>((score25 >>  2) & 0xFF) << " "
+                  << std::bitset<2>(score25 & 0x3)
+                  << "\n";
+        std::cout << "ch 26: wc DDDDDDDD rrrrrrrr RRRRRRRR TH\n"
+                  << "       " << std::setw(2) << (score26 >> 26) << " "
+                  << std::bitset<8>((score26 >> 18) & 0xFF) << " "
+                  << std::bitset<8>((score26 >> 10) & 0xFF) << " "
+                  << std::bitset<8>((score26 >>  2) & 0xFF) << " "
+                  << std::bitset<2>(score26 & 0x3)
+                  << "\n";
+      }
+      const uint32_t perfect_score = 0x4bfc03ff; // want 18 words, 8 hits, 8 roc headers, tbm header, trailer
+      FillEm(state, FAscoreOK, score25 == perfect_score);
+      FillEm(state, FBscoreOK, score26 == perfect_score);
+      FillEm(state, FscoresOK, score25 == perfect_score && score26 == perfect_score);
       
       if (DumpFIFOs) printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
       FillEm(state, F1nTBMHeaders,  d.a.n_tbm_h + d.b.n_tbm_h);
