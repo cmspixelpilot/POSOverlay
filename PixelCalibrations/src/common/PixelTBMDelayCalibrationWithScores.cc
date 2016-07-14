@@ -2,14 +2,11 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
 #include "PixelCalibrations/include/PixelTBMDelayCalibrationWithScores.h"
 
-//#include <toolbox/convertstring.h>
-
 using namespace pos;
 
 PixelTBMDelayCalibrationWithScores::PixelTBMDelayCalibrationWithScores(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
   : PixelCalibrationBase(tempConfiguration, *mySOAPCmdr)
 {
-  std::cout << "Greetings from the PixelTBMDelayCalibrationWithScores copy constructor." << std::endl;
 }
 
 void PixelTBMDelayCalibrationWithScores::beginCalibration() {
@@ -18,11 +15,6 @@ void PixelTBMDelayCalibrationWithScores::beginCalibration() {
 
   // Check that PixelCalibConfiguration settings make sense.
 	
-  if (!tempCalibObject->singleROC() && tempCalibObject->maxNumHitsPerROC() > 2 && tempCalibObject->parameterValue("OverflowWarning") != "no") {
-    std::cout << "ERROR:  FIFO3 will overflow with more than two hits on each ROC.  To run this calibration, use 2 or less hits per ROC, or use SingleROC mode.  Now aborting..." << std::endl;
-    assert(0);
-  }
-
   if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMBDelay") && !tempCalibObject->containsScan("TBMPLL"))
     std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
 
@@ -40,18 +32,14 @@ bool PixelTBMDelayCalibrationWithScores::execute() {
 
   // Configure all TBMs and ROCs according to the PixelCalibConfiguration settings, but only when it's time for a new configuration.
   if (firstOfPattern) {
-    std::cout << "new state " << state << std::endl;
+    std::cout << "New TBM delay state " << state << std::endl;
     commandToAllFECCrates("CalibRunning");
   }
 
   if (firstOfPattern) {
-    //commandToAllFEDCrates("JMTJunk");
     std::cout << "Sleeping 5 seconds for feds to re-acquire phases" << std::endl;
     sleep(5);
   }
-
-  //if (DelayEveryTrigger || (DelayBeforeFirstTrigger && firstOfPattern))
-  //  usleep(1000000);
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();

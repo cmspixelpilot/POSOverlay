@@ -3,16 +3,13 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "PixelCalibrations/include/PixelFEDCalibrationBase.h"
-#include "PixelUtilities/PixelFEDDataTools/include/Moments.h"
-#include "PixelUtilities/PixelFEDDataTools/include/PixelScanRecord.h"
 
-#include <cstdint>
 #include <fstream>
 
+class TString;
 class TFile;
 class TH1F;
 class TH2F;
-class TH3F;
 
 class PixelFEDTBMDelayCalibrationWithScores: public PixelFEDCalibrationBase {
  public:
@@ -30,29 +27,34 @@ class PixelFEDTBMDelayCalibrationWithScores: public PixelFEDCalibrationBase {
   void BookEm(const TString& path);
   void FillEm(unsigned state, int which, float c);
 
-  bool OnlyFIFO1;
-  bool OnlyFIFO3;
-  bool DumpFIFOs;
-  bool PrintHits;
+  bool Dumps;
   std::vector<std::string> dacsToScan;
   unsigned lastTBMPLL;
   TFile* rootf;
 
-  enum { 
-    F11almostFull, F13almostFull, F15almostFull, F17almostFull,
-    F21almostFull, F23almostFull, F25almostFull, F27almostFull,
-    F31almostFull, F37almostFull,
-    FT1nTBMHeader, FT1nTBMHeaders, FT1nTBMTrailer, FT1nTBMTrailers, FT1nROCHeaders, FT1wrongPix, FT1rightPix,
-    FT7nTBMHeader, FT7nTBMHeaders, FT7nTBMTrailer, FT7nTBMTrailers, FT7nROCHeaders, FT7wrongPix, FT7rightPix,
-    FS1nTBMHeader, FS1nTBMTrailer, FS1nROCHeaders, FS1wrongPix, FS1rightPix, FS1dangling,
-    FS3nTBMHeader, FS3nTBMTrailer, FS3nROCHeaders, FS3wrongPix, FS3rightPix, FS3dangling,
-    FS5nTBMHeader, FS5nTBMTrailer, FS5nROCHeaders, FS5wrongPix, FS5rightPix, FS5dangling,
-    FS7nTBMHeader, FS7nTBMTrailer, FS7nROCHeaders, FS7wrongPix, FS7rightPix, FS7dangling,
-    FAscoreOK, FBscoreOK, FscoresOK,
-    F1nTBMHeaders, F1nTBMTrailers, F1nROCHeaders, F1nHits, F1nCorrectHits, F1nWrongHits,
-    F1nTBMAHeaders, F1nTBMATrailers, F1nROCAHeaders, F1nAHits, F1nACorrectHits, F1nAWrongHits,
-    F1nTBMBHeaders, F1nTBMBTrailers, F1nROCBHeaders, F1nBHits, F1nBCorrectHits, F1nBWrongHits, F1nOK,
-    F3fifoErr, F3wrongRoc, F3wrongPix, F3rightPix,
+  enum {
+    nF1OK,
+    nF1TBMHeaders, nF1TBMTrailers, nF1ROCHeaders, nF1Hits, nF1CorrectHits, nF1WrongHits,
+    nF1TBMAHeaders, nF1TBMATrailers, nF1ROCAHeaders, nF1AHits, nF1ACorrectHits, nF1AWrongHits,
+    nF1TBMBHeaders, nF1TBMBTrailers, nF1ROCBHeaders, nF1BHits, nF1BCorrectHits, nF1BWrongHits,
+    nFib01ScoresOK, nFib02ScoresOK, nFib03ScoresOK, nFib04ScoresOK,
+    nFib05ScoresOK, nFib06ScoresOK, nFib07ScoresOK, nFib08ScoresOK,
+    nFib09ScoresOK, nFib10ScoresOK, nFib11ScoresOK, nFib12ScoresOK,
+    nFib13ScoresOK, nFib14ScoresOK, nFib15ScoresOK, nFib16ScoresOK,
+    nFib17ScoresOK, nFib18ScoresOK, nFib19ScoresOK, nFib20ScoresOK,
+    nFib21ScoresOK, nFib22ScoresOK, nFib23ScoresOK, nFib24ScoresOK,
+    nFib01AScoresOK, nFib02AScoresOK, nFib03AScoresOK, nFib04AScoresOK,
+    nFib05AScoresOK, nFib06AScoresOK, nFib07AScoresOK, nFib08AScoresOK,
+    nFib09AScoresOK, nFib10AScoresOK, nFib11AScoresOK, nFib12AScoresOK,
+    nFib13AScoresOK, nFib14AScoresOK, nFib15AScoresOK, nFib16AScoresOK,
+    nFib17AScoresOK, nFib18AScoresOK, nFib19AScoresOK, nFib20AScoresOK,
+    nFib21AScoresOK, nFib22AScoresOK, nFib23AScoresOK, nFib24AScoresOK,
+    nFib01BScoresOK, nFib02BScoresOK, nFib03BScoresOK, nFib04BScoresOK,
+    nFib05BScoresOK, nFib06BScoresOK, nFib07BScoresOK, nFib08BScoresOK,
+    nFib09BScoresOK, nFib10BScoresOK, nFib11BScoresOK, nFib12BScoresOK,
+    nFib13BScoresOK, nFib14BScoresOK, nFib15BScoresOK, nFib16BScoresOK,
+    nFib17BScoresOK, nFib18BScoresOK, nFib19BScoresOK, nFib20BScoresOK,
+    nFib21BScoresOK, nFib22BScoresOK, nFib23BScoresOK, nFib24BScoresOK,
     nDecode
   };
 
