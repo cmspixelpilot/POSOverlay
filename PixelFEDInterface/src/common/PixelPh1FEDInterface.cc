@@ -1741,21 +1741,6 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   digfifo1 f = readFIFO1(true);
 #endif
 
-#if 0
-  const uint32_t score25 = getScore(25);
-  const uint32_t score26 = getScore(26);
-  std::cout << "scores:\n"
-            << "ch 25: DDDDDDDDrrrrrrrrTH\n"
-            << "       " << std::bitset<18>(score25) << "\n"
-            << "ch 26: DDDDDDDDrrrrrrrrTH\n"
-            << "       " << std::bitset<18>(score26) << std::endl;
-#endif
-#if 0
-  std::cout << "scores:\n";
-  for (int i = 1; i <= 48; ++i)
-    std::cout << "ch " << std::setw(2) << i << ": DDDDDDDDrrrrrrrrTH\n"
-              << "       " << std::bitset<18>(getScore(i)) << "\n";
-#endif
   //  drainErrorFifo(0);
 
 #if 1
@@ -1771,8 +1756,8 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     sleepcnt++;
     //if(sleepcnt > 1000) mycntword = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
     //if(mycntword>5){std::cout<<mycntword<<" words in the ddr"<<std::endl; usleep(300000);}
-    if (sleepcnt > 2000000) {
-      cout << "\033[1m\033[32mSOFTWARE TIMEOUT\033[0m" << std::endl;
+    if (sleepcnt > 50000) {
+      cout << "\033[1m\033[32mSOFTWARE TIMEOUT (5sec)\033[0m" << std::endl;
       our_timeout = true;
       break;
     }
