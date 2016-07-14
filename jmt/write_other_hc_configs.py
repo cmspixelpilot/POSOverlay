@@ -86,6 +86,8 @@ class Module:
         self.poh_fiber_str = d['POH fiber color']
         assert self.poh_fiber_str in fiber_colors
         self.poh_fiber = int(self.poh_fiber_str.split('-')[1])
+        self.poh_bundle = int(d['POH Bundle'])
+        self.poh_sn = d['POH SN']
         self.fed_channel_str = d['FED channel']
         self.fed_position = int(d['FED position']) # slot ?
         self.fed_receiver = 'bt'.index(d['FED receiver'])
@@ -93,9 +95,6 @@ class Module:
         self.fed_id = int(d['FED ID'])
         self.fed_crate = 1
         assert self.fed_id - self.fed_position == 1293
-
-        self.fed_ip = 'fed%02i' % self.fed_id
-        self.fed_uri = 'chtcp-2.0://localhost:10203?target=%s:50001' % self.fed_ip
 
         a,b = self.fed_channel_str.split('/')
         a,b = int(a), int(b)
@@ -117,10 +116,7 @@ class Module:
             assert self.mfec in [1,2]
         self.mfecchannel = int(d['mfecchannel'])
         assert self.mfecchannel in [1,2]
-
-        self.fec_ip = 'pxfec%02i' % self.fec
         self.fec_crate = 1
-        self.fec_uri = 'chtcp-2.0://localhost:10203?target=%s:50001' % self.fec_ip
 
     @property
     def portcardstack(self):
