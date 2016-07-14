@@ -2,8 +2,6 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
 #include "PixelCalibrations/include/PixelTBMDelayCalibration.h"
 
-//#include <toolbox/convertstring.h>
-
 using namespace pos;
 
 PixelTBMDelayCalibration::PixelTBMDelayCalibration(const PixelSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr)
@@ -25,9 +23,6 @@ void PixelTBMDelayCalibration::beginCalibration() {
 
   if (!tempCalibObject->containsScan("TBMADelay") && !tempCalibObject->containsScan("TBMBDelay") && !tempCalibObject->containsScan("TBMPLL"))
     std::cout << "warning: none of TBMADelay, TBMBDelay, TBMPLLDelay found in scan variable list!" <<std::endl;
-
-  DelayBeforeFirstTrigger = tempCalibObject->parameterValue("DelayBeforeFirstTrigger") == "yes";
-  DelayEveryTrigger = tempCalibObject->parameterValue("DelayEveryTrigger") == "yes";
 }
 
 bool PixelTBMDelayCalibration::execute() {
@@ -45,13 +40,9 @@ bool PixelTBMDelayCalibration::execute() {
   }
 
   if (firstOfPattern) {
-    //commandToAllFEDCrates("JMTJunk");
     std::cout << "Sleeping 5 seconds for feds to re-acquire phases" << std::endl;
     sleep(5);
   }
-
-  //if (DelayEveryTrigger || (DelayBeforeFirstTrigger && firstOfPattern))
-  //  usleep(1000000);
 
   // Send trigger to all TBMs and ROCs.
   sendTTCCalSync();
