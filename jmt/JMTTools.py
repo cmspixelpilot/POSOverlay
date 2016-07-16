@@ -228,6 +228,24 @@ class dac_dat:
                 f.write((dac + ':').ljust(15))
                 f.write('%i\n' % dacs[dac])
 
+class portcardmap_dat:
+    def __init__(self, fn):
+        self.fn = fn
+        f = open(fn)
+        self.l = []
+        self.m = defaultdict(list)
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            line = line.split()
+            assert len(line) == 3
+            pc, module, ch = line
+            ch = int(ch)
+            self.l.append((pc, module, ch))
+            self.m[pc].append((module, ch))
+        self.l.sort(key=lambda x: (x[0], x[2]))
+
 #def translation_dat(key):
 #    fn = os.path.join(PIXELCONFIGURATIONBASE, 'nametranslation/%s/translation.dat')
 #    by_module = 
