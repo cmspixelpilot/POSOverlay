@@ -29,6 +29,7 @@
 import sys, csv, os
 from collections import defaultdict
 
+group = 0
 doug_dir = 'HC1_m20'
 HC = 'BmI'
 tkfecid = 'tkfec1'
@@ -51,6 +52,8 @@ assert len(module_names_check) == 168
 module_names_check.sort()
 
 fn = sys.argv[1]
+group = int(sys.argv[2])
+assert group in [0,1]
 f = open(fn)
 r = csv.reader(f)
 rows = list(r)
@@ -185,10 +188,16 @@ hubids_by_portcard = defaultdict(list)
 # and disconnected modules from too-short cables
 def portcardOK(pc):
     #return True
-    return '_D1_' in pc
+    if group == 0:
+        return '_D1_' in pc and ('_PRT1' in pc or '_PRT2' in pc)
+    elif group == 1:
+        return '_D1_' in pc and ('_PRT3' in pc or '_PRT4' in pc)
 def moduleOK(m):
     #return True
-    if not (m.disk == 1 and m.poh_bundle not in [1,2,3,4,5,6,7]):
+    if m.disk != 1:
+        return False
+    grp = m.poh_bundle not in [1,2,3,4,5,6,7]
+    if grp != group:
         return False
     not_connected = {
         'TB': [2,6],
@@ -217,7 +226,9 @@ for r in rows:
     # D1, 5 feds, 1 fec mezzanine hack
     if moduleOK(m):
         if m.fec == 10:
+            assert group == 1
             m.fec = 9
+            m.mfec = 2
         if m.fed_id in [1298, 1299, 1300]:
             m.fed_id -= 4
         
@@ -327,10 +338,10 @@ if not os.path.isdir(path):
 fn = os.path.join(path, 'portcardmap.dat')
 f = open(fn, 'wt')
 f.write('# Portcard              Module                     AOH channel\n')
-portcardmap = [(m.portcard, m.name, m.poh_num) for m in modules]
-portcardmap.sort(key=lambda x: (x[0],x[2]))
-for m in portcardmap:
-    if not portcardOK(m[0]): continue
+portcardmap = [(m,(m.portcard, m.name, m.poh_num)) for m in modules]
+portcardmap.sort(key=lambda x: (x[1][0],x[1][2]))
+for mm,m in portcardmap:
+    if not moduleOK(mm) or not portcardOK(m[0]): continue
     f.write('%s\t%s\t%s\n' % m)
 f.close()
 
@@ -340,7 +351,7 @@ if not os.path.isdir(path):
 fn = os.path.join(path, 'translation.dat')
 f = open(fn, 'wt')
 fmt = \
-    '%-30s' \
+    '%-40s' \
     '%-6s' \
     '%-10s' \
     '%-10s' \
@@ -357,7 +368,7 @@ for m in modules:
     if not moduleOK(m): continue
     for iroc in xrange(16):
         fields = (
-            m.name, 
+            m.name + '_ROC' + str(iroc), 
             'AB'[iroc / 8],
             m.fec,
             m.mfec,
@@ -383,7 +394,7 @@ f.write('Rocs:\n')
 for m in modules:
     if not moduleOK(m): continue
     for iroc in xrange(16):
-        f.write('%s\n' % m.name)
+        f.write('%s_ROC%i\n' % (m.name, iroc))
 f.close()
 
 path = os.path.join(HC, 'maxvsf')
