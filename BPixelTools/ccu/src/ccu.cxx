@@ -1899,9 +1899,10 @@ int main(int argc, char *argv[])
   // configure server
   //SimpleServer serv;
   MultiplexingServer serv;
-  if(argc==4){
-    if ((strcasecmp (argv[2],"-port") == 0)) {
-      int port=atoi(argv[3]);
+  for (int i = 0; i < argc; ++i) {
+    if ((strcasecmp (argv[i],"-port") == 0)) {
+      assert(argc > i+1);
+      int port=atoi(argv[i+1]);
       cout << "port = " << port << endl;
       serv.open(port);
     }
