@@ -114,7 +114,7 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.tts.bc0_ec0_polar", 0},
     {"pixfed_ctrl_regs.tts.force_RDY", 1},
     {"fe_ctrl_regs.disable_BE", pixelFEDCard.frontend_disable_backend},
-    {"fe_ctrl_regs.fifo_config.overflow_value", 0x700e0}, // set 192val
+    {"fe_ctrl_regs.fifo_config.overflow_value", 922500}, // 900 per channel
     {"fe_ctrl_regs.fifo_config.TBM_old_new", 0x0}, // 0x0 = PSI46dig, 0x1 = PROC600 // JMTBAD this needs to be a per channel thing if the bpix boards distribute the layer-1 occupancy
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
     {"fe_ctrl_regs.decode_reg_reset", 1}, // init FE spy fifos etc JMTBAD take out if this doesn't work any more
