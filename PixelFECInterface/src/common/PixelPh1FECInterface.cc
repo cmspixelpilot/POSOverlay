@@ -2725,8 +2725,8 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         myhubaddress = 30; // avoid the 31 and 7 combination
     }
 
-    cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" "
-        <<mytbmchannel<<" "<<myportaddress<<"\n";
+    const unsigned prints = 0x0; // bit 0 turns on any prints, bits 1-5 define prints for cmds 1-5 later.
+    if (prints & 0x1) cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" " <<mytbmchannel<<" "<<myportaddress<<"\n";
 
     //cout<<mymask<<" "<<mytrim<<" "<<nTry<<" "<<commands<<endl;
     
@@ -2739,7 +2739,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     unsigned int         dataReceivedMask=0x00000200;
     if (myfecchannel==2) dataReceivedMask=0x02000000;
 
-    bool giveUpEarly = false;
+    const bool giveUpEarly = true;
 
     std::vector <unsigned char> testroc2 ((80*52), 0x00);
     
@@ -2779,7 +2779,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(mymfec,myfecchannel,4,(int*)&xxx);
-        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
+        if (prints & 0x3) cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
         //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<" "<<ch1<<" "<<ch2<<dec<<endl;
         if(giveUpEarly && cntbad == 4) { //this point is clearly nonoptimal, so give up
             //break;
@@ -2816,7 +2816,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-	//cout<<"-2- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
+	if (prints & 0x5) cout<<"-2- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
@@ -2838,7 +2838,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(mymfec,myfecchannel,4,(int*)&xxx);
-	//uint32_t xxx2 = xxx;
+	uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2856,7 +2856,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-	//cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+	if (prints & 0x9) cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
@@ -2901,7 +2901,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-        cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if (prints & 0x11) cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
@@ -2926,7 +2926,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(mymfec,myfecchannel,4,(int*)&xxx);
-	//uint32_t xxx2 = xxx;
+	uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2944,7 +2944,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-        //cout<<"-5- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if (prints & 0x21) cout<<"-5- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
