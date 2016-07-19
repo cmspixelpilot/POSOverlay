@@ -58,7 +58,33 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
   void armOSDFifo(int channel, int rochi, int roclo);
   uint32_t readOSDFifo(int channel);
 
-  void readPhases(bool verbose, bool override_timeout);
+  struct decoded_phases {
+    decoded_phases(int fiber_, uint32_t a0, uint32_t a1, uint32_t a2);
+
+    int fiber;
+
+    bool idelay_ctrl_ready;
+    int idelay_tap_set;
+    int idelay_tap_read;
+    uint32_t idelay_tap_scan;
+
+    bool sampling_clock_swapped;
+    bool init_swap_finished;
+    bool init_init_finished;
+
+    int first_zeros_lo;
+    int first_zeros_hi;
+    int second_zeros_lo;
+    int second_zeros_hi;
+    int num_windows;
+
+    int delay_tap_used;
+
+    static void print_header(std::ostream& o);
+  };
+
+  std::vector<decoded_phases> readPhases();
+  void readPhases(bool verbose, bool override_timeout) { readPhases(); }
 
   uint8_t getTTSState();
   void printTTSState();
@@ -224,5 +250,7 @@ struct digfifo1 {
 
   std::vector<uint32_t> bxs;
 };
+
+std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_phases& p);
 
 #endif

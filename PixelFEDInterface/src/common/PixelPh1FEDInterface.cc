@@ -154,8 +154,13 @@ int PixelPh1FEDInterface::setup() {
 
   getBoardInfo();
 
-  if ((pixelFEDCard.cntrl_utca & 0xffffffffffffULL) != 0xffffffffffffULL)
-    readPhases(true, true);
+  if ((pixelFEDCard.cntrl_utca & 0xffffffffffffULL) != 0xffffffffffffULL) {
+    std::vector<decoded_phases> phases = readPhases();
+    decoded_phases::print_header(std::cout);
+    std::vector<int> fibers_ok;
+    for (size_t i = 0; i < phases.size(); ++i)
+      std::cout << phases[i];
+  }
 
   regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 1);
   usleep(10000);
@@ -795,94 +800,107 @@ uint32_t PixelPh1FEDInterface::readOSDFifo(int channel) {
   return cReadValues[3];
 }
 
-void prettyprintPhase(const std::vector<uint32_t>& pData, int pChannel) {
-  int channelToPrint = pChannel + 1;
-  int index = pChannel * 4;
-  if (pChannel < 0) {
-    channelToPrint = -pChannel;
-    index = 0;
-  }
-  
-  std::cout << "Fibre: " << std::setw(2) <<  channelToPrint << "    " <<
-              std::bitset<1>( (pData.at( (index ) + 0 ) >> 10 ) & 0x1 )   << "    " << std::setw(2) <<
-              ((pData.at( (index ) + 0 ) >> 5  ) & 0x1f )  << "    " << std::setw(2) <<
-              ((pData.at( (index ) + 0 )       ) & 0x1f ) << "    " <<
-              std::bitset<32>( pData.at( (index ) + 1 )) << "    " <<
-              std::bitset<1>( (pData.at( (index ) + 2 ) >> 31 ) & 0x1 )  << " " << std::setw(2) <<
-              ((pData.at( (index ) + 2 ) >> 23 ) & 0x1f)  << " " << std::setw(2) <<
-              ((pData.at( (index ) + 2 ) >> 18 ) & 0x1f)  << " " << std::setw(2) <<
-              ((pData.at( (index ) + 2 ) >> 13 ) & 0x1f ) << " " << std::setw(2) <<
-              ((pData.at( (index ) + 2 ) >> 8  ) & 0x1f ) << " " << std::setw(2) <<
-              ((pData.at( (index ) + 2 ) >> 5  ) & 0x7  ) << " " << std::setw(2) <<
-              ((pData.at( (index ) + 2 )       ) & 0x1f ) << std::endl;
+PixelPh1FEDInterface::decoded_phases::decoded_phases(int fiber_, uint32_t a0, uint32_t a1, uint32_t a2) {
+  fiber = fiber_;
+
+  idelay_ctrl_ready = (a0 >> 10) & 1;
+  idelay_tap_set = (a0 >> 5) & 0x1f;
+  idelay_tap_read = a0 & 0x1f;
+
+  idelay_tap_scan = a1;
+
+  sampling_clock_swapped = a2 >> 31;
+  init_swap_finished = (a2 >> 30) & 1;
+  init_init_finished = (a2 >> 29) & 1;
+
+  first_zeros_lo = (a2 >> 8) & 0x1f;
+  first_zeros_hi = (a2 >> 13) & 0x1f;
+  second_zeros_lo = (a2 >> 18) & 0x1f;
+  second_zeros_hi = (a2 >> 23) & 0x1f;
+  num_windows = a2 >> 5 & 0x7;
+
+  delay_tap_used = a2 & 0x1f;
 }
 
-void PixelPh1FEDInterface::readPhases(bool verbose, bool override_timeout) {
-    // Perform all the resets
-    std::vector< std::pair<std::string, uint32_t> > cVecReg;
-    cVecReg.push_back( { "fe_ctrl_regs.decode_reset", 1 } ); // reset deocode auto clear
-    cVecReg.push_back( { "fe_ctrl_regs.decode_reg_reset", 1 } ); // reset REG auto clear
-    cVecReg.push_back( { "fe_ctrl_regs.idel_ctrl_reset", 1} );
-    regManager->WriteStackReg(cVecReg);
-    cVecReg.clear();
-    cVecReg.push_back( { "fe_ctrl_regs.idel_ctrl_reset", 0} );
-    regManager->WriteStackReg(cVecReg);
-    cVecReg.clear();
+void PixelPh1FEDInterface::decoded_phases::print_header(std::ostream& o) {
+  o << "Fiber RDY SET  RD    pattern:                          S H1 L1 H0 L0  W  R" << std::endl;
+}
 
-    // NOTE: here the register idel_individual_ctrl is the base address of the registers for all 48 channels. So each 32-bit word contains the control info for 1 channel. Thus by creating a vector of 48 32-bit words and writing them at the same time I can write to each channel without using relative addresses!
+std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_phases& p) {
+  o << std::setw(5) << p.fiber << " "
+    << std::setw(3) << p.idelay_ctrl_ready << " "
+    << std::setw(3) << p.idelay_tap_set << " "
+    << std::setw(3) << p.idelay_tap_read << "    "
+    << std::bitset<32>(p.idelay_tap_scan) << " "
+    << std::setw(2) << p.sampling_clock_swapped << " "
+    << std::setw(2) << p.second_zeros_hi << " "
+    << std::setw(2) << p.second_zeros_lo << " "
+    << std::setw(2) << p.first_zeros_hi << " "
+    << std::setw(2) << p.first_zeros_lo << " "
+    << std::setw(2) << p.num_windows << " "
+    << std::setw(2) << p.delay_tap_used << std::endl;
+  return o;
+}
 
-    // set the parameters for IDELAY scan
-    std::vector<uint32_t> cValVec;
-    for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
-        cValVec.push_back( 0x80000000 );
-    regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
-    cValVec.clear();
+std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::readPhases() {
+  std::vector< std::pair<std::string, uint32_t> > cVecReg;
+  cVecReg.push_back({"fe_ctrl_regs.decode_reset", 1});
+  cVecReg.push_back({"fe_ctrl_regs.decode_reg_reset", 1});
+  cVecReg.push_back({"fe_ctrl_regs.idel_ctrl_reset", 1});
+  regManager->WriteStackReg(cVecReg);
+  cVecReg.clear();
+  cVecReg.push_back({"fe_ctrl_regs.idel_ctrl_reset", 0});
+  regManager->WriteStackReg(cVecReg);
+  cVecReg.clear();
 
-    // set auto_delay_scan and set idel_RST
-    for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
-        cValVec.push_back( 0xc0000000 );
-    regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
-    cValVec.clear();
+  // NOTE: here the register idel_individual_ctrl is the base address
+  // of the registers for all 48 channels. So each 32-bit word
+  // contains the control info for 1 channel. Thus by creating a
+  // vector of 48 32-bit words and writing them at the same time we
+  // can write to each channel without using relative addresses!
 
-    // set auto_delay_scan and remove idel_RST
-    for (uint32_t cChannel = 0; cChannel < 48; cChannel++)
-        cValVec.push_back( 0x80000000 );
-    regManager->WriteBlockReg( "fe_ctrl_regs.idel_individual_ctrl", cValVec );
-    cValVec.clear();
+  std::vector<uint32_t> cValVec;
 
-    // initialize Phase Finding
-    regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
-    regManager->WriteReg("fe_ctrl_regs.initialize_swap", 1);
-    regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
+  // set the parameters for IDELAY scan
+  cValVec.assign(48, 0x80000000);
+  regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
 
-    std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::endl << std::endl;
-    PixelTimer timer;
-    timer.start();
-    while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x0)
-      usleep (1000);
-    timer.stop();
+  // set auto_delay_scan and set idel_RST
+  cValVec.assign(48, 0xc0000000);
+  regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
+
+  // set auto_delay_scan and remove idel_RST
+  cValVec.assign(48, 0x80000000);
+  regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
+
+  // initialize Phase Finding
+  regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
+  regManager->WriteReg("fe_ctrl_regs.initialize_swap", 1);
+  regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
+
+  // JMTBAD need to respect printlevel...
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::endl << std::endl;
+  PixelTimer timer;
+  timer.start();
+  while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x0)
+    usleep (1000);
+  timer.stop();
     
-    std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Time to run the initial phase finding: " << timer.tottime() << "; swapping phases ... " << std::endl;
-    timer.reset();
-    timer.start();
-    while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x2)
-      usleep (1000);
-    timer.stop();
-    std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Swap fininshed, additional time: " << timer.tottime() << "; phase finding results: " << std::endl;
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Time to run the initial phase finding: " << timer.tottime() << "; swapping phases ... " << std::endl;
+  timer.reset();
+  timer.start();
+  while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x2)
+    usleep (1000);
+  timer.stop();
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Swap fininshed, additional time: " << timer.tottime() << "; phase finding results: " << std::endl;
 
-    uint32_t cNChannel = 24;
-    std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue ( "idel_individual_stat_block", cNChannel * 4 );
-    std::cout << "FIBRE CTRL_RDY CNTVAL_Hi CNTVAL_Lo   pattern:                     S H1 L1 H0 L0   W R" << std::endl;
-    for (uint32_t cChannel = 0; cChannel < cNChannel; cChannel++)
-      prettyprintPhase(cReadValues, cChannel);
+  const uint32_t cNChannel = 24;
+  std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue ( "idel_individual_stat_block", cNChannel * 4 );
+  std::vector<decoded_phases> ret;
+  for (uint32_t i = 0; i < cNChannel; ++i)
+    ret.push_back(decoded_phases(i+1, cReadValues[i*4], cReadValues[i*4 + 1], cReadValues[i*4 + 2]));
 
-    // JMTBAD this not needed anymore?
-//    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 0} );
-//    regManager->WriteStackReg(cVecReg);
-//    cVecReg.clear();
-//    cVecReg.push_back( { "pixfed_ctrl_regs.PC_CONFIG_OK", 1} );
-//    regManager->WriteStackReg(cVecReg);
-//    cVecReg.clear();
+  return ret;
 }
 
 uint8_t PixelPh1FEDInterface::getTTSState() {
