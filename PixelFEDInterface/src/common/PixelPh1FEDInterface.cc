@@ -1778,7 +1778,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     sleepcnt++;
     //if(sleepcnt > 1000) mycntword = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
     //if(mycntword>5){std::cout<<mycntword<<" words in the ddr"<<std::endl; usleep(300000);}
-    if (sleepcnt > 50000) {
+    if (sleepcnt > 5000) {
       cout << "\033[1m\033[32mSOFTWARE TIMEOUT (5sec)\033[0m" << std::endl;
       our_timeout = true;
       break;
