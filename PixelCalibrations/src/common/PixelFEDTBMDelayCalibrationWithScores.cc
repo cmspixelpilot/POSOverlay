@@ -18,6 +18,17 @@ PixelFEDTBMDelayCalibrationWithScores::PixelFEDTBMDelayCalibrationWithScores(con
 void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
+
+  const std::string OverrideFifo1Channel_str = tempCalibObject->parameterValue("OverrideFifo1Channel");
+  int OverrideFifo1Channel = -1;
+  if (OverrideFifo1Channel_str.size()) {
+    OverrideFifo1Channel = strtoul(OverrideFifo1Channel_str.c_str(), 0, 10);
+    if (OverrideFifo1Channel < 0 || OverrideFifo1Channel > 23) {
+      std::cout << "OverrideFifo1Channel " << OverrideFifo1Channel << " not understood" << std::endl;
+      assert(0);
+    }
+  }
+
   const std::vector<std::pair<unsigned, std::vector<unsigned> > >& fedsAndChannels = tempCalibObject->fedCardsAndChannels(crate_, theNameTranslation_, theFEDConfiguration_, theDetectorConfiguration_);
   bool all_feds_ph1 = true;
   assert(fedsAndChannels.size() == 1); // JMTBAD need to book separate histograms per fed
@@ -32,6 +43,8 @@ void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
     }
     else {
       f->disableBE(true);
+      if (OverrideFifo1Channel >= 0)
+        f->setChannelOfInterest(OverrideFifo1Channel);
     }
   }
   assert(all_feds_ph1);
