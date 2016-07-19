@@ -154,6 +154,7 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   xgi::bind(this, &PixelTKFECSupervisor::XgiHandler, "XgiHandler");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI, "CCUBoardGUI");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI_XgiHandler, "CCUBoardGUI_XgiHandler");
+  xgi::bind(this, &PixelTKFECSupervisor::Phase1DCUSummary, "Phase1DCUSummary");
 
   //DIAGNOSTIC REQUESTED CALLBACK
   // xgi::bind(this,&PixelTKFECSupervisor::configureDiagSystem, "configureDiagSystem");
@@ -539,6 +540,12 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   
   // Rendering Low Level GUI
   
+  std::string urlDCU_ = "/"; \
+  urlDCU_ += getApplicationDescriptor()->getURN(); \
+  urlDCU_ += "/Phase1DCUSummary"; \
+  *out << "<h2> <a href=\"" << urlDCU_ << "\">Phase1DCUSummary</a> </h2> "<<std::endl;
+  *out << " <hr/> " << std::endl;
+  
   *out<<"<h2>Low Level Commands</h2>"<<std::endl;
   *out<<"<table border=1 bgcolor=gold>"<<std::endl;
   *out<<" Tracker FEC Board"<<std::endl;
@@ -552,7 +559,7 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
     *out<<" </tr>"<<std::endl;
   }
   *out<<"</table>"<<std::endl;
-  
+
   *out<<"</body>"<<std::endl;
   *out<<"</html>"<<std::endl;
 
@@ -3245,6 +3252,76 @@ this->notifyQualified("fatal",f);
 }
 
 //=============================================================================================
+
+void PixelTKFECSupervisor::Phase1DCUSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+  *out << "<h3>DCU for portcards for crate " << crate_ << "</h3>\n";
+
+  if (mapNamePortCard_.size() == 0)
+    *out << "no portcards, are we configured yet?\n";
+
+  for (std::map<std::string, PixelPortCardConfig*>::const_iterator it = mapNamePortCard_.begin(), ite = mapNamePortCard_.end(); it != ite; ++it) {
+    const std::string& pc_name = it->first;
+    PixelPortCardConfig* pc = it->second;
+    const std::string TKFECID = pc->getTKFECID();
+
+    if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
+
+    const std::string dcu_names[2] = {"bottom", "top"};
+    const int dcu_addrs[2] = {0x50, 0x60};
+    const std::string channel_names[6] = {"portcard", "module ana 1", "module dig 1", "module ana 2", "module dig 2", "RTD"};
+    tscType16 raw_vals[2][6] = {{0}};
+    bool seu[2][6] = {{0}};
+
+    for (int which = 0; which < 2; ++which) {
+      dcuAccess dcu(fecAccess_,
+                    theTKFECConfiguration_->addressFromTKFECID(TKFECID),
+                    pc->getringAddress(),
+                    pc->getccuAddress(),
+                    pc->getchannelAddress(),
+                    dcu_addrs[which]);
+
+      const int creg = 0x88; // = start a->d | low input range
+      for (int ch = 0; ch < 6; ++ch) {
+        dcu.setDcuCREG(creg | ch);
+        tscType16 shreg = dcu.getDcuSHREG();
+        if (shreg & 0x40)
+          seu[which][ch] = true;
+        shreg &= 0xf;
+        raw_vals[which][ch] = (shreg << 8) | dcu.getDcuLREG();
+      }
+    }
+
+    tscType16 vals[2][6] = {{0}};
+    for (int which = 0; which < 2; ++which) {
+      for (int ch = 0; ch < 6; ++ch) {
+        tscType16 val = raw_vals[which][ch];
+        //if (ch < 5)
+        //  ; //val *= 2; // all the voltages are half 
+        //else
+        //  val = 519*(vals[which][0] / val - 1);
+        vals[which][ch] = val;
+      }
+    }
+
+    *out << "<h4>" << pc_name << "</h4>\n";
+    *out << "<table border=1><tr><td></td>";
+    for (int ch = 0; ch < 6; ++ch)
+      *out << "<td>" << channel_names[ch] << "</td>";
+    *out << "<td>temp</td>";
+    *out << "</tr>\n";
+    for (int which = 0; which < 2; ++which) {
+      *out << "<tr><td>" << dcu_names[which] << "</td>";
+      for (int ch = 0; ch < 6; ++ch) {
+        *out << "<td>";
+        if (seu[which][ch]) *out << "!SEU! ";
+        *out << vals[which][ch] << "</td>";
+      }
+      *out << "<td>" << 519*(float(vals[which][0]) / vals[which][5] - 1) << "</td>";
+      *out << "</tr>\n";
+    }
+    *out << "</table><br>\n";
+  }
+}
 
 void PixelTKFECSupervisor::readTemp ()
 {

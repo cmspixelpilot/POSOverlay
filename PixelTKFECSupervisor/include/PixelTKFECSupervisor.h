@@ -135,6 +135,7 @@ public:
   void XgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
   void CCUBoardGUI(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
   void CCUBoardGUI_XgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
+  void Phase1DCUSummary(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
   
   xoap::MessageReference Initialize (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
   xoap::MessageReference Configure (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
