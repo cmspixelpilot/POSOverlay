@@ -71,10 +71,13 @@ int PixelPh1FEDInterface::setup() {
   // fibers that have a channel enabled.
   std::cout << "cntrl_utca is 0x" << std::hex << pixelFEDCard.cntrl_utca << dec << std::endl;
   assert(pixelFEDCard.which_FMC == 0 || pixelFEDCard.which_FMC == 1);
+  fibers_in_use.assign(25, 0);
   for (int channel = 0; channel < 48; ++channel) {
     if (!(pixelFEDCard.cntrl_utca & (1ULL << channel))) {
       const int which_Fitel = channel < 24;
       const int which_map = FitelMapNum(pixelFEDCard.which_FMC, which_Fitel);
+      const int fiber = channel / 2 + 1;
+      fibers_in_use[fiber] = 1;
       const std::string ch_name = fitelChannelName(channel % 24 / 2 + 1);
       std::cout << "fed ch " << channel+1 << " Fitel " << which_Fitel << " map " << which_map << " " << ch_name << " -> 0x08" << std::endl;
       fRegMap[which_map][ch_name].fValue = 0x08;
@@ -159,7 +162,8 @@ int PixelPh1FEDInterface::setup() {
   getBoardInfo();
 
   if ((pixelFEDCard.cntrl_utca & 0xffffffffffffULL) != 0xffffffffffffULL) {
-    std::vector<decoded_phases> phases = readPhases();
+    std::vector<decoded_phases> phases = autoPhases();
+    //std::vector<decoded_phases> phases = manualPhases();
     decoded_phases::print_header(std::cout);
     std::vector<int> fibers_ok;
     for (size_t i = 0; i < phases.size(); ++i)
@@ -178,7 +182,27 @@ int PixelPh1FEDInterface::setup() {
 
   printTTSState();
 
+  if (0 && pixelFEDCard.fedNumber == 1295) {
+    decoded_phases::print_header(std::cout);
+    while (1) {
+      std::vector<decoded_phases> phases = readPhases();
+      //for (size_t i = 0; i < phases.size(); ++i)
+      std::cout << phases[14-1];
+      sleep(1);
+    }
+  }
+//phaseStabilityTest();
+
   return cDDR3calibrated;
+}
+
+void PixelPh1FEDInterface::setChannelOfInterest(int ch) {
+  if (ch < 0 || ch > 23) {
+    std::cout << "setChannelOfInterest with ch " << ch << " not allowed" << std::endl;
+    assert(0);
+  }
+
+  regManager->WriteReg("fe_ctrl_regs.fifo_config.channel_of_interest", ch);
 }
 
 void PixelPh1FEDInterface::loadFPGA() {
@@ -846,7 +870,7 @@ std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_ph
   return o;
 }
 
-std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::readPhases() {
+std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::autoPhases() {
   std::vector< std::pair<std::string, uint32_t> > cVecReg;
   cVecReg.push_back({"fe_ctrl_regs.decode_reset", 1});
   cVecReg.push_back({"fe_ctrl_regs.decode_reg_reset", 1});
@@ -898,13 +922,101 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::readPhas
   timer.stop();
   std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Swap fininshed, additional time: " << timer.tottime() << "; phase finding results: " << std::endl;
 
+  return readPhases();
+}
+
+std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::manualPhases() {
+  std::vector< std::pair<std::string, uint32_t> > cVecReg;
+  cVecReg.push_back({"fe_ctrl_regs.decode_reset", 1});
+  cVecReg.push_back({"fe_ctrl_regs.decode_reg_reset", 1});
+  cVecReg.push_back({"fe_ctrl_regs.idel_ctrl_reset", 1});
+  regManager->WriteStackReg(cVecReg);
+  cVecReg.clear();
+  cVecReg.push_back({"fe_ctrl_regs.idel_ctrl_reset", 0});
+  regManager->WriteStackReg(cVecReg);
+  cVecReg.clear();
+
+  std::vector<uint32_t> cValVec;
+  
+  cValVec.assign(48, 0x40000000 | (15<<5) | 15);
+  regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
+  cValVec.assign(48, 0x00000000);
+  regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
+
+  std::vector<PixelPh1FEDInterface::decoded_phases> phases = readPhases();
+  return phases;
+}
+
+std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::readPhases() {
   const uint32_t cNChannel = 24;
   std::vector<uint32_t> cReadValues = regManager->ReadBlockRegValue ( "idel_individual_stat_block", cNChannel * 4 );
   std::vector<decoded_phases> ret;
   for (uint32_t i = 0; i < cNChannel; ++i)
     ret.push_back(decoded_phases(i+1, cReadValues[i*4], cReadValues[i*4 + 1], cReadValues[i*4 + 2]));
-
   return ret;
+}
+
+void PixelPh1FEDInterface::phaseStabilityTest() {
+  std::map<int, std::vector<decoded_phases> > samples;
+  const int nsamples = 20;
+  for (int isample = 0; isample < nsamples; ++isample) {
+    std::vector<decoded_phases> phases = readPhases();
+    const size_t nphases = phases.size();
+    std::cout << "sample #" << isample << std::endl;
+    decoded_phases::print_header(std::cout);
+    for (size_t iphase = 0; iphase < nphases; ++iphase) {
+      const decoded_phases& p = phases[iphase];
+      assert(p.fiber == int(iphase + 1));
+      if (!fibers_in_use[p.fiber])
+        continue;
+
+      std::cout << p;
+
+      samples[p.fiber].push_back(p);
+    }
+  }
+
+  for (int fiber = 1; fiber <= 24; ++fiber) {
+    if (!fibers_in_use[fiber])
+      continue;
+    const std::vector<decoded_phases>& phases = samples[fiber];
+    typedef std::map<std::string, std::map<unsigned, int> > histos_map;
+    histos_map histos;
+    for (size_t i = 0; i < phases.size(); ++i) {
+      ++histos["idelay_ctrl_ready"]     [phases[i].idelay_ctrl_ready];
+      ++histos["idelay_tap_set"]        [phases[i].idelay_tap_set];
+      ++histos["idelay_tap_read"]       [phases[i].idelay_tap_read];
+      ++histos["sampling_clock_swapped"][phases[i].sampling_clock_swapped];
+      ++histos["init_swap_finished"]    [phases[i].init_swap_finished];
+      ++histos["init_init_finished"]    [phases[i].init_init_finished];
+      ++histos["init_init_finished"]    [phases[i].init_init_finished];
+      ++histos["first_zeros_lo"]        [phases[i].first_zeros_lo];
+      ++histos["first_zeros_hi"]        [phases[i].first_zeros_hi];
+      ++histos["second_zeros_lo"]       [phases[i].second_zeros_lo];
+      ++histos["second_zeros_hi"]       [phases[i].second_zeros_hi];
+      ++histos["num_windows"]           [phases[i].num_windows];
+      ++histos["delay_tap_used"]        [phases[i].delay_tap_used];
+    }
+
+    std::cout << "stats for fiber " << fiber << ":\n";
+    for (histos_map::const_iterator it = histos.begin(), ite = histos.end(); it != ite; ++it) {
+      double mean = 0;
+      for (std::map<unsigned, int>::const_iterator it2 = it->second.begin(), it2e = it->second.end(); it2 != it2e; ++it2)
+        mean += it2->first * it2->second;
+      mean /= nsamples;
+      double rms = 0;
+      for (std::map<unsigned, int>::const_iterator it2 = it->second.begin(), it2e = it->second.end(); it2 != it2e; ++it2)
+        rms += it2->second * pow(it2->first - mean, 2);
+      rms /= (nsamples - 1);
+      rms = sqrt(rms);
+
+      printf("%-25s (m %4.1f r %4.1f) :", it->first.c_str(), mean, rms);
+      
+      for (std::map<unsigned, int>::const_iterator it2 = it->second.begin(), it2e = it->second.end(); it2 != it2e; ++it2)
+        std::cout << " " << it2->first << "(" << it2->second << ")";
+      std::cout << std::endl;
+    }
+  }
 }
 
 uint8_t PixelPh1FEDInterface::getTTSState() {

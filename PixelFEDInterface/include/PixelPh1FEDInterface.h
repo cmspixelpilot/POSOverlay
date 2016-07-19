@@ -29,6 +29,7 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
   int setup(pos::PixelFEDCard pfc); 
   int setup();  // run the setup 
 
+  void setChannelOfInterest(int ch);
   void disableBE(bool disable);
   uint32_t getScore(int channel);
   void getBoardInfo();
@@ -83,6 +84,8 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
     static void print_header(std::ostream& o);
   };
 
+  std::vector<decoded_phases> autoPhases();
+  std::vector<decoded_phases> manualPhases();
   std::vector<decoded_phases> readPhases();
   void readPhases(bool verbose, bool override_timeout) { readPhases(); }
 
@@ -249,6 +252,9 @@ struct digfifo1 {
   uint64_t slink64calls;
 
   std::vector<uint32_t> bxs;
+
+  std::vector<bool> fibers_in_use;
+  void phaseStabilityTest();
 };
 
 std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_phases& p);
