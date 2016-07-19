@@ -85,6 +85,12 @@ int PixelPh1FEDInterface::setup() {
   const uint32_t tbm_mask_2(((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) >> 32) & 0xFFFF);
   std::cout << "TBM mask 1: 0x" << std::hex << tbm_mask_1 << "  2: 0x" << tbm_mask_2 << std::dec << std::endl;
 
+  // make sure the clocks are set
+  regManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0); // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
+  regManager->WriteReg("ctrl.mgt_xpoint_out1", 3); // 2 to have 156 MHz clock (obligatory for 10G sling), 3 for 125Mhz clock for 5g on SLink
+
+  usleep(200000);
+
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
     {"pixfed_ctrl_regs.PC_CONFIG_OK", 0},
@@ -96,8 +102,6 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.data_type", 0}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
-    {"ctrl.ttc_xpoint_A_out3", 0}, // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
-    {"ctrl.mgt_xpoint_out1", 3}, // 2 to have 156 MHz clock (obligatory for 10G sling), 3 for 125Mhz clock for 5g on SLink
     {"pixfed_ctrl_regs.TBM_MASK_1", tbm_mask_1},
     {"pixfed_ctrl_regs.TBM_MASK_2", tbm_mask_2},
     {"pixfed_ctrl_regs.tbm_trailer_status_mask", 0x0},
