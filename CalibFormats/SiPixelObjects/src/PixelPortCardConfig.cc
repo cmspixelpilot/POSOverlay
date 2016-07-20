@@ -499,6 +499,7 @@ unsigned int PixelPortCardConfig::new_PLL_CTR2_value(std::string CTR4or5, unsign
 
 void PixelPortCardConfig::setAOHGain(std::string settingName, unsigned int value)
 {
+
 	assert( settingName.find("AOH") != string::npos && settingName.find("Gain") != string::npos // contains both "AOH" and "Gain"
         && settingName.find("123") == string::npos && settingName.find("456") == string::npos ); // does not contain "123" or "456"
 	
@@ -1253,6 +1254,29 @@ unsigned int PixelPortCardConfig::AOHBiasAddressFromAOHNumber(unsigned int AOHNu
 		else if (AOHNumber == 6) return PortCardSettingNames::k_fpix_AOH_Bias6_address;
 		else {std::cout << __LINE__ << "]\t" << mthn 
 		                << "ERROR: For fpix, AOH number must be in the range 1-6, but the given AOH number was "
+				<< AOHNumber
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
+	else if ( type_ == "phase1" )
+	{
+		if      (AOHNumber ==  1) return PortCardSettingNames::k_phase1_bPOH_Bias1_address;
+		else if (AOHNumber ==  2) return PortCardSettingNames::k_phase1_bPOH_Bias2_address;
+		else if (AOHNumber ==  3) return PortCardSettingNames::k_phase1_bPOH_Bias3_address;
+		else if (AOHNumber ==  4) return PortCardSettingNames::k_phase1_bPOH_Bias4_address;
+		else if (AOHNumber ==  5) return PortCardSettingNames::k_phase1_bPOH_Bias5_address;
+		else if (AOHNumber ==  6) return PortCardSettingNames::k_phase1_bPOH_Bias6_address;
+		else if (AOHNumber ==  7) return PortCardSettingNames::k_phase1_bPOH_Bias7_address;
+		else if (AOHNumber ==  8) return PortCardSettingNames::k_phase1_tPOH_Bias1_address;
+		else if (AOHNumber ==  9) return PortCardSettingNames::k_phase1_tPOH_Bias2_address;
+		else if (AOHNumber == 10) return PortCardSettingNames::k_phase1_tPOH_Bias3_address;
+		else if (AOHNumber == 11) return PortCardSettingNames::k_phase1_tPOH_Bias4_address;
+		else if (AOHNumber == 12) return PortCardSettingNames::k_phase1_tPOH_Bias5_address;
+		else if (AOHNumber == 13) return PortCardSettingNames::k_phase1_tPOH_Bias6_address;
+		else if (AOHNumber == 14) return PortCardSettingNames::k_phase1_tPOH_Bias7_address;
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For phase1, POH number must be in the range 1-14, but the given POH number was "
 				<< AOHNumber
 				<< "."
 				<< std::endl; 
