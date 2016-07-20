@@ -23,6 +23,7 @@
 #include "PixelCalibrations/include/PixelAOHBiasCalibration.h"
 #include "PixelCalibrations/include/PixelAOHAndFEDChannelMappingTest.h"
 #include "PixelCalibrations/include/PixelAOHGainCalibration.h"
+#include "PixelCalibrations/include/PixelPOHBiasCalibration.h"
 #include "PixelCalibrations/include/PixelTBMUBCalibration.h"
 #include "PixelCalibrations/include/PixelIanaCalibration.h"
 #include "PixelCalibrations/include/PixelIdigiCalibration.h"
@@ -101,6 +102,10 @@ PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string&
   if (calibName=="AOHBias") {
     return new PixelAOHBiasCalibration(*pixSupConfPtr, soapCmdrPtr);
   }  
+
+  if (calibName=="POHBias") {
+    return new PixelPOHBiasCalibration(*pixSupConfPtr, soapCmdrPtr);
+  }
 
   if (calibName=="AOHAndFEDChannelMappingTest") {
     return new PixelAOHAndFEDChannelMappingTest(*pixSupConfPtr, soapCmdrPtr);
