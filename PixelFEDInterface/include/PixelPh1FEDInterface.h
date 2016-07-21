@@ -48,7 +48,7 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
   bool WriteFitelReg (const std::string& pRegNode, int cFMCId, int cFitelId, uint8_t pValue, bool pVerifLoop);
   bool WriteFitelBlockReg(std::vector<uint32_t>& pVecReq);
   bool ReadFitelBlockReg(std::vector<uint32_t>& pVecReq);
-  std::pair<bool, std::vector<double> > ReadADC( int channel, const uint8_t pFMCId, const uint8_t pFitelId, const bool verbose);
+  double ReadRSSI(int fiber);
 
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
   int reset(); // resets everything
@@ -255,6 +255,8 @@ struct digfifo1 {
 
   std::vector<bool> fibers_in_use;
   void phaseStabilityTest();
+
+  void DumpFitelRegs(int fitel);
 };
 
 std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_phases& p);

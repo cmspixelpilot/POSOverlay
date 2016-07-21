@@ -92,11 +92,14 @@ int PixelPh1FEDInterface::setup() {
   regManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0); // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
   regManager->WriteReg("ctrl.mgt_xpoint_out1", 3); // 2 to have 156 MHz clock (obligatory for 10G sling), 3 for 125Mhz clock for 5g on SLink
 
-  usleep(200000);
+  usleep(10000);
+
+  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 0);
+
+  usleep(10000);
 
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
-    {"pixfed_ctrl_regs.PC_CONFIG_OK", 0},
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
     {"pixfed_ctrl_regs.acq_ctrl.acq_mode", 2},  // 1: TBM fifo, 2: Slink FIFO, 4: FEROL
@@ -136,17 +139,13 @@ int PixelPh1FEDInterface::setup() {
     cVecReg.push_back(std::make_pair(std::string(buf), uint32_t(pixelFEDCard.timeout_counter_start)));
   }
 
-  cVecReg.push_back(std::make_pair("pixfed_ctrl_regs.PC_CONFIG_OK", uint32_t(1)));
-
   std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
   for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
     std::cout << std::setfill(' ') << std::setw(60) << cVecReg[i].first << ": 0x" << std::hex << cVecReg[i].second << std::dec << "\n";
 
   regManager->WriteStackReg(cVecReg);
 
-  usleep(200000);
-
-  int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
+  usleep(10000);
 
   if (pixelFEDCard.which_FMC == 0) {
     ConfigureFitel(0, 0, true);
@@ -156,6 +155,20 @@ int PixelPh1FEDInterface::setup() {
     ConfigureFitel(1, 0, true);
     ConfigureFitel(1, 1, true);
   }
+
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 1);
+  usleep(10000);
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 1);
+  usleep(10000);
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 0);
+  usleep(10000);
+  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 0);
+
+  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 1);
+
+  usleep(200000);
+
+  int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
   fNthAcq = 0;
 
@@ -170,13 +183,6 @@ int PixelPh1FEDInterface::setup() {
       std::cout << phases[i];
   }
 
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 1);
-  usleep(10000);
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 1);
-  usleep(10000);
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 0);
-  usleep(10000);
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 0);
   std::cout << "Slink status after configure:" << std::endl;
   PrintSlinkStatus();
 
@@ -663,16 +669,37 @@ void PixelPh1FEDInterface::ConfigureFitel(int cFMCId, int cFitelId , bool pVerif
     }
 }
 
-std::pair<bool, std::vector<double> > PixelPh1FEDInterface::ReadADC(int channel, const uint8_t pFMCId, const uint8_t pFitelId, const bool verbose) {
-  channel = channel % 12 + 1;
+void PixelPh1FEDInterface::DumpFitelRegs(int fitel) {
+  std::cout << "DumpFitelRegs for fitel " << fitel << ":\n";
 
-  std::cout << std::endl << "Reading ADC Values on FMC " << +pFMCId << " Fitel " << +pFitelId << " Channel " << channel << std::endl;
+  std::vector<uint32_t> regs = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x07,
+    0x3f, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4f,
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5f,
+    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b,
+    0x8f, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b,
+    0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab,
+    0xe0, 0xe1, 0xf1, 0xf2, 0xf3
+  };
 
+  for (size_t i = 0; i < regs.size(); ++i)
+    regs[i] = (fitel << 20) | (regs[i] << 8);
+
+  ReadFitelBlockReg(regs);
+
+  for (size_t i = 0; i < regs.size(); ++i)
+    printf("%02x %02x %02x %02x\n", (regs[i] & 0xff000000)>>24, (regs[i] & 0xff0000)>>16,  (regs[i] & 0xff00)>>8,  (regs[i] & 0xff));
+}
+
+double PixelPh1FEDInterface::ReadRSSI(int fiber) {
+  assert(fiber >= 1 && fiber <= 24);
+  const int fmc = 0;
+  const int fitel = fiber < 13;
+  const int channel = fiber > 12 ? fiber - 12 : fiber;
   const std::string ch_name = fitelChannelName(channel);
-  const uint8_t old_value = fRegMap[FitelMapNum(pFMCId, pFitelId)][ch_name].fValue;
+  const uint8_t old_value = fRegMap[FitelMapNum(fmc, fitel)][ch_name].fValue;
   assert(old_value == 0x2 || old_value == 0x8);
-  WriteFitelReg(ch_name, pFMCId, pFitelId, 0xc, true); // to be set back to what it was in the reg map!
-  sleep(1); // don't try to 0.5 this thing...
+  WriteFitelReg(ch_name, fmc, fitel, 0xc, true); // to be set back to what it was in the reg map!
 
   // the Fitel FMC needs to be set up to be able to read the RSSI on a given Channel:
   // I2C register 0x1: set to 0x4 for RSSI, set to 0x5 for Die Temperature of the Fitel
@@ -680,67 +707,64 @@ std::pair<bool, std::vector<double> > PixelPh1FEDInterface::ReadADC(int channel,
   // the ADC always reads the sum of all the enabled channels!
   //initial FW setup
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1);
-  sleep(1);
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_cmd_reset", 0);
-
-  std::vector<std::pair<std::string, uint32_t> > cVecReg;
-  cVecReg.push_back({"pixfed_ctrl_regs.fitel_rx_i2c_req", 0});
-  cVecReg.push_back({"pixfed_ctrl_regs.fitel_i2c_addr", 0x77});
-
-  regManager->WriteStackReg(cVecReg);
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 0);
 
   //first, write the correct registers to configure the ADC
-  //the values are: Address 0x01 -> 0x1<<6 & 0x1f
+  //the values are: Address 0x01 -> 0x1<<6 | 0x1f
   //                Address 0x02 -> 0x1
 
-  // Vectors for write and read data!
   std::vector<uint32_t> cVecWrite;
   std::vector<uint32_t> cVecRead;
+  uint32_t cVal = 0;
 
   //encode them in a 32 bit word and write, no readback yet
-  cVecWrite.push_back(  pFMCId  << 24 |  pFitelId << 20 |  0x1 << 8 | 0x5f );
-  cVecWrite.push_back(  pFMCId  << 24 |  pFitelId << 20 |  0x2 << 8 | 0x01 );
-  regManager->WriteBlockReg("fitel_config_fifo_tx", cVecWrite);
-
-  // sent an I2C write request
-  regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 1);
-
-  // wait for command acknowledge
-  while(regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep(100);
-
-  uint32_t cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack");
-  bool success = cVal != 3;
-  if (!success) std::cout << "Error reading registers!" << std::endl;
-
-  // release
+  cVecWrite.push_back (  fmc  << 24 |  fitel << 20 |  0x1 << 8 | 0x5f );
+  cVecWrite.push_back (  fmc  << 24 |  fitel << 20 |  0x2 << 8 | 0x01 );
+  regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_addr", 0x77);
+  regManager->WriteBlockReg ("fitel_config_fifo_tx", cVecWrite);
+  regManager->WriteReg ("pixfed_ctrl_regs.fitel_rx_i2c_req", 1);
+  while ((cVal = regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack")) == 0) usleep (100);
+  if (cVal == 3) std::cout << "Error reading registers!" << std::endl;
   i2cRelease(10);
-  sleep(2);
+
+  // poll the status register of the LTC2990 until it comes back ready, or 20 * 10 ms max
+  // seems to come back in between 50-60 ms
+  for (int i = 0; i < 20; ++i) {
+    cVecRead.clear();
+    cVecRead.push_back(fmc  << 24 |  fitel << 20 |  0x0 << 8 | 0 );
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_i2c_addr", 0x4c);
+    regManager->WriteBlockReg ( "fitel_config_fifo_tx", cVecRead );
+    regManager->WriteReg ("pixfed_ctrl_regs.fitel_rx_i2c_req", 3);
+    while ((cVal = regManager->ReadReg ("pixfed_stat_regs.fitel_i2c_ack")) == 0) usleep (100);
+    if (cVal == 3) std::cout << "Error reading registers!" << std::endl;
+    cVecRead = regManager->ReadBlockRegValue ("fitel_config_fifo_rx", 1);
+    if (cVecRead.size() != 1) std::cout << "status read data size wrong!\n";
+    uint32_t st = cVecRead[0];
+    cVecRead.clear();
+    i2cRelease(10);
+    //std::cout << " i = " << i << " polling status size " << cVecRead.size();
+    //for (uint32_t a : cVecRead)
+    //  std::cout << " got a  " << std::hex << a << std::dec << std::endl;
+    if ((st & 0xff) == 0x7e) // bit 0 is a busy bit, we want the rest of the bits
+      break;
+    usleep(10000);
+  }
 
   //now prepare the read-back of the values
   uint8_t cNWord = 10;
-
+  cVecRead.clear();
   for (uint8_t cIndex = 0; cIndex < cNWord; cIndex++)
-      cVecRead.push_back( pFMCId << 24 | pFitelId << 20 | (0x6 + cIndex ) << 8 | 0 );
+    cVecRead.push_back( fmc << 24 | fitel << 20 | (0x6 + cIndex ) << 8 | 0 );
 
   regManager->WriteReg("pixfed_ctrl_regs.fitel_i2c_addr", 0x4c);
-
   regManager->WriteBlockReg( "fitel_config_fifo_tx", cVecRead );
-  // sent an I2C write request
   regManager->WriteReg("pixfed_ctrl_regs.fitel_rx_i2c_req", 3);
-
-  // wait for command acknowledge
-  while (regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack") == 0) usleep(100);
-
-  cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack");
-  if (cVal == 3)
-    std::cout << "Error reading registers!" << std::endl;
-  success = success && cVal != 3;
+  while ((cVal = regManager->ReadReg("pixfed_stat_regs.fitel_i2c_ack")) == 0) usleep(100);
+  if (cVal == 3) std::cout << "Error reading registers!" << std::endl;
+  i2cRelease(10);
 
   cVecRead = regManager->ReadBlockRegValue("fitel_config_fifo_rx", cNWord);
-
-  // release
-  i2cRelease(10);
-  usleep(500);
 
   // now convert to Voltages!
   std::vector<double> cLTCValues(cNWord / 2, 0);
@@ -755,12 +779,8 @@ std::pair<bool, std::vector<double> > PixelPh1FEDInterface::ReadADC(int channel,
     //now the conversions are different for each of the voltages, so check by cMeasurement
     if (cMeasurement == 4)
       cLTCValues.at(cMeasurement) = (cSign == 0b1) ? (-( 32768 - cValue ) * cConstant + 2.5) : (cValue * cConstant + 2.5);
-
     else
       cLTCValues.at(cMeasurement) = (cSign == 0b1) ? (-( 32768 - cValue ) * cConstant) : (cValue * cConstant);
-
-    if (verbose)
-      std::cout << "V" << cMeasurement + 1 << " = " << std::setw(15) << cLTCValues.at(cMeasurement) << " ";
   }
 
   // now I have all 4 voltage values in a vector of size 5
@@ -770,15 +790,15 @@ std::pair<bool, std::vector<double> > PixelPh1FEDInterface::ReadADC(int channel,
   // V4 = cLTCValues[3]
   // Vcc = cLTCValues[4]
   //
-  // the RSSI value = fabs(V3-V4) / R=150 Ohm [in Amps]
-  if (verbose) {
-    const double cADCVal = fabs(cLTCValues.at(2) - cLTCValues.at(3)) / 150.0;
-    std::cout << " RSSI " << cADCVal * 1000  << " mA" << std::endl;
-  }
+  // the RSSI value = fabs(V3-V4) / R=150 Ohm [in uAmps]
+  const double cADCVal = fabs(cLTCValues.at(2) - cLTCValues.at(3)) / 150.0;
 
-  WriteFitelReg(ch_name, pFMCId, pFitelId, old_value, true);
+  //std::cout << "raw " << cLTCValues[0] << " " << cLTCValues[1] << " " << cLTCValues[2] << " " << cLTCValues[3] << " " << cLTCValues[4] << "\n";
+  //std::cout << "adcval " << cADCVal << std::endl;
 
-  return std::make_pair(success, cLTCValues);
+  WriteFitelReg(ch_name, fmc, fitel, old_value, true);
+
+  return cADCVal;
 }
 
 
