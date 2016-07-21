@@ -28,8 +28,8 @@ LibraryDirs =
 UserSourcePath = \
 	src
 
-UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long
+UserCFlags = -O0
+UserCCFlags = -g -O0 -Wno-long-long
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
