@@ -101,7 +101,7 @@ bool PixelPOHBiasCalibration::execute() {
             //std::cout << "hello: " << returnValuesFromFED[0].value_ << std::endl;
 
             double rssi = strtod(returnValuesFromFED[0].value_.c_str(), 0) * 1000;
-            std::cout << "gain " << *gain_itr  << " bias " << bias << " FED " << NFed << " fiber " << NFiber << " rssi (mA) " << rssi std::endl;
+            std::cout << "gain " << *gain_itr  << " bias " << bias << " FED " << NFed << " fiber " << NFiber << " rssi (mA) " << rssi << std::endl;
             rssi_v_bias[channelkey]->SetPoint(ibias, bias, rssi);
             rssi_v_bias[channelkey]->SetPointError(ibias, 0, 0.005);
           }
