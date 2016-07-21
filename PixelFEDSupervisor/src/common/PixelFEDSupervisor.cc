@@ -164,6 +164,7 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   xoap::bind(this, &PixelFEDSupervisor::ReadLastDACFIFO, "ReadLastDACFIFO", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetPhasesDelays, "SetPhasesDelays", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::SetControlRegister, "SetControlRegister", XDAQ_NS_URI);
+  xoap::bind(this, &PixelFEDSupervisor::ReadRSSI, "ReadRSSI", XDAQ_NS_URI);
 
   xoap::bind(this, &PixelFEDSupervisor::prepareFEDCalibrationMode, "prepareFEDCalibrationMode", XDAQ_NS_URI);
   xoap::bind(this, &PixelFEDSupervisor::FEDCalibrations, "FEDCalibrations", XDAQ_NS_URI);
@@ -4507,6 +4508,32 @@ xoap::MessageReference PixelFEDSupervisor::SetPrivateWord (xoap::MessageReferenc
   xoap::MessageReference reply=MakeSOAPMessageReference("SetPrivateWordDone");
   return reply;
 
+}
+
+xoap::MessageReference PixelFEDSupervisor::ReadRSSI(xoap::MessageReference msg) throw (xoap::exception::Exception) {
+  Attribute_Vector parametersReceived(2);
+  parametersReceived[0].name_ = "VMEBaseAddress";
+  parametersReceived[1].name_ = "Fiber";
+  Receive(msg, parametersReceived);
+
+  unsigned VMEBaseAddress = atoi(parametersReceived[0].value_.c_str());
+  unsigned fiber = atoi(parametersReceived[1].value_.c_str());
+
+  Attribute_Vector returnValues(1);
+  returnValues[0].name_="Value";
+  returnValues[0].value_="0";
+
+  PixelFEDInterfaceBase* iFED = FEDInterface_[VMEBaseAddress];
+  PixelPh1FEDInterface* f = dynamic_cast<PixelPh1FEDInterface*>(iFED);
+  if (f == 0)
+    std::cout << "FED with VMEBaseAddress (Key) " << VMEBaseAddress << " not a Ph1 fed...\n";
+  else {
+    char buf[64];
+    snprintf(buf, 64, "%g", f->ReadRSSI(fiber));
+    returnValues[0].value_=buf;
+  }
+
+  return MakeSOAPMessageReference("ReadRSSIDone", returnValues);
 }
 
 xoap::MessageReference PixelFEDSupervisor::ArmOSDFifo(xoap::MessageReference msg) throw (xoap::exception::Exception) {
