@@ -16,12 +16,14 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
   virtual std::vector<std::string> calibrated();
 
  private:
-  unsigned POHGain;
+  std::vector<unsigned> POHGains;
   unsigned POHBiasMin;
   unsigned POHBiasNSteps;
   unsigned POHBiasStepSize;
 
-  std::map<int, TGraphErrors*> rssi_v_bias;
+  unsigned key(int gain, int NFed, int NFiber) { return (gain << 30) | (NFed << 5) | NFiber; }
+
+  std::map<unsigned, TGraphErrors*> rssi_v_bias;
 };
 
 #endif
