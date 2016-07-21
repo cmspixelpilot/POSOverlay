@@ -155,6 +155,7 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI, "CCUBoardGUI");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI_XgiHandler, "CCUBoardGUI_XgiHandler");
   xgi::bind(this, &PixelTKFECSupervisor::Phase1DCUSummary, "Phase1DCUSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::PortcardDevicesSummary, "PortcardDevicesSummary");
 
   //DIAGNOSTIC REQUESTED CALLBACK
   // xgi::bind(this,&PixelTKFECSupervisor::configureDiagSystem, "configureDiagSystem");
@@ -544,6 +545,12 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   urlDCU_ += getApplicationDescriptor()->getURN(); \
   urlDCU_ += "/Phase1DCUSummary"; \
   *out << "<h2> <a href=\"" << urlDCU_ << "\">Phase1DCUSummary</a> </h2> "<<std::endl;
+  *out << " <hr/> " << std::endl;
+  
+  std::string urlPCDevices_ = "/"; \
+  urlPCDevices_ += getApplicationDescriptor()->getURN(); \
+  urlPCDevices_ += "/PortcardDevicesSummary"; \
+  *out << "<h2> <a href=\"" << urlPCDevices_ << "\">Current portcard devices settings</a> </h2> "<<std::endl;
   *out << " <hr/> " << std::endl;
   
   *out<<"<h2>Low Level Commands</h2>"<<std::endl;
@@ -2776,7 +2783,6 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 		const std::string portCardName = portCardAndAOH.first; assert(portCardName!="none");
 		
 		//ben debugging
-		std::cout << "portCardName: " << portCardName << std::endl;
 
 		PixelPortCardConfig* tempPortCard=mapNamePortCard_[portCardName];
 		assert(tempPortCard!=0);
@@ -2784,7 +2790,7 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 		if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
 
 		const int AOHNumber = portCardAndAOH.second;
-		
+
 		std::map<std::string,PixelPortCardConfig*>::const_iterator mapNamePortCard_itr = mapNamePortCard_.find(portCardName);
 		assert( mapNamePortCard_itr != mapNamePortCard_.end() );
 		const PixelPortCardConfig* thisPortCardConfig = mapNamePortCard_itr->second;
@@ -2806,6 +2812,9 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 			portCardToChange = newSettings.insert( newSettings.end(), std::make_pair(*thisPortCardConfig, std::set<unsigned int>() ) );
 			portCardToChange->first.setPortCardName(portCardName); // ensure that there will be no problems if the name stored in the configuration file doesn't match
 		}
+		
+
+		//std::cout << "portCardName: " << portCardName << " AOHnumber " << AOHNumber << " AOHGain " << AOHGain << std::endl;
 		
 		// Change the AOH gain and record the address for this AOH.
 		portCardToChange->first.setAOHGain(AOHNumber, AOHGain);
@@ -3320,6 +3329,54 @@ void PixelTKFECSupervisor::Phase1DCUSummary(xgi::Input* in, xgi::Output* out ) t
       *out << "</tr>\n";
     }
     *out << "</table><br>\n";
+  }
+}
+
+void PixelTKFECSupervisor::PortcardDevicesSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+  *out << "<h3>Device settings for portcards for crate " << crate_ << "</h3>\n";
+
+  if (mapNamePortCard_.size() == 0)
+    *out << "no portcards, are we configured yet?\n";
+
+  for (std::map<std::string, PixelPortCardConfig*>::const_iterator it = mapNamePortCard_.begin(), ite = mapNamePortCard_.end(); it != ite; ++it) {
+    const std::string& pc_name = it->first;
+    PixelPortCardConfig* pc = it->second;
+    const std::string TKFECID = pc->getTKFECID();
+    if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
+    const unsigned int TKFECAddress = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
+
+    *out << "<h4>" << pc_name << "</h4>\n"
+         << "<table border=1>\n";
+
+    for(int i=0;i<int(pc->getdevicesize());++i) {
+      unsigned deviceAddress = pc->getdeviceAddress(i);
+      int configValue(pc->getdeviceValues(i));
+      int currentValue=-1; // -1 if problem reading
+      try {
+        currentValue = portcardI2CDeviceRead(fecAccess_,
+                                             TKFECAddress,
+                                             pc->getringAddress(),
+                                             pc->getccuAddress(),
+                                             pc->getchannelAddress(),
+                                             deviceAddress,
+                                             PHILIPS,
+                                             1);
+      } catch(FecExceptionHandler e) {
+      }
+
+      *out << "<tr>"
+           << "<td>" << pc->getdeviceNameForAddress(deviceAddress) << "</td>"
+           << "<td>0x" << std::hex << configValue << "</td>"
+           << "<td>";
+      if (currentValue != configValue)
+        *out << "<font color=red>";
+      *out << "0x" << currentValue << std::dec;
+      if (currentValue != configValue)
+        *out << "</font>";
+      *out << "</td></tr>";
+    }
+
+    *out << "</table>\n";
   }
 }
 
