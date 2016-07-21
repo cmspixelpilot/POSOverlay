@@ -16,6 +16,7 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
   virtual std::vector<std::string> calibrated();
 
  private:
+  unsigned POHGain;
   unsigned POHBiasMin;
   unsigned POHBiasNSteps;
   unsigned POHBiasStepSize;

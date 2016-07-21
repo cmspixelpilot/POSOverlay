@@ -19,9 +19,11 @@ void PixelPOHBiasCalibration::beginCalibration() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast <PixelCalibConfiguration*> (theCalibObject_);
   assert(tempCalibObject!=0);
 
+  POHGain         = 2;
   POHBiasMin      = 0;
   POHBiasNSteps   = 15;
   POHBiasStepSize = 2;
+  if (tempCalibObject->parameterValue("POHGain")      != "") POHGain         = strtoul(tempCalibObject->parameterValue("POHGain").c_str(), 0, 16);
   if (tempCalibObject->parameterValue("ScanMin")      != "") POHBiasMin      = atoi(tempCalibObject->parameterValue("ScanMin").c_str());
   if (tempCalibObject->parameterValue("ScanNSteps")   != "") POHBiasNSteps   = atoi(tempCalibObject->parameterValue("ScanNSteps").c_str());
   if (tempCalibObject->parameterValue("ScanStepSize") != "") POHBiasStepSize = atoi(tempCalibObject->parameterValue("ScanStepSize").c_str());
@@ -50,6 +52,11 @@ void PixelPOHBiasCalibration::beginCalibration() {
 bool PixelPOHBiasCalibration::execute() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast <PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject!=0);
+
+  Attribute_Vector parametersToTKFEC(1);
+  parametersToTKFEC[0].name_="AOHGain";
+  parametersToTKFEC[0].value_=itoa(POHGain);
+  commandToAllTKFECCrates("SetAOHGainEnMass", parametersToTKFEC);
 
   for (unsigned ibias = 0; ibias < POHBiasNSteps; ++ibias) {
     unsigned bias = POHBiasMin + POHBiasStepSize * ibias;
