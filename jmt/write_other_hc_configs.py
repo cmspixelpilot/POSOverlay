@@ -123,6 +123,7 @@ class Module:
         self.fed_channel_str = d['FED channel']
         self.fed_position = int(d['FED position']) # slot ?
         self.fed_receiver = 'bt'.index(d['FED receiver'])
+        self.fed_fiber = (1-self.fed_receiver)*12 + self.poh_fiber
         self.crate = d['FEC/FED crate']
         self.fed_id = int(d['FED ID'])
         self.fed_crate = 1
