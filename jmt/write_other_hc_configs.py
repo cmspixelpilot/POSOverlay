@@ -277,7 +277,7 @@ fecs_used = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules if modu
 assert len(fecs_used) == 1
 
 t_portcard = '''Name: %(portcard)s
-Type: phase1
+Type: p1fpix
 TKFECID: %(tkfecid)s
 ringAddress: %(tkfecring)i
 ccuAddress: %(ccu)s
@@ -342,7 +342,8 @@ portcardmap = [(m,(m.portcard, m.name, m.poh_num)) for m in modules]
 portcardmap.sort(key=lambda x: (x[1][0],x[1][2]))
 for mm,m in portcardmap:
     if not moduleOK(mm) or not portcardOK(m[0]): continue
-    f.write('%s\t%s\t%s\n' % m)
+    f.write('%s\t%s A\t%s\n' % m)
+    f.write('%s\t%s B\t%s\n' % m)
 f.close()
 
 path = os.path.join(HC, 'nametranslation')
