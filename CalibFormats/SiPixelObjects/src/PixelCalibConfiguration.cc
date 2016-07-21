@@ -72,7 +72,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::vector< std::vector<std::s
 	}
     }
 
-  _bufferData=false; 
+  _bufferData=true; 
   
   std::istringstream in ;
   in.str(tableMat[1][colM["CALIB_OBJ_DATA_CLOB"]]) ;
@@ -304,7 +304,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::string filename):
 
   std::string mthn = "[PixelCalibConfiguration::PixelCalibConfiguration()]\t    " ;
 
-  _bufferData=false;
+  _bufferData=true;
   
     std::ifstream in(filename.c_str());
 
