@@ -180,7 +180,7 @@ int PixelPh1FEDInterface::setup() {
     decoded_phases::print_header(std::cout);
     std::vector<int> fibers_ok;
     for (size_t i = 0; i < phases.size(); ++i)
-      std::cout << phases[i];
+      std::cout << phases[i] << "\n";
   }
 
   std::cout << "Slink status after configure:" << std::endl;
@@ -188,13 +188,25 @@ int PixelPh1FEDInterface::setup() {
 
   printTTSState();
 
-  if (0 && pixelFEDCard.fedNumber == 1295) {
+  if (0 && pixelFEDCard.fedNumber == 1294) {
     decoded_phases::print_header(std::cout);
-    while (1) {
+    for (size_t ii = 0; ii < 10; ++ii) {
+      //while (1) {
       std::vector<decoded_phases> phases = readPhases();
       //for (size_t i = 0; i < phases.size(); ++i)
-      std::cout << phases[14-1];
-      sleep(1);
+      std::vector<int> todo = {2,3};
+      size_t ntodo = todo.size();
+      for (size_t i = 0; i < ntodo; ++i) {
+        std::cout << phases[todo[i]-1];
+        if (ntodo == 2)
+          std::cout << "        ";
+        else
+          std::cout << "\n";
+      }
+      if (ntodo > 2)
+        std::cout << "---";
+      std::cout << std::endl;
+      usleep(250000);
     }
   }
 //phaseStabilityTest();
@@ -886,7 +898,7 @@ std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_ph
     << std::setw(2) << p.first_zeros_hi << " "
     << std::setw(2) << p.first_zeros_lo << " "
     << std::setw(2) << p.num_windows << " "
-    << std::setw(2) << p.delay_tap_used << std::endl;
+    << std::setw(2) << p.delay_tap_used;
   return o;
 }
 
@@ -1983,7 +1995,9 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::dec << std::endl;
     //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::dec << std::endl;
   }
+#endif
 
+#if 0
   FIFO3Decoder decode3(data);
   //for (size_t i = 0; i <= ndata64; ++i)
   std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
