@@ -41,7 +41,6 @@ void PixelAMC13Interface::DoResets() {
   fAMC13->reset(amc13::AMC13Simple::T2);
   fAMC13->resetCounters();
   fAMC13->resetDAQ();
-  fAMC13->sendLocalEvnOrnReset(true, true);
 
   // JMTBAD these two don't work with fw T1 0x23D T2 0x2E (but they are both on the T2 and this is the latest fw?)
   //fAMC13->clearTTCHistory(); 
@@ -92,6 +91,8 @@ void PixelAMC13Interface::Configure() {
 
   //fAMC13->fakeDataEnable(1); // JMTBAD needed to send triggers ???
   fAMC13->configureLocalL1A(true, 0, 1, 1, 0); // trigger burst 1 after 1 orbit = 
+
+  fAMC13->sendLocalEvnOrnReset(true, true);
 }
 
 void PixelAMC13Interface::Halt() {
