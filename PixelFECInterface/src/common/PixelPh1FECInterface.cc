@@ -613,14 +613,18 @@ int PixelPh1FECInterface::testFiberEnable(const int mfec, const int enable) {
 // To read back the information from the mFEC input FIFOs
 // Return the word from the FIFO
 int PixelPh1FECInterface::readback(const int mfec, const int channel) {
+  return readreturn(mfec, channel, 1)[0]; 
+}
+
+std::vector<uint32_t> PixelPh1FECInterface::readreturn(const int mfec, const int channel, uint32_t size) {
     
     if(mfec<1 || mfec>4) {
         cerr<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
-        return 3;
+        assert(0);
     }
     if(channel<1 || channel>2) {
         cout<<" PixelPh1FECInterface: Wrong mfec channel number "<<channel<<endl;
-        return 2;
+        assert(0);
     }
     
     const string names[2][4] = {
@@ -628,11 +632,9 @@ int PixelPh1FECInterface::readback(const int mfec, const int channel) {
         {"INP_BUF2M1","INP_BUF2M2","INP_BUF2M3","INP_BUF2M4"}
     };
     
-    valword value = pRegManager->ReadReg(names[channel-1][mfec-1]);
-    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FIFO readback register: 0x" << std::hex << value << std::dec <<endl;
-
-    return (int) value.value();
+    return pRegManager->ReadBlockRegValue(names[channel-1][mfec-1], size);
 }
+
 //---------------------------------------------------------------------------------
 // To read the mfec word with the HUB and byte COUNT
 // Read data is returned in *data. Return same data..

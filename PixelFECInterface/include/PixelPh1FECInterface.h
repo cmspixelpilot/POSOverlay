@@ -50,6 +50,7 @@ public:
     int resetdoh(const int mfec, const int fecchannel); // reset the digital opto hybrid
     
     int readback(const int mfec, int channel); // added tbm readout d.k.11/07
+    std::vector<uint32_t> readreturn(const int mfec, const int channel, uint32_t size);
     int getByteHubCount(const int mfec, const int channel, const int byte, int *data);
     
     
