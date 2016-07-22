@@ -143,14 +143,14 @@
     <node id="BOUT_BUF2M4" address="0x40000007" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC04" />
 
    <!-- Input FIFO (Russell calls it Output FIFO)  -->
-   <node id="INP_BUF1M1" address="0x40000008" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC01" />
-   <node id="INP_BUF2M1" address="0x40000009" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC01" />
-   <node id="INP_BUF1M2" address="0x4000000A" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC02" />
-   <node id="INP_BUF2M2" address="0x4000000B" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC02" />
-   <node id="INP_BUF1M3" address="0x4000000C" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC03" />
-   <node id="INP_BUF2M3" address="0x4000000D" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC03" />
-   <node id="INP_BUF1M4" address="0x4000000E" permission="r" size="128" mode="non-incremental" description="Chan1 Input FIFO MFEC04" />
-   <node id="INP_BUF2M4" address="0x4000000F" permission="r" size="128" mode="non-incremental" description="Chan2 Input FIFO MFEC04" />
+   <node id="INP_BUF1M1" address="0x40000008" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC01" />
+   <node id="INP_BUF2M1" address="0x40000009" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC01" />
+   <node id="INP_BUF1M2" address="0x4000000A" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC02" />
+   <node id="INP_BUF2M2" address="0x4000000B" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC02" />
+   <node id="INP_BUF1M3" address="0x4000000C" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC03" />
+   <node id="INP_BUF2M3" address="0x4000000D" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC03" />
+   <node id="INP_BUF1M4" address="0x4000000E" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC04" />
+   <node id="INP_BUF2M4" address="0x4000000F" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC04" />
    
    
    <!-- General Registers  -->
