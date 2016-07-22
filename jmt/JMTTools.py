@@ -9,6 +9,9 @@ BUILD_HOME = os.environ['BUILD_HOME']
 POS_OUTPUT_DIRS = os.environ['POS_OUTPUT_DIRS']
 PIXELCONFIGURATIONBASE = os.environ['PIXELCONFIGURATIONBASE']
 
+def config_fn(x):
+    return os.path.join(PIXELCONFIGURATIONBASE, x)
+
 def run_from_argv():
     run = None
     for x in sys.argv:
