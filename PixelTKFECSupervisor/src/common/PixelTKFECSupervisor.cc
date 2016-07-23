@@ -154,7 +154,8 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   xgi::bind(this, &PixelTKFECSupervisor::XgiHandler, "XgiHandler");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI, "CCUBoardGUI");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI_XgiHandler, "CCUBoardGUI_XgiHandler");
-  xgi::bind(this, &PixelTKFECSupervisor::Phase1DCUSummary, "Phase1DCUSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::FPixDCDCSummary, "FPixDCDCSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::FPixDCUSummary, "FPixDCUSummary");
   xgi::bind(this, &PixelTKFECSupervisor::PortcardDevicesSummary, "PortcardDevicesSummary");
 
   //DIAGNOSTIC REQUESTED CALLBACK
@@ -541,10 +542,16 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   
   // Rendering Low Level GUI
   
+  std::string urlDCDC_ = "/"; \
+  urlDCDC_ += getApplicationDescriptor()->getURN(); \
+  urlDCDC_ += "/FPixDCDCSummary"; \
+  *out << "<h2> <a href=\"" << urlDCDC_ << "\">FPixDCDCSummary</a> </h2> "<<std::endl;
+  *out << " <hr/> " << std::endl;
+  
   std::string urlDCU_ = "/"; \
   urlDCU_ += getApplicationDescriptor()->getURN(); \
-  urlDCU_ += "/Phase1DCUSummary"; \
-  *out << "<h2> <a href=\"" << urlDCU_ << "\">Phase1DCUSummary</a> </h2> "<<std::endl;
+  urlDCU_ += "/FPixDCUSummary"; \
+  *out << "<h2> <a href=\"" << urlDCU_ << "\">FPixDCUSummary</a> </h2> "<<std::endl;
   *out << " <hr/> " << std::endl;
   
   std::string urlPCDevices_ = "/"; \
@@ -3261,7 +3268,101 @@ this->notifyQualified("fatal",f);
 
 //=============================================================================================
 
-void PixelTKFECSupervisor::Phase1DCUSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+  *out << "<h3>DCDC and QPLL summary for crate " << crate_ << "</h3>\n";
+
+  // slot, ring, ccu, piachannel 31-33
+  unsigned ddr [1][4][4][3] = {{{{0}}}};
+  unsigned data[1][4][4][3] = {{{{0}}}};
+  const unsigned ccus[4] = { 0x7b, 0x7c, 0x7e, 0x7d }; // order for portcards 1 2 3 4 in phi
+
+  {
+    const unsigned slot = 0;
+    const unsigned ring = 0;
+
+    for (int ccu = 0; ccu < 4; ++ccu) {
+      for (unsigned i = 0; i < 3; ++i) {
+        keyType key = buildCompleteKey(slot, ring, ccus[ccu], (0x31 + i), 0); // is this a macro? why is compiler complaining about 0x31 + i needs parens
+        try {
+          fecAccess_->addPiaAccess(key, MODE_SHARE); // JMTBAD use PiaChannelAccess
+          ddr [slot][ring][ccu][i] = fecAccess_->getPiaChannelDDR(key);
+          data[slot][ring][ccu][i] = fecAccess_->getPiaChannelDataReg(key);
+          fecAccess_->removePiaAccess(key);
+        }
+        catch (FecExceptionHandler e) {
+          cout << std::string("Exception caught when doing PIA access: ") + e.what();
+        }
+      }
+    }
+  }
+
+  std::map<std::string, std::pair<unsigned, unsigned> > enable_pgood;
+  std::map<std::string, bool> qpll;
+
+  for (std::map<std::string, PixelPortCardConfig*>::const_iterator it = mapNamePortCard_.begin(), ite = mapNamePortCard_.end(); it != ite; ++it) {
+    const std::string& pc_name = it->first;
+    PixelPortCardConfig* pc = it->second;
+    const std::string TKFECID = pc->getTKFECID();
+
+    if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
+
+    const unsigned slot = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
+    const unsigned ring = pc->getringAddress();
+    const unsigned ccu_addr  = pc->getccuAddress();
+    int ccu = -1;
+    if      (ccu_addr == 0x7b) ccu = 0;
+    else if (ccu_addr == 0x7c) ccu = 1;
+    else if (ccu_addr == 0x7e) ccu = 2;
+    else if (ccu_addr == 0x7d) ccu = 3;
+    assert(slot == 0 && ring < 4 && ccu != -1);
+
+    const int disk = pc_name[10] - '0'; // only works for "FPix_BmI_DX..."
+    assert(disk >= 1 && disk <= 3);
+
+    unsigned enable = 0;
+    unsigned pgood = 0;
+    if (disk == 1) {
+      enable = data[slot][ring][ccu][0] & 0x3;
+      pgood  = data[slot][ring][ccu][1] & 0xf;
+      qpll[pc_name] = data[slot][ring][ccu][2] & 0x10;
+    }
+    else if (disk == 2) {
+      enable = (data[slot][ring][ccu][0] >> 2) & 0x3;
+      pgood  = data[slot][ring][ccu][1] >> 4;
+      qpll[pc_name] = data[slot][ring][ccu][2] & 0x20;
+    }
+    else if (disk == 3) {
+      enable = (data[slot][ring][ccu][0] >> 4) & 0x3;
+      pgood  = data[slot][ring][ccu][2] & 0xf;
+      qpll[pc_name] = data[slot][ring][ccu][2] & 0x40;
+    }
+    
+    enable_pgood[pc_name] = std::make_pair(enable, pgood);
+  }
+
+  *out << "raw pia data:<br>\n";
+  *out << std::hex;
+  for (int slot = 0; slot < 1; ++slot) {
+    for (int ring = 0; ring < 1; ++ring) {
+      *out << "slot " << slot << " ring " << ring << "<br>\n";
+      for (int ccu = 0; ccu < 4; ++ccu) {
+        *out << "ccu 0x" << ccus[ccu] << "<br>\n";
+        *out << "<table><tr><td>pia</td><td>0x31</td><td>0x32</td><td>0x33</td></tr>\n";
+        *out << "<tr><td>DDR</td>";
+        for (int i = 0; i < 3; ++i)
+          *out << "<td>" << ddr[slot][ring][ccu][i] << "</td>";
+        *out << "</tr>\n";
+        *out << "<tr><td>data</td>";
+        for (int i = 0; i < 3; ++i)
+          *out << "<td>" << data[slot][ring][ccu][i] << "</td>";
+        *out << "</tr>\n";
+        *out << "</table>\n";
+      }
+    }
+  }
+}
+
+void PixelTKFECSupervisor::FPixDCUSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
   *out << "<h3>DCU for portcards for crate " << crate_ << "</h3>\n";
 
   if (mapNamePortCard_.size() == 0)
