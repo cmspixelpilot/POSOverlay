@@ -3,6 +3,9 @@
 #include <string>
 #include "PixelUtilities/PixeluTCAUtilities/include/PixelAMC13Interface.h"
 
+// needs T1 0x6057 and T2 0x2e
+// JMTBAD check for the versions in configure or something
+
 namespace {
   template <typename T>
   void throw_simple(T t, std::string extra) {
