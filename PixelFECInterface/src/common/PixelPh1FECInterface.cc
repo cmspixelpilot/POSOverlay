@@ -813,6 +813,22 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
     //getfecctrlstatus(mfec,&csreg);
     //cout << "csreg direct read 0x" << hex << csreg << " from mfecbusy 0x" << mfecCSregister[mfec] << dec << endl;
 
+    if (1 && PRINT) {
+      usleep(100000);
+      std::vector<uint32_t> rb = readreturn(mfec, fecchannel, 16000);
+      const size_t nrb = rb.size();
+      const size_t qbn = qbufn[mfec][fecchannel];
+      std::cout << "PixelPh1FECInterface: JMT readback size = " << nrb << " we sent " << qbn << std::endl;
+      for (size_t i = 0; i < nrb; ++i) {
+        cout<<"PixelPh1FECInterface:  ("<<setw(5)<<i<<"): ";
+        hexprintword(rb[i]);
+        if (i < qbn) {
+          std::cout << "   qbuf: ";
+          hexprintword(qbuf[mfec][fecchannel][i]);
+        }
+        cout << endl;
+      }
+    }
 
     qbufn[mfec][fecchannel] = 0;
     memset(qbuf[mfec][fecchannel], 0, qbufsize); // JMTBAD for good measure to be sure new FEC doesn't pick up stuff after the 0xFF...
