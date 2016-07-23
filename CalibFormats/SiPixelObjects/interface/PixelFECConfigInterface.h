@@ -139,6 +139,7 @@ namespace pos{
     virtual int resetdoh(const int mfec, const int fecchannel) = 0;
     virtual int testFiber(const int mfec, const int channel, int* rda, int * rck) = 0;
     virtual int FullBufRDaDisable(const int mfec, const int disable) = 0;
+    virtual int AllRDaDisable(const int mfec, const int disable) = 0;
     virtual void mfecbusy(int mfec, int fecchannel, unsigned int *cs1,unsigned int *cs2) = 0;
     virtual int tbmread(int mfec, int fecchannel, int tbmchannel, int hubaddress, int portaddress, int offset) = 0;
     virtual int tbmreset(int mfec, int fecchannel, int tbmchannel, int hubaddress) = 0;
