@@ -1427,15 +1427,15 @@ std::string const msg_debug_zjh = "Activated reset check workloop";
 
 }
 //==========================================================================================================================
-bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
-					  tscType8 ringAddress,
-					  tscType8 ccuAddressEnable,
-					  tscType8 ccuAddressPgood,
-					  tscType8 piaChannelAddress,
-					  bool turnOn,
-					  unsigned int portNumber) {
+bool PixelTKFECSupervisor::PilotPixDCDCCommand(tscType8 fecAddress,
+                                               tscType8 ringAddress,
+                                               tscType8 ccuAddressEnable,
+                                               tscType8 ccuAddressPgood,
+                                               tscType8 piaChannelAddress,
+                                               bool turnOn,
+                                               unsigned int portNumber) {
 
-  printf("Doing pixDCDCCommand slot %i ring %i ccuAddrEnable %x ccuAddressPgood %x piaChannelAddr %x portNumber %i turnOn? %i \n", fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, portNumber, turnOn);
+  printf("Doing PilotPixDCDCCommand slot %i ring %i ccuAddrEnable %x ccuAddressPgood %x piaChannelAddr %x portNumber %i turnOn? %i \n", fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, portNumber, turnOn);
   usleep(500000);
 
   bool success = true;
@@ -1952,8 +1952,6 @@ end of redundancy ring comment */
 	
       }
 
-#if !defined SETUP_TIF
-      // JMTBAD plz put dcdc object @ TIF
       // get the dcdc that need to be turned on
       typedef std::map<std::pair<unsigned int, unsigned int>, string> dcdc_map_t;
       dcdc_map_t dcdc_map;
@@ -1968,14 +1966,11 @@ end of redundancy ring comment */
 	dcdc_map[std::make_pair(slot,ring)] = name;
 	std::cout << " DCDC map: slot " << slot << " ring " << ring << " name " << name << std::endl;
       }
-#endif
 
       //std::cout << "Disable the PIA ports "<< std::endl;        
       //program the CCU (this is to disable PIA resets in order not to have the fire by themselves)
-      for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); 
-	   ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
+      for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
 
-#if !defined SETUP_TIF
 	dcdc_map_t::const_iterator it = dcdc_map.find(std::make_pair(slot, ringiter->first));
 	if (it != dcdc_map.end()) {
 	  const std::string& name = it->second;
@@ -1984,23 +1979,27 @@ end of redundancy ring comment */
 	  PixelConfigInterface::get(dcdc, "pixel/dcdc/" + name, *theGlobalKey_);
 	  const std::vector<unsigned>& ports = dcdc->getPortNumbers();
 
-	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name << " enabled? " << dcdc->getDCDCEnabled() << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " ports ";
+	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name
+                    << " type? " << dcdc->getType()
+                    << " enabled? " << dcdc->getDCDCEnabled()
+                    << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " ports ";
 	  for (size_t i = 0; i < ports.size(); ++i)
 	    std::cout << ports[i] << " ";
 	  std::cout << std::endl;
 
-	  if (dcdc->getDCDCEnabled()) {
-	    std::cout << "   sending DCDC command" << std::endl;
-	    for (size_t i = 0; i < ports.size(); ++i)
-	      pixDCDCCommand(slot, ringiter->first,
-			     dcdc->getCCUAddressEnable(),
-			     dcdc->getCCUAddressPgood(),
-			     dcdc->getPIAChannelAddress(),
-			     true,
-			     ports[i]);
-	  }
+          if (dcdc->getType() == "pilot") {
+            if (dcdc->getDCDCEnabled()) {
+              std::cout << "   sending DCDC command" << std::endl;
+              for (size_t i = 0; i < ports.size(); ++i)
+                PilotPixDCDCCommand(slot, ringiter->first,
+                                    dcdc->getCCUAddressEnable(),
+                                    dcdc->getCCUAddressPgood(),
+                                    dcdc->getPIAChannelAddress(),
+                                    true,
+                                    ports[i]);
+            }
+          }
 	}
-#endif
 
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop

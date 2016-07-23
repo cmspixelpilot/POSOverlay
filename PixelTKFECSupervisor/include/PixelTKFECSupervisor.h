@@ -221,13 +221,13 @@ private:
   void disablePIAchannels(int slot,int ring,int ccu)  ;
   void enablePIAchannels(int slot,int ring,int ccu)  ;
   bool programPortcards(bool);
-  bool pixDCDCCommand(tscType8 fecAddress,
-		      tscType8 ringAddress,
-		      tscType8 ccuAddressEnable,
-		      tscType8 ccuAddressPgood,
-		      tscType8 piaChannelAddress,
-		      bool turnOn,
-		      unsigned int portNumber);
+  bool PilotPixDCDCCommand(tscType8 fecAddress,
+                           tscType8 ringAddress,
+                           tscType8 ccuAddressEnable,
+                           tscType8 ccuAddressPgood,
+                           tscType8 piaChannelAddress,
+                           bool turnOn,
+                           unsigned int portNumber);
   // void DIAG_CONFIGURE_CALLBACK();
   // void DIAG_APPLY_CALLBACK();
 
