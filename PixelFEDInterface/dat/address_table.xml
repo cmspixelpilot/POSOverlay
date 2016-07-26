@@ -516,6 +516,7 @@
         <node id="decode_reg_reset" address="0x40030000" mask="0x00000002" permission="w" />
         <node id="idel_ctrl_reset" address="0x40030000" mask="0x00000004" permission="w" />
         <node id="initialize_swap" address="0x40030000" mask="0x00000008" permission="w" />
+        <node id="bitslip" address="0x40030000" mask="0x00000010" permission="w" />
         <node id="software_trigger_out" address="0x40030000" mask="0x40000000" permission="w" />
         <node id="idel_individual_ctrl" address="0x40030001" mode="block" size="48" permission="w" />
         <node id="fifo_config" address="0x40030031" permission="rw">
@@ -528,6 +529,9 @@
         </node>
         <node id="transparent_delay" address="0x40030032" mask="0x0000003f" permission="w" />
         <node id="disable_BE" address="0x40030033" mask="0x00000001" permission="rw" />
+        <node id="scan_DC" address="0x40030033" mask="0x00003e00" permission="rw" />
+        <node id="scan_pxl" address="0x40030033" mask="0x000001fe" permission="rw" />
+        <node id="fifo_1_to_read" address="0x40030034" mask="0x0000003f" permission="rw" />
     </node>
     <!-- HEPHY SPY FIFOs -->
     <node id="fifo" permission="r">
