@@ -84,18 +84,27 @@ int PixelPh1FEDInterface::setup() {
     }
   }
 
+  std::cout << "fibers in use:";
+  for (int fiber = 1; fiber <= 24; ++fiber)
+    if (fibers_in_use[fiber])
+      std::cout << " " << fiber;
+  std::cout << std::endl;
+
   const uint32_t tbm_mask_1((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) & 0xFFFFFFFFULL);
   const uint32_t tbm_mask_2(((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) >> 32) & 0xFFFF);
   std::cout << "TBM mask 1: 0x" << std::hex << tbm_mask_1 << "  2: 0x" << tbm_mask_2 << std::dec << std::endl;
 
+//  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 1);
+//  usleep(10000);
+//  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 0);
+//  usleep(10000);
+
+  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 0);
+  usleep(10000);
+
   // make sure the clocks are set
   regManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0); // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
   regManager->WriteReg("ctrl.mgt_xpoint_out1", 3); // 2 to have 156 MHz clock (obligatory for 10G sling), 3 for 125Mhz clock for 5g on SLink
-
-  usleep(10000);
-
-  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 0);
-
   usleep(10000);
 
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
@@ -1923,7 +1932,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     //if(sleepcnt > 1000) mycntword = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
     //if(mycntword>5){std::cout<<mycntword<<" words in the ddr"<<std::endl; usleep(300000);}
     if (sleepcnt > 5000) {
-      cout << "\033[1m\033[32mSOFTWARE TIMEOUT (5sec)\033[0m" << std::endl;
+      cout << "FED#" << pixelFEDCard.fedNumber << " \033[1m\033[32mSOFTWARE TIMEOUT (5sec)\033[0m" << std::endl;
       our_timeout = true;
       break;
     }
