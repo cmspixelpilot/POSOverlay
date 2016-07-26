@@ -22,11 +22,11 @@
   <NumberOfEvents Events="-1"/>
   <Hardware>
     <!-- Feds that user wants to analyze dash separated-->
-    <Feds Analyze="44">
+    <Feds Analyze="1294">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->
-      <Fed Id="44">
+      <Fed Id="1294">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->
