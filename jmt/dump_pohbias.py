@@ -43,11 +43,10 @@ for fedfiber, graphs in all_graphs.iteritems():
         g.SetLineColor(color)
         g.SetMarkerColor(color)
         g.GetYaxis().SetRangeUser(0, 0.5)
+        #g.GetFunction("fit_to_rssi_response").Delete() #SetBit(ROOT.TF1.kNotDraw)
         if gain == 0:
             g.Draw('AP')
         else:
             g.Draw('P')
     c.SaveAs(os.path.join(out_dir, 'FED%i_fiber%i.png' % fedfiber))
     del c
-
-
