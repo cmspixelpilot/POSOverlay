@@ -2884,8 +2884,10 @@ void PixelFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Referenc
 	// disable the debug check 
         FECInterface[fecVMEBaseAddress]->fecDebug(0);
       } else { // FPIX
-	// enable the debug check for fpix 
-        FECInterface[fecVMEBaseAddress]->fecDebug(1);
+        const bool rdas_all_good = false;
+        FECInterface[fecVMEBaseAddress]->fecDebug(rdas_all_good);
+        FECInterface[fecVMEBaseAddress]->FullBufRDaDisable(module_firstHdwAddress.mfec(),!rdas_all_good);
+        FECInterface[fecVMEBaseAddress]->AllRDaDisable(module_firstHdwAddress.mfec(),!rdas_all_good);
       }
 
       // Waiting not needed since we do not do any block transfers before
