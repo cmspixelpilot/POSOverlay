@@ -14,6 +14,7 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
   void endCalibration();
 
   virtual std::vector<std::string> calibrated();
+  void SetAOHBiasToCurrentValue(std::string portCardName, int AOHNumber, int AOHBiasNumber);
 
  private:
   std::vector<unsigned> POHGains;
@@ -24,6 +25,8 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
   unsigned key(int gain, int NFed, int NFiber) { return (gain << 30) | (NFed << 5) | NFiber; }
 
   std::map<unsigned, TGraphErrors*> rssi_v_bias;
+  std::map<unsigned, unsigned> selected_poh_bias_values;
+//  std::map<std::string, PixelPortCardConfig*> portcard_configs_to_write;
 };
 
 #endif
