@@ -30,6 +30,7 @@ for d in dirs:
         canvas = key.ReadObj()
         name = canvas.GetName().replace(' (inv)', '').replace('_Canvas', '')
         obj = canvas.FindObject(name)
+        #lines = [x for x in canvas.GetListOfPrimitives() if x.Class().GetName() == "TLine"]
         rest, roc = name.split('ROC')
         iroc = int(roc)
         if int(roc) < 10:
@@ -38,9 +39,10 @@ for d in dirs:
         by_ntrigs.append((ntrigs, name))
         c.cd(iroc+1)
         obj.Draw('colz')
-        if 0:
+        if 1:
             for x in canvas.GetListOfPrimitives():
                 if x.GetName() == 'TLine':
+                    x.SetLineWidth(2)
                     x.Draw()
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.png')
