@@ -31,5 +31,5 @@ cd tbm
 sed -i 's/DisablePKAMCounter: 0/DisablePKAMCounter: 1/' *
 cd ../dac
 sed -i 's/Readback:.*/Readback:      12/' *
-sed -i 's/WBC:.*/WBC:           92/' *
+#sed -i 's/WBC:.*/WBC:           92/' *
 cd ..
