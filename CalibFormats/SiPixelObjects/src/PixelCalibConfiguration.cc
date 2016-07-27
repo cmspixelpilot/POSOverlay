@@ -697,6 +697,28 @@ void PixelCalibConfiguration::buildROCAndModuleListsFromROCSet(const std::set<Pi
     rocs_.push_back(*rocSet_itr);
   }
 
+  // jumble the roc ordering so that there's a new port each roc, stimulates more of the buffer mode problems for Andrew and Nik
+#if 0
+  std::vector<PixelROCName> rocs_tmp = rocs_;
+  assert(rocs_.size() == 16);
+  rocs_[0] = rocs_tmp[0];
+  rocs_[1] = rocs_tmp[4];
+  rocs_[2] = rocs_tmp[8];
+  rocs_[3] = rocs_tmp[12];
+  rocs_[4] = rocs_tmp[1+0];
+  rocs_[5] = rocs_tmp[1+4];
+  rocs_[6] = rocs_tmp[1+8];
+  rocs_[7] = rocs_tmp[1+12];
+  rocs_[8] = rocs_tmp [2+0];
+  rocs_[9] = rocs_tmp [2+4];
+  rocs_[10] = rocs_tmp[2+8];
+  rocs_[11] = rocs_tmp[2+12];
+  rocs_[12] = rocs_tmp[3+0];
+  rocs_[13] = rocs_tmp[3+4];
+  rocs_[14] = rocs_tmp[3+8];
+  rocs_[15] = rocs_tmp[3+12];
+#endif
+
   //t.stop();
   //cout << "buildROCAndModuleListsFromROCSet 1 time="<<t.tottime()<<endl;
   //t.start();
