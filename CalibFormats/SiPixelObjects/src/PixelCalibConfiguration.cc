@@ -1749,6 +1749,7 @@ void PixelCalibConfiguration::disablePixels(PixelFECConfigInterface* pixelFEC,
 
   //cout<<" disable ROC "<<theROC.hubaddress()<<" "<<theROC.rocid()<<endl;
   //FIXME This should be done with more efficient commands!
+#if 1
   for (unsigned int row=0;row<80;row++){
     for (unsigned int col=0;col<52;col++){
       unsigned int bits=trims->trim(col,row);
@@ -1762,6 +1763,23 @@ void PixelCalibConfiguration::disablePixels(PixelFECConfigInterface* pixelFEC,
 			bits,_bufferData);
     }
   }
+#else
+  std::vector<unsigned char> pixels(52*80);
+  for (unsigned int col=0;col<52;col++)
+    for (unsigned int row=0;row<80;row++) {
+      unsigned bits=trims->trim(col,row);
+      assert(bits <= 255);
+      pixels[col*80+row] = (unsigned char)(bits);
+    }
+
+      
+  pixelFEC->roctrimload(theROC.mfec(),
+			theROC.mfecchannel(),
+			theROC.hubaddress(),
+			theROC.portaddress(),
+			theROC.rocid(),
+                        pixels);
+#endif
 }
 
 std::string PixelCalibConfiguration::parameterValue(std::string parameterName) const
