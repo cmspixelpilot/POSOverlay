@@ -267,15 +267,15 @@ assert len(set(portcards)) == 12
 # poh numbers unique?
 assert len(set((m.portcard, m.poh_num) for m in modules)) == 12*14
 
-#feds = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules]))
-#assert len(feds) == 7
-feds_used = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules if moduleOK(m)]))
-assert len(feds_used) == 4
+feds = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules]))
+assert len(feds) == 7
+feds_used = feds #sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules if moduleOK(m)]))
+assert len(feds_used) == 7
 
-#fecs = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules]))
-#assert len(fecs) == 2
-fecs_used = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules if moduleOK(m)]))
-assert len(fecs_used) == 1
+fecs = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules]))
+assert len(fecs) == 2
+fecs_used = fecs #sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules if moduleOK(m)]))
+assert len(fecs_used) == 2
 
 t_portcard = '''Name: %(portcard)s
 Type: p1fpix
@@ -290,25 +290,27 @@ Delay25_TRG: 0x6b
 Delay25_SDA: 0x4a
 Delay25_RCL: 0x63
 Delay25_RDA: 0x4e
-bPOH_Bias1: 0x22
-bPOH_Bias2: 0x22
-bPOH_Bias3: 0x22
-bPOH_Bias4: 0x22
-bPOH_Bias5: 0x22
-bPOH_Bias6: 0x22
-bPOH_Bias7: 0x22
+DOH_Ch0Bias_CLK: 0x10
+DOH_Ch1Bias_Data: 0x10
+bPOH_Bias1: 0x11
+bPOH_Bias2: 0x11
+bPOH_Bias3: 0x11
+bPOH_Bias4: 0x11
+bPOH_Bias5: 0x11
+bPOH_Bias6: 0x11
+bPOH_Bias7: 0x11
 bPOH_Gain123: 0x2a
-bPOH_Gain4: 0x3f
+bPOH_Gain4: 0x2a
 bPOH_Gain567: 0x2a
-tPOH_Bias1: 0x22
-tPOH_Bias2: 0x22
-tPOH_Bias3: 0x22
-tPOH_Bias4: 0x22
-tPOH_Bias5: 0x22
-tPOH_Bias6: 0x22
-tPOH_Bias7: 0x22
+tPOH_Bias1: 0x11
+tPOH_Bias2: 0x11
+tPOH_Bias3: 0x11
+tPOH_Bias4: 0x11
+tPOH_Bias5: 0x11
+tPOH_Bias6: 0x11
+tPOH_Bias7: 0x11
 tPOH_Gain123: 0x2a
-tPOH_Gain4: 0x3f
+tPOH_Gain4: 0x2a
 tPOH_Gain567: 0x2a
 '''
 
@@ -367,7 +369,7 @@ fmt = \
 header = tuple('#name A/B FEC mfec mfecch hubid port rocid FEDid FEDch roc#'.split())
 f.write(fmt % header)
 for m in modules:
-    if not moduleOK(m): continue
+    #if not moduleOK(m): continue
     for iroc in xrange(16):
         fields = (
             m.name + '_ROC' + str(iroc), 
@@ -447,6 +449,7 @@ Fitel channel order swapped: 1
 Timeout checking enabled: 0
 Timeout counter start: 10
 Timeout number OOS threshold: 255
+Frontend disable backend: 0
 FED Base address                         :0x%(fed_id)x
 FEDID Number                             :0x%(fed_id)x
 Number of ROCs Chnl 1:8
@@ -2562,4 +2565,4 @@ for fed_id, fed_crate, fed_uri in feds_used:
     open(fn, 'wt').write(t_fedcard % locals())
 
 
-print 'now you need to run unpack_dougs_configs.sh!'
+print 'now you might want to run unpack_dougs_configs.sh!'
