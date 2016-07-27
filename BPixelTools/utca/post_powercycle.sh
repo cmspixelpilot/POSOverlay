@@ -1,7 +1,7 @@
 
 for ip in $@; do 
     $BUILD_HOME/pixel/PixelUtilities/PixeluTCAUtilities/test/src/common/banger.exe \
-        board chtcp-2.0://localhost:10203?target=${ip}:50001 \
-        file://${BUILD_HOME}/pixel/BPixelTools/utca/address_table.xml \
+        chtcp-2.0://localhost:10203?target=${ip}:50001 \
+        ${BUILD_HOME}/pixel/BPixelTools/utca/address_table.xml \
         write ctrl.ttc_xpoint_A_out3 0
 done
