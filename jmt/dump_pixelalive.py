@@ -9,6 +9,8 @@ run_dir = run_dir(run)
 in_fn = glob(os.path.join(run_dir, 'PixelAlive_Fed_*_Run_%i.root' % run))
 if not in_fn:
     raise RuntimeError('need to make the root file: /nfshome0/pixelpilot/build/TriDAS/pixel/jmt/pxalive.sh %i' % run)
+if len(in_fn) > 1:
+    raise RuntimeError('too many root files')
 in_fn = in_fn[0]
 out_dir = os.path.join(run_dir, 'dump_pixelalive')
 os.system('mkdir -p %s' % out_dir)
