@@ -25,12 +25,15 @@ int main(int argc, char** argv) {
   PixelUhalLogSetter r;
 
   PixelAMC13Interface a("chtcp-2.0://localhost:10203?target=amc13_T1:50001",
-                        "chtcp-2.0://localhost:10203?target=amc13_T2:50001");
+                        "file:///opt/cactus/etc/amc13/AMC13XG_T1.xml",
+                        "chtcp-2.0://localhost:10203?target=amc13_T2:50001",
+                        "file:///opt/cactus/etc/amc13/AMC13XG_T2.xml"
+                        );
 
   a.SetMask("1-12");
   a.SetDebugPrints(1);
   a.SetCalBX(420);
-  a.SetL1ABurstDelay(1000);
+  a.SetL1ADelay(1000);
 
   a.Configure();
 
@@ -80,7 +83,7 @@ int main(int argc, char** argv) {
     else if (c == 'd') {
       unsigned v;
       std::cin >> v;
-      a.SetL1ABurstDelay(v);
+      a.SetL1ADelay(v);
       std::cout << "YOU MUST MANUALLY RECONFIGURE WITH r" << std::endl;
     }
     else if (c == 'r') {
