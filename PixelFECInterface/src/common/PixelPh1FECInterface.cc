@@ -12,6 +12,8 @@ using namespace std;
 using namespace pos;
 
 namespace {
+  bool buffermodenever = false;
+
   bool PRINT = false;
   bool PRINT_old = PRINT;
   void PRINT_ON() {
@@ -722,6 +724,11 @@ int PixelPh1FECInterface::qbufsend(void) {
 //--------------------------------------------------------------------------------
 // Send buffered data for one channel
 int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
+  if (buffermodenever) {
+    std::cerr << "shouldn't have gotten to qbufsend(mfec,fecchannel) with buffermodenever" << std::endl;
+    return 0;
+  }
+
     unsigned int ch1stat, ch2stat;
     
     // append a final FF to data
@@ -935,8 +942,8 @@ int PixelPh1FECInterface::clrcal(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t>  wordvec;
     
-    
-    if (buffermode) {
+
+    if (buffermode && !buffermodenever) {
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode clrcal"<<endl;
         
@@ -1047,7 +1054,7 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t>  wordvec;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         
         if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix1 buffered mask and trim"<<endl;
         if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX1 ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
@@ -1199,7 +1206,7 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
     //cout << "PROGPIX, hubaddress:"<<hubaddress<<" portaddress:"
     // <<portaddress<<" rocid:"<<rocid<<" "<<coladdr<<" "<<rowaddress<<" "<<hex<<nnn<<dec<<" "<<buffermode<<endl;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix buffered databyte"<<endl;
         if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX Q ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
 		    <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" databyte:"<<std::hex<<(unsigned int)(databyte)<<std::dec<< endl;
@@ -1344,7 +1351,7 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
     unsigned char coltemp0, coltemp1, coltemp2;
     std::vector<uint32_t>  wordvec;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         if (PRINT) cout << "PixelPh1FECInterface: "  << "CALPIX ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" caldata:"<<caldata<<endl;
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
@@ -1482,7 +1489,7 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
     unsigned char coltemp0;
     std::vector<uint32_t>  wordvec;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         if (PRINT) cout << "PixelPh1FECInterface: "  << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
         
         if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
@@ -1627,7 +1634,7 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
     
     
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
         
