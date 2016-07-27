@@ -141,6 +141,16 @@ struct digfifo1 {
   std::vector<uint32_t> cMarkerB;
   encfifo1 a;
   encfifo1 b;
+  int nonzerowords(int which) {
+    int c = 0;
+    const std::vector<uint32_t>& f = which == 0 ? cFifo1A : cFifo1B;
+    const std::vector<uint32_t>& m = which == 0 ? cMarkerA : cMarkerB;
+    assert(f.size() == m.size());
+    for (size_t i = 0, ie = f.size(); i < ie; ++i)
+      if (f[i] || m[i])
+        ++c;
+    return c;
+  }
   encfifo1& aorb(int i) { return i ? b : a; }
 };
 
