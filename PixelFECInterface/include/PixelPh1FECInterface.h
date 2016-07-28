@@ -21,7 +21,11 @@ class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
     
 public:
   PixelPh1FECInterface(RegManager* const RegManagerPtr, const char* boardid);
-    
+
+  bool hasclock();
+  bool clocklost();
+  void resetclocklost();
+
     int senddata(const int mfec, const int fecchannel);
     int injectrstroc(const int mfec, const int bitstate);
     int injecttrigger(const int mfec, const int bitstate);

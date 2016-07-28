@@ -57,6 +57,25 @@ PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
     }
 
     pRegManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0);
+    usleep(100);
+    if (!hasclock() || clocklost()) {
+      std::cerr << "hits go in wrong bx after clock lost until you reload firmware / power cycle\n";
+      assert(0);
+    }
+}
+
+bool PixelPh1FECInterface::hasclock() {
+  return pRegManager->ReadReg("Board0.TTCatLHC");
+}
+
+bool PixelPh1FECInterface::clocklost() {
+  return pRegManager->ReadReg("Board0.TTCLostLHC");
+}
+
+void PixelPh1FECInterface::resetclocklost() {
+  pRegManager->WriteReg("Board0.RstTTCLostLHC", 1);
+  usleep(1000);
+  pRegManager->WriteReg("Board0.RstTTCLostLHC", 1);
 }
 
 //-------------------------------------------------------------------------
