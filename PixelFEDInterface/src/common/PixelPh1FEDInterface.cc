@@ -1,3 +1,5 @@
+#define JMT_FROMFIFO1
+
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -132,7 +134,11 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.tts.evt_err_nb_oos_thresh", 255},
     {"pixfed_ctrl_regs.tts.bc0_ec0_polar", 0},
     {"pixfed_ctrl_regs.tts.force_RDY", 1},
+#ifdef JMT_FROMFIFO1
+    {"fe_ctrl_regs.disable_BE", 1},
+#else
     {"fe_ctrl_regs.disable_BE", pixelFEDCard.frontend_disable_backend},
+#endif
     {"fe_ctrl_regs.fifo_config.overflow_value", 922500}, // 900 per channel
     {"fe_ctrl_regs.fifo_config.TBM_old_new", 0x0}, // 0x0 = PSI46dig, 0x1 = PROC600 // JMTBAD this needs to be a per channel thing if the bpix boards distribute the layer-1 occupancy
     {"fe_ctrl_regs.fifo_config.channel_of_interest", pixelFEDCard.TransScopeCh},
@@ -189,8 +195,18 @@ int PixelPh1FEDInterface::setup() {
     decoded_phases::print_header(std::cout);
     std::vector<int> fibers_ok;
     for (size_t i = 0; i < phases.size(); ++i)
-      std::cout << phases[i] << "\n";
+      if (fibers_in_use[i+1])
+        std::cout << phases[i] << "\n";
   }
+
+  // drain fifo1s
+  for (int fib = 0; fib < 24; ++fib) {
+    if (!fibers_in_use[fib+1])
+      continue;
+    regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", fib);
+    digfifo1 f = readFIFO1(false);
+    std::cout << "fifo1 fiber " << fib << " had non-zero words A: " << f.nonzerowords(0) << " B: " << f.nonzerowords(1) << std::endl;
+  }    
 
   std::cout << "Slink status after configure:" << std::endl;
   PrintSlinkStatus();
@@ -1909,16 +1925,19 @@ uint32_t PixelPh1FEDInterface::getScore(int channel) {
 
 int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   ++slink64calls;
-#if 0
-  std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
-  readTransparentFIFO();
-  readSpyFIFO();
-  digfifo1 f = readFIFO1(true);
-#endif
+  const int maxprints = 10; // set negative for ~forever
+  const bool do_prints = maxprints - int(slink64calls) > 0;
+  if (do_prints) {
+    std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
+    //readTransparentFIFO();
+    //readSpyFIFO();
+  }
 
   //  drainErrorFifo(0);
 
-#if 1
+  size_t ndata64 = 0;
+
+#ifndef JMT_FROMFIFO1
   usleep(2000);
 
   uhal::ValWord<uint32_t> cVal = 0;
@@ -1960,7 +1979,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
 
   const size_t ndata = cData.size();
   assert(ndata % 2 == 0);
-  size_t ndata64 = ndata / 2; // + (ndata % 2 ? 1 : 0);
+  ndata64 = ndata / 2; // + (ndata % 2 ? 1 : 0);
   //std::vector<uint64_t> data64(ndata64, 0ULL);
 
   for (size_t j = 0; j < ndata64; ++j)
@@ -1968,85 +1987,30 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
 
   const uint32_t evnum = cData[0] & 0xFFFFFF;
   const uint32_t bxnum = cData[1] >> 20;
-#endif
 
-#if 0
-  bxs.push_back(bxnum);
-  if (bxs.size() == 1000) {
-    printf("fed#%lu last 1000 bxnums: [", pixelFEDCard.fedNumber);
-    for (int ibx = 0; ibx < 1000; ++ibx)
-      printf("%u,", bxs[ibx]);
-    printf("]\n");
-    bxs.clear();
-  }
-#endif
-
-#if 1
   //std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " ";
   if (evnum != slink64calls)
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " " << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m" << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
   if (bxnum != 502 && bxnum != 503)
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " \033[1m\033[31mWRONG BX\033[0m bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
 
-#endif
+#else
 
-#if 0
-  std::cout << "slink 32-bit words from FW:\n";
-  for (size_t i = 0; i < ndata; ++i)
-    std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
+  data[0] = 0x5000000000000000;
+  data[0] |= uint64_t(slink64calls & 0xffffff) << 32;
+  data[0] |= uint64_t(pixelFEDCard.fedNumber) << 8;
+  size_t j = 1;
+  for (int fib = 0; fib < 24; ++fib) {
+    if (!fibers_in_use[fib+1])
+      continue;
 
-  std::cout << "error decoder:\n";
-  ErrorFIFODecoder ed(&cData[2], cData.size()-4);
-  ed.printToStream(std::cout);
+    regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", fib);
 
-  std::cout << "packed 64 bit:\n";
-  for (size_t j = 0; j < ndata64; ++j) {
-    std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::dec << std::endl;
-    //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::dec << std::endl;
-  }
-#endif
+    if (do_prints)
+      std::cout << "fed#" << pixelFEDCard.fedNumber << " fifo1 fiber " << fib+1 << std::endl;
 
-#if 0
-  FIFO3Decoder decode3(data);
-  //for (size_t i = 0; i <= ndata64; ++i)
-  std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
-  for (unsigned i = 0; i < decode3.nhits(); ++i) {
-    //const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3.channel(i), decode3.rocid(i)-1);
-    std::cout << "#" << i << ": ch: " << decode3.channel(i)
-              << " rocid: " << decode3.rocid(i)
-      //    << " (" << rocname << ")"
-              << " dcol: " << decode3.dcol(i)
-              << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
-              << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
-  }
-#endif
+    digfifo1 f = readFIFO1(do_prints);
 
-#if 0
-  if (f.a.hits.size() + f.b.hits.size() != decode3.nhits()) {
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "Laurent says " << decode3.nhits() << ". this doesn't agree with Helmut, who says " << f.a.hits.size() + f.b.hits.size() << "\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************\n";
-    std::cout << "********************************************************************************" << std::endl;
-  }
-#endif
-
-#if 0
-  const bool myfakefifo3 = true;
-  size_t ndata64 = 0;
-  if (myfakefifo3) {
-    data[0] = 0x5000000000000000;
-    data[0] |= uint64_t(f.a.event & 0xffffff) << 32;
-    data[0] |= uint64_t(pixelFEDCard.fedNumber) << 8;
-    size_t j = 1;
     const bool oldway = true;
     if (oldway) {
       for (size_t i = 0; i < f.a.hits.size(); ++i, ++j) {
@@ -2085,25 +2049,67 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
 
       j = ii/2 + 1;
     }
-    data[j] = 0xa000000000000000;
-    data[j] |= uint64_t((j+1)&0x3fff) << 32;
-    ++j;
+  }
+  data[j] = 0xa000000000000000;
+  data[j] |= uint64_t((j+1)&0x3fff) << 32;
+  ++j;
 
-    ndata64 = j;
+  ndata64 = j;
 
-    // maybe we trashed the 5 in the msb, it's all the decoder cares about...
-    data[0] = 0x5000000000000000 | (data[0] & 0xFFFFFFFFFFFFFFF);
+  // maybe we trashed the 5 in the msb, it's all the decoder cares about...
+  data[0] = 0x5000000000000000 | (data[0] & 0xFFFFFFFFFFFFFFF);
 
-    std::cout << "my fake fifo3:\n";
+  if (do_prints) {
+    std::cout << "my fake fifo3:\n" << std::hex;
     for (size_t i = 0; i < j; ++i)
-      std::cout << std::hex << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
+      std::cout << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
+    std::cout << std::dec;
   }
 #endif
 
-  //std::vector<uint32_t> cData = ReadData(1024);
-  //cData = ReadData(1024);
+#if 0
+  bxs.push_back(bxnum);
+  if (bxs.size() == 1000) {
+    printf("fed#%lu last 1000 bxnums: [", pixelFEDCard.fedNumber);
+    for (int ibx = 0; ibx < 1000; ++ibx)
+      printf("%u,", bxs[ibx]);
+    printf("]\n");
+    bxs.clear();
+  }
+#endif
+
+#if 0
+  if (do_prints) {
+    std::cout << "slink 32-bit words from FW:\n";
+    for (size_t i = 0; i < ndata; ++i)
+      std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
+
+    std::cout << "error decoder:\n";
+    ErrorFIFODecoder ed(&cData[2], cData.size()-4);
+    ed.printToStream(std::cout);
+
+    std::cout << "packed 64 bit:\n";
+    for (size_t j = 0; j < ndata64; ++j) {
+      std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::dec << std::endl;
+      //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::dec << std::endl;
+    }
+
+    FIFO3Decoder decode3(data);
+    //for (size_t i = 0; i <= ndata64; ++i)
+    std::cout << "FIFO3Decoder thinks:\n" << "nhits: " << decode3.nhits() << std::endl;
+    for (unsigned i = 0; i < decode3.nhits(); ++i) {
+      //const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3.channel(i), decode3.rocid(i)-1);
+      std::cout << "#" << i << ": ch: " << decode3.channel(i)
+                << " rocid: " << decode3.rocid(i)
+        //    << " (" << rocname << ")"
+                << " dcol: " << decode3.dcol(i)
+                << " pxl: " << decode3.pxl(i) << " pulseheight: " << decode3.pulseheight(i)
+                << " col: " << decode3.column(i) << " row: " << decode3.row(i) << std::endl;
+    }
+  }
+#endif
+
   return int(ndata64);
-  //return int(j);
 }
 
 bool PixelPh1FEDInterface::isWholeEvent(uint32_t nTries) {
