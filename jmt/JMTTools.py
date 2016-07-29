@@ -12,6 +12,17 @@ PIXELCONFIGURATIONBASE = os.environ['PIXELCONFIGURATIONBASE']
 def config_fn(x):
     return os.path.join(PIXELCONFIGURATIONBASE, x)
 
+def new_config_key(x, min_key=0):
+    new_key = min_key
+    d = None
+    while 1:
+        d = config_fn(os.path.join(x, str(new_key)))
+        if os.path.isdir(d):
+            new_key += 1
+        else:
+            break
+    return new_key, d
+
 def run_from_argv():
     run = None
     for x in sys.argv:
@@ -234,19 +245,25 @@ class dac_dat:
 class portcardmap_dat:
     def __init__(self, fn):
         self.fn = fn
+        if os.path.isdir(fn):
+            fn = os.path.join(fn, 'portcardmap.dat')
         f = open(fn)
         self.l = []
         self.m = defaultdict(list)
+        self.p = {}
         for line in f:
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
             line = line.split()
-            assert len(line) == 3
-            pc, module, ch = line
+            if len(line) == 3:
+                pc, module, ch = line
+            else:
+                pc, module, aorb, ch = line
             ch = int(ch)
             self.l.append((pc, module, ch))
             self.m[pc].append((module, ch))
+            self.p[module] = (pc, ch)
         self.l.sort(key=lambda x: (x[0], x[2]))
 
 #def translation_dat(key):
