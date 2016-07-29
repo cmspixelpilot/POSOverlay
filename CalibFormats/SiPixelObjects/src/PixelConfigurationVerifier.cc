@@ -84,15 +84,12 @@ void PixelConfigurationVerifier::checkChannelEnable(PixelFEDCard *theFEDCard,
       }
       
       if (!onehasNAS && (used!=usedChannel[jChannel])) {
-	cout << __LINE__ << "]\t" << mthn << "*******************************************************"     << endl;
-	cout << __LINE__ << "]\t" << mthn << "WARNING for fedid=" << fedid << " and channel=" << jChannel  <<
-	  " found that fedcard has channel as "                         << endl;
-	if (used)  cout << __LINE__ << "]\t" << mthn << "used while configuration not using this channel"
-			<< endl;
-	if (!used) cout << __LINE__ << "]\t" << mthn << "not used while configuration uses this channel"
-			<< endl;
-	cout << __LINE__ << "]\t" << mthn << "The fedcard will be modifed to agree with configuration" 	 << endl;
-	cout << __LINE__ << "]\t" << mthn << "*******************************************************" 	 << endl;
+	cout << "WARNING for fedid=" << fedid << " and channel=" << jChannel  << " found that fedcard has channel as ";
+	if (used)
+          cout << "used while configuration not using this channel";
+        else
+          cout << "not used while configuration uses this channel";
+	cout << "; the fedcard will be modifed to agree with configuration" << endl;
 	theFEDCard->setChannel(jChannel,usedChannel[jChannel]);
       }
     }
