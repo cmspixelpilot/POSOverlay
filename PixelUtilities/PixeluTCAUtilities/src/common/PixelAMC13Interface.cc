@@ -184,9 +184,9 @@ void PixelAMC13Interface::CalSync() {
         std::cout << "  bxs:";
         for (std::map<uint32_t, int>::const_iterator jt = h.bx.begin(), jte = h.bx.end(); jt != jte; ++jt)
           std::cout << " " << jt->first << ":" << jt->second;
-        std::cout << "\n  orbits:";
-        for (std::map<uint32_t, int>::const_iterator jt = h.orbit.begin(), jte = h.orbit.end(); jt != jte; ++jt)
-          std::cout << " " << jt->first << ":" << jt->second;
+        //std::cout << "\n  orbits:";
+        //for (std::map<uint32_t, int>::const_iterator jt = h.orbit.begin(), jte = h.orbit.end(); jt != jte; ++jt)
+        //  std::cout << " " << jt->first << ":" << jt->second;
         std::cout << std::endl;
       }
     }
