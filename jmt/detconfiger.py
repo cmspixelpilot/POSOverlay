@@ -1,8 +1,14 @@
 import sys, os
 from JMTTools import *
 
-min_key = int(sys.argv[1])
-modules = sys.argv[2:]
+portcardmap = None
+for x in sys.argv:
+    if x.startswith('portcardmap='):
+        portcardmap = portcardmap_dat(config_fn('portcardmap/%i' % int(x.split('portcardmap=')[1])))
+        sys.argv.remove(x)
+        break
+
+modules = sys.argv[1:]
 if not modules:
     raise ValueError('need some modules in argv!')
 
@@ -11,20 +17,16 @@ print 'modules are:'
 for m in modules:
     print m
 
-max_seen = 0
-
-for line in open(config_fn('aliases.txt')):
-    line = line.strip().split()
-    if line[0] == 'detconfig':
-        max_seen = max(max_seen, int(line[1]))
-
-new_key = max(max_seen, min_key) + 1
-print 'new key is', new_key
+detconfig_key, detconfig_dir = new_config_key('detconfig')
+print 'new detconfig key is', detconfig_key
+if portcardmap:
+    portcardmap_key, portcardmap_dir = new_config_key('portcardmap')
+    print 'new portcardmap key is', portcardmap_key
 raw_input('[enter to continue]')
 
-detconfig_dir = config_fn('detconfig/' + str(new_key))
-assert not os.path.isdir(detconfig_dir)
 os.mkdir(detconfig_dir)
+if portcardmap:
+    os.mkdir(portcardmap_dir)
 
 det_f = open(os.path.join(detconfig_dir, 'detectconfig.dat'), 'wt')
 det_f.write('Rocs:\n')
@@ -35,6 +37,20 @@ for m in sorted(modules):
         print line,
 det_f.close()
 
-cmd = '$BUILD_HOME/pixel/bin/PixelConfigDBCmd.exe --insertVersionAlias detconfig %i Default' % new_key
-print cmd
-os.system(cmd)
+if portcardmap:
+    pcmap_f = open(os.path.join(portcardmap_dir, 'portcardmap.dat'), 'wt')
+    pcmap_f.write('# Portcard              Module                     AOH channel\n')
+    for m in sorted(modules):
+        for aorb in 'AB':
+            pc, poh = portcardmap.p[m]
+            line = '%s %s %s %s\n' % (pc, m, aorb, poh)
+            pcmap_f.write(line)
+            print line,
+    pcmap_f.close()
+
+cmds = [ '$BUILD_HOME/pixel/bin/PixelConfigDBCmd.exe --insertVersionAlias detconfig %i Default' % detconfig_key ]
+if portcardmap:
+    cmds += ['$BUILD_HOME/pixel/bin/PixelConfigDBCmd.exe --insertVersionAlias portcardmap %i Default' % portcardmap_key ]
+for cmd in cmds:
+    print cmd
+    os.system(cmd)
