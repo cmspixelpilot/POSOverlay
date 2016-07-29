@@ -31,6 +31,7 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
 
   void setChannelOfInterest(int ch);
   void disableBE(bool disable);
+  void setPixelForScore(int dc, int pxl);
   uint32_t getScore(int channel);
   void getBoardInfo();
   void disableFMCs();

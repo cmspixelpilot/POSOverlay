@@ -253,6 +253,11 @@ void PixelPh1FEDInterface::setChannelOfInterest(int ch) {
   regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", ch);  // do we always want to keep them in tandem?
 }
 
+void PixelPh1FEDInterface::setPixelForScore(int dc, int pxl) {
+  regManager->WriteReg("fe_ctrl_regs.scan_DC", dc);
+  regManager->WriteReg("fe_ctrl_regs.scan_pxl", pxl);
+}
+
 void PixelPh1FEDInterface::loadFPGA() {
 }
 
