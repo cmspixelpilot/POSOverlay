@@ -179,15 +179,15 @@ int PixelPh1FEDInterface::setup() {
   usleep(10000);
   regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 0);
 
-  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 1);
-
-  usleep(200000);
-
-  int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
-
   fNthAcq = 0;
 
   getBoardInfo();
+
+  std::cout << "PLLs locked?:"
+            << " 400 MHz: " << regManager->ReadReg("hephy_firmware_version.lockedPLL400")
+            << " 200 MHz: " << regManager->ReadReg("hephy_firmware_version.lockedPLL200")
+            << " 200 MHz idelay: " << regManager->ReadReg("hephy_firmware_version.lockedPLL200idelay")
+            << " TTCready: " << regManager->ReadReg("hephy_firmware_version.TTCready") << std::endl;
 
   if ((pixelFEDCard.cntrl_utca & 0xffffffffffffULL) != 0xffffffffffffULL) {
     std::vector<decoded_phases> phases = autoPhases();
@@ -207,6 +207,10 @@ int PixelPh1FEDInterface::setup() {
     digfifo1 f = readFIFO1(false);
     std::cout << "fifo1 fiber " << fib << " had non-zero words A: " << f.nonzerowords(0) << " B: " << f.nonzerowords(1) << std::endl;
   }    
+
+  regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 1);
+  usleep(200000);
+  int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
   std::cout << "Slink status after configure:" << std::endl;
   PrintSlinkStatus();
@@ -246,6 +250,7 @@ void PixelPh1FEDInterface::setChannelOfInterest(int ch) {
   }
 
   regManager->WriteReg("fe_ctrl_regs.fifo_config.channel_of_interest", ch);
+  regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", ch);  // do we always want to keep them in tandem?
 }
 
 void PixelPh1FEDInterface::loadFPGA() {
@@ -282,7 +287,6 @@ void PixelPh1FEDInterface::getBoardInfo()
 	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_day") << "."
 	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_month") << "."
 	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year") << std::endl;
-    std::cout << "actually: " << std::hex << "0x" << regManager->ReadReg("hephy_firmware_version") << std::dec << std::endl;
     std::cout << "FMC 8 Present : " << regManager->ReadReg("status.fmc_l8_present") << std::endl;
     std::cout << "FMC 12 Present : " << regManager->ReadReg("status.fmc_l12_present") << std::endl << std::endl;
 }
@@ -1978,7 +1982,10 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   regManager->WriteReg("pixfed_ctrl_regs.DDR0_end_readout", 0);
 
   const size_t ndata = cData.size();
-  assert(ndata % 2 == 0);
+  if (ndata % 2 != 0) {
+    std::cout << "FED#" << pixelFEDCard.fedNumber << " \033[1m\033[32mdata packet length not even\033[0m" << std::endl;
+    return 0;
+  }
   ndata64 = ndata / 2; // + (ndata % 2 ? 1 : 0);
   //std::vector<uint64_t> data64(ndata64, 0ULL);
 
@@ -2108,6 +2115,8 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     }
   }
 #endif
+  if (ndata64 > 4096)
+    std::cout << "NDATA64 BIGGER THAN 4096 " << ndata64 << std::endl;
 
   return int(ndata64);
 }
