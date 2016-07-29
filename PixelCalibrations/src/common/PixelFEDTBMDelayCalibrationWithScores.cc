@@ -29,6 +29,18 @@ void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
     }
   }
 
+  typedef std::set< std::pair<unsigned int, unsigned int> > colrow_t;
+  const colrow_t colrows = tempCalibObject->pixelsWithHits(0);
+  if (colrows.size() != 1) {
+    std::cout << "must use exactly one pixel for score scan!\n";
+    assert(0);
+  }
+  const int col = colrows.begin()->first;
+  const int row = colrows.begin()->second;
+  const int dc = col/2;
+  const int pxl = 160 - 2*row + col%2;
+  printf("col %i row %i -> dc %i pxl %i\n", col, row, dc, pxl);
+
   const std::vector<std::pair<unsigned, std::vector<unsigned> > >& fedsAndChannels = tempCalibObject->fedCardsAndChannels(crate_, theNameTranslation_, theFEDConfiguration_, theDetectorConfiguration_);
   bool all_feds_ph1 = true;
   assert(fedsAndChannels.size() == 1); // JMTBAD need to book separate histograms per fed
@@ -43,6 +55,7 @@ void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
     }
     else {
       f->disableBE(true);
+      f->setPixelForScore(dc, pxl);
       if (OverrideFifo1Channel >= 0)
         f->setChannelOfInterest(OverrideFifo1Channel);
     }
@@ -117,6 +130,10 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
 
   typedef std::set< std::pair<unsigned int, unsigned int> > colrow_t;
   const colrow_t colrows = tempCalibObject->pixelsWithHits(state);
+  if (colrows.size() != 1) {
+    std::cout << "must use exactly one pixel for score scan!\n";
+    assert(0);
+  }
   if (Dumps) {
     std::cout << "Expected hits: ";
     for (colrow_t::const_iterator cr = colrows.begin(); cr != colrows.end(); ++cr)
