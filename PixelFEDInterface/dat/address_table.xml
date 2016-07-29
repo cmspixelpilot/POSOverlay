@@ -431,7 +431,12 @@
     <node id="DDR1" address="0x61000000" mode="block" size="0x01000000" permission="rw" />
     <node id="ERROR_fifo" address="0x40100002" mode="non-incremental" size="4092" permission="r" />
     <!-- HEPHY STATUS REGISERS -->
-    <node id="hephy_firmware_version" address="0x40020000" mask="0xffffffff" permission="r" />
+    <node id="hephy_firmware_version" address="0x40020000" permission="r">
+      <node id="lockedPLL400" address="0x00000000" mask="0x00000001" />
+      <node id="lockedPLL200idelay" address="0x00000000" mask="0x00000002" />
+      <node id="lockedPLL200" address="0x00000000" mask="0x00000004" />
+      <node id="TTCready" address="0x00000000" mask="0x00000008" />
+    </node>
     <node id="idel_individual_stat_block" address="0x40020001" mode="block" size="192" permission="r" />
     <node id="idel_individual_stat" address="0x40020001" permission="r">
         <!-- these are per *fiber* 0..23 -->
