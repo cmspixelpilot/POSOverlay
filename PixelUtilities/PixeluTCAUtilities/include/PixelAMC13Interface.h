@@ -40,7 +40,8 @@ class PixelAMC13Interface {
   void SetL1ADelay(unsigned v) { fL1ADelay = v; }
   void SetNewWay(bool v) { fNewWay = v; }
   void SetVerifyL1A(bool v) { fVerifyL1A = v; }
-
+  void SetWatchTTCHistory(bool v) { fWatchTTCHistory = v; }
+  
   void DoResets();
 
   void Configure();
@@ -66,11 +67,12 @@ class PixelAMC13Interface {
   uint64_t GetResetROCCount();
   uint64_t GetResetTBMCount();
 
-  void ClearL1AHistory();
   void ClearTTCHistory();
   void ClearTTCHistoryFilter();
   uint32_t getTTCHistoryItemAddress( int item);
-  void DumpHistory();
+  std::vector<uint32_t> GetTTCHistory();
+  void DumpTTCHistory(const std::vector<uint32_t>&);
+  void DumpTTCHistory() { DumpTTCHistory(GetTTCHistory()); }
   void DumpTriggers();
 
   void ConfigureBGO(unsigned i, BGO b);
@@ -92,6 +94,31 @@ class PixelAMC13Interface {
   int nL1ARetries;
   void VerifyL1ASetup();
   bool VerifyL1ACheck();
+
+  bool fWatchTTCHistory;
+  uint64_t fLastCountCalSync;
+  uint32_t fLastTTCHistoryEvent;
+  struct OrbitBXHisto {
+    void clear() {
+      orbits.clear();
+      bxs.clear();
+      orbit.clear();
+      bx.clear();
+    }
+    void fill(uint32_t o, uint32_t b) {
+      orbits.push_back(o);
+      bxs.push_back(b);
+      ++orbit[o];
+      ++bx[b];
+    }
+    size_t size() const { return orbits.size(); }
+    std::vector<uint32_t> orbits;
+    std::vector<uint32_t> bxs;
+    std::map<uint32_t, int> orbit;
+    std::map<uint32_t, int> bx;
+  };
+  typedef std::map<uint32_t, OrbitBXHisto> TTCHistoryByCommandMap;
+  TTCHistoryByCommandMap fTTCHistoryByCommand;
 
   uint64_t countLevelOne;
   uint64_t countCalSync;

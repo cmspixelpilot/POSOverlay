@@ -27,6 +27,9 @@ PixelAMC13Interface::PixelAMC13Interface(const std::string& uriT1,
     fL1ADelay(123),
     fNewWay(false),
     fVerifyL1A(false),
+    fWatchTTCHistory(true),
+    fLastCountCalSync(0),
+    fLastTTCHistoryEvent(0),
     countLevelOne(0),
     countCalSync(0),
     countResetTBM(0),
@@ -45,15 +48,11 @@ void PixelAMC13Interface::DoResets() {
   fAMC13->resetCounters();
   fAMC13->resetDAQ();
 
-  // JMTBAD these two don't work with fw T1 0x23D T2 0x2E (but they are both on the T2 and this is the latest fw?)
-  //fAMC13->clearTTCHistory(); 
-  //fAMC13->clearTTCHistoryFilter();
-  ClearL1AHistory();
-  ClearTTCHistory();
   ClearTTCHistoryFilter();
-
   fAMC13->setTTCHistoryFilter(0, 0x10101); // filter BC0
   fAMC13->setTTCFilterEna(true);
+
+  ClearTTCHistory();
   fAMC13->setTTCHistoryEna(true);
   
   countLevelOne = 0;
@@ -158,6 +157,42 @@ void PixelAMC13Interface::CalSync() {
     if (VerifyL1ACheck())
       break;
   }
+
+  if (fWatchTTCHistory && countCalSync % 256 == 0) { // it's 512 deep
+    std::vector<uint32_t> h = GetTTCHistory();
+    uint32_t event;
+    size_t n = h.size();
+    assert(n % 4 == 0);
+
+    for (size_t i = 0; i < n/4; ++i) {
+      event = h.at(i*4+3);
+
+      if (event > fLastTTCHistoryEvent) {
+        const uint32_t command = h.at(i*4);
+        const uint32_t orbit   = h.at(i*4+1);
+        const uint32_t bx      = h.at(i*4+2);
+
+        fTTCHistoryByCommand[command].fill(orbit, bx);
+      }
+    }
+
+    if (countCalSync && countCalSync % 1024 == 0) {
+      std::cout << "After " << countCalSync << " calsyncs, TTC history has seen:\n";
+      for (TTCHistoryByCommandMap::const_iterator it = fTTCHistoryByCommand.begin(), ite = fTTCHistoryByCommand.end(); it != ite; ++it) {
+        const OrbitBXHisto& h = it->second;
+        std::cout << std::hex << "0x" << it->first << std::dec << " : " << h.size() << "\n";
+        std::cout << "  bxs:";
+        for (std::map<uint32_t, int>::const_iterator jt = h.bx.begin(), jte = h.bx.end(); jt != jte; ++jt)
+          std::cout << " " << jt->first << ":" << jt->second;
+        std::cout << "\n  orbits:";
+        for (std::map<uint32_t, int>::const_iterator jt = h.orbit.begin(), jte = h.orbit.end(); jt != jte; ++jt)
+          std::cout << " " << jt->first << ":" << jt->second;
+        std::cout << std::endl;
+      }
+    }
+    fLastCountCalSync = countCalSync;
+    fLastTTCHistoryEvent = event;
+  }
 }
 
 void PixelAMC13Interface::LevelOne() {
@@ -260,21 +295,12 @@ uint64_t PixelAMC13Interface::GetResetTBMCount() {
   return v;
 }
 
-void PixelAMC13Interface::ClearL1AHistory() {
-  for (int i = 0; i < 512; ++i)
-    fAMC13->write(amc13::AMC13Simple::T1, 0x200+i, 0);
-}
-
 void PixelAMC13Interface::ClearTTCHistory() {
-  const uint32_t base = fAMC13->getT2()->getNode("STATUS.TTC_HISTORY.BUFFER.BASE").getAddress();
-  for (int i = 0; i < 2048; ++i)
-    fAMC13->write(amc13::AMC13Simple::T2, base+i, 0);
+  fAMC13->clearTTCHistory();
 }
 
 void PixelAMC13Interface::ClearTTCHistoryFilter() {
-  const uint32_t base = fAMC13->getT2()->getNode("CONF.TTC_HISTORY.FILTER_LIST").getAddress();
-  for (int i = 0; i < 16; ++i)
-    fAMC13->write(amc13::AMC13Simple::T2, base+i, 0);
+  fAMC13->clearTTCHistoryFilter();
 }
 
 uint32_t PixelAMC13Interface::getTTCHistoryItemAddress(int item) {
@@ -289,7 +315,7 @@ uint32_t PixelAMC13Interface::getTTCHistoryItemAddress(int item) {
   return a;
 }
 
-void PixelAMC13Interface::DumpHistory() {
+std::vector<uint32_t> PixelAMC13Interface::GetTTCHistory() {
   std::vector<uint32_t> cVec;
   const uint32_t base = fAMC13->getT2()->getNode("STATUS.TTC_HISTORY.BUFFER.BASE").getAddress();
   const int nhist = fAMC13->getTTCHistoryCount();
@@ -301,7 +327,10 @@ void PixelAMC13Interface::DumpHistory() {
       adr = base + ((adr + 4) % 0x800);
     }
   }
+  return cVec;
+}
 
+void PixelAMC13Interface::DumpTTCHistory(const std::vector<uint32_t>& cVec) {
   std::cout << "TTC History:\n"
             << "Index  Cmd         Orbit    BX     Event" << std::endl;
   for (size_t index = 0; index < cVec.size() / 4; ++index) {
