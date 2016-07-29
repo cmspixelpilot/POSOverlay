@@ -3007,7 +3007,12 @@ xoap::MessageReference PixelFECSupervisor::Delay25Test (xoap::MessageReference m
         Receive(msg, parametersReceived);
 
   // turn off debug mode (we know there will be returned data errors and we do not want to print them!
-        FECInterface[atoi(parametersReceived.at(0).value_.c_str())]->fecDebug(0);
+        unsigned vmebaseaddress = strtoul(parametersReceived.at(0).value_.c_str(), 0, 10);
+        unsigned mfec = strtoul(parametersReceived.at(1).value_.c_str(), 0, 10);
+        FECInterface[vmebaseaddress]->fecDebug(0);
+        // but turn back off the rda disable
+        FECInterface[vmebaseaddress]->FullBufRDaDisable(mfec, 0);
+        FECInterface[vmebaseaddress]->AllRDaDisable(mfec, 0);
 
 	//int successes = 0;
 	int repeat = atoi(parametersReceived.at(6).value_.c_str());
@@ -3020,22 +3025,22 @@ xoap::MessageReference PixelFECSupervisor::Delay25Test (xoap::MessageReference m
 	int nSuccess4=0;
 
 
-        FECInterface[atoi(parametersReceived.at(0).value_.c_str())]->delay25Test(atoi(parametersReceived.at(1).value_.c_str()),
-                                                                                                      atoi(parametersReceived.at(2).value_.c_str()),
-                                                                                                      atoi(parametersReceived.at(4).value_.c_str()),
-                                                                                                      atoi(parametersReceived.at(3).value_.c_str()),
-                                                                                                      atoi(parametersReceived.at(5).value_.c_str()),
-                                                                                                      0,
-                                                                                                      0,
-                                                                                                      0,
-                                                                                                      repeat,
-										                      commands,
-                                                                                                      nSuccess0,
-                                                                                                      nSuccess1,
-                                                                                                      nSuccess2,
-										                      nSuccess3,
-                                                                                                      nSuccess4
-										                      );
+        FECInterface[vmebaseaddress]->delay25Test(mfec,
+                                                  atoi(parametersReceived.at(2).value_.c_str()),
+                                                  atoi(parametersReceived.at(4).value_.c_str()),
+                                                  atoi(parametersReceived.at(3).value_.c_str()),
+                                                  atoi(parametersReceived.at(5).value_.c_str()),
+                                                  0,
+                                                  0,
+                                                  0,
+                                                  repeat,
+                                                  commands,
+                                                  nSuccess0,
+                                                  nSuccess1,
+                                                  nSuccess2,
+                                                  nSuccess3,
+                                                  nSuccess4
+                                                  );
 
         Attribute_Vector parametersToReturn(5);
         parametersToReturn[0].name_="nSuccess0"; parametersToReturn[0].value_=itoa(nSuccess0);
