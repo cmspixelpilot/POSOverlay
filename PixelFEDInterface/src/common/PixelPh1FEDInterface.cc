@@ -154,9 +154,9 @@ int PixelPh1FEDInterface::setup() {
     cVecReg.push_back(std::make_pair(std::string(buf), uint32_t(pixelFEDCard.timeout_counter_start)));
   }
 
-  std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
-  for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
-    std::cout << std::setfill(' ') << std::setw(60) << cVecReg[i].first << ": 0x" << std::hex << cVecReg[i].second << std::dec << "\n";
+  //std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
+  //for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
+  //  std::cout << std::setfill(' ') << std::setw(60) << cVecReg[i].first << ": 0x" << std::hex << cVecReg[i].second << std::dec << "\n";
 
   regManager->WriteStackReg(cVecReg);
 
@@ -916,7 +916,8 @@ void PixelPh1FEDInterface::decoded_phases::print_header(std::ostream& o) {
 }
 
 std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_phases& p) {
-  o << std::setw(5) << p.fiber << " "
+  o << std::setfill(' ')
+    << std::setw(5) << p.fiber << " "
     << std::setw(3) << p.idelay_ctrl_ready << " "
     << std::setw(3) << p.idelay_tap_set << " "
     << std::setw(3) << p.idelay_tap_read << "    "
@@ -2069,7 +2070,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   if (do_prints) {
     std::cout << "my fake fifo3:\n" << std::hex;
     for (size_t i = 0; i < j; ++i)
-      std::cout << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::endl;
+      std::cout << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::setfill(' ') << std::endl;
     std::cout << std::dec;
   }
 #endif
@@ -2089,7 +2090,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   if (do_prints) {
     std::cout << "slink 32-bit words from FW:\n";
     for (size_t i = 0; i < ndata; ++i)
-      std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::dec << "\n";
+      std::cout << setw(3) << i << ": " << "0x" << std::hex << std::setw(8) << std::setfill('0') << cData[i] << std::setfill(' ') << std::dec << "\n";
 
     std::cout << "error decoder:\n";
     ErrorFIFODecoder ed(&cData[2], cData.size()-4);
@@ -2097,8 +2098,8 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
 
     std::cout << "packed 64 bit:\n";
     for (size_t j = 0; j < ndata64; ++j) {
-      std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::dec << std::endl;
-      //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::dec << std::endl;
+      std::cout << std::setw(2) << j << " = 0x " << std::hex << std::setw(8) << std::setfill('0') << (data[j]>>32) << " " << std::setw(8) << std::setfill('0') << (data[j] & 0xFFFFFFFF) << std::setfill(' ') << std::dec << std::endl;
+      //std::cout << setw(3) << j << ": " << "0x" << std::hex << std::setw(16) << std::setfill('0') << data[j] << std::setfill(' ') << std::dec << std::endl;
     }
 
     FIFO3Decoder decode3(data);

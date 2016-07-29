@@ -27,10 +27,10 @@ namespace {
   void hexprintword(uint32_t w) {
     cout << hex
          << setw(2) << setfill('0') << ((w&0xFF000000)>>24) << " "
-         << setw(2) << setfill('0') << ((w&0x00FF0000)>>16) << " "
-         << setw(2) << setfill('0') << ((w&0x0000FF00)>> 8) << " "
-         << setw(2) << setfill('0') << ((w&0x000000FF)    )
-         << dec;
+         << setw(2) <<                 ((w&0x00FF0000)>>16) << " "
+         << setw(2) <<                 ((w&0x0000FF00)>> 8) << " "
+         << setw(2) <<                 ((w&0x000000FF)    )
+         << setfill(' ') << dec;
   }
 }
 
