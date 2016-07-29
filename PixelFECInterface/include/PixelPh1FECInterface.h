@@ -243,6 +243,7 @@ private:
     
     int fecdebug;
 
+    std::vector<unsigned char> d25_trimloadtest;
 };
 
 #endif
