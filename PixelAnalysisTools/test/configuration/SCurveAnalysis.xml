@@ -22,11 +22,47 @@
   <NumberOfEvents Events="-1"/>
   <Hardware>
     <!-- Feds that user wants to analyze dash separated-->
-    <Feds Analyze="1294">
+    <Feds Analyze="1294-1295-1296-1297">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->
       <Fed Id="1294">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="48"/>
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1295">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="48"/>
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1296">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="48"/>
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1297">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->
