@@ -52,6 +52,8 @@ std::string PixelPh1FEDInterface::fitelChannelName(int ch) {
 }
 
 int PixelPh1FEDInterface::setup() {
+  std::cout << "--- Begin FED#" << pixelFEDCard.fedNumber << " setup ---" << std::endl;
+
   // Could possibly want to set different registers for different FMC?
   // And just load the regmaps for both fmc0 and 1 even if we don't have e.g. the upper one
   fRegMapFilename[FMC0_Fitel0] = fitel_fn_base + "/FMCFITEL.txt";
@@ -81,12 +83,12 @@ int PixelPh1FEDInterface::setup() {
       const int fiber = channel / 2 + 1;
       fibers_in_use[fiber] = 1;
       const std::string ch_name = fitelChannelName(channel % 24 / 2 + 1);
-      std::cout << "fed ch " << channel+1 << " Fitel " << which_Fitel << " map " << which_map << " " << ch_name << " -> 0x08" << std::endl;
+      //std::cout << "fed ch " << channel+1 << " Fitel " << which_Fitel << " map " << which_map << " " << ch_name << " -> 0x08" << std::endl;
       fRegMap[which_map][ch_name].fValue = 0x08;
     }
   }
 
-  std::cout << "fibers in use:";
+  std::cout << "FED#" << pixelFEDCard.fedNumber << " fibers in use:";
   for (int fiber = 1; fiber <= 24; ++fiber)
     if (fibers_in_use[fiber])
       std::cout << " " << fiber;
@@ -94,7 +96,7 @@ int PixelPh1FEDInterface::setup() {
 
   const uint32_t tbm_mask_1((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) & 0xFFFFFFFFULL);
   const uint32_t tbm_mask_2(((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) >> 32) & 0xFFFF);
-  std::cout << "TBM mask 1: 0x" << std::hex << tbm_mask_1 << "  2: 0x" << tbm_mask_2 << std::dec << std::endl;
+  std::cout << "FED#" << pixelFEDCard.fedNumber << " TBM mask 1: 0x" << std::hex << tbm_mask_1 << "  2: 0x" << tbm_mask_2 << std::dec << std::endl;
 
 //  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 1);
 //  usleep(10000);
@@ -205,17 +207,15 @@ int PixelPh1FEDInterface::setup() {
       continue;
     regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", fib);
     digfifo1 f = readFIFO1(false);
-    std::cout << "fifo1 fiber " << fib << " had non-zero words A: " << f.nonzerowords(0) << " B: " << f.nonzerowords(1) << std::endl;
+    if (f.nonzerowords(0) || f.nonzerowords(1))
+      std::cout << "fifo1 fiber " << fib << " had non-zero words A: " << f.nonzerowords(0) << " B: " << f.nonzerowords(1) << std::endl;
   }    
 
   regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 1);
   usleep(200000);
   int cDDR3calibrated = regManager->ReadReg("pixfed_stat_regs.ddr3_init_calib_done") & 1;
 
-  std::cout << "Slink status after configure:" << std::endl;
   PrintSlinkStatus();
-
-  printTTSState();
 
   if (0 && pixelFEDCard.fedNumber == 1294) {
     decoded_phases::print_header(std::cout);
@@ -240,6 +240,8 @@ int PixelPh1FEDInterface::setup() {
   }
 //phaseStabilityTest();
 
+  std::cout << "--- End FED#" << pixelFEDCard.fedNumber << " setup ---" << std::endl;
+
   return cDDR3calibrated;
 }
 
@@ -261,41 +263,34 @@ void PixelPh1FEDInterface::setPixelForScore(int dc, int pxl) {
 void PixelPh1FEDInterface::loadFPGA() {
 }
 
-void PixelPh1FEDInterface::getBoardInfo()
-{
-  std::cout << std::endl << "Board info for FED#" << pixelFEDCard.fedNumber << "\nBoard Type: " << regManager->ReadRegAsString("board_id") << std::endl;
-    std::cout << "Revision id: " << regManager->ReadRegAsString("rev_id") << std::endl;
-    std::cout << "Firmware id: " << std::hex << regManager->ReadReg("firmware_id") << std::dec << " : " << regManager->ReadRegAsString("firmware_id") << std::endl;
-    std::cout << "MAC & IP Source: " << regManager->ReadReg("mac_ip_source") << std::endl;
-
-    std::cout << "MAC Address: " << std::hex
-	      << regManager->ReadReg("mac_b5") << ":" 
-	      << regManager->ReadReg("mac_b4") << ":"
-	      << regManager->ReadReg("mac_b3") << ":"
-	      << regManager->ReadReg("mac_b2") << ":"
-	      << regManager->ReadReg("mac_b1") << ":"
-	      << regManager->ReadReg("mac_b0") << std::dec << std::endl;
-
-    std::cout << "Board Use: " << regManager->ReadRegAsString("pixfed_stat_regs.user_ascii_code_01to04") << regManager->ReadRegAsString("pixfed_stat_regs.user_ascii_code_05to08") << std::endl;
-
-    std::cout << "FW version IPHC : "
-	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_nb") << "." << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.archi_ver_nb")
-	      << "; Date: "
-	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_day") << "."
-	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_month") << "."
-	      << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_year") <<  std::endl;
-
-    std::cout << "FW version HEPHY : "
-	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_nb") << "."
-	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.archi_ver_nb")
-	      << "; Date: "
-	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_day") << "."
-	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_month") << "."
-	      << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year") << std::endl;
-    std::cout << "FMC 8 Present : " << regManager->ReadReg("status.fmc_l8_present") << std::endl;
-    std::cout << "FMC 12 Present : " << regManager->ReadReg("status.fmc_l12_present") << std::endl << std::endl;
+void PixelPh1FEDInterface::getBoardInfo() {
+  std::cout << "Board info for FED#" << pixelFEDCard.fedNumber
+            << " Type: " << regManager->ReadRegAsString("board_id")
+            << "Board Use: " << regManager->ReadRegAsString("pixfed_stat_regs.user_ascii_code_01to04")
+                             << regManager->ReadRegAsString("pixfed_stat_regs.user_ascii_code_05to08")
+            << "  MAC Address: " << std::hex << std::setfill('0')
+            << std::setw(2) << regManager->ReadReg("mac_b5") << ":" 
+            << std::setw(2) << regManager->ReadReg("mac_b4") << ":"
+            << std::setw(2) << regManager->ReadReg("mac_b3") << ":"
+            << std::setw(2) << regManager->ReadReg("mac_b2") << ":"
+            << std::setw(2) << regManager->ReadReg("mac_b1") << ":"
+            << std::setw(2) << regManager->ReadReg("mac_b0") << std::setfill(' ') << std::dec
+            << "  FW versions IPHC : "
+            << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_nb") << "." << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.archi_ver_nb")
+            << "; Date: "
+            << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_day") << "."
+            << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_month") << "."
+            << regManager->ReadReg("pixfed_stat_regs.user_iphc_fw_id.fw_ver_year")
+            << "   HEPHY : "
+            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_nb") << "."
+            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.archi_ver_nb")
+            << "; Date: "
+            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_day") << "."
+            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_month") << "."
+            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year") << "\n"
+            << "  FMCs present: L8: " << regManager->ReadReg("status.fmc_l8_present")
+            << " L12: " << regManager->ReadReg("status.fmc_l12_present") << std::endl;
 }
-
 
 void PixelPh1FEDInterface::disableFMCs()
 {
@@ -974,7 +969,7 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::autoPhas
   regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
 
   // JMTBAD need to respect printlevel...
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::endl << std::endl;
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::endl;
   PixelTimer timer;
   timer.start();
   while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x0)
@@ -1200,15 +1195,9 @@ void PixelPh1FEDInterface::getSFPStatus(uint8_t pFMCId) {
     printTTSState();
 }
 
-void PixelPh1FEDInterface::PrintSlinkStatus()
-{
+void PixelPh1FEDInterface::PrintSlinkStatus() {
 
   printTTSState();
-
-    for (int i = 0; i < 50; i++)
-        std::cout << " *";
-
-    std::cout << std::endl;
 
     //check the link status
     uint8_t sync_loss =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.sync_loss");
@@ -1323,7 +1312,7 @@ void PixelPh1FEDInterface::PrintSlinkStatus()
     val = regManager->ReadRegsAs64("pixfed_stat_regs.slink_core_status.data_63to32", "pixfed_stat_regs.slink_core_status.data_31to0");
     std::cout <<  val << std::endl;
 
-    std::cout << "Data transfer block status: " << std::endl;
+    std::cout << "Data transfer block status: ";
     std::cout << "      Block1: ";
     ( (cLinkStatus & 0x00000080) >> 7) ? std::cout << "ready    " : std::cout << "not ready";
     std::cout << " | Block2: ";
@@ -1333,7 +1322,7 @@ void PixelPh1FEDInterface::PrintSlinkStatus()
     std::cout << " | Block4: ";
     ( (cLinkStatus & 0x00000010) >> 4) ? std::cout << "ready" : std::cout << "not ready" << std::endl;
 
-    std::cout << "Data transfer block usage: " << std::endl;
+    std::cout << "Data transfer block usage: ";
     std::cout << "      Block1: ";
     ( (cLinkStatus & 0x00000008) >> 3) ? std::cout << "used    " : std::cout << "not used ";
     std::cout << " | Block2: ";
@@ -1342,12 +1331,6 @@ void PixelPh1FEDInterface::PrintSlinkStatus()
     ( (cLinkStatus & 0x00000002) >> 1) ? std::cout << "used    " : std::cout << "not used ";
     std::cout << " | Block4: ";
     ( (cLinkStatus & 0x00000001) >> 0) ? std::cout << "used    " : std::cout << "not used " << std::endl;
-
-    for (int i = 0; i < 50; i++)
-        std::cout << " *";
-
-    std::cout << std::endl;
-
 }
 
 void PixelPh1FEDInterface::prepareCalibrationMode(unsigned nevents) {
@@ -1935,8 +1918,9 @@ uint32_t PixelPh1FEDInterface::getScore(int channel) {
 
 int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   ++slink64calls;
-  const int maxprints = 10; // set negative for ~forever
-  const bool do_prints = maxprints - int(slink64calls) > 0;
+  //const int maxprints = 5;
+  //const bool do_prints = maxprints - int(slink64calls) > 0;
+  const bool do_prints = int(slink64calls) < 5 || slink64calls % 1000 == 0;
   if (do_prints) {
     std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
     //readTransparentFIFO();
