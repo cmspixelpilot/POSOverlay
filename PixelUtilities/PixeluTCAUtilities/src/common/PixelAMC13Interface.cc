@@ -180,8 +180,7 @@ void PixelAMC13Interface::CalSync() {
       std::cout << "After " << countCalSync << " calsyncs, TTC history has seen:\n";
       for (TTCHistoryByCommandMap::const_iterator it = fTTCHistoryByCommand.begin(), ite = fTTCHistoryByCommand.end(); it != ite; ++it) {
         const OrbitBXHisto& h = it->second;
-        std::cout << std::hex << "0x" << it->first << std::dec << " : " << h.size() << "\n";
-        std::cout << "  bxs:";
+        std::cout << std::hex << "0x" << it->first << std::dec << " : " << h.size() << "  bxs:";
         for (std::map<uint32_t, int>::const_iterator jt = h.bx.begin(), jte = h.bx.end(); jt != jte; ++jt)
           std::cout << " " << jt->first << ":" << jt->second;
         //std::cout << "\n  orbits:";
