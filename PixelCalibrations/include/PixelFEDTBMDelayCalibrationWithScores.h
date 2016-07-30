@@ -31,11 +31,12 @@ class PixelFEDTBMDelayCalibrationWithScores: public PixelFEDCalibrationBase {
   TFile* rootf;
 
   struct Key {
-    int fednumber;
+    unsigned fednumber;
     int fedchannel; // -24 to -1 for fiber number, 1-48 for ch number
     std::string scoretype;
 
-    Key(int fedn) : fednumber(fedn), fedchannel(0), scoretype("") {}
+    Key(unsigned fedn) : fednumber(fedn), fedchannel(0), scoretype("") {}
+    Key(unsigned fedn, int fedch, std::string scoret) : fednumber(fedn), fedchannel(fedch), scoretype(scoret) {}
 
     TString name() const {
       if (fedchannel < 0)

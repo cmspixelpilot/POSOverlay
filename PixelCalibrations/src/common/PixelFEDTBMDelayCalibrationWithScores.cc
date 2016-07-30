@@ -81,6 +81,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::beginCalibration(x
     std::vector<unsigned int> dacvals = tempCalibObject->scanValues(dacname);
     if (dacvals.size() > 1)
       dacsToScan.push_back(dacname);
+    assert(dacname == "TBMPLL" || dacname == "TBMADelay" || dacname == "TBMBDelay");
   }
 
   if (dacsToScan.empty() && tempCalibObject->parameterValue("NoScanOK") != "yes") {
@@ -91,8 +92,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::beginCalibration(x
   rootf = new TFile(TString::Format("%s/TBMDelay.root", outputDir().c_str()), "create");
   assert(rootf->IsOpen());
 
-  xoap::MessageReference reply = MakeSOAPMessageReference("BeginCalibrationDone");
-  return reply;
+  return MakeSOAPMessageReference("BeginCalibrationDone");
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::execute(xoap::MessageReference msg) {
@@ -112,15 +112,78 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::execute(xoap::Mess
     assert(0);
   }
 
-  xoap::MessageReference reply = MakeSOAPMessageReference("FEDCalibrationsDone");
-  return reply;
+  return MakeSOAPMessageReference("FEDCalibrationsDone");
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoap::MessageReference msg) {
   std::cout << "In PixelFEDTBMDelayCalibrationWithScores::endCalibration()" << std::endl;
   timer.printStats();
-  xoap::MessageReference reply = MakeSOAPMessageReference("EndCalibrationDone");
-  return reply;
+
+  PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
+
+  typedef std::vector<std::pair<unsigned, std::vector<unsigned> > > duh_t;
+  const duh_t& fedsAndChannels = tempCalibObject->fedCardsAndChannels(crate_, theNameTranslation_, theFEDConfiguration_, theDetectorConfiguration_);
+  
+  for (duh_t::const_iterator fednumber_channels = fedsAndChannels.begin(); fednumber_channels != fedsAndChannels.end(); ++fednumber_channels) {
+    const unsigned fednumber = fednumber_channels->first;
+    for (std::vector<unsigned>::const_iterator fedchannel = fednumber_channels->second.begin(); fedchannel != fednumber_channels->second.end(); ++fedchannel) {
+      if (*fedchannel % 2 != 0)
+        continue;
+
+      const int fiber = *fedchannel / 2;
+      const PixelChannel& pxch = theNameTranslation_->ChannelFromFEDChannel(fednumber, *fedchannel);
+      const PixelModuleName& mod = pxch.module();
+        
+      PixelTBMSettings* tbm = 0;
+      PixelConfigInterface::get(tbm, "pixel/tbm/" + mod.modulename(), *theGlobalKey_);
+      assert(tbm != 0);
+
+      std::map<std::string, unsigned> old_vals;
+      old_vals["TBMPLL"] = tbm->getTBMPLLDelay();
+      old_vals["TBMADelay"] = tbm->getTBMADelay();
+      old_vals["TBMBDelay"] = tbm->getTBMBDelay();
+      std::cout << "TBM settings for " << mod << " ADelay: " << tbm->getTBMADelay() << " BDelay: " << tbm->getTBMBDelay() << " PLL: " << tbm->getTBMPLLDelay() << std::endl;
+
+      if (dacsToScan.size() == 1 && dacsToScan[0] != "TBMPLL") {
+        TH1F* h = dynamic_cast<TH1F*>(scans[Key(fednumber, -fiber, "ScoreOK")][0]);
+        int best_v;
+        int best_dist = 1000000;
+        for (int ibin = 1; ibin < h->GetNbinsX(); ++ibin) {
+          const unsigned c = round(h->GetBinContent(ibin));
+          if (c != tempCalibObject->nTriggersPerPattern()) // could not require perfection I guess 
+            continue;
+          const int v = h->GetXaxis()->GetBinLowEdge(ibin);
+          int dist = 0;
+          if (dacsToScan[0] == "TBMPLL")
+            dist = abs(int(old_vals["TBMPLL"] >> 6) - (v>>6)) + abs(int((old_vals["TBMPLL"]&0x1c)>>2) - ((v&0x1c)>>2));
+          else
+            assert(0);
+
+          if (dist < best_dist) {
+            best_v = v;
+            best_dist = dist;
+          }
+        }
+
+        assert(best_v >=0 && best_v <= 255);
+
+        if (best_dist != 1000000) {
+          std::cout << "-> new TBMPLL value " << best_v << std::endl;
+          tbm->setTBMPLLDelay((unsigned char)(best_v));
+        }
+        else
+          std::cout << "no new TBMPLL value :(" << std::endl;
+      }
+      else {
+        std::cout << "lol not implemented for n-d scan\n";
+      }
+
+      tbm->writeASCII(outputDir());
+      delete tbm; // we own it?
+    }
+  }
+
+  return MakeSOAPMessageReference("EndCalibrationDone");
 }
 
 void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
