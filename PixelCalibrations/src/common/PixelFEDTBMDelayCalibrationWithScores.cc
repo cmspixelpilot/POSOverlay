@@ -218,6 +218,7 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
 
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
+    if (Dumps) std::cout << "FED NUMBER " << fednumber << "\n";
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
     PixelPh1FEDInterface* fed = dynamic_cast<PixelPh1FEDInterface*>(FEDInterface_[vmeBaseAddress]);
     const PixelFEDCard& fedcard = FEDInterface_[vmeBaseAddress]->getPixelFEDCard();
@@ -226,6 +227,7 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
     Key key(fednumber);
 
     for (int fiber = 1; fiber <= 24; ++fiber) {
+
       const int chA = fiber * 2 - 1;
       const int chB = fiber * 2;
 
