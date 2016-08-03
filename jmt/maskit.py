@@ -1,7 +1,7 @@
 from JMTTools import *
 
-xlat_key = 201
-old_mask_key = 100
+xlat_key = 202
+old_mask_key = 13
 
 '''
 for x in *.dmp; do
@@ -28,12 +28,24 @@ PixelAlive_1296_1062.dmp
      50 Channel- 29 ROC- 6 DCOL- 14 Pixel- 32
 PixelAlive_1297_1062.dmp
       1 Channel- 8 ROC- 1 DCOL- 19 Pixel- 114
+
+PixelAlive_1294_1096.dmp
+     31 Channel- 1 ROC- 1 DCOL- 18 Pixel- 74
+      3 Channel- 30 ROC- 3 DCOL- 22 Pixel- 2
+      1 Channel- 6 ROC- 0 DCOL- 10 Pixel- 61
+      2 Channel- 6 ROC- 0 DCOL- 17 Pixel- 25
+      1 Channel- 6 ROC- 0 DCOL- 17 Pixel- 45
+      1 Channel- 6 ROC- 0 DCOL- 17 Pixel- 61
+    336 Channel- 8 ROC- 6 DCOL- 15 Pixel- 65
+PixelAlive_1295_1096.dmp
+      4 Channel- 3 ROC- 1 DCOL- 15 Pixel- 12
+    163 Channel- 3 ROC- 6 DCOL- 23 Pixel- 7
+
 '''
 
 to_mask = [
-    (1295, 29, 7, 0, 7),
-    (1295, 30, 2, 22, 54),
-    (1295, 8, 0, 23, 51),
+    (1294, 8, 6, 15, 65),
+    (1295, 3, 6, 23, 7),
 ]
 
 ###################################
