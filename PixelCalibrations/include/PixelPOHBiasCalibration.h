@@ -21,6 +21,7 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
   unsigned POHBiasMin;
   unsigned POHBiasNSteps;
   unsigned POHBiasStepSize;
+  bool DoFits;
   bool SetBiasEnMass;
 
   unsigned key(int gain, int NFed, int NFiber) { return (gain << 30) | (NFed << 5) | NFiber; }

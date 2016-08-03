@@ -30,6 +30,7 @@ void PixelPOHBiasCalibration::beginCalibration() {
   if (tempCalibObject->parameterValue("ScanNSteps")   != "") POHBiasNSteps   = atoi(tempCalibObject->parameterValue("ScanNSteps").c_str());
   if (tempCalibObject->parameterValue("ScanStepSize") != "") POHBiasStepSize = atoi(tempCalibObject->parameterValue("ScanStepSize").c_str());
 
+  DoFits = tempCalibObject->parameterValue("DoFits") != "no";
   SetBiasEnMass = tempCalibObject->parameterValue("SetBiasEnMass") == "yes";
 
   if (POHGain == -1) {
@@ -163,82 +164,84 @@ void PixelPOHBiasCalibration::endCalibration() {
         
         unsigned channelkey = key(*gain_itr, NFed, NFiber);
 
-        //Do the fits to the rssi_v_bias to find the best value
-        int npoints = rssi_v_bias[channelkey]->GetN();
-        float bestchi2 = 10000;
-        float bestend1 = 0;
-        float bestend2 = 0;
-        TF1* selectedFit;
+        if (DoFits) {
+          //Do the fits to the rssi_v_bias to find the best value
+          int npoints = rssi_v_bias[channelkey]->GetN();
+          float bestchi2 = 10000;
+          float bestend1 = 0;
+          float bestend2 = 0;
+          TF1* selectedFit;
 
-        //TMinuit doesn't like minimizing the boundaries of piecewise functions, so iterate over a range of values
-        for(int ii = 0; ii<10; ii++){
-          for(int jj = ii; jj < 20; jj++){
-            TF1* fit_to_rssi_response = new TF1("fit_to_rssi_response", "(x>0&&x<[0])*([1]+[2]*x) + (x>=[0] && x < [3])*([4]+[5]*x) + (x>=[3] && x<[7])*([6]+[5]*2*x)", 0, 32);
-            //Par 0 = end of first piece (bias too low to see much of anything)
-            //Par 1,2 = linear fit to first piece
-            //Par 3 = end of second piece (we've found the clock but we aren't under the waveform yet)
-            //Par 4,5 = linear fit to second piece
-            //Par 6 = offset of third piece. In principle once we are under the waveform the RSSI
-            //should increase about twice as fast, so the slope of the third piece is double the slope of the second.
-            //Par 7 = end of the third piece (actually fixed to the maximum value of the bias scan)
+          //TMinuit doesn't like minimizing the boundaries of piecewise functions, so iterate over a range of values
+          for(int ii = 0; ii<10; ii++){
+            for(int jj = ii; jj < 20; jj++){
+              TF1* fit_to_rssi_response = new TF1("fit_to_rssi_response", "(x>0&&x<[0])*([1]+[2]*x) + (x>=[0] && x < [3])*([4]+[5]*x) + (x>=[3] && x<[7])*([6]+[5]*2*x)", 0, 32);
+              //Par 0 = end of first piece (bias too low to see much of anything)
+              //Par 1,2 = linear fit to first piece
+              //Par 3 = end of second piece (we've found the clock but we aren't under the waveform yet)
+              //Par 4,5 = linear fit to second piece
+              //Par 6 = offset of third piece. In principle once we are under the waveform the RSSI
+              //should increase about twice as fast, so the slope of the third piece is double the slope of the second.
+              //Par 7 = end of the third piece (actually fixed to the maximum value of the bias scan)
             
             
-            //Try to give MINUIT some reasonable guesses
-            fit_to_rssi_response->FixParameter(7, 32); //Fixed at the max of the bias scan
-            fit_to_rssi_response->SetParameter(0, ii); //Try this value for the first boundary
-            fit_to_rssi_response->SetParameter(3, jj); //Try this value for the second boundary
-            fit_to_rssi_response->SetParLimits(3, ii, npoints); //Make sure the second boundary doesn't go somewhere weird, since this is the one we want to find.
-            fit_to_rssi_response->SetParameter(1, 0);
-            fit_to_rssi_response->SetParameter(2, 0);
-            fit_to_rssi_response->SetParameter(4, -0.01);
-            fit_to_rssi_response->SetParameter(5, .01);
-            fit_to_rssi_response->SetParameter(6, -0.1);
-            rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
+              //Try to give MINUIT some reasonable guesses
+              fit_to_rssi_response->FixParameter(7, 32); //Fixed at the max of the bias scan
+              fit_to_rssi_response->SetParameter(0, ii); //Try this value for the first boundary
+              fit_to_rssi_response->SetParameter(3, jj); //Try this value for the second boundary
+              fit_to_rssi_response->SetParLimits(3, ii, npoints); //Make sure the second boundary doesn't go somewhere weird, since this is the one we want to find.
+              fit_to_rssi_response->SetParameter(1, 0);
+              fit_to_rssi_response->SetParameter(2, 0);
+              fit_to_rssi_response->SetParameter(4, -0.01);
+              fit_to_rssi_response->SetParameter(5, .01);
+              fit_to_rssi_response->SetParameter(6, -0.1);
+              rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
             
-            if(fit_to_rssi_response->GetChisquare() < bestchi2){
-              bestchi2 = fit_to_rssi_response->GetChisquare();
+              if(fit_to_rssi_response->GetChisquare() < bestchi2){
+                bestchi2 = fit_to_rssi_response->GetChisquare();
               
-              bestend1 = fit_to_rssi_response->GetParameter(0);
-              bestend2 = fit_to_rssi_response->GetParameter(3);
-              selectedFit = (TF1*)fit_to_rssi_response->Clone(); //Keep the best fit and the boundaries that correspond to it.
+                bestend1 = fit_to_rssi_response->GetParameter(0);
+                bestend2 = fit_to_rssi_response->GetParameter(3);
+                selectedFit = (TF1*)fit_to_rssi_response->Clone(); //Keep the best fit and the boundaries that correspond to it.
+              }
             }
           }
-        }
-        //If the best chi2 value is relatively high, take a look by hand.
-        if(bestchi2 > 10.) cout << "The chi-square value for the POH bias fit is pretty high.  Please take a look at this plot by eye." << endl;
+          //If the best chi2 value is relatively high, take a look by hand.
+          if(bestchi2 > 10.) cout << "The chi-square value for the POH bias fit is pretty high.  Please take a look at this plot by eye." << endl;
 
-        //The second boundary corresponds to the minimum bias value we want (under the waveform).  Move 2 up from the floor.
-        //Really we should take the first value after the boundary where the graph is ~1sig from the fit, but the errors 
-        //are unphysical right now.
-        int selectedBiasValue = (int)selectedFit->GetParameter(3) + 2;
-        double x1, y1;
-        double fit_eval = selectedFit->Eval(selectedBiasValue);
-        double bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
-        //    plot_to_fit->Print();
-        rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x1, y1);
-        
-        
-        //If the fit screwed up (or the corner of the fit doesn't describe it well) march up until we get a good fit.
-        while((fabs(y1-fit_eval) > 2*bias_err) && selectedBiasValue < npoints){
-          selectedBiasValue+=1;
+          //The second boundary corresponds to the minimum bias value we want (under the waveform).  Move 2 up from the floor.
+          //Really we should take the first value after the boundary where the graph is ~1sig from the fit, but the errors 
+          //are unphysical right now.
+          int selectedBiasValue = (int)selectedFit->GetParameter(3) + 2;
+          double x1, y1;
           double fit_eval = selectedFit->Eval(selectedBiasValue);
+          double bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
+          //    plot_to_fit->Print();
           rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x1, y1);
-          bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
-        }
         
-        //store the selected bias value for this channel, or set it unphysical if the fit failed to find anything.
-        if(selectedBiasValue < npoints){
-          selected_poh_bias_values[channelkey] = selectedBiasValue;
-          //Now set the AOH Bias to this value if gain==2
-          if(*gain_itr==2){
-            cout << "Setting the POH bias value for port card " << portCardName << " POH number " << AOHNumber << " to " << selectedBiasValue << endl;
-            SetAOHBiasToCurrentValue(portCardName, AOHNumber, selectedBiasValue);
+        
+          //If the fit screwed up (or the corner of the fit doesn't describe it well) march up until we get a good fit.
+          while((fabs(y1-fit_eval) > 2*bias_err) && selectedBiasValue < npoints){
+            selectedBiasValue+=1;
+            double fit_eval = selectedFit->Eval(selectedBiasValue);
+            rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x1, y1);
+            bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
+          }
+        
+          //store the selected bias value for this channel, or set it unphysical if the fit failed to find anything.
+          if(selectedBiasValue < npoints){
+            selected_poh_bias_values[channelkey] = selectedBiasValue;
+            //Now set the AOH Bias to this value if gain==2
+            if(*gain_itr==2){
+              cout << "Setting the POH bias value for port card " << portCardName << " POH number " << AOHNumber << " to " << selectedBiasValue << endl;
+              SetAOHBiasToCurrentValue(portCardName, AOHNumber, selectedBiasValue);
+            }
+          }
+          else{
+            selected_poh_bias_values[channelkey] = -999;
           }
         }
-        else{
-          selected_poh_bias_values[channelkey] = -999;
-        }
-        
+
         unsigned gain = channelkey >> 30;
         TDirectory* gd = 0;
         if (gain_dirs[gain] == 0)
