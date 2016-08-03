@@ -190,12 +190,12 @@ hubids_by_portcard = defaultdict(list)
 def portcardOK(pc):
     #return True
     if group == 0:
-        return '_D1_' in pc and ('_PRT1' in pc or '_PRT2' in pc)
+        return '_D2_' in pc and ('_PRT1' in pc or '_PRT2' in pc)
     elif group == 1:
-        return '_D1_' in pc and ('_PRT3' in pc or '_PRT4' in pc)
+        return '_D2_' in pc and ('_PRT3' in pc or '_PRT4' in pc)
 def moduleOK(m):
     #return True
-    if m.disk != 1:
+    if m.disk != 2:
         return False
     grp = m.poh_bundle not in [1,2,3,4,5,6,7]
     if grp != group:
@@ -224,14 +224,9 @@ for r in rows:
         print m.doh_bundle, m.doh, '->', 'fec %i mfec %i ch %i' % (m.fec, m.mfec, m.mfecchannel)
         seen_doh.add((m.doh_bundle, m.doh))
 
-    # D1, 5 feds, 1 fec mezzanine hack
-    if moduleOK(m):
-        if m.fec == 10:
-            assert group == 1
-            m.fec = 9
-            m.mfec = 2
-        if m.fed_id in [1298, 1299, 1300]:
-            m.fed_id -= 4
+#    if moduleOK(m):
+#        if m.fed_id in [1298, 1299, 1300]:
+#            m.fed_id -= 4
         
     modules.append(m)
     modules_by_portcard_hj[m.portcard_hj].append(m)
@@ -292,23 +287,23 @@ Delay25_RCL: 0x63
 Delay25_RDA: 0x4e
 DOH_Ch0Bias_CLK: 0x10
 DOH_Ch1Bias_Data: 0x10
-bPOH_Bias1: 0x11
-bPOH_Bias2: 0x11
-bPOH_Bias3: 0x11
-bPOH_Bias4: 0x11
-bPOH_Bias5: 0x11
-bPOH_Bias6: 0x11
-bPOH_Bias7: 0x11
+bPOH_Bias1: 0xf
+bPOH_Bias2: 0xf
+bPOH_Bias3: 0xf
+bPOH_Bias4: 0xf
+bPOH_Bias5: 0xf
+bPOH_Bias6: 0xf
+bPOH_Bias7: 0xf
 bPOH_Gain123: 0x2a
 bPOH_Gain4: 0x2a
 bPOH_Gain567: 0x2a
-tPOH_Bias1: 0x11
-tPOH_Bias2: 0x11
-tPOH_Bias3: 0x11
-tPOH_Bias4: 0x11
-tPOH_Bias5: 0x11
-tPOH_Bias6: 0x11
-tPOH_Bias7: 0x11
+tPOH_Bias1: 0xf
+tPOH_Bias2: 0xf
+tPOH_Bias3: 0xf
+tPOH_Bias4: 0xf
+tPOH_Bias5: 0xf
+tPOH_Bias6: 0xf
+tPOH_Bias7: 0xf
 tPOH_Gain123: 0x2a
 tPOH_Gain4: 0x2a
 tPOH_Gain567: 0x2a
@@ -369,7 +364,7 @@ fmt = \
 header = tuple('#name A/B FEC mfec mfecch hubid port rocid FEDid FEDch roc#'.split())
 f.write(fmt % header)
 for m in modules:
-    #if not moduleOK(m): continue
+    if not moduleOK(m): continue
     for iroc in xrange(16):
         fields = (
             m.name + '_ROC' + str(iroc), 
