@@ -287,7 +287,7 @@ void PixelPh1FEDInterface::getBoardInfo() {
             << "; Date: "
             << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_day") << "."
             << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_month") << "."
-            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year") << "\n"
+            << regManager->ReadReg("pixfed_stat_regs.user_hephy_fw_id.fw_ver_year")
             << "  FMCs present: L8: " << regManager->ReadReg("status.fmc_l8_present")
             << " L12: " << regManager->ReadReg("status.fmc_l12_present") << std::endl;
 }
