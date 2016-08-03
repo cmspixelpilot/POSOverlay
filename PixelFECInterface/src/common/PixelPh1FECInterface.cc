@@ -2833,6 +2833,8 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     
     success0 = cntgood;
 
+    //success1 = success2 = success3 = success4 = success0; return 0;
+
     cntgood=0; cntbad = 0;
     
     for (j=0;j<nTry;j++) {
