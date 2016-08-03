@@ -19,8 +19,6 @@ void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
-  std::cout << "change the param name in calib.dat\n"; assert(0);
-
   const std::string OverrideFifo1Fiber_str = tempCalibObject->parameterValue("OverrideFifo1Fiber");
   OverrideFifo1Fiber = -1;
   if (OverrideFifo1Fiber_str.size()) {
@@ -79,9 +77,10 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::beginCalibration(x
   for (unsigned dacnum = 0; dacnum < tempCalibObject->numberOfScanVariables(); ++dacnum) {
     const std::string& dacname = tempCalibObject->scanName(dacnum);
     std::vector<unsigned int> dacvals = tempCalibObject->scanValues(dacname);
-    if (dacvals.size() > 1)
+    if (dacvals.size() > 1) {
       dacsToScan.push_back(dacname);
-    assert(dacname == "TBMPLL" || dacname == "TBMADelay" || dacname == "TBMBDelay");
+      assert(dacname == "TBMPLL" || dacname == "TBMADelay" || dacname == "TBMBDelay");
+    }
   }
 
   if (dacsToScan.empty() && tempCalibObject->parameterValue("NoScanOK") != "yes") {
