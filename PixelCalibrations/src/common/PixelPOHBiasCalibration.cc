@@ -30,6 +30,8 @@ void PixelPOHBiasCalibration::beginCalibration() {
   if (tempCalibObject->parameterValue("ScanNSteps")   != "") POHBiasNSteps   = atoi(tempCalibObject->parameterValue("ScanNSteps").c_str());
   if (tempCalibObject->parameterValue("ScanStepSize") != "") POHBiasStepSize = atoi(tempCalibObject->parameterValue("ScanStepSize").c_str());
 
+  SetBiasEnMass = tempCalibObject->parameterValue("SetBiasEnMass") == "yes";
+
   if (POHGain == -1) {
     POHGains.assign(4, 0);
     POHGains[0] = 0;
@@ -92,7 +94,14 @@ bool PixelPOHBiasCalibration::execute() {
         for (unsigned ibias = 0; ibias < POHBiasNSteps; ++ibias) {
 	
           const int bias = POHBiasMin + ibias*POHBiasStepSize;
-          SetAOHBiasToCurrentValue(portCardName, AOHNumber, bias);
+          if (SetBiasEnMass) {
+            Attribute_Vector parametersToTKFEC(1);
+            parametersToTKFEC[0].name_="AOHBias";
+            parametersToTKFEC[0].value_=itoa(bias);
+            commandToAllTKFECCrates("SetAOHBiasEnMass", parametersToTKFEC);
+          }
+          else 
+            SetAOHBiasToCurrentValue(portCardName, AOHNumber, bias);
           
           usleep(100000);
           
@@ -256,8 +265,7 @@ std::vector<std::string> PixelPOHBiasCalibration::calibrated(){
   return tmp;
 }
 
-void PixelPOHBiasCalibration::SetAOHBiasToCurrentValue(std::string portCardName, int AOHNumber, int AOHBiasNumber)
-{
+void PixelPOHBiasCalibration::SetAOHBiasToCurrentValue(std::string portCardName, int AOHNumber, int AOHBiasNumber) {
   Attribute_Vector parametersToTKFEC_SetAOHBiasOneChannel(3);
   parametersToTKFEC_SetAOHBiasOneChannel[0].name_="PortCardName";
   parametersToTKFEC_SetAOHBiasOneChannel[1].name_="AOHNumber";
@@ -272,8 +280,6 @@ void PixelPOHBiasCalibration::SetAOHBiasToCurrentValue(std::string portCardName,
   const std::string TKFECID = thisPortCardConfig->getTKFECID();
   unsigned int TKFECcrate = theTKFECConfiguration_->crateFromTKFECID(TKFECID);
 
-  if (Send(PixelTKFECSupervisors_[TKFECcrate], "SetAOHBiasOneChannel", parametersToTKFEC_SetAOHBiasOneChannel)!="SetAOHBiasOneChannelDone")
-    {
-      diagService_->reportError("SetAOHBiasOneChannel could not be done!",DIAGERROR);
-    }
+  if (Send(PixelTKFECSupervisors_[TKFECcrate], "SetAOHBiasOneChannel", parametersToTKFEC_SetAOHBiasOneChannel) != "SetAOHBiasOneChannelDone")
+    std::cerr << "SetAOHBiasOneChannel could not be done!\n";
 }
