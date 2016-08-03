@@ -1,35 +1,7 @@
-# original map:
-# doh
-# 8 A -> fec 9 mfec 1 ch 1
-# 8 B -> fec 9 mfec 1 ch 2
-# 14 A -> fec 10 mfec 1 ch 1
-# 14 B -> fec 10 mfec 1 ch 2
-# poh
-# 0041 -> fed id 1294 receiver b
-# 0045 -> fed id 1294 receiver t
-# 0047 -> fed id 1295 receiver b
-# 0046 -> fed id 1295 receiver t
-# 0043 -> fed id 1296 receiver b
-# 0028 -> fed id 1296 receiver t
-# 0035 -> fed id 1297 receiver b
-# 0044 -> fed id 1297 receiver t
-# 0027 -> fed id 1298 receiver b
-# 0039 -> fed id 1298 receiver t
-# 0052 -> fed id 1299 receiver b
-# 0048 -> fed id 1299 receiver t
-# 0081 -> fed id 1300 receiver b
-# 0051 -> fed id 1300 receiver t
-
-# hack:
-# group 0, don't need to move anything, just plug in only DOH 8 A and B into fec 9 mfec 1 ch 1 and 2, and feds 1294-1296 + 0044 in 1297 receiver t
-# group 1:
-#  move mfec from fec 10 to fec 9
-#  move feds 1298-1300 to 1294-1296 (keep 0035 in 1297 receiver b constant)
 
 import sys, csv, os
 from collections import defaultdict
 
-group = 0
 doug_dir = 'HC1_m20'
 HC = 'BmI'
 tkfecid = 'tkfec1'
@@ -52,8 +24,6 @@ assert len(module_names_check) == 168
 module_names_check.sort()
 
 fn = sys.argv[1]
-group = int(sys.argv[2])
-assert group in [0,1]
 f = open(fn)
 r = csv.reader(f)
 rows = list(r)
@@ -189,16 +159,10 @@ hubids_by_portcard = defaultdict(list)
 # and disconnected modules from too-short cables
 def portcardOK(pc):
     #return True
-    if group == 0:
-        return '_D2_' in pc and ('_PRT1' in pc or '_PRT2' in pc)
-    elif group == 1:
-        return '_D2_' in pc and ('_PRT3' in pc or '_PRT4' in pc)
+    return '_D2_' in pc
 def moduleOK(m):
     #return True
     if m.disk != 2:
-        return False
-    grp = m.poh_bundle not in [1,2,3,4,5,6,7]
-    if grp != group:
         return False
     not_connected = {
         'TB': [2,6],
@@ -224,10 +188,6 @@ for r in rows:
         print m.doh_bundle, m.doh, '->', 'fec %i mfec %i ch %i' % (m.fec, m.mfec, m.mfecchannel)
         seen_doh.add((m.doh_bundle, m.doh))
 
-#    if moduleOK(m):
-#        if m.fed_id in [1298, 1299, 1300]:
-#            m.fed_id -= 4
-        
     modules.append(m)
     modules_by_portcard_hj[m.portcard_hj].append(m)
     modules_by_portcard[m.portcard].append(m)
