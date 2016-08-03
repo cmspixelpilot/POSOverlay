@@ -24,6 +24,7 @@ public:
 
   bool hasclock();
   bool clocklost();
+  void resetttc();
   void resetclocklost();
 
     int senddata(const int mfec, const int fecchannel);
