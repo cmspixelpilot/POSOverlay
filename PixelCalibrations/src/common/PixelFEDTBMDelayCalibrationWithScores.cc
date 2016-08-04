@@ -141,7 +141,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoa
       old_vals["TBMPLL"] = tbm->getTBMPLLDelay();
       old_vals["TBMADelay"] = tbm->getTBMADelay();
       old_vals["TBMBDelay"] = tbm->getTBMBDelay();
-      std::cout << "TBM settings for " << mod << " ADelay: " << tbm->getTBMADelay() << " BDelay: " << tbm->getTBMBDelay() << " PLL: " << tbm->getTBMPLLDelay() << std::endl;
+      std::cout << "TBM settings for " << mod << " ADelay: " << int(tbm->getTBMADelay()) << " BDelay: " << int(tbm->getTBMBDelay()) << " PLL: " << int(tbm->getTBMPLLDelay()) << std::endl;
 
       if (dacsToScan.size() == 1 && dacsToScan[0] == "TBMPLL") {
         TH1F* h = dynamic_cast<TH1F*>(scans[Key(fednumber, -fiber, "ScoreOK")][0]);
