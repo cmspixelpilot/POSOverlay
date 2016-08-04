@@ -29,6 +29,7 @@ void PixelPOHBiasCalibration::beginCalibration() {
   if (tempCalibObject->parameterValue("ScanMin")      != "") POHBiasMin      = atoi(tempCalibObject->parameterValue("ScanMin").c_str());
   if (tempCalibObject->parameterValue("ScanNSteps")   != "") POHBiasNSteps   = atoi(tempCalibObject->parameterValue("ScanNSteps").c_str());
   if (tempCalibObject->parameterValue("ScanStepSize") != "") POHBiasStepSize = atoi(tempCalibObject->parameterValue("ScanStepSize").c_str());
+  POHBiasMax = POHBiasMin + POHBiasNSteps * POHBiasStepSize;
 
   DoFits = tempCalibObject->parameterValue("DoFits") != "no";
   SetBiasEnMass = tempCalibObject->parameterValue("SetBiasEnMass") == "yes";
@@ -44,21 +45,28 @@ void PixelPOHBiasCalibration::beginCalibration() {
     POHGains.assign(1, POHGain);
 
   std::map<unsigned int, std::set<unsigned int> > fedsAndChannelsMap = tempCalibObject->getFEDsAndChannels(theNameTranslation_);
+  const std::set<PixelChannel>& channelsToCalibrate = tempCalibObject->channelList();
   for (std::vector<unsigned>::const_iterator gain_itr = POHGains.begin(); gain_itr != POHGains.end(); ++gain_itr) {
-    for (std::map<unsigned int, std::set<unsigned int> >::iterator fednumber_itr = fedsAndChannelsMap.begin(); fednumber_itr != fedsAndChannelsMap.end(); ++fednumber_itr) {
-      for (std::set<unsigned int>::iterator channel_itr = fednumber_itr->second.begin(); channel_itr != fednumber_itr->second.end(); channel_itr++) {
-        if (*channel_itr % 2==0) { // per fiber
-          int NFed = fednumber_itr->first;
-          int NFiber = *channel_itr/2;
-          printf("nfed %i nfiber %i\n", NFed, NFiber);
-          TGraphErrors* g = rssi_v_bias[key(*gain_itr, NFed, NFiber)] = new TGraphErrors(POHBiasNSteps);
-          g->SetName(TString::Format("rssi_gain%i_FED%i_fiber%i", *gain_itr, NFed, NFiber));
-          g->SetTitle(TString::Format("gain %i FED %i fiber %i;POH bias value;RSSI (mA)", *gain_itr, NFed, NFiber));
-          g->SetMarkerColor(1);
-          g->SetMarkerStyle(21);
-          g->SetMarkerSize(1);
-          selected_poh_bias_values[key(*gain_itr, NFed, NFiber)] = 0;
-        }
+    for (std::set<PixelChannel>::const_iterator channelsToCalibrate_itr = channelsToCalibrate.begin(); channelsToCalibrate_itr != channelsToCalibrate.end(); ++channelsToCalibrate_itr) {
+      const PixelHdwAddress& channelHdwAddress = theNameTranslation_->getHdwAddress(*channelsToCalibrate_itr);
+      const unsigned int NChannel = channelHdwAddress.fedchannel();
+      if (NChannel % 2==0) { // per fiber
+        //Get Fed and channel number
+        const unsigned int NFed = channelHdwAddress.fednumber();
+        const unsigned int NROC = channelHdwAddress.rocid();
+        const unsigned int NFiber = NChannel/2;
+        const std::pair<std::string, int> portCardAndAOH = thePortcardMap_->PortCardAndAOH(*channelsToCalibrate_itr);
+        const std::string portCardName = portCardAndAOH.first;
+        assert(portCardName != "none");
+        const int AOHNumber = portCardAndAOH.second;
+        printf("nfed %i nfiber %i\n", NFed, NFiber);
+        TGraphErrors* g = rssi_v_bias[key(*gain_itr, NFed, NFiber)] = new TGraphErrors(POHBiasNSteps);
+        g->SetName(TString::Format("rssi_gain%i_FED%i_fiber%i_ROC%i_POH%i", *gain_itr, NFed, NFiber, NROC, AOHNumber));
+        g->SetTitle(TString::Format("gain %i FED %i fiber %i;POH bias value;RSSI (mA)", *gain_itr, NFed, NFiber));
+        g->SetMarkerColor(1);
+        g->SetMarkerStyle(21);
+        g->SetMarkerSize(1);
+        selected_poh_bias_values[key(*gain_itr, NFed, NFiber)] = 0;
       }
     }
   }
@@ -159,7 +167,6 @@ void PixelPOHBiasCalibration::endCalibration() {
         const unsigned int NFiber = NChannel/2;
         const std::pair< std::string, int > portCardAndAOH = thePortcardMap_->PortCardAndAOH(*channelsToCalibrate_itr);
         const std::string portCardName = portCardAndAOH.first; assert(portCardName!= "none");
-        //        if(portcard_configs_to_write.find(portCardName)==portcard_configs_to_write.end()) portcard_configs_to_write[portCardName]
         const int AOHNumber = portCardAndAOH.second;
         
         unsigned channelkey = key(*gain_itr, NFed, NFiber);
@@ -167,64 +174,52 @@ void PixelPOHBiasCalibration::endCalibration() {
         if (DoFits) {
           //Do the fits to the rssi_v_bias to find the best value
           int npoints = rssi_v_bias[channelkey]->GetN();
-          float bestchi2 = 10000;
-          float bestend1 = 0;
-          float bestend2 = 0;
-          TF1* selectedFit;
+          TF1* fit_to_rssi_response = new TF1("fit_to_rssi_response", "pol1", 20, POHBiasMax);
+          //Do a linear fit to the RSSI response at very high values where we are below the waveform
+          rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
 
-          //TMinuit doesn't like minimizing the boundaries of piecewise functions, so iterate over a range of values
-          for(int ii = 0; ii<10; ii++){
-            for(int jj = ii; jj < 20; jj++){
-              TF1* fit_to_rssi_response = new TF1("fit_to_rssi_response", "(x>0&&x<[0])*([1]+[2]*x) + (x>=[0] && x < [3])*([4]+[5]*x) + (x>=[3] && x<[7])*([6]+[5]*2*x)", 0, 32);
-              //Par 0 = end of first piece (bias too low to see much of anything)
-              //Par 1,2 = linear fit to first piece
-              //Par 3 = end of second piece (we've found the clock but we aren't under the waveform yet)
-              //Par 4,5 = linear fit to second piece
-              //Par 6 = offset of third piece. In principle once we are under the waveform the RSSI
-              //should increase about twice as fast, so the slope of the third piece is double the slope of the second.
-              //Par 7 = end of the third piece (actually fixed to the maximum value of the bias scan)
-            
-            
-              //Try to give MINUIT some reasonable guesses
-              fit_to_rssi_response->FixParameter(7, 32); //Fixed at the max of the bias scan
-              fit_to_rssi_response->SetParameter(0, ii); //Try this value for the first boundary
-              fit_to_rssi_response->SetParameter(3, jj); //Try this value for the second boundary
-              fit_to_rssi_response->SetParLimits(3, ii, npoints); //Make sure the second boundary doesn't go somewhere weird, since this is the one we want to find.
-              fit_to_rssi_response->SetParameter(1, 0);
-              fit_to_rssi_response->SetParameter(2, 0);
-              fit_to_rssi_response->SetParameter(4, -0.01);
-              fit_to_rssi_response->SetParameter(5, .01);
-              fit_to_rssi_response->SetParameter(6, -0.1);
-              rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
-            
-              if(fit_to_rssi_response->GetChisquare() < bestchi2){
-                bestchi2 = fit_to_rssi_response->GetChisquare();
-              
-                bestend1 = fit_to_rssi_response->GetParameter(0);
-                bestend2 = fit_to_rssi_response->GetParameter(3);
-                selectedFit = (TF1*)fit_to_rssi_response->Clone(); //Keep the best fit and the boundaries that correspond to it.
+          float par0 = fit_to_rssi_response->GetParameter(0);
+          float par1 = fit_to_rssi_response->GetParameter(1);
+
+          TF1* evaluate_rssi_response = new TF1("evaluate_rssi_response", "pol1", 0, POHBiasMax);
+          evaluate_rssi_response->SetParameter(0, par0);
+          evaluate_rssi_response->SetParameter(1, par1);
+
+          bool looking_for_bias_value=true;
+          int max_bias_value = 25;
+
+          while(looking_for_bias_value && max_bias_value >= 3){
+            double x1[3] = {0.0};
+            double y1[3] = {0.0};
+            double fit_eval[3] = {0};
+            for(int i = 0; i < 3; i++){
+              fit_eval[i] = evaluate_rssi_response->Eval((max_bias_value-i));
+              rssi_v_bias[channelkey]->GetPoint((max_bias_value-1), x1[i], y1[i]);
+            }
+            //Error on the points is 0.05. Is the current max_bias_value point far from the fit and above the fit?
+            if((y1[0]-fit_eval[0])>0.1){
+              //Is the point before the max_bias_value above the fit and even worse?
+              if((y1[1]-fit_eval[1])>(y1[0]-fit_eval[0])){
+                //And the point before that?
+                if((y1[2]-fit_eval[2])>(y1[1]-fit_eval[1])){
+                  looking_for_bias_value=false;}
               }
             }
+            max_bias_value--;
           }
-          //If the best chi2 value is relatively high, take a look by hand.
-          if(bestchi2 > 10.) cout << "The chi-square value for the POH bias fit is pretty high.  Please take a look at this plot by eye." << endl;
 
-          //The second boundary corresponds to the minimum bias value we want (under the waveform).  Move 2 up from the floor.
-          //Really we should take the first value after the boundary where the graph is ~1sig from the fit, but the errors 
-          //are unphysical right now.
-          int selectedBiasValue = (int)selectedFit->GetParameter(3) + 2;
-          double x1, y1;
-          double fit_eval = selectedFit->Eval(selectedBiasValue);
-          double bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
-          //    plot_to_fit->Print();
-          rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x1, y1);
-        
-        
+          //march back one value of max_bias_value due to the loop ending on a decrement
+          int selectedBiasValue = max_bias_value;
+
           //If the fit screwed up (or the corner of the fit doesn't describe it well) march up until we get a good fit.
-          while((fabs(y1-fit_eval) > 2*bias_err) && selectedBiasValue < npoints){
+          double x0, y0;
+          rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x0, y0);
+          double fit_check = evaluate_rssi_response->Eval(selectedBiasValue);
+          double bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
+          while((fabs(y0-fit_check) > 2*bias_err) && selectedBiasValue < npoints){
             selectedBiasValue+=1;
-            double fit_eval = selectedFit->Eval(selectedBiasValue);
-            rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x1, y1);
+            fit_check = evaluate_rssi_response->Eval(selectedBiasValue);
+            rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x0, y0);
             bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
           }
         
@@ -260,6 +255,21 @@ void PixelPOHBiasCalibration::endCalibration() {
   }
   file.Write();
   file.Close();
+
+  //Write out the configs
+  for (std::map<std::string, std::map<unsigned int, unsigned int> >::iterator portCardName_itr = bias_values_by_portcard_and_aoh.begin(); portCardName_itr != bias_values_by_portcard_and_aoh.end(); portCardName_itr++){
+    std::string portCardName = portCardName_itr->first;
+    std::map<std::string, PixelPortCardConfig*>::iterator mapNamePortCard_itr = getmapNamePortCard()->find(portCardName);
+    assert( mapNamePortCard_itr != getmapNamePortCard()->end());
+    PixelPortCardConfig* thisPortCardConfig = mapNamePortCard_itr->second;
+    for(std::map<unsigned int, unsigned int >::iterator AOHNumber_itr = portCardName_itr->second.begin(); AOHNumber_itr != portCardName_itr->second.end(); AOHNumber_itr++){
+      unsigned int AOHNumber = AOHNumber_itr->first;
+      unsigned int AOHBiasAddress = thisPortCardConfig->AOHBiasAddressFromAOHNumber(AOHNumber);
+      thisPortCardConfig->setdeviceValues(AOHBiasAddress, bias_values_by_portcard_and_aoh[portCardName][AOHNumber]);
+    }
+    thisPortCardConfig->writeASCII(outputDir());
+    cout << "Wrote the portcard config for port card: " << portCardName << endl;
+  }
 }
 
 std::vector<std::string> PixelPOHBiasCalibration::calibrated(){

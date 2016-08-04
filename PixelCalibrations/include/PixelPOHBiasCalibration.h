@@ -21,6 +21,7 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
   unsigned POHBiasMin;
   unsigned POHBiasNSteps;
   unsigned POHBiasStepSize;
+  unsigned POHBiasMax;
   bool DoFits;
   bool SetBiasEnMass;
 
@@ -28,8 +29,7 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
 
   std::map<unsigned, TGraphErrors*> rssi_v_bias;
   std::map<unsigned, unsigned> selected_poh_bias_values;
-//  std::map<std::string, PixelPortCardConfig*> portcard_configs_to_write;
+  std::map<std::string, std::map<unsigned, unsigned>> bias_values_by_portcard_and_aoh;
 };
 
 #endif
-
