@@ -159,10 +159,10 @@ hubids_by_portcard = defaultdict(list)
 # and disconnected modules from too-short cables
 def portcardOK(pc):
     #return True
-    return '_D2_' in pc
+    return '_D3_' in pc
 def moduleOK(m):
     #return True
-    if m.disk != 2:
+    if m.disk != 3:
         return False
     not_connected = {
         'TB': [2,6],
@@ -187,6 +187,16 @@ for r in rows:
     if (m.doh_bundle, m.doh) not in seen_doh:
         print m.doh_bundle, m.doh, '->', 'fec %i mfec %i ch %i' % (m.fec, m.mfec, m.mfecchannel)
         seen_doh.add((m.doh_bundle, m.doh))
+
+    if moduleOK(m):
+        assert m.fec == 9
+        assert m.mfec in [3,4]
+        if m.mfec == 3:
+            m.fec = 9
+            m.mfec = 1
+        else:
+            m.fec = 10
+            m.mfec = 1
 
     modules.append(m)
     modules_by_portcard_hj[m.portcard_hj].append(m)
