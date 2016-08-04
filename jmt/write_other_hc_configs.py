@@ -2531,3 +2531,60 @@ for fed_id, fed_crate, fed_uri in feds_used:
 
 
 print 'now you might want to run unpack_dougs_configs.sh!'
+
+
+if 0:
+  for y in '''1294.9 
+1294.23
+1294.24
+1295.10
+1295.12
+1295.21
+1295.22
+1295.23
+1296.11
+1296.21
+1296.22
+1296.23
+1296.24
+1298.11
+1298.12
+1298.24
+1299.9 
+1299.11
+1299.12
+1300.9 
+1300.11
+1300.12
+1300.21'''.split('\n'):
+    fed_id, fed_fiber = y.strip().split('.')
+    fed_id, fed_fiber = int(fed_id), int(fed_fiber)
+    for m in modules:
+        if moduleOK(m):
+            if m.fed_id == fed_id and m.fed_fiber == fed_fiber:
+                pcstr = '%i%s%i' % (m.portcardnum, m.portcard_hj[1].lower(), m.portcard_connection)
+                print '%i.%-2i = %2i,%i,%i = %s ->' % (fed_id, fed_fiber, m.bld, m.pnl, m.rng, pcstr)
+    
+if 0:
+  for x in '''10,2,2
+11,2,2
+12,2,2
+ 1,1,2
+ 1,2,1
+ 1,2,2
+ 2,1,1
+ 2,2,1
+ 4,1,1
+ 4,1,2
+ 7,1,1
+ 7,2,1
+ 8,1,1
+ 9,2,1
+ 9,2,2'''.split('\n'):
+      a,b,c = x.split(',')
+      bld,pnl,rng = int(a),int(b),int(c)
+      for m in modules:
+          if moduleOK(m):
+              if m.bld == bld and m.pnl == pnl and m.rng == rng:
+                  print '%2i,%i,%i = %i.%i:' % (bld, pnl, rng, m.fed_id, m.fed_fiber)
+
