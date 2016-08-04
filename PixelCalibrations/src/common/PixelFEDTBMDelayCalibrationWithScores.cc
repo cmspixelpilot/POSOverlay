@@ -154,7 +154,7 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoa
           const int v = h->GetXaxis()->GetBinLowEdge(ibin);
           int dist = 0;
           if (dacsToScan[0] == "TBMPLL")
-            dist = abs(int(old_vals["TBMPLL"] >> 6) - (v>>6)) + abs(int((old_vals["TBMPLL"]&0x1c)>>2) - ((v&0x1c)>>2));
+            dist = abs(int(old_vals["TBMPLL"] >> 5) - (v>>5)) + abs(int((old_vals["TBMPLL"]&0x1c)>>2) - ((v&0x1c)>>2));
           else
             assert(0);
 
