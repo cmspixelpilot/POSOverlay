@@ -969,20 +969,21 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::autoPhas
   regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
 
   // JMTBAD need to respect printlevel...
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::endl;
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::flush;
+  
   PixelTimer timer;
   timer.start();
   while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x0)
     usleep (1000);
   timer.stop();
     
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Time to run the initial phase finding: " << timer.tottime() << "; swapping phases ... " << std::endl;
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Time: " << timer.tottime() << "; swapping phases ... " << std::flush;
   timer.reset();
   timer.start();
   while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x2)
     usleep (1000);
   timer.stop();
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Swap fininshed, additional time: " << timer.tottime() << "; phase finding results: " << std::endl;
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " add'l time: " << timer.tottime() << "; phase finding results: " << std::endl;
 
   return readPhases();
 }
