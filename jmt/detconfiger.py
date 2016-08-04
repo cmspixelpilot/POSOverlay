@@ -8,9 +8,23 @@ for x in sys.argv:
         sys.argv.remove(x)
         break
 
-modules = sys.argv[1:]
-if not modules:
-    raise ValueError('need some modules in argv!')
+if sys.argv[1] == 'short':
+    modules = []
+    for x in sys.argv[2:]:
+        x = x.split(',')
+        assert len(x) == 5
+        hc, disk, bld, pnl, rng = x
+        assert hc in 'BmI BmO BpI BpO'.split()
+        assert int(disk) in [1,2,3]
+        assert int(bld) in range(1,18)
+        assert int(pnl) in [1,2]
+        assert int(rng) in [1,2]
+        m = 'FPix_%(hc)s_D%(disk)s_BLD%(bld)s_PNL%(pnl)s_RNG%(rng)s' % locals()
+        modules.append(m)
+else:
+    modules = sys.argv[1:]
+    if not modules:
+        raise ValueError('need some modules in argv!')
 
 modules.sort()
 print 'modules are:'
