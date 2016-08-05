@@ -145,9 +145,9 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoa
 
       if (dacsToScan.size() == 1 && dacsToScan[0] == "TBMPLL") {
         TH1F* h = dynamic_cast<TH1F*>(scans[Key(fednumber, -fiber, "ScoreOK")][0]);
-        int best_v;
+        int best_v = -1;
         int best_dist = 1000000;
-        for (int ibin = 1; ibin < h->GetNbinsX(); ++ibin) {
+        for (int ibin = 1; ibin <= h->GetNbinsX(); ++ibin) {
           const unsigned c = round(h->GetBinContent(ibin));
           if (c != tempCalibObject->nTriggersPerPattern()) // could not require perfection I guess 
             continue;
@@ -159,22 +159,22 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoa
             assert(0);
 
           if (dist < best_dist) {
+            std::cout << "new best dist " << dist << " at " << v << std::endl;
             best_v = v;
             best_dist = dist;
           }
         }
 
-        assert(best_v >=0 && best_v <= 255);
-
         if (best_dist != 1000000) {
           std::cout << "-> new TBMPLL value " << best_v << std::endl;
+          assert(best_v >=0 && best_v <= 255);
           tbm->setTBMPLLDelay((unsigned char)(best_v));
         }
         else
-          std::cout << "no new TBMPLL value :(" << std::endl;
+          std::cout << "no new TBMPLL value" << std::endl;
       }
       else {
-        std::cout << "lol not implemented for n-d scan\n";
+        std::cout << "not implemented for n-d scan\n";
       }
 
       tbm->writeASCII(outputDir());
