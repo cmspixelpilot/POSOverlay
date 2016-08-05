@@ -1105,9 +1105,9 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 
   if (rocInfo_.size()==0){
     //here we will do some initialization...
-    std::cout << "first time, these rocs in the scan:\n";
+    //std::cout << "first time, these rocs in the scan:\n";
     for(unsigned int i=0;i<rocs_.size();i++){
-      std::cout << rocs_[i] << "\n";
+      //std::cout << rocs_[i] << "\n";
       const PixelHdwAddress* hdwadd=trans->getHdwAddress(rocs_[i]);
       PixelROCInfo rocInfo;
       rocInfo.use_=true;
