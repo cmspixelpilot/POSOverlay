@@ -328,6 +328,7 @@
         <node id="DDR0_ctrl_sel" address="0x40010000" mask="0x00004000" />
         <node id="DDR1_ctrl_sel" address="0x40010000" mask="0x00008000" />
         <node id="data_type" address="0x40010000" mask="0x00070000" />
+        <node id="sw_ttc_reset" address="0x40010000" mask="0x00100000" />
         <node id="trig_6to9" address="0x40010000" mask="0x00700000" />
         <node id="trig_10to12" address="0x40010000" mask="0x07000000" />
         <node id="PACKET_NB" address="0x40010001" mask="0x001fffff" />

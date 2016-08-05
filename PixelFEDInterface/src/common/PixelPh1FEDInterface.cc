@@ -98,17 +98,22 @@ int PixelPh1FEDInterface::setup() {
   const uint32_t tbm_mask_2(((pixelFEDCard.cntrl_utca_override ? pixelFEDCard.cntrl_utca_original : pixelFEDCard.cntrl_utca) >> 32) & 0xFFFF);
   std::cout << "FED#" << pixelFEDCard.fedNumber << " TBM mask 1: 0x" << std::hex << tbm_mask_1 << "  2: 0x" << tbm_mask_2 << std::dec << std::endl;
 
-//  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 1);
-//  usleep(10000);
-//  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 0);
-//  usleep(10000);
-
   regManager->WriteReg("pixfed_ctrl_regs.PC_CONFIG_OK", 0);
   usleep(10000);
 
   // make sure the clocks are set
   regManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0); // Used to set the CLK input to the TTC clock from the BP - 3 is XTAL, 0 is BP
   regManager->WriteReg("ctrl.mgt_xpoint_out1", 3); // 2 to have 156 MHz clock (obligatory for 10G sling), 3 for 125Mhz clock for 5g on SLink
+  usleep(10000);
+
+  regManager->WriteReg("pixfed_ctrl_regs.sw_ttc_reset", 1);
+  usleep(10000);
+  regManager->WriteReg("pixfed_ctrl_regs.sw_ttc_reset", 0);
+  usleep(10000);
+
+  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 1);
+  usleep(10000);
+  regManager->WriteReg("pixfed_ctrl_regs.reset_all_clocks", 0);
   usleep(10000);
 
   // JMTBAD any and all of these that are hardcoded could be moved to the fedcard...
@@ -969,7 +974,7 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::autoPhas
   regManager->WriteReg("fe_ctrl_regs.initialize_swap", 0);
 
   // JMTBAD need to respect printlevel...
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Initializing Phase Finding ..." << std::flush;
+  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Init phase finding... " << std::flush;
   
   PixelTimer timer;
   timer.start();
@@ -977,13 +982,13 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::autoPhas
     usleep (1000);
   timer.stop();
     
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " Time: " << timer.tottime() << "; swapping phases ... " << std::flush;
+  std::cout << " time: " << timer.tottime() << "; swapping phases... " << std::flush;
   timer.reset();
   timer.start();
   while (((regManager->ReadBlockRegValue("idel_individual_stat.CH0", 4).at(2) >> 29) & 0x03) != 0x2)
     usleep (1000);
   timer.stop();
-  std::cout << "FED# " <<  pixelFEDCard.fedNumber << " add'l time: " << timer.tottime() << "; phase finding results: " << std::endl;
+  std::cout << " add'l time: " << timer.tottime() << "; results: " << std::endl;
 
   return readPhases();
 }
@@ -1989,7 +1994,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   //std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " ";
   if (evnum != slink64calls)
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " " << "\033[1m\033[31mDISAGREE by " << int(evnum) - int(slink64calls) << "\033[0m" << ", bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
-  if (bxnum != 504)
+  if (bxnum != 503)
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " \033[1m\033[31mWRONG BX\033[0m bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
 
 #else
