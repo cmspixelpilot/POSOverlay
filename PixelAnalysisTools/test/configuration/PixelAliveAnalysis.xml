@@ -28,9 +28,99 @@
   <NumberOfEvents Events="-1"/>
   <Hardware>
     <!-- Feds that user wants to analyze dash separated-->
-		<Feds Analyze="44">
+		<Feds Analyze="1294-1295-1296-1297-1298-1299-1300">
       <!-- First fed that you want to analyze-->
-      <Fed Id="44">
+      <Fed Id="1294">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="49" />
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1295">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="49" />
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1296">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="49" />
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1297">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="49" />
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1298">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="49" />
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1299">
+        <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
+				     If The DefaultDirectory tag is used providing as a second argument the run number 
+						 then the keyword Default can be used-->
+        <DataFileName        FileName="Default" /> 
+        <!--
+				<DataFileName        FileName="/FPixDAQ/DAQ/Runs/Run_3045/PixelAlive_32_3045.dmp" />
+				-->
+        <!-- Fed channels that you want to analyze. 
+				    Some channels between from and to can be excluded writing a list dash separated
+						If From="1" and To="36" all channels active in the configuration will be analyzed-->
+        <Channels From="1" To="49" />
+        <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
+        <Rocs     Exclude=""/>
+      </Fed>
+      <Fed Id="1300">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->

@@ -23,6 +23,7 @@
 #include "PixelCalibrations/include/PixelAOHBiasCalibration.h"
 #include "PixelCalibrations/include/PixelAOHAndFEDChannelMappingTest.h"
 #include "PixelCalibrations/include/PixelAOHGainCalibration.h"
+#include "PixelCalibrations/include/PixelPOHBiasCalibration.h"
 #include "PixelCalibrations/include/PixelTBMUBCalibration.h"
 #include "PixelCalibrations/include/PixelIanaCalibration.h"
 #include "PixelCalibrations/include/PixelIdigiCalibration.h"
@@ -40,6 +41,7 @@
 #include "PixelCalibrations/include/PixelPHRangeCalibration.h"
 #include "PixelCalibrations/include/PixelROCDelay25Calibration.h"
 #include "PixelCalibrations/include/PixelTBMDelayCalibration.h"
+#include "PixelCalibrations/include/PixelTBMDelayCalibrationWithScores.h"
 
 //PixelFEDSupervisor calibrations
 #include "PixelCalibrations/include/PixelFEDEmulatedPhysics.h"
@@ -66,6 +68,7 @@
 #include "PixelCalibrations/include/PixelFEDPHRangeCalibration.h"
 #include "PixelCalibrations/include/PixelFEDROCDelay25Calibration.h"
 #include "PixelCalibrations/include/PixelFEDTBMDelayCalibration.h"
+#include "PixelCalibrations/include/PixelFEDTBMDelayCalibrationWithScores.h"
 
 //PixelTKFECSupervisor calibrations
 #include "PixelCalibrations/include/PixelTKFECDelay25Calibration.h"
@@ -99,6 +102,10 @@ PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string&
   if (calibName=="AOHBias") {
     return new PixelAOHBiasCalibration(*pixSupConfPtr, soapCmdrPtr);
   }  
+
+  if (calibName=="POHBias") {
+    return new PixelPOHBiasCalibration(*pixSupConfPtr, soapCmdrPtr);
+  }
 
   if (calibName=="AOHAndFEDChannelMappingTest") {
     return new PixelAOHAndFEDChannelMappingTest(*pixSupConfPtr, soapCmdrPtr);
@@ -186,6 +193,10 @@ PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string&
 
   if (calibName=="TBMDelay") {
     return new PixelTBMDelayCalibration(*pixSupConfPtr, soapCmdrPtr);
+  }
+
+  if (calibName=="TBMDelayWithScores") {
+    return new PixelTBMDelayCalibrationWithScores(*pixSupConfPtr, soapCmdrPtr);
   }
 
   return 0;
@@ -314,6 +325,10 @@ PixelFEDCalibrationBase* PixelCalibrationFactory::getFEDCalibration(const std::s
 
   if (calibName=="TBMDelay") {
     return new PixelFEDTBMDelayCalibration(*pixFEDSupConfPtr, soapCmdrPtr);
+  }
+
+  if (calibName=="TBMDelayWithScores") {
+    return new PixelFEDTBMDelayCalibrationWithScores(*pixFEDSupConfPtr, soapCmdrPtr);
   }
 
   return 0;

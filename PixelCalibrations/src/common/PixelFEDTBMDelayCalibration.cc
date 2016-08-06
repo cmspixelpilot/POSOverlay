@@ -2,18 +2,15 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
 #include "PixelCalibrations/include/PixelFEDTBMDelayCalibration.h"
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
-#include "PixelFEDInterface/include/PixelPh1FEDInterface.h"
 #include "PixelUtilities/PixelFEDDataTools/include/PixelFEDDataTypes.h"
 #include "PixelUtilities/PixelFEDDataTools/include/ErrorFIFODecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/ColRowAddrDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/DigScopeDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/DigTransDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO3Decoder.h"
-#include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
 #include <iomanip>
 
 using namespace pos;
@@ -36,13 +33,9 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
 
   tempCalibObject->writeASCII(outputDir());
 
-  OnlyFIFO1 = tempCalibObject->parameterValue("OnlyFIFO1") == "yes";
   OnlyFIFO3 = tempCalibObject->parameterValue("OnlyFIFO3") == "yes";
   DumpFIFOs = tempCalibObject->parameterValue("DumpFIFOs") == "yes";
   PrintHits = tempCalibObject->parameterValue("PrintHits") == "yes";
-
-  //  const std::vector<PixelROCName>& rocs = tempCalibObject->rocList();
-  //PixelRootDirectoryMaker rootDirs(rocs, rootf);
 
   for (unsigned dacnum = 0; dacnum < tempCalibObject->numberOfScanVariables(); ++dacnum) {
     const std::string& dacname = tempCalibObject->scanName(dacnum);
@@ -146,63 +139,9 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     FIFO3Decoder* decode3 = 0;
     ErrorFIFODecoder* decodeErr = 0;
 
-    if (OnlyFIFO1) {
-      PixelPh1FEDInterface* f = dynamic_cast<PixelPh1FEDInterface*>(iFED);
-      f->readTransparentFIFO();
-      f->readSpyFIFO();
-      PixelPh1FEDInterface::digfifo1 d = f->readFIFO1(DumpFIFOs);
-      printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
-      FillEm(state, F1nTBMHeaders,  d.a.n_tbm_h + d.b.n_tbm_h);
-      FillEm(state, F1nTBMTrailers, d.a.n_tbm_t + d.b.n_tbm_t);
-      FillEm(state, F1nROCHeaders,  d.a.n_roc_h + d.b.n_roc_h);
-      FillEm(state, F1nHits,        d.a.hits.size() + d.b.hits.size());
-
-      int correct[2] = {0};
-      int wrong[2] = {0};
-      for (int aorb = 0; aorb < 2; ++aorb) {
-        const PixelPh1FEDInterface::encfifo1& z = d.aorb(aorb);
-        for (size_t i = 0; i < z.hits.size(); ++i) {
-          const PixelPh1FEDInterface::encfifo1hit& h = z.hits[i];
-          if (colrows.find(std::make_pair(h.col, h.row)) != colrows.end())
-            ++correct[aorb];
-        }
-      }
-      wrong[0] = d.a.hits.size() - correct[0];
-      wrong[1] = d.b.hits.size() - correct[1];
-
-      FillEm(state, F1nCorrectHits, correct[0] + correct[1]);
-      FillEm(state, F1nWrongHits,   wrong[0] + wrong[1]);
-      
-      FillEm(state, F1nTBMAHeaders,  d.a.n_tbm_h);
-      FillEm(state, F1nTBMATrailers, d.a.n_tbm_t);
-      FillEm(state, F1nROCAHeaders,  d.a.n_roc_h);
-      FillEm(state, F1nAHits,        d.a.hits.size());
-      FillEm(state, F1nACorrectHits, correct[0]);
-      FillEm(state, F1nAWrongHits,   wrong[0]);
-
-      FillEm(state, F1nTBMBHeaders,  d.b.n_tbm_h);
-      FillEm(state, F1nTBMBTrailers, d.b.n_tbm_t);
-      FillEm(state, F1nROCBHeaders,  d.b.n_roc_h);
-      FillEm(state, F1nBHits,        d.b.hits.size());
-      FillEm(state, F1nBCorrectHits, correct[1]);
-      FillEm(state, F1nBWrongHits,   wrong[1]);
-
-      const int shouldbe = 8 * int(colrows.size());
-      if (DumpFIFOs) printf("correct out of %lu: a: %i b: %i   wrong: a: %i b: %i\n", shouldbe, correct[0], correct[1], wrong[0], wrong[1]);
-
-      FillEm(state, F1nOK,
-             d.a.n_tbm_h == 1 && d.a.n_tbm_t == 1 && d.a.n_roc_h == 8 &&
-             d.b.n_tbm_h == 1 && d.b.n_tbm_t == 1 && d.b.n_roc_h == 8 &&
-             correct[0] == shouldbe &&
-             correct[1] == shouldbe &&
-             wrong[0] == 0 &&
-             wrong[1] == 0);
-    }
-    else {
-      status3 = iFED->spySlink64(buffer3);
-      if (status3 > 0)
-        decode3 = new FIFO3Decoder(buffer3);
-    }
+    status3 = iFED->spySlink64(buffer3);
+    if (status3 > 0)
+      decode3 = new FIFO3Decoder(buffer3);
 
     if (!OnlyFIFO3) {
       fifoStatus = iFED->getFifoStatus();
@@ -300,40 +239,35 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       }
     }
 
-    if (OnlyFIFO1) {
-      
-    }
+    if (PrintHits) std::cout << "F3X ";
+    if (status3 <= 0)
+      FillEm(state, F3fifoErr, 1);
     else {
-      if (PrintHits) std::cout << "F3X ";
-      if (status3 <= 0)
-        FillEm(state, F3fifoErr, 1);
-      else {
-        for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
-          const unsigned channel = decode3->channel(ihit);
-          const unsigned rocid = decode3->rocid(ihit);
-          const unsigned col = decode3->column(ihit);
-          const unsigned row = decode3->row(ihit);
+      for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
+        const unsigned channel = decode3->channel(ihit);
+        const unsigned rocid = decode3->rocid(ihit);
+        const unsigned col = decode3->column(ihit);
+        const unsigned row = decode3->row(ihit);
 
-          // Skip if this ROC is not on the list of ROCs to calibrate.
-          // Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
-          PixelROCName roc;
-          vector<PixelROCName>::const_iterator foundROC;
-          if (rocid > 0) {
-            roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
-            foundROC = find(rocs.begin(), rocs.end(), roc);
-          }
+        // Skip if this ROC is not on the list of ROCs to calibrate.
+        // Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
+        PixelROCName roc;
+        vector<PixelROCName>::const_iterator foundROC;
+        if (rocid > 0) {
+          roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
+          foundROC = find(rocs.begin(), rocs.end(), roc);
+        }
 
-          if (rocid == 0 || foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
-            std::cout << "!! wrong roc: " << roc << " ch " << channel << " col " << col << " row " << row << std::endl;
-            FillEm(state, F3wrongRoc, 1);
-          }
-          else {
-            if (PrintHits) std::cout << "c " << col << " r " << row << " ";
-            if (colrows.find(std::make_pair(col, row)) == colrows.end())
-              FillEm(state, F3wrongPix, 1);
-            else
-              FillEm(state, F3rightPix, 1);
-          }
+        if (rocid == 0 || foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
+          std::cout << "!! wrong roc: " << roc << " ch " << channel << " col " << col << " row " << row << std::endl;
+          FillEm(state, F3wrongRoc, 1);
+        }
+        else {
+          if (PrintHits) std::cout << "c " << col << " r " << row << " ";
+          if (colrows.find(std::make_pair(col, row)) == colrows.end())
+            FillEm(state, F3wrongPix, 1);
+          else
+            FillEm(state, F3rightPix, 1);
         }
       }
     }
@@ -815,9 +749,6 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
     "FS3nTBMHeader", "FS3nTBMTrailer", "FS3nROCHeaders", "FS3wrongPix", "FS3rightPix", "FS3dangling",
     "FS5nTBMHeader", "FS5nTBMTrailer", "FS5nROCHeaders", "FS5wrongPix", "FS5rightPix", "FS5dangling",
     "FS7nTBMHeader", "FS7nTBMTrailer", "FS7nROCHeaders", "FS7wrongPix", "FS7rightPix", "FS7dangling",
-    "F1nTBMHeaders", "F1nTBMTrailers", "F1nROCHeaders", "F1nHits", "F1nCorrectHits", "F1nWrongHits",
-    "F1nTBMAHeaders", "F1nTBMATrailers", "F1nROCAHeaders", "F1nAHits", "F1nACorrectHits", "F1nAWrongHits",
-    "F1nTBMBHeaders", "F1nTBMBTrailers", "F1nROCBHeaders", "F1nBHits", "F1nBCorrectHits", "F1nBWrongHits", "F1nOK",
     "F3fifoErr", "F3wrongRoc", "F3wrongPix", "F3rightPix"
   };
 

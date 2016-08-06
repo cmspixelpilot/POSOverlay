@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="LATIN1"?>
+
+<node id="FPGA1" address="0x00000000" >
+
+  <node id="buf_test" address="0x0000400" class="MmcPipeInterface" description="UC link buffer test register" size="0x3" tags="slave">
+    <node id="FPGAtoMMCcounters" address="0x0"/>
+    <node id="MMCtoFPGAcounters" address="0x1"/>
+    <node id="FIFO" address="0x2" mode="non-incremental" size="512" />
+  </node>
+
+</node>
+

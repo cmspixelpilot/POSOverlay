@@ -72,6 +72,10 @@ double  PixelTimer::rms() const {
 
 }    
 
+void PixelTimer::printStats() const {
+  std::cout << name_ << " total calls:" << ntimes() << " total time: " << tottime() << " avg time: " << avgtime() << std::endl;
+}
+
 void PixelTimer::printTime(const std::string msg) {
 
   timeval tnow;

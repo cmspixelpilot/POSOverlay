@@ -86,7 +86,9 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibration::execute(xoap::Messa
 
 	for (unsigned int ihit=0;ihit<nhits;ihit++){
 	  unsigned int rocid=decode.rocid(ihit);
-	  assert(rocid>0);
+	  //assert(rocid>0);
+          if (rocid == 0)
+            continue;
 	  unsigned int channel=decode.channel(ihit);
 
 

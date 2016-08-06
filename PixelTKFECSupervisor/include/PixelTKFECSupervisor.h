@@ -135,6 +135,9 @@ public:
   void XgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
   void CCUBoardGUI(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
   void CCUBoardGUI_XgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
+  void FPixDCDCSummary(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
+  void FPixDCUSummary(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
+  void PortcardDevicesSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception);
   
   xoap::MessageReference Initialize (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
   xoap::MessageReference Configure (xoap::MessageReference msg) ; //throw (xoap::exception::Exception);
@@ -219,13 +222,13 @@ private:
   void disablePIAchannels(int slot,int ring,int ccu)  ;
   void enablePIAchannels(int slot,int ring,int ccu)  ;
   bool programPortcards(bool);
-  bool pixDCDCCommand(tscType8 fecAddress,
-		      tscType8 ringAddress,
-		      tscType8 ccuAddressEnable,
-		      tscType8 ccuAddressPgood,
-		      tscType8 piaChannelAddress,
-		      bool turnOn,
-		      unsigned int portNumber);
+  bool PilotPixDCDCCommand(tscType8 fecAddress,
+                           tscType8 ringAddress,
+                           tscType8 ccuAddressEnable,
+                           tscType8 ccuAddressPgood,
+                           tscType8 piaChannelAddress,
+                           bool turnOn,
+                           unsigned int portNumber);
   // void DIAG_CONFIGURE_CALLBACK();
   // void DIAG_APPLY_CALLBACK();
 

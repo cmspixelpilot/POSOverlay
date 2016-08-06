@@ -22,11 +22,11 @@
   <NumberOfEvents Events="-1"/>
   <Hardware>
     <!-- Feds that user wants to analyze dash separated-->
-    <Feds Analyze="44">
+    <Feds Analyze="1294-1295-1296-1297-1298-1299-1300">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->
-      <Fed Id="44">
+      <Fed Id="1294">
         <!-- Data file name assciated with the fed you want to analyze using also environment variables. 
 				     If The DefaultDirectory tag is used providing as a second argument the run number 
 						 then the keyword Default can be used-->
@@ -38,6 +38,12 @@
         <!-- Dash separated list of Rocs that you want to exclude from the analysis-->
         <Rocs     Exclude=""/>
       </Fed>
+      <Fed Id="1295"><DataFileName FileName="Default" /><Channels From="1" To="48"/><Rocs Exclude=""/></Fed>
+      <Fed Id="1296"><DataFileName FileName="Default" /><Channels From="1" To="48"/><Rocs Exclude=""/></Fed>
+      <Fed Id="1297"><DataFileName FileName="Default" /><Channels From="1" To="48"/><Rocs Exclude=""/></Fed>
+      <Fed Id="1298"><DataFileName FileName="Default" /><Channels From="1" To="48"/><Rocs Exclude=""/></Fed>
+      <Fed Id="1299"><DataFileName FileName="Default" /><Channels From="1" To="48"/><Rocs Exclude=""/></Fed>
+      <Fed Id="1300"><DataFileName FileName="Default" /><Channels From="1" To="48"/><Rocs Exclude=""/></Fed>
     </Feds>
   </Hardware>  
   <SCurveCuts>
@@ -57,7 +63,7 @@
       <!-- Rocs with a mean sigma on the noise greater than the value are printed out and marked as bad-->
       <RocNoiseMean       Max="3"/>
       <!-- Rocs with a mean Threshold greater than the value are printed out and marked as bad-->
-      <RocThresholdMean   Max="130"/>
+      <RocThresholdMean   Max="60"/>
       <!-- Rocs with a mean Chisquare greater than the value are printed ou56288: TrimDefaultShort56294: TrimVcThrShort.56300: TrimVtrimShort56303: TrimOnShort56305: TrimOffShortt and marked as bad-->
       <RocChisquareMean   Max="2"/>
       <!-- Rocs with a mean Confidence level greater than the value are printed out and marked as bad-->

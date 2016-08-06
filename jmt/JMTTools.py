@@ -9,6 +9,27 @@ BUILD_HOME = os.environ['BUILD_HOME']
 POS_OUTPUT_DIRS = os.environ['POS_OUTPUT_DIRS']
 PIXELCONFIGURATIONBASE = os.environ['PIXELCONFIGURATIONBASE']
 
+def config_fn(x):
+    return os.path.join(PIXELCONFIGURATIONBASE, x)
+
+def config_key_fn(x, t=None):
+    if os.path.isfile(x):
+        return x
+    cfg_fn = config_fn(x)
+    if os.path.isfile(cfg_fn):
+        return cfg_fn
+    
+def new_config_key(x, min_key=0):
+    new_key = min_key
+    d = None
+    while 1:
+        d = config_fn(os.path.join(x, str(new_key)))
+        if os.path.isdir(d):
+            new_key += 1
+        else:
+            break
+    return new_key, d
+
 def run_from_argv():
     run = None
     for x in sys.argv:
@@ -228,15 +249,109 @@ class dac_dat:
                 f.write((dac + ':').ljust(15))
                 f.write('%i\n' % dacs[dac])
 
-#def translation_dat(key):
-#    fn = os.path.join(PIXELCONFIGURATIONBASE, 'nametranslation/%s/translation.dat')
-#    by_module = 
-#    for line in open(fn):
-#        line = line.strip():
-#        if line:
-#            line = line.split()
-#def tbm(key):
+class portcardmap_dat:
+    def __init__(self, fn):
+        self.fn = fn
+        if os.path.isdir(fn):
+            fn = os.path.join(fn, 'portcardmap.dat')
+        f = open(fn)
+        self.l = []
+        self.m = defaultdict(list)
+        self.p = {}
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            line = line.split()
+            if len(line) == 3:
+                pc, module, ch = line
+            else:
+                pc, module, aorb, ch = line
+            ch = int(ch)
+            self.l.append((pc, module, ch))
+            self.m[pc].append((module, ch))
+            self.p[module] = (pc, ch)
+        self.l.sort(key=lambda x: (x[0], x[2]))
+
+class mask_dat:
+    def __init__(self, fn):
+        self.m = {}
+        self.fn = fn
+        if os.path.isdir(fn):
+            fn = os.path.join(fn, 'portcardmap.dat')
+        f = open(fn)
+        lines = [l.strip() for l in f.readlines() if l.strip()]
+        assert len(lines) == 16*(52 + 1)
+        self.module = None
+        for roc in xrange(16):
+            rocline = lines[0]
+            masklines = lines[1:53]
+            lines = lines[53:]
+
+            assert rocline.startswith('ROC:')
+            roc = rocline.split()[-1]
+            module, roc = roc.split('_ROC')
+            roc = int(roc)
+            if self.module is not None:
+                assert module == self.module
+            else:
+                self.module = module
+            self.m[roc] = [None]*52
+
+            for col, maskline in enumerate(masklines):
+                assert maskline.startswith('col%02i:' % col)
+                maskbits = maskline.split()[-1]
+                assert len(maskbits) == 80
+                self.m[roc][col] = list(maskbits)
+
+    def set(self, val, roc, **args):
+        assert str(val) in '10'
+
+        a = set(args.keys())
+        if a == set(('col', 'row')):
+            col, row = args['col'], args['row']
+        elif a == set(('dc', 'pxl')):
+            col, row = dec(args['dc'], args['pxl'])
+        else:
+            raise ValueError('args have to be col&row or dc&pxl')
+
+        assert 0 <= col <= 51 and 0 <= row <= 79
+        self.m[roc][col][row] = str(val)
+        
+    def write(self, fn):
+        f = open(fn, 'wt')
+        for roc in xrange(16):
+            f.write('ROC:     ' + self.module + '_ROC' + str(roc) + '\n')
+            for col in xrange(52):
+                f.write('col%02i:   ' % col + ''.join(self.m[roc][col]) + '\n')
+        f.close()
+
+class translation_dat:
+    class entry:
+        def __init__(self, line):
+            line = line.split()
+            assert len(line) == 11
+            self.roc_name = line[0]
+            self.module, self.roc = self.roc_name.split('_ROC')
+            assert int(self.roc) % 8 == int(line[-1])
+            self.roc = int(self.roc)
+            self.aorb = line[1]
+            self.fec, self.mfec, self.mfecch, self.hubid, self.port, self.rocid, self.fedid, self.fedch = [int(x) for x in line[2:-1]]
+
+    def __init__(self, fn):
+        self.l = []
+        for line in open(fn):
+            line = line.strip()
+            if line.startswith('#') or not line:
+                continue
+            self.l.append(translation_dat.entry(line))
+
+    def module_name_from_fed_ch(self, fedid, fedch):
+        for x in self.l:
+            if x.fedid == fedid and x.fedch == fedch:
+                return x.module
     
 if __name__ == '__main__':
-    dacs = dac_dat('/home/fnaltest/TriDAS/Config/dac/8/ROC_DAC_module_FPix_BmI_D3_BLD1_PNL1_RNG1.dat')
-    
+    mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')
+    mask.set(0, roc=0, col=25, row=32)
+    mask.write('duh')

@@ -51,6 +51,8 @@ namespace pos{
     const std::string& getDCDCName() const { return dcdcname_; }
     void setDCDCName(std::string newName) { dcdcname_ = newName; }
 
+    std::string getType() { return type_; }
+
     bool getDCDCEnabled() { return dcdcenabled_; }
     void setDCDCEnabled(bool isEnabled) { dcdcenabled_ = isEnabled; }
 
@@ -69,6 +71,8 @@ namespace pos{
 	
     std::string dcdcname_;
 
+    std::string type_;
+
     bool dcdcenabled_;
     unsigned int ccuaddressenable_;
     unsigned int ccuaddresspgood_;
@@ -83,8 +87,6 @@ namespace pos{
     unsigned int aohcount_;
     void sortDeviceList();
 
-    std::string type_; // fpix or bpix or pilt, used to determine setting names and addresses
-  
     std::map<std::string, unsigned int> nameToAddress_; // translation from name to address, filled in by fillNameToAddress();
     std::map<std::string, std::string> nameDBtoFileConversion_; // filled by fillDBToFileAddress() ;
 

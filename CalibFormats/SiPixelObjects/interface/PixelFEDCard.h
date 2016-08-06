@@ -192,6 +192,9 @@ namespace pos{
     int timeout_counter_start;
     int timeout_number_oos_threshold;
 
+    // Ph1 FED: disable data from front end to back end
+    int frontend_disable_backend;
+
     // Most recent additions requested by Will and Danek (Dario)
     int BusyHoldMin       ;
     int BusyWhenBehind    ;

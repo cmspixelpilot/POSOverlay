@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="param_table.xsl"?>
+<node id="FC7">
+    <!-- DEFAULT CTA GOLDEN FW REGISTERS -->
+    <!-- SYSTEM VERSION INFO -->
+    <node id="board_id" address="0x00000000">
+        <node id="char1" mask="0xFF000000" permission="r" />
+        <node id="char2" mask="0x00FF0000" permission="r" />
+        <node id="char3" mask="0x0000FF00" permission="r" />
+        <node id="char4" mask="0x000000FF" permission="r" />
+    </node>
+    <node id="rev_id" address="0x00000001">
+        <node id="char1" mask="0xFF000000" permission="r" />
+        <node id="char2" mask="0x00FF0000" permission="r" />
+        <node id="char3" mask="0x0000FF00" permission="r" />
+        <node id="char4" mask="0x000000FF" permission="r" />
+    </node>
+    <node id="firmware_id" address="0x00000002" mode="single">
+        <node id="major" mask="0xF0000000" permission="r" />
+        <node id="minor" mask="0x0F000000" permission="r" />
+        <node id="build" mask="0x00FF0000" permission="r" />
+        <node id="yy" mask="0x0000fe00" permission="r" />
+        <node id="mm" mask="0x000001e0" permission="r" />
+        <node id="dd" mask="0x0000001F" permission="r" />
+    </node>
+    <!-- TEST -->
+    <node id="test" address="0x00000003" mask="0xffffffff" permission="rw" />
+    <!-- CONTROL -->
+    <node id="ctrl" address="0x00000004">
+        <node id="pcieclk_pll_sel" mask="0x00000001" permission="rw" />
+        <node id="pcieclk_mr" mask="0x00000002" permission="rw" />
+        <node id="pcieclk_fsel1" mask="0x00000004" permission="rw" />
+        <node id="pcieclk_fsel0" mask="0x00000008" permission="rw" />
+        <node id="cdce_powerup" mask="0x00000010" permission="rw" />
+        <node id="cdce_refsel" mask="0x00000020" permission="rw" />
+        <node id="cdce_sync" mask="0x00000040" permission="rw" />
+        <node id="cdce_ctrl_sel" mask="0x00000080" permission="rw" />
+        <node id="cdce_xpoint_out1" mask="0x00400000" permission="rw" />
+        <node id="cdce_xpoint_out2" mask="0x00000100" permission="rw" />
+        <node id="cdce_xpoint_out3" mask="0x00000200" permission="rw" />
+        <node id="cdce_xpoint_out4" mask="0x00000400" permission="rw" />
+        <node id="ttc_xpoint_B_out4" mask="0x00000800" permission="rw" description="osc_coax_sel" />
+        <node id="ttc_xpoint_A_out1" mask="0x00003000" permission="rw" description="master_xpoint[1:0]" />
+        <node id="ttc_xpoint_A_out2" mask="0x0000c000" permission="rw" description="master_xpoint[3:2]" />
+        <node id="ttc_xpoint_A_out3" mask="0x00030000" permission="rw" description="master_xpoint[5:4]" />
+        <node id="ttc_xpoint_A_out4" mask="0x000c0000" permission="rw" description="master_xpoint[7:6]" />
+        <node id="ttc_xpoint_B_out1" mask="0x00300000" permission="rw" description="master_xpoint[9:8]" />
+        <node id="tclkb_tclkd_en" mask="0x00800000" permission="rw" />
+        <node id="mgt_xpoint_out1" mask="0x03000000" permission="rw" description="osc_xpoint_ctrl[1:0]" />
+        <node id="mgt_xpoint_out2" mask="0x0c000000" permission="rw" description="osc_xpoint_ctrl[3:2]" />
+        <node id="mgt_xpoint_out3" mask="0x30000000" permission="rw" description="osc_xpoint_ctrl[5:4]" />
+        <node id="mgt_xpoint_out4" mask="0xc0000000" permission="rw" description="osc_xpoint_ctrl[7:6]" />
+    </node>
+    <!-- CONTROL_2 -->
+    <node id="ctrl_2" address="0x00000005">
+        <node id="icap_page" mask="0x00000003" permission="rw" />
+        <node id="icap_trigg" mask="0x00000010" permission="rw" />
+        <node id="phase_mon_lower" mask="0x0000ff00" permission="rw" />
+        <node id="phase_mon_upper" mask="0x00ff0000" permission="rw" />
+        <node id="phase_mon_strobe" mask="0x01000000" permission="rw" />
+        <node id="phase_mon_refclk_sel" mask="0x02000000" permission="rw" />
+        <node id="phase_mon_auto" mask="0x08000000" permission="rw" />
+        <node id="fmc_l12_pwr_en" mask="0x10000000" permission="rw" />
+        <node id="fmc_l8_pwr_en" mask="0x20000000" permission="rw" />
+        <node id="fmc_pg_c2m" mask="0x40000000" permission="rw" />
+    </node>
+    <!-- STATUS -->
+    <node id="status" address="0x00000006">
+        <node id="cpld2fpga_gpio" mask="0x0000000f" permission="r" />
+        <node id="pca8574_int" mask="0x00000010" permission="r" />
+        <node id="phase_mon_count" mask="0x0000ff00" permission="r" />
+        <node id="phase_mon_done" mask="0x00010000" permission="r" />
+        <node id="phase_mon_ok" mask="0x00020000" permission="r" />
+        <node id="cdce_sync_busy" mask="0x01000000" permission="r" />
+        <node id="cdce_sync_done" mask="0x02000000" permission="r" />
+        <node id="cdce_lock" mask="0x04000000" permission="r" />
+        <node id="fmc_l12_pg_m2c" mask="0x10000000" permission="r" />
+        <node id="fmc_l12_present" mask="0x20000000" permission="r" />
+        <node id="fmc_l8_pg_m2c" mask="0x40000000" permission="r" />
+        <node id="fmc_l8_present" mask="0x80000000" permission="r" />
+    </node>
+    <!-- STATUS_2-->
+    <node id="status_2" address="0x00000007" mask="0xffffffff" permission="r" />
+    <!-- SPI COMMANDS -->
+    <node id="spi_txdata" address="0x0000000a" mask="0xffffffff" permission="rw" />
+    <node id="spi_command" address="0x0000000b" mask="0xffffffff" permission="rw" description="autoclear removed" />
+    <node id="spi_rxdata0x" address="0x0000000c" mask="0xffffffff" permission="r" />
+    <!-- I2C SETTINGS -->
+    <node id="i2c_settings" address="0x0000000d">
+        <node id="enable" mask="0x00000800" permission="rw" />
+        <node id="bus_select" mask="0x00000400" permission="rw" />
+        <node id="prescaler" mask="0x000003ff" permission="rw" />
+    </node>
+    <!-- I2C COMMANDS -->
+    <node id="i2c_command" address="0x0000000e">
+        <node id="strobe" mask="0x80000000" permission="rw" />
+        <node id="mode16" mask="0x02000000" permission="rw" />
+        <node id="mem" mask="0x01000000" permission="rw" />
+        <node id="write" mask="0x00800000" permission="rw" />
+        <node id="slvaddr_7b" mask="0x007f00000" permission="rw" />
+        <node id="regaddr" mask="0x0000ff00" permission="rw" />
+        <node id="wrdata" mask="0x000000ff" permission="rw" />
+    </node>
+    <!-- I2C REPLY -->
+    <node id="i2c_reply" address="0x0000000f">
+        <node id="status" mask="0x0c000000" permission="r" />
+        <node id="error" mask="0x08000000" permission="r" />
+        <node id="done" mask="0x04000000" permission="r" />
+        <node id="8b" mask="0x000000ff" permission="r" />
+        <node id="16b" mask="0x0000ffff" permission="r" />
+    </node>
+    <!-- MISC -->
+    <node id="eep_read_done" address="0x0000001c" mask="0x10000000" permission="r" />
+    <node id="mac_ip_source" address="0x0000001c" mask="0x0fff0000" permission="r" />
+    <node id="mac_b5" address="0x0000001c" mask="0x0000ff00" permission="r" />
+    <node id="mac_b4" address="0x0000001c" mask="0x000000ff" permission="r" />
+    <node id="mac_b3" address="0x0000001d" mask="0xff000000" permission="r" />
+    <node id="mac_b2" address="0x0000001d" mask="0x00ff0000" permission="r" />
+    <node id="mac_b1" address="0x0000001d" mask="0x0000ff00" permission="r" />
+    <node id="mac_b0" address="0x0000001d" mask="0x000000ff" permission="r" />
+    <node id="dipsw" address="0x0000001e" mask="0xff000000" permission="r" />
+    <node id="eui48_hi" address="0x0000001e" mask="0x0000ffff" permission="r" />
+    <node id="eui_b5" address="0x0000001e" mask="0x0000ff00" permission="r" />
+    <node id="eui_b4" address="0x0000001e" mask="0x000000ff" permission="r" />
+    <node id="eui48_lo" address="0x0000001f" mask="0xffffffff" permission="r" />
+    <node id="eui_b3" address="0x0000001f" mask="0xff000000" permission="r" />
+    <node id="eui_b2" address="0x0000001f" mask="0x00ff0000" permission="r" />
+    <node id="eui_b1" address="0x0000001f" mask="0x0000ff00" permission="r" />
+    <node id="eui_b0" address="0x0000001f" mask="0x000000ff" permission="r" />
+    <!-- ICAP MEMORY SPACE -->
+    <node id="icap" address="0x00000200" mask="0xffffffff" permission="rw" />
+    <node id="buf_cta" address="0x0000400" class="MmcPipeInterface" description="UC link buffer test register" size="0x3" tags="slave">
+        <node id="FPGAtoMMCcounters" address="0x0" />
+        <node id="MMCtoFPGAcounters" address="0x1" />
+        <node id="FIFO" address="0x2" mode="non-incremental" size="512" />
+    </node>
+</node>

@@ -9,16 +9,15 @@ run_dir = run_dir(run)
 in_fn = glob(os.path.join(run_dir, 'PixelAlive_Fed_*_Run_%i.root' % run))
 if not in_fn:
     raise RuntimeError('need to make the root file: /nfshome0/pixelpilot/build/TriDAS/pixel/jmt/pxalive.sh %i' % run)
+if len(in_fn) > 1:
+    raise RuntimeError('too many root files')
 in_fn = in_fn[0]
 out_dir = os.path.join(run_dir, 'dump_pixelalive')
 os.system('mkdir -p %s' % out_dir)
 
 f = ROOT.TFile(in_fn)
 
-dirs = [
-    'FPix/FPix_BmI/FPix_BmI_D3/FPix_BmI_D3_BLD1/FPix_BmI_D3_BLD1_PNL1/FPix_BmI_D3_BLD1_PNL1_RNG1',
-    ]
-
+dirs = ['FPix/FPix_BmI/FPix_BmI_D%(dsk)i/FPix_BmI_D%(dsk)i_BLD%(bld)i/FPix_BmI_D%(dsk)i_BLD%(bld)i_PNL%(pnl)i/FPix_BmI_D%(dsk)i_BLD%(bld)i_PNL%(pnl)i_RNG%(rng)i' % locals() for dsk in range(1,4) for bld in range(1,18) for pnl in range(1,3) for rng in range(1,3)]
 
 by_ntrigs = []
 first = True

@@ -170,7 +170,11 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   //************************************HELP
   //************************************
   if (tokens[0]=="help"){
-    
+
+    o << "sleep\n";
+    o << "\t no option needed\n" ; 
+    o << "\t\t sleep 25 ms\n\n" ;
+
     o << "which addresses\n";
     o << "\t no option needed\n" ; 
     o << "\t\t get the fec, ring, ccu and channel address\n\n" ;
@@ -386,6 +390,11 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
 
     return o.str();
 
+  }
+
+  else if (tokens[0]=="sleep"){
+    usleep(25000);
+    return "";
   }
 
   //************************************WHICH
@@ -851,12 +860,29 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
   
   } 
 
- 
+  else if (tokens[0]=="jmt"){
+    for (int rda = 0x40; rda <= 0x7e; ++rda) {
+            setI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x10, 0x40, modeType, loop, tms, rda ) ;
+      for (int sda = 0x40; sda <= 0x7e; ++sda) {
+            setI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x10, 0x42, modeType, loop, tms, sda ) ;
+        for (int rcl = 0x40; rcl <= 0x7e; ++rcl) {
+            setI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x10, 0x41, modeType, loop, tms, rcl ) ;
+          for (int scl = 0x40; scl <= 0x7e; ++scl) {
+            setI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, 0x10, 0x44, modeType, loop, tms, scl ) ;
+            printf("rcl 0x%02x scl 0x%02x\n", rcl, scl);
+            usleep(1000);
+          }
+        }
+      }
+    }
+    printf("\n\n\n\n\n\n\n");
+    return "done";
+  }
+
   //************************************I2C
     
   //************************************
   else if (tokens[0]=="i2c"){
-      
       
     if ( tokens.size()>4) { 
       // argument list including the sector (commissioning system)
@@ -1904,9 +1930,10 @@ int main(int argc, char *argv[])
   // configure server
   //SimpleServer serv;
   MultiplexingServer serv;
-  if(argc==4){
-    if ((strcasecmp (argv[2],"-port") == 0)) {
-      int port=atoi(argv[3]);
+  for (int i = 0; i < argc; ++i) {
+    if ((strcasecmp (argv[i],"-port") == 0)) {
+      assert(argc > i+1);
+      int port=atoi(argv[i+1]);
       cout << "port = " << port << endl;
       serv.open(port);
     }

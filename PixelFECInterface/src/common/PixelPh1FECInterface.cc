@@ -12,6 +12,8 @@ using namespace std;
 using namespace pos;
 
 namespace {
+  bool buffermodenever = false;
+
   bool PRINT = false;
   bool PRINT_old = PRINT;
   void PRINT_ON() {
@@ -25,10 +27,10 @@ namespace {
   void hexprintword(uint32_t w) {
     cout << hex
          << setw(2) << setfill('0') << ((w&0xFF000000)>>24) << " "
-         << setw(2) << setfill('0') << ((w&0x00FF0000)>>16) << " "
-         << setw(2) << setfill('0') << ((w&0x0000FF00)>> 8) << " "
-         << setw(2) << setfill('0') << ((w&0x000000FF)    )
-         << dec;
+         << setw(2) <<                 ((w&0x00FF0000)>>16) << " "
+         << setw(2) <<                 ((w&0x0000FF00)>> 8) << " "
+         << setw(2) <<                 ((w&0x000000FF)    )
+         << setfill(' ') << dec;
   }
 }
 
@@ -55,6 +57,37 @@ PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
     }
 
     pRegManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0);
+    usleep(100);
+    //resetttc();
+    usleep(100);
+    if (!hasclock() || clocklost()) {
+      std::cerr << "hits go in wrong bx after clock lost until you reload firmware / power cycle\n";
+      //      assert(0);
+    }
+
+    d25_trimloadtest.resize(52*80);
+    for (size_t i = 0; i < 52*80; ++i)
+      d25_trimloadtest[i] = (unsigned char)(i % 256);
+}
+
+bool PixelPh1FECInterface::hasclock() {
+  return pRegManager->ReadReg("Board0.TTCatLHC");
+}
+
+bool PixelPh1FECInterface::clocklost() {
+  return pRegManager->ReadReg("Board0.TTCLostLHC");
+}
+
+void PixelPh1FECInterface::resetttc() {
+  pRegManager->WriteReg("Board0.TTCrst", 1);
+  usleep(1000);
+  pRegManager->WriteReg("Board0.TTCrst", 0);
+}
+
+void PixelPh1FECInterface::resetclocklost() {
+  pRegManager->WriteReg("Board0.RstTTCLostLHC", 1);
+  usleep(1000);
+  pRegManager->WriteReg("Board0.RstTTCLostLHC", 0);
 }
 
 //-------------------------------------------------------------------------
@@ -613,14 +646,18 @@ int PixelPh1FECInterface::testFiberEnable(const int mfec, const int enable) {
 // To read back the information from the mFEC input FIFOs
 // Return the word from the FIFO
 int PixelPh1FECInterface::readback(const int mfec, const int channel) {
+  return readreturn(mfec, channel, 1)[0]; 
+}
+
+std::vector<uint32_t> PixelPh1FECInterface::readreturn(const int mfec, const int channel, uint32_t size) {
     
     if(mfec<1 || mfec>4) {
         cerr<<" PixelPh1FECInterface: Wrong mfec number "<<mfec<<endl;
-        return 3;
+        assert(0);
     }
     if(channel<1 || channel>2) {
         cout<<" PixelPh1FECInterface: Wrong mfec channel number "<<channel<<endl;
-        return 2;
+        assert(0);
     }
     
     const string names[2][4] = {
@@ -628,11 +665,9 @@ int PixelPh1FECInterface::readback(const int mfec, const int channel) {
         {"INP_BUF2M1","INP_BUF2M2","INP_BUF2M3","INP_BUF2M4"}
     };
     
-    valword value = pRegManager->ReadReg(names[channel-1][mfec-1]);
-    if (PRINT) cout << "PixelPh1FECInterface: "  << "Getting FIFO readback register: 0x" << std::hex << value << std::dec <<endl;
-
-    return (int) value.value();
+    return pRegManager->ReadBlockRegValue(names[channel-1][mfec-1], size);
 }
+
 //---------------------------------------------------------------------------------
 // To read the mfec word with the HUB and byte COUNT
 // Read data is returned in *data. Return same data..
@@ -720,6 +755,11 @@ int PixelPh1FECInterface::qbufsend(void) {
 //--------------------------------------------------------------------------------
 // Send buffered data for one channel
 int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
+  if (buffermodenever) {
+    std::cerr << "shouldn't have gotten to qbufsend(mfec,fecchannel) with buffermodenever" << std::endl;
+    return 0;
+  }
+
     unsigned int ch1stat, ch2stat;
     
     // append a final FF to data
@@ -811,6 +851,22 @@ int PixelPh1FECInterface::qbufsend(int mfec, int fecchannel) {
     //getfecctrlstatus(mfec,&csreg);
     //cout << "csreg direct read 0x" << hex << csreg << " from mfecbusy 0x" << mfecCSregister[mfec] << dec << endl;
 
+    if (1 && PRINT) {
+      usleep(100000);
+      std::vector<uint32_t> rb = readreturn(mfec, fecchannel, 16000);
+      const size_t nrb = rb.size();
+      const size_t qbn = qbufn[mfec][fecchannel];
+      std::cout << "PixelPh1FECInterface: JMT readback size = " << nrb << " we sent " << qbn << std::endl;
+      for (size_t i = 0; i < nrb; ++i) {
+        cout<<"PixelPh1FECInterface:  ("<<setw(5)<<i<<"): ";
+        hexprintword(rb[i]);
+        if (i < qbn) {
+          std::cout << "   qbuf: ";
+          hexprintword(qbuf[mfec][fecchannel][i]);
+        }
+        cout << endl;
+      }
+    }
 
     qbufn[mfec][fecchannel] = 0;
     memset(qbuf[mfec][fecchannel], 0, qbufsize); // JMTBAD for good measure to be sure new FEC doesn't pick up stuff after the 0xFF...
@@ -917,8 +973,8 @@ int PixelPh1FECInterface::clrcal(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t>  wordvec;
     
-    
-    if (buffermode) {
+
+    if (buffermode && !buffermodenever) {
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode clrcal"<<endl;
         
@@ -1029,7 +1085,7 @@ int PixelPh1FECInterface::progpix1(int mfec, int fecchannel,
     int current, i, ndata;
     std::vector<uint32_t>  wordvec;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         
         if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix1 buffered mask and trim"<<endl;
         if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX1 ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" trim:"<<trim<<endl;
@@ -1181,7 +1237,7 @@ int PixelPh1FECInterface::progpix(int mfec, int fecchannel,
     //cout << "PROGPIX, hubaddress:"<<hubaddress<<" portaddress:"
     // <<portaddress<<" rocid:"<<rocid<<" "<<coladdr<<" "<<rowaddress<<" "<<hex<<nnn<<dec<<" "<<buffermode<<endl;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         if (PRINT) cout << "PixelPh1FECInterface: " <<"progpix buffered databyte"<<endl;
         if (PRINT) cout << "PixelPh1FECInterface: "  << "PROGPIX Q ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"
 		    <<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" databyte:"<<std::hex<<(unsigned int)(databyte)<<std::dec<< endl;
@@ -1326,7 +1382,7 @@ int PixelPh1FECInterface::calpix(int mfec, int fecchannel,
     unsigned char coltemp0, coltemp1, coltemp2;
     std::vector<uint32_t>  wordvec;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         if (PRINT) cout << "PixelPh1FECInterface: "  << "CALPIX ROC CMD: mfec:"<<dec<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" caldata:"<<caldata<<endl;
         
         assert(0<=coladdr);assert(coladdr<=51);assert(0<=rowaddress);assert(rowaddress<=79);
@@ -1464,7 +1520,7 @@ int PixelPh1FECInterface::dcolenable(int mfec, int fecchannel,
     unsigned char coltemp0;
     std::vector<uint32_t>  wordvec;
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         if (PRINT) cout << "PixelPh1FECInterface: "  << "dcol CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dcol:"<<dcol<<" dcolstate:"<<dcolstate<<endl;
         
         if (qbufn[mfec][fecchannel] >= maxbuffersize)  {
@@ -1609,7 +1665,7 @@ int PixelPh1FECInterface::progdac(int mfec, int fecchannel,
     
     
     
-    if (buffermode) {
+    if (buffermode && !buffermodenever) {
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "Buffer mode PROGDAC ROC CMD: mfec:"<<mfec<<" fecchannel:"<<fecchannel<<" hubaddress:"<<hubaddress<<" portaddress:"<<portaddress<<" rocid:"<<rocid<<" dacaddress:"<<dacaddress<<" dacvalue:"<<dacvalue<<endl;
         
@@ -2725,8 +2781,8 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         myhubaddress = 30; // avoid the 31 and 7 combination
     }
 
-    cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" "
-        <<mytbmchannel<<" "<<myportaddress<<"\n";
+    const unsigned prints = 0x0; // bit 0 turns on any prints, bits 1-5 define prints for cmds 1-5 later.
+    if (prints & 0x1) cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" " <<mytbmchannel<<" "<<myportaddress<<"\n";
 
     //cout<<mymask<<" "<<mytrim<<" "<<nTry<<" "<<commands<<endl;
     
@@ -2739,18 +2795,14 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     unsigned int         dataReceivedMask=0x00000200;
     if (myfecchannel==2) dataReceivedMask=0x02000000;
 
-    bool giveUpEarly = false;
+    const bool giveUpEarly = true;
 
-    std::vector <unsigned char> testroc2 ((80*52), 0x00);
-    
     databyte =  ((mymask << 7)|mytrim);
     
     assert(databyte==0);
     
     //  cout << "DATABYTE:" << hex <<(unsigned int) databyte <<dec<<endl;
     
-    for (j=0;j<(80*52);j++) testroc2[j]= databyte;
-
     int masksetting, trimsetting;
     
     cntgood=0; cntbad = 0;
@@ -2779,8 +2831,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(mymfec,myfecchannel,4,(int*)&xxx);
-        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
-        //cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<" "<<ch1<<" "<<ch2<<dec<<endl;
+        if (prints & 0x3) cout<<"-1- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx= " << xxx << dec<<endl;
         if(giveUpEarly && cntbad == 4) { //this point is clearly nonoptimal, so give up
             //break;
             return 0;
@@ -2790,13 +2841,12 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     
     success0 = cntgood;
 
+    //success1 = success2 = success3 = success4 = success0; return 0;
+
     cntgood=0; cntbad = 0;
     
     for (j=0;j<nTry;j++) {
-      //tbmcmd(1, 1, 14, 15, 4, 7, 200+nTry*4, 0);
-      rocinit(5, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,
-                masksetting,trimsetting);
-      //      calpix(mymfec, myfecchannel, myhubaddress, myportaddress, myrocid, 0, 0, 1, true);  qbufsend();
+      rocinit(10, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid,masksetting,trimsetting);
         
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
@@ -2816,21 +2866,20 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-	//cout<<"-2- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
+	if (prints & 0x5) cout<<"-2- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
         }
         
     }
-    
+
     success1 = cntgood;
 
     cntgood=0; cntbad = 0;
     
     for (j=0;j<nTry;j++) {
-      //tbmcmd(1, 1, 14, 15, 4, 7, (240+nTry*4)%256, 0);
-      rocinit(31, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      rocinit(52, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
         
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
@@ -2838,7 +2887,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(mymfec,myfecchannel,4,(int*)&xxx);
-	//uint32_t xxx2 = xxx;
+	uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2856,7 +2905,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-	//cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+	if (prints & 0x9) cout<<"-3- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
@@ -2870,12 +2919,12 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
 
     for (j=0;j<nTry;j++) {
       //tbmcmd(1, 1, 14, 15, 4, 7, 120+nTry*4, 0);
-      rocinit(40, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
       //const int N = 251;
       //const uint32_t myqbuf[N] = {0x2bf4047b, 0x7b00886a, 0x6b00f404, 0x047b0088, 0x886b01f4, 0xf4047b00, 0x00886b02, 0x03f4047b, 0x7b00886b, 0x6b06f404, 0x047b0088, 0x886b07f4, 0xf4047b00, 0x00886b04, 0x05f4047b, 0x7b00886b, 0x6b0cf404, 0x047b0088, 0x886b0df4, 0xf4047b00, 0x00886b0e, 0x0ff4047b, 0x7b00886b, 0x6b0af404, 0x047b0088, 0x886b0bf4, 0xf4047b00, 0x00886b08, 0x09f4047b, 0x7b00886b, 0x6b18f404, 0x047b0088, 0x886b19f4, 0xf4047b00, 0x00886b1a, 0x1bf4047b, 0x7b00886b, 0x6b1ef404, 0x047b0088, 0x886b1ff4, 0xf4047b00, 0x00886b1c, 0x1df4047b, 0x7b00886b, 0x6b14f404, 0x047b0088, 0x886b15f4, 0xf4047b00, 0x00886b16, 0x17f4047b, 0x7b00886b, 0x6b12f404, 0x047b0088, 0x886b13f4, 0xf4047b00, 0x00886b10, 0x11f4047b, 0x7b00886b, 0x6b30f404, 0x047b0088, 0x886b31f4, 0xf4047b00, 0x00886b32, 0x33f4047b, 0x7b00886b, 0x6b36f404, 0x047b0088, 0x886b37f4, 0xf4047b00, 0x00886b34, 0x35f4047b, 0x7b00886b, 0x6b3cf404, 0x047b0088, 0x886b3df4, 0xf4047b00, 0x00886b3e, 0x3ff4047b, 0x7b00886b, 0x6b3af404, 0x047b0088, 0x886b3bf4, 0xf4047b00, 0x00886b38, 0x39f4047b, 0x7b00886b, 0x6b28f404, 0x047b0088, 0x886b29f4, 0xf4047b00, 0x00886b2a, 0x2bf4047b, 0x7b00886b, 0x6900f404, 0x047b0088, 0x886901f4, 0xf4047b00, 0x00886902, 0x03f4047b, 0x7b008869, 0x6906f404, 0x047b0088, 0x886907f4, 0xf4047b00, 0x00886904, 0x05f4047b, 0x7b008869, 0x690cf404, 0x047b0088, 0x88690df4, 0xf4047b00, 0x0088690e, 0x0ff4047b, 0x7b008869, 0x690af404, 0x047b0088, 0x88690bf4, 0xf4047b00, 0x00886908, 0x09f4047b, 0x7b008869, 0x6918f404, 0x047b0088, 0x886919f4, 0xf4047b00, 0x0088691a, 0x1bf4047b, 0x7b008869, 0x691ef404, 0x047b0088, 0x88691ff4, 0xf4047b00, 0x0088691c, 0x1df4047b, 0x7b008869, 0x6914f404, 0x047b0088, 0x886915f4, 0xf4047b00, 0x00886916, 0x17f4047b, 0x7b008869, 0x6912f404, 0x047b0088, 0x886913f4, 0xf4047b00, 0x00886910, 0x11f4047b, 0x7b008869, 0x6930f404, 0x047b0088, 0x886931f4, 0xf4047b00, 0x00886932, 0x33f4047b, 0x7b008869, 0x6936f404, 0x047b0088, 0x886937f4, 0xf4047b00, 0x00886934, 0x35f4047b, 0x7b008869, 0x693cf404, 0x047b0088, 0x88693df4, 0xf4047b00, 0x0088693e, 0x3ff4047b, 0x7b008869, 0x693af404, 0x047b0088, 0x88693bf4, 0xf4047b00, 0x00886938, 0x39f4047b, 0x7b008869, 0x6928f404, 0x047b0088, 0x886929f4, 0xf4047b00, 0x0088692a, 0x2bf4047b, 0x7b008869, 0x6800f404, 0x047b0088, 0x886801f4, 0xf4047b00, 0x00886802, 0x03f4047b, 0x7b008868, 0x6806f404, 0x047b0088, 0x886807f4, 0xf4047b00, 0x00886804, 0x05f4047b, 0x7b008868, 0x680cf404, 0x047b0088, 0x88680df4, 0xf4047b00, 0x0088680e, 0x0ff4047b, 0x7b008868, 0x680af404, 0x047b0088, 0x88680bf4, 0xf4047b00, 0x00886808, 0x09f4047b, 0x7b008868, 0x6818f404, 0x047b0088, 0x886819f4, 0xf4047b00, 0x0088681a, 0x1bf4047b, 0x7b008868, 0x681ef404, 0x047b0088, 0x88681ff4, 0xf4047b00, 0x0088681c, 0x1df4047b, 0x7b008868, 0x6814f404, 0x047b0088, 0x886815f4, 0xf4047b00, 0x00886816, 0x17f4047b, 0x7b008868, 0x6812f404, 0x047b0088, 0x886813f4, 0xf4047b00, 0x00886810, 0x11f4047b, 0x7b008868, 0x6830f404, 0x047b0088, 0x886831f4, 0xf4047b00, 0x00886832, 0x33f4047b, 0x7b008868, 0x6836f404, 0x047b0088, 0x886837f4, 0x0000ff00 };
       //qbufn[mymfec][myfecchannel] = N*4 - 2; // JMTBAD count position of FF in last word
       //memcpy(qbuf[mymfec][myfecchannel], myqbuf, N*4); // just copy all the last word
       //qbufsend();
+      coltrimload(mymfec,myfecchannel,myhubaddress,myportaddress, myrocid, 0,8, d25_trimloadtest);
 
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
         
@@ -2901,7 +2950,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-        cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if (prints & 0x11) cout<<"-4- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;
@@ -2916,8 +2965,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
     usleep(1000);
 
     for (j=0;j<nTry;j++) {
-      //tbmcmd(1, 1, 14, 15, 4, 7, 160+nTry*4, 0);
-      rocinit(52, mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, masksetting,trimsetting);
+      roctrimload(mymfec,myfecchannel,myhubaddress,myportaddress,myrocid, d25_trimloadtest);
 
         mfecbusy(mymfec, myfecchannel, &ch1, &ch2);
 	usleep(100);
@@ -2926,7 +2974,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
         
 	uint32_t xxx = 0xdeadbeef;
 	getByteHubCount(mymfec,myfecchannel,4,(int*)&xxx);
-	//uint32_t xxx2 = xxx;
+	uint32_t xxx2 = xxx;
 	xxx >>= 16;
 	
 	if (myfecchannel==2) data >>= 16;
@@ -2944,7 +2992,7 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
             cntbad++;
             
         }
-        //cout<<"-5- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
+        if (prints & 0x21) cout<<"-5- "<<j<<" "<<cntgood<<" "<<cntbad<<" "<<hex<<data<<  "  xxx2= " << xxx2 << dec<<endl;
         if(giveUpEarly && cntbad == 4) {
             //break;
             return 0;

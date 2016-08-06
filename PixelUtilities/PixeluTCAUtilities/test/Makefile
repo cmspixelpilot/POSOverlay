@@ -47,7 +47,8 @@ UserExecutableLinkFlags =
 # potentially need conditional processing
 #
 
-Libraries = PixeluTCAUtilities
+Libraries = PixeluTCAUtilities \
+xdaq xoap xdata xgi cgicc mimetic log4cplus logudpappender logxmlappender peer xerces-c config toolbox xcept asyncresolv uuid
 
 DynamicLibrary=
 StaticLibrary=

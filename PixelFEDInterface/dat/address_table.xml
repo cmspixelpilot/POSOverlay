@@ -328,6 +328,7 @@
         <node id="DDR0_ctrl_sel" address="0x40010000" mask="0x00004000" />
         <node id="DDR1_ctrl_sel" address="0x40010000" mask="0x00008000" />
         <node id="data_type" address="0x40010000" mask="0x00070000" />
+        <node id="sw_ttc_reset" address="0x40010000" mask="0x00100000" />
         <node id="trig_6to9" address="0x40010000" mask="0x00700000" />
         <node id="trig_10to12" address="0x40010000" mask="0x07000000" />
         <node id="PACKET_NB" address="0x40010001" mask="0x001fffff" />
@@ -431,7 +432,12 @@
     <node id="DDR1" address="0x61000000" mode="block" size="0x01000000" permission="rw" />
     <node id="ERROR_fifo" address="0x40100002" mode="non-incremental" size="4092" permission="r" />
     <!-- HEPHY STATUS REGISERS -->
-    <node id="hephy_firmware_version" address="0x40020000" mask="0xffffffff" permission="r" />
+    <node id="hephy_firmware_version" address="0x40020000" permission="r">
+      <node id="lockedPLL400" address="0x00000000" mask="0x00000001" />
+      <node id="lockedPLL200idelay" address="0x00000000" mask="0x00000002" />
+      <node id="lockedPLL200" address="0x00000000" mask="0x00000004" />
+      <node id="TTCready" address="0x00000000" mask="0x00000008" />
+    </node>
     <node id="idel_individual_stat_block" address="0x40020001" mode="block" size="192" permission="r" />
     <node id="idel_individual_stat" address="0x40020001" permission="r">
         <!-- these are per *fiber* 0..23 -->
@@ -516,6 +522,7 @@
         <node id="decode_reg_reset" address="0x40030000" mask="0x00000002" permission="w" />
         <node id="idel_ctrl_reset" address="0x40030000" mask="0x00000004" permission="w" />
         <node id="initialize_swap" address="0x40030000" mask="0x00000008" permission="w" />
+        <node id="bitslip" address="0x40030000" mask="0x00000010" permission="w" />
         <node id="software_trigger_out" address="0x40030000" mask="0x40000000" permission="w" />
         <node id="idel_individual_ctrl" address="0x40030001" mode="block" size="48" permission="w" />
         <node id="fifo_config" address="0x40030031" permission="rw">
@@ -528,6 +535,9 @@
         </node>
         <node id="transparent_delay" address="0x40030032" mask="0x0000003f" permission="w" />
         <node id="disable_BE" address="0x40030033" mask="0x00000001" permission="rw" />
+        <node id="scan_DC" address="0x40030033" mask="0x00003e00" permission="rw" />
+        <node id="scan_pxl" address="0x40030033" mask="0x000001fe" permission="rw" />
+        <node id="fifo_1_to_read" address="0x40030034" mask="0x0000003f" permission="rw" />
     </node>
     <!-- HEPHY SPY FIFOs -->
     <node id="fifo" permission="r">
