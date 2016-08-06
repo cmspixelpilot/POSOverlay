@@ -1926,7 +1926,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   ++slink64calls;
   //const int maxprints = 5;
   //const bool do_prints = maxprints - int(slink64calls) > 0;
-  const bool do_prints = int(slink64calls) < 5 || slink64calls % 1000 == 0;
+  const bool do_prints = slink64calls % 1000 == 1;
   if (do_prints) {
     std::cout << "fed #" <<  pixelFEDCard.fedNumber << " slink64call #" << slink64calls << std::endl;
     //readTransparentFIFO();
