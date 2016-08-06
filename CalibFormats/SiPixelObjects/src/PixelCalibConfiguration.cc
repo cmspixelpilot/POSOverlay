@@ -492,6 +492,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::string filename):
       dacs_[i].dump();
       printf("\n");
     }
+    printf("high vcal range? %i\n", highVCalRange_);
 
     assert(tmp=="Repeat:");
 
@@ -1079,6 +1080,8 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 
 //  std::cout << " - - - - - - - - - - nextFECState: " << state << " ; yowza!" << std::endl;
 
+  // JMTBAD shouldn't be setting all these things every nextFECState
+  const int calpixData = parameterValue("CalPixByBump") == "yes" ? 2 : 1;
   std::string mthn = "[PixelCalibConfiguration::nextFECState()]\t\t    " ;
   std::string modeName=parameterValue("ScanMode");
 
@@ -1460,7 +1463,8 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 					      theROC.rocid(),
 					      col,
 					      row,
-					      1,_bufferData);
+					      calpixData,
+                                              _bufferData);
       }
       
     } // end of instructions for the beginning of a scan
