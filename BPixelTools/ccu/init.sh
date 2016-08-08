@@ -1,6 +1,6 @@
 #!/bin/bash
 
-channel=12
+channel=$1
 
 cat | (bin/ccu -utca connections.xml -fechardwareid board)  <<EOF
 scanccu
