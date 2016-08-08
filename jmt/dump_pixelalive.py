@@ -4,6 +4,8 @@ from JMTTools import *
 from JMTROOTTools import *
 set_style()
 
+dynrng = 'dynrng' in sys.argv
+
 run = run_from_argv()
 run_dir = run_dir(run)
 in_fn = glob(os.path.join(run_dir, 'PixelAlive_Fed_*_Run_%i.root' % run))
@@ -41,14 +43,22 @@ for d in dirs:
         iroc = int(roc)
         if int(roc) < 10:
             name = rest + 'ROC0' + roc
+        mineff, maxeff = 100., 0.
         ntrigs = int(obj.Integral())
         by_ntrigs.append((ntrigs, name))
         for x in xrange(1, obj.GetNbinsX()+1):
             for y in xrange(1, obj.GetNbinsY()+1):
+                eff = obj.GetBinContent(x,y)
+                mineff = min(eff, mineff)
+                maxeff = max(eff, maxeff)
                 if obj.GetBinContent(x,y) < eff_thresh:
                     num_dead[name] += 1
-            
         c.cd(iroc+1)
+        if dynrng:
+            if maxeff - mineff < 1:
+                maxeff += 1
+            obj.SetMinimum(mineff)
+            obj.SetMaximum(maxeff)
         obj.Draw('colz')
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.png')
