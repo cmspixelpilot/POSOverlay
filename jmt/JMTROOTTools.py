@@ -188,23 +188,65 @@ class plot_saver:
             logfcn(0)
         self.saved.append((fn, log, root, pdf, pdf_log, C, C_log))
 
-def set_style(date_pages=False):
-    ROOT.gROOT.SetStyle('Plain')
-    ROOT.gStyle.SetFillColor(0)
-    if date_pages:
-        ROOT.gStyle.SetOptDate()
-    ROOT.gStyle.SetOptStat(1222222)
-    ROOT.gStyle.SetOptFit(2222)
+def set_style(light=False, date_pages=False):
     ROOT.gStyle.SetPadTickX(1)
     ROOT.gStyle.SetPadTickY(1)
-    ROOT.gStyle.SetMarkerSize(.1)
-    ROOT.gStyle.SetMarkerStyle(8)
-    ROOT.gStyle.SetGridStyle(3)
-    ROOT.gStyle.SetStatW(0.25)
-    ROOT.gStyle.SetStatFormat('6.4g')
-    ROOT.gStyle.SetPalette(1)
-    ROOT.gStyle.SetTitleFont(42, 'XYZ')
-    ROOT.gStyle.SetLabelFont(42, 'XYZ')
-    ROOT.gStyle.SetStatFont(42)
-    ROOT.gStyle.SetLegendFont(42)
     ROOT.gErrorIgnoreLevel = 1001 # Suppress TCanvas::SaveAs messages.
+    if not light:
+        ROOT.gROOT.SetStyle('Plain')
+        ROOT.gStyle.SetFillColor(0)
+        if date_pages:
+            ROOT.gStyle.SetOptDate()
+        ROOT.gStyle.SetOptStat(1222222)
+        ROOT.gStyle.SetOptFit(2222)
+        ROOT.gStyle.SetPadTickX(1)
+        ROOT.gStyle.SetPadTickY(1)
+        ROOT.gStyle.SetMarkerSize(.1)
+        ROOT.gStyle.SetMarkerStyle(8)
+        ROOT.gStyle.SetGridStyle(3)
+        ROOT.gStyle.SetStatW(0.25)
+        ROOT.gStyle.SetStatFormat('6.4g')
+        ROOT.gStyle.SetPalette(1)
+        ROOT.gStyle.SetTitleFont(42, 'XYZ')
+        ROOT.gStyle.SetLabelFont(42, 'XYZ')
+        ROOT.gStyle.SetStatFont(42)
+        ROOT.gStyle.SetLegendFont(42)
+
+def differentiate_stat_box(hist, movement=1, new_color=None, new_size=None, color_from_hist=True, offset=None):
+    """Move hist's stat box and change its line/text color. If
+    movement is just an int, that number specifies how many units to
+    move the box downward. If it is a 2-tuple of ints (m,n), the stat
+    box will be moved to the left m units and down n units. A unit is
+    the width or height of the stat box.
+    Call TCanvas::Update first (and use TH1::Draw('sames') if
+    appropriate) or else the stat box will not exist."""
+
+    s = hist.FindObject('stats')
+
+    if color_from_hist:
+        new_color = hist.GetLineColor()
+
+    if new_color is not None:
+        s.SetTextColor(new_color)
+        s.SetLineColor(new_color)
+
+    if type(movement) == int:
+        movement = (0,movement)
+    m,n = movement
+    
+    x1,x2 = s.GetX1NDC(), s.GetX2NDC()
+    y1,y2 = s.GetY1NDC(), s.GetY2NDC()
+
+    if new_size is not None:
+        x1 = x2 - new_size[0]
+        y1 = y2 - new_size[1]
+
+    if offset is None:
+        ox, oy = 0, 0
+    else:
+        ox, oy = offset
+
+    s.SetX1NDC(x1 - (x2-x1)*m + ox)
+    s.SetX2NDC(x2 - (x2-x1)*m + ox)
+    s.SetY1NDC(y1 - (y2-y1)*n + oy)
+    s.SetY2NDC(y2 - (y2-y1)*n + oy)
