@@ -1,37 +1,16 @@
-
 import sys, csv, os
+from pprint import pprint
 from collections import defaultdict
 
-doug_dir = 'HC1_m20'
 HC = 'BmI'
-tkfecid = 'tkfec1'
-tkfecring = 0
-
-fiber_colors = ['pink-11', 'white-6', 'black-8', 'turquoise-12', 'green-3', 'brown-4', 'blue-1', 'gray-5', 'violet-10', 'yellow-9', 'red-7', 'orange-2']
-
-# should-haves for sanity check
-module_names_check = []
-for disk in [1,2,3]:
-    for pnl in [1,2]:
-        for rng in [1,2]:
-            if rng == 1:
-                max_blade = 11
-            else:
-                max_blade = 17
-            for bld in range(1, max_blade+1):
-                module_names_check.append('FPix_%(HC)s_D%(disk)i_BLD%(bld)i_PNL%(pnl)i_RNG%(rng)i' % locals())
-assert len(module_names_check) == 168
-module_names_check.sort()
-
-fn = sys.argv[1]
-f = open(fn)
-r = csv.reader(f)
-rows = list(r)
-header = rows.pop(0)
 
 class Module:
+    header = None
+    fiber_colors = ['pink-11', 'white-6', 'black-8', 'turquoise-12', 'green-3', 'brown-4', 'blue-1', 'gray-5', 'violet-10', 'yellow-9', 'red-7', 'orange-2']
+
     def __init__(self, r):
-        d = dict(zip(header, r))
+        assert self.header is not None
+        d = dict(zip(self.header, r))
 
         self.name = d['Official name of position']
 
@@ -86,7 +65,7 @@ class Module:
         #self.poh_num = int(d['internal POH no'])
         self.poh_num = self.portcardstack * 7 + self.portcard_connection
         self.poh_fiber_str = d['POH fiber color']
-        assert self.poh_fiber_str in fiber_colors
+        assert self.poh_fiber_str in self.fiber_colors
         self.poh_fiber = int(self.poh_fiber_str.split('-')[1])
         self.poh_bundle = int(d['POH Bundle'])
         self.poh_sn = d['POH SN']
@@ -149,100 +128,127 @@ class Module:
     def fed_uri(self):
         return 'chtcp-2.0://localhost:10203?target=%s:50001' % self.fed_ip
 
+module_sorter = lambda m: (m.disk, m.bld, m.pnl, m.rng)
+module_sorter_by_portcard = lambda m: (m.disk, m.portcardnum, m.poh_num)
 
-modules = [] 
-modules_by_portcard_hj = defaultdict(list)
-modules_by_portcard = defaultdict(list)
-hubids_by_portcard = defaultdict(list)
+class doer:
+    def __init__(self, disk, csv_fn):
+        self.curr_disk = disk
 
-# D1, 5 feds, 1 fec mezzanine hack
-# and disconnected modules from too-short cables
-def portcardOK(pc):
-    #return True
-    return '_D3_' in pc
-def moduleOK(m):
-    #return True
-    if m.disk != 3:
-        return False
-    not_connected = {
-        'TB': [2,6],
-        'TC': [6],
-        'TD': [2,4],
-        }        
-    return m.portcard_connection not in not_connected.get(m.portcard_hj[-2:], [])
+        self.module_names_check = []
+        # should-haves for sanity check
+        for disk in [1,2,3]:
+            for pnl in [1,2]:
+                for rng in [1,2]:
+                    if rng == 1:
+                        max_blade = 11
+                    else:
+                        max_blade = 17
+                    for bld in range(1, max_blade+1):
+                        self.module_names_check.append('FPix_' + HC + '_D%(disk)i_BLD%(bld)i_PNL%(pnl)i_RNG%(rng)i' % locals())
+        assert len(self.module_names_check) == 168
+        self.module_names_check.sort()
 
-seen_poh = set()
-seen_doh = set()
-        
-for r in rows:
-    if not r[0].strip():
-        assert(all(not x.strip() for x in r))
-        continue
+        self.csv_fn = csv_fn
+        self.f = open(self.csv_fn)
+        self.r = csv.reader(self.f)
+        self.rows = list(self.r)
+        Module.header = self.rows.pop(0)
 
-    m = Module(r)
+        self.modules = [] 
+        self.modules_by_portcard_hj = defaultdict(list)
+        self.modules_by_portcard = defaultdict(list)
+        self.hubids_by_portcard = defaultdict(list)
 
-    if m.poh_sn not in seen_poh:
-        print m.poh_sn, '->', 'fed id %i receiver %s' % (m.fed_id, 'bt'[m.fed_receiver])
-        seen_poh.add(m.poh_sn)
-    if (m.doh_bundle, m.doh) not in seen_doh:
-        print m.doh_bundle, m.doh, '->', 'fec %i mfec %i ch %i' % (m.fec, m.mfec, m.mfecchannel)
-        seen_doh.add((m.doh_bundle, m.doh))
+        for r in self.rows:
+            if not r[0].strip():
+                assert(all(not x.strip() for x in r))
+                continue
 
-    if moduleOK(m):
-        assert m.fec == 9
-        assert m.mfec in [3,4]
-        if m.mfec == 3:
-            m.fec = 9
-            m.mfec = 1
-        else:
-            m.fec = 10
-            m.mfec = 1
+            m = Module(r)
 
-    modules.append(m)
-    modules_by_portcard_hj[m.portcard_hj].append(m)
-    modules_by_portcard[m.portcard].append(m)
-    hubids_by_portcard[m.portcard].append(m.hubid)
+            if self.moduleOK(m):
+                if m.disk == 3:
+                    assert m.fec == 9
+                    assert m.mfec in [3,4]
+                    if m.mfec == 3:
+                        m.fec = 9
+                        m.mfec = 1
+                    else:
+                        m.fec = 10
+                        m.mfec = 1
 
-modules.sort(key=lambda m: (m.disk, m.bld, m.pnl, m.rng))
+            self.modules.append(m)
+            self.modules_by_portcard_hj[m.portcard_hj].append(m)
+            self.modules_by_portcard[m.portcard].append(m)
+            self.hubids_by_portcard[m.portcard].append(m.hubid)
 
-# did we get all the right modules
-module_names = [m.name for m in modules]
-assert set(module_names_check) == set(module_names)
+        self.modules.sort(key=module_sorter)
+        self.sanity_check()
 
-# check modules are unique
-assert len(set(m.module for m in modules)) == len(modules)
+    def sanity_check(self):
+        # did we get all the right modules
+        module_names = [m.name for m in self.modules]
+        assert set(self.module_names_check) == set(module_names)
 
-# check number of portcards found
-assert len(modules_by_portcard_hj) == 2 * 12
-assert len(modules_by_portcard) == 12
+        # check modules are unique
+        assert len(set(m.module for m in self.modules)) == len(self.modules)
 
-# check number of modules per portcards found
-assert set(len(x) for x in modules_by_portcard_hj.itervalues()) == set([7])
-assert set(len(x) for x in modules_by_portcard.itervalues()) == set([14])
+        # check number of portcards found
+        assert len(self.modules_by_portcard_hj) == 2 * 12
+        assert len(self.modules_by_portcard) == 12
 
-# are hubids unique per portcard stack
-for pc, hubids in hubids_by_portcard.iteritems():
-    assert len(set(hubids)) == 14
+        # check number of modules per portcards found
+        assert set(len(x) for x in self.modules_by_portcard_hj.itervalues()) == set([7])
+        assert set(len(x) for x in self.modules_by_portcard.itervalues()) == set([14])
 
-# portcard matching ok?
-assert len(set((m.portcard_hj, m.portcard_identifier) for m in modules)) == 24
-portcards = [(m.portcard, m.ccu, m.ccu_channel) for m in modules]
-assert len(set(portcards)) == 12
+        # are hubids unique per portcard stack
+        for pc, hubids in self.hubids_by_portcard.iteritems():
+            assert len(set(hubids)) == 14
 
-# poh numbers unique?
-assert len(set((m.portcard, m.poh_num) for m in modules)) == 12*14
+        # portcard matching ok?
+        assert len(set((m.portcard_hj, m.portcard_identifier) for m in self.modules)) == 24
+        self.portcards = [(m.portcard, m.ccu, m.ccu_channel) for m in self.modules]
+        assert len(set(self.portcards)) == 12
 
-feds = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules]))
-assert len(feds) == 7
-feds_used = feds #sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules if moduleOK(m)]))
-assert len(feds_used) == 7
+        # poh numbers unique?
+        assert len(set((m.portcard, m.poh_num) for m in self.modules)) == 12*14
 
-fecs = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules]))
-assert len(fecs) == 2
-fecs_used = fecs #sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules if moduleOK(m)]))
-assert len(fecs_used) == 2
+        self.feds = sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in self.modules]))
+        assert len(self.feds) == 7
+        self.feds_used = self.feds #sorted(set([(m.fed_id, m.fed_crate, m.fed_uri) for m in modules if moduleOK(m)]))
+        assert len(self.feds_used) == 7
 
-t_portcard = '''Name: %(portcard)s
+        self.fecs = sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in self.modules]))
+        assert len(self.fecs) == 2
+        self.fecs_used = self.fecs #sorted(set([(m.fec, m.fec_crate, m.fec_uri) for m in modules if moduleOK(m)]))
+        assert len(self.fecs_used) == 2
+
+    # and disconnected modules from too-short cables
+    def portcardOK(self, pc):
+        #return True
+        return '_D%i_' % self.curr_disk in pc and pc != 'FPix_BmI_D1_PRT4'
+
+    def moduleOK(self, m):
+        #return True
+        if m.disk != self.curr_disk:
+            return False
+        if m.name in 'FPix_BmI_D1_BLD1_PNL1_RNG2 FPix_BmI_D1_BLD2_PNL1_RNG2 FPix_BmI_D1_BLD3_PNL1_RNG2 FPix_BmI_D1_BLD4_PNL1_RNG2'.split():
+            return False
+        if m.portcard == 'FPix_BmI_D1_PRT4':
+            return False
+
+        not_connected = {
+            'TB': [2,6],
+            'TC': [6],
+            'TD': [2,4],
+            }        
+        return m.portcard_connection not in not_connected.get(m.portcard_hj[-2:], [])
+
+    def write_configs(self):
+        tkfecid = 'tkfec1'
+        tkfecring = 0
+        t_portcard = '''Name: %(portcard)s
 Type: p1fpix
 TKFECID: %(tkfecid)s
 ringAddress: %(tkfecring)i
@@ -279,132 +285,132 @@ tPOH_Gain4: 0x2a
 tPOH_Gain567: 0x2a
 '''
 
-path = os.path.join(HC, 'portcard')
-if not os.path.isdir(path):
-    os.makedirs(path)
-for portcard, ccu, ccu_channel in portcards:
-    fn = os.path.join(path, 'portcard_%s.dat' % portcard)
-    open(fn, 'wt').write(t_portcard % locals())
+        path = os.path.join(HC, 'portcard')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        for portcard, ccu, ccu_channel in self.portcards:
+            fn = os.path.join(path, 'portcard_%s.dat' % portcard)
+            open(fn, 'wt').write(t_portcard % locals())
 
-t_dcdc = '''Enabled: no
+        t_dcdc = '''Enabled: no
 CCUAddressEnable: 0x7e
 CCUAddressPgood: 0x7d
 PIAChannelAddress: 0x30
 PortNumber: 0
 '''
 
-path = os.path.join(HC, 'dcdc')
-if not os.path.isdir(path):
-    os.makedirs(path)
-for portcard, ccu, ccu_channel in portcards:
-    fn = os.path.join(path, 'dcdc_%s.dat' % portcard)
-    open(fn, 'wt').write(t_dcdc % locals())
+        path = os.path.join(HC, 'dcdc')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        for portcard, ccu, ccu_channel in self.portcards:
+            fn = os.path.join(path, 'dcdc_%s.dat' % portcard)
+            open(fn, 'wt').write(t_dcdc % locals())
 
-path = os.path.join(HC, 'portcardmap')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'portcardmap.dat')
-f = open(fn, 'wt')
-f.write('# Portcard              Module                     AOH channel\n')
-portcardmap = [(m,(m.portcard, m.name, m.poh_num)) for m in modules]
-portcardmap.sort(key=lambda x: (x[1][0],x[1][2]))
-for mm,m in portcardmap:
-    if not moduleOK(mm) or not portcardOK(m[0]): continue
-    f.write('%s\t%s A\t%s\n' % m)
-    f.write('%s\t%s B\t%s\n' % m)
-f.close()
+        path = os.path.join(HC, 'portcardmap')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'portcardmap.dat')
+        f = open(fn, 'wt')
+        f.write('# Portcard              Module                     AOH channel\n')
+        portcardmap = [(m,(m.portcard, m.name, m.poh_num)) for m in self.modules]
+        portcardmap.sort(key=lambda x: (x[1][0],x[1][2]))
+        for mm,m in portcardmap:
+            if not self.moduleOK(mm) or not self.portcardOK(m[0]): continue
+            f.write('%s\t%s A\t%s\n' % m)
+            f.write('%s\t%s B\t%s\n' % m)
+        f.close()
 
-path = os.path.join(HC, 'nametranslation')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'translation.dat')
-f = open(fn, 'wt')
-fmt = \
-    '%-40s' \
-    '%-6s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s' \
-    '%-10s\n'
-header = tuple('#name A/B FEC mfec mfecch hubid port rocid FEDid FEDch roc#'.split())
-f.write(fmt % header)
-for m in modules:
-    if not moduleOK(m): continue
-    for iroc in xrange(16):
-        fields = (
-            m.name + '_ROC' + str(iroc), 
-            'AB'[iroc / 8],
-            m.fec,
-            m.mfec,
-            m.mfecchannel,
-            m.hubid,
-            iroc / 4,
-            iroc,
-            m.fed_id,
-            m.fed_channel[iroc / 8],
-            iroc % 8,
-            )
-        line = fmt % fields
-        f.write(line)
-    f.write('\n')
-f.close()
+        path = os.path.join(HC, 'nametranslation')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'translation.dat')
+        f = open(fn, 'wt')
+        fmt = \
+            '%-40s' \
+            '%-6s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s' \
+            '%-10s\n'
+        header = tuple('#name A/B FEC mfec mfecch hubid port rocid FEDid FEDch roc#'.split())
+        f.write(fmt % header)
+        for m in self.modules:
+            if not self.moduleOK(m): continue
+            for iroc in xrange(16):
+                fields = (
+                    m.name + '_ROC' + str(iroc), 
+                    'AB'[iroc / 8],
+                    m.fec,
+                    m.mfec,
+                    m.mfecchannel,
+                    m.hubid,
+                    iroc / 4,
+                    iroc,
+                    m.fed_id,
+                    m.fed_channel[iroc / 8],
+                    iroc % 8,
+                    )
+                line = fmt % fields
+                f.write(line)
+            f.write('\n')
+        f.close()
 
-path = os.path.join(HC, 'detconfig')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'detectconfig.dat')
-f = open(fn, 'wt')
-f.write('Rocs:\n')
-for m in modules:
-    if not moduleOK(m): continue
-    for iroc in xrange(16):
-        f.write('%s_ROC%i\n' % (m.name, iroc))
-f.close()
+        path = os.path.join(HC, 'detconfig')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'detectconfig.dat')
+        f = open(fn, 'wt')
+        f.write('Rocs:\n')
+        for m in self.modules:
+            if not self.moduleOK(m): continue
+            for iroc in xrange(16):
+                f.write('%s_ROC%i\n' % (m.name, iroc))
+        f.close()
 
-path = os.path.join(HC, 'maxvsf')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'maxvsf.dat')
-f = open(fn, 'wt')
-for m in modules:
-    f.write('%s\t180\n' % m.name)
-f.close()
+        path = os.path.join(HC, 'maxvsf')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'maxvsf.dat')
+        f = open(fn, 'wt')
+        for m in self.modules:
+            f.write('%s\t180\n' % m.name)
+        f.close()
 
-path = os.path.join(HC, 'lowvoltagemap')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'lowvoltagemap.dat')
-f = open(fn, 'wt')
-for m in modules:
-    f.write('%s\tCAEN/CMS_TRACKER_SY1527_5/branchControllerXX/easyCrateY/easyBoardZZ   channel00W   channel00V\n' % m.name)
-f.close()
+        path = os.path.join(HC, 'lowvoltagemap')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'lowvoltagemap.dat')
+        f = open(fn, 'wt')
+        for m in self.modules:
+            f.write('%s\tCAEN/CMS_TRACKER_SY1527_5/branchControllerXX/easyCrateY/easyBoardZZ   channel00W   channel00V\n' % m.name)
+        f.close()
 
-path = os.path.join(HC, 'fedconfig')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'fedconfig.dat')
-f = open(fn, 'wt')
-f.write('#FED number     crate     vme base address     type    URI\n')
-for fed_id, fed_crate, fed_uri in feds_used:
-    f.write('%s\t%s\t%s\tCTA\t%s\n' % (fed_id, fed_crate, fed_id, fed_uri))
-f.close()
+        path = os.path.join(HC, 'fedconfig')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'fedconfig.dat')
+        f = open(fn, 'wt')
+        f.write('#FED number     crate     vme base address     type    URI\n')
+        for fed_id, fed_crate, fed_uri in self.feds_used:
+            f.write('%s\t%s\t%s\tCTA\t%s\n' % (fed_id, fed_crate, fed_id, fed_uri))
+        f.close()
 
-path = os.path.join(HC, 'fecconfig')
-if not os.path.isdir(path):
-    os.makedirs(path)
-fn = os.path.join(path, 'fecconfig.dat')
-f = open(fn, 'wt')
-f.write('#FEC number     crate     vme base address     type    URI\n')
-for fec_id, fec_crate, fec_uri in fecs_used:
-    f.write('%s\t%s\t%s\tCTA\t%s\n' % (fec_id, fec_crate, fec_id, fec_uri))
-f.close()
+        path = os.path.join(HC, 'fecconfig')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        fn = os.path.join(path, 'fecconfig.dat')
+        f = open(fn, 'wt')
+        f.write('#FEC number     crate     vme base address     type    URI\n')
+        for fec_id, fec_crate, fec_uri in self.fecs_used:
+            f.write('%s\t%s\t%s\tCTA\t%s\n' % (fec_id, fec_crate, fec_id, fec_uri))
+        f.close()
 
-t_fedcard = '''Type: CTA
+        t_fedcard = '''Type: CTA
 Control bits: 0xFFFFFFFFFFFFFFFF
 Control bits override: 0
 Transparent+scope channel: 12
@@ -2522,16 +2528,18 @@ Spare fedcard input 9:0
 Spare fedcard input 10:0
 '''
 
-path = os.path.join(HC, 'fedcard')
-if not os.path.isdir(path):
-    os.makedirs(path)
-for fed_id, fed_crate, fed_uri in feds_used:
-    fn = os.path.join(path, 'params_fed_%i.dat' % fed_id)
-    open(fn, 'wt').write(t_fedcard % locals())
+        path = os.path.join(HC, 'fedcard')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        for fed_id, fed_crate, fed_uri in self.feds_used:
+            fn = os.path.join(path, 'params_fed_%i.dat' % fed_id)
+            open(fn, 'wt').write(t_fedcard % locals())
 
+        print 'now you might want to run unpack_dougs_configs.sh!'
+# end of write_configs
 
-print 'now you might want to run unpack_dougs_configs.sh!'
-
+d = doer(3, 'new.csv')
+d.write_configs()
 
 if 0:
   for y in '''1294.9 
@@ -2559,32 +2567,30 @@ if 0:
 1300.21'''.split('\n'):
     fed_id, fed_fiber = y.strip().split('.')
     fed_id, fed_fiber = int(fed_id), int(fed_fiber)
-    for m in modules:
-        if moduleOK(m):
+    for m in d.modules:
+        if d.moduleOK(m):
             if m.fed_id == fed_id and m.fed_fiber == fed_fiber:
                 pcstr = '%i%s%i' % (m.portcardnum, m.portcard_hj[1].lower(), m.portcard_connection)
                 print '%i.%-2i = %2i,%i,%i = %s ->' % (fed_id, fed_fiber, m.bld, m.pnl, m.rng, pcstr)
     
 if 0:
-  for x in '''10,2,2
-11,2,2
-12,2,2
- 1,1,2
- 1,2,1
- 1,2,2
- 2,1,1
- 2,2,1
- 4,1,1
- 4,1,2
- 7,1,1
- 7,2,1
- 8,1,1
- 9,2,1
- 9,2,2'''.split('\n'):
+  for x in '''
+10,1,1
+3,1,1 
+3,2,1 
+7,1,1 
+'''.split('\n'):
+      x = x.strip()
+      if not x:
+          continue
       a,b,c = x.split(',')
       bld,pnl,rng = int(a),int(b),int(c)
-      for m in modules:
-          if moduleOK(m):
+      for m in d.modules:
+          if d.moduleOK(m):
               if m.bld == bld and m.pnl == pnl and m.rng == rng:
-                  print '%2i,%i,%i = %i.%i:' % (bld, pnl, rng, m.fed_id, m.fed_fiber)
+                  print '%2i,%i,%i = %i.%-2i:' % (bld, pnl, rng, m.fed_id, m.fed_fiber)
 
+if 0:
+    for pcnum in xrange(1,4+1):
+        print pcnum, ':', 
+        print ' '.join([m.name for m in sorted(d.modules, key=module_sorter_by_portcard) if d.moduleOK(m) and m.portcardnum == pcnum])
