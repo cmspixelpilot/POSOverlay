@@ -1463,8 +1463,20 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 					      theROC.rocid(),
 					      col,
 					      row,
-					      calpixData,
+					      1,
                                               _bufferData);
+
+        // do the double-secret handshake (yes you have to send 1 then 2 for calib pulse through sensor)
+        if (calpixData == 2)
+          pixelFECs[theROC.fecnumber()]->calpix(theROC.mfec(),
+                                                theROC.mfecchannel(),
+                                                theROC.hubaddress(),
+                                                theROC.portaddress(),
+                                                theROC.rocid(),
+                                                col,
+                                                row,
+                                                2,
+                                                _bufferData);
       }
       
     } // end of instructions for the beginning of a scan
