@@ -3,6 +3,7 @@ from pprint import pprint
 from collections import defaultdict
 
 HC = 'BmI'
+csv_fn = '/home/fnaltest/TriDAS/Config/FROM_TESTING/new.csv'
 
 class Module:
     header = None
@@ -132,7 +133,7 @@ module_sorter = lambda m: (m.disk, m.bld, m.pnl, m.rng)
 module_sorter_by_portcard = lambda m: (m.disk, m.portcardnum, m.poh_num)
 
 class doer:
-    def __init__(self, disk, csv_fn):
+    def __init__(self, disk):
         self.curr_disk = disk
 
         self.module_names_check = []
@@ -149,13 +150,13 @@ class doer:
         assert len(self.module_names_check) == 168
         self.module_names_check.sort()
 
-        self.csv_fn = csv_fn
-        self.f = open(self.csv_fn)
+        self.f = open(csv_fn)
         self.r = csv.reader(self.f)
         self.rows = list(self.r)
         Module.header = self.rows.pop(0)
 
         self.modules = [] 
+        self.modules_by_name = {}
         self.modules_by_portcard_hj = defaultdict(list)
         self.modules_by_portcard = defaultdict(list)
         self.hubids_by_portcard = defaultdict(list)
@@ -179,6 +180,7 @@ class doer:
                         m.mfec = 1
 
             self.modules.append(m)
+            self.modules_by_name[m.name] = m
             self.modules_by_portcard_hj[m.portcard_hj].append(m)
             self.modules_by_portcard[m.portcard].append(m)
             self.hubids_by_portcard[m.portcard].append(m.hubid)
@@ -2538,11 +2540,23 @@ Spare fedcard input 10:0
         print 'now you might want to run unpack_dougs_configs.sh!'
 # end of write_configs
 
-d = doer(3, 'new.csv')
-d.write_configs()
+if __name__ == '__main__':
+    disk = None
+    for x in sys.argv:
+        try:
+            disk = int(x)
+        except ValueError:
+            pass
+    if disk is None:
+        raise ValueError('must supply disk')
 
-if 0:
-  for y in '''1294.9 
+    d = doer(disk)
+
+    if 'write' in sys.argv:
+        d.write_configs()
+
+    if 0:
+      for y in '''1294.9 
 1294.23
 1294.24
 1295.10
@@ -2565,32 +2579,32 @@ if 0:
 1300.11
 1300.12
 1300.21'''.split('\n'):
-    fed_id, fed_fiber = y.strip().split('.')
-    fed_id, fed_fiber = int(fed_id), int(fed_fiber)
-    for m in d.modules:
-        if d.moduleOK(m):
-            if m.fed_id == fed_id and m.fed_fiber == fed_fiber:
-                pcstr = '%i%s%i' % (m.portcardnum, m.portcard_hj[1].lower(), m.portcard_connection)
-                print '%i.%-2i = %2i,%i,%i = %s ->' % (fed_id, fed_fiber, m.bld, m.pnl, m.rng, pcstr)
-    
-if 0:
-  for x in '''
+        fed_id, fed_fiber = y.strip().split('.')
+        fed_id, fed_fiber = int(fed_id), int(fed_fiber)
+        for m in d.modules:
+            if d.moduleOK(m):
+                if m.fed_id == fed_id and m.fed_fiber == fed_fiber:
+                    pcstr = '%i%s%i' % (m.portcardnum, m.portcard_hj[1].lower(), m.portcard_connection)
+                    print '%i.%-2i = %2i,%i,%i = %s ->' % (fed_id, fed_fiber, m.bld, m.pnl, m.rng, pcstr)
+
+    if 0:
+      for x in '''
 10,1,1
 3,1,1 
 3,2,1 
 7,1,1 
-'''.split('\n'):
-      x = x.strip()
-      if not x:
-          continue
-      a,b,c = x.split(',')
-      bld,pnl,rng = int(a),int(b),int(c)
-      for m in d.modules:
-          if d.moduleOK(m):
-              if m.bld == bld and m.pnl == pnl and m.rng == rng:
-                  print '%2i,%i,%i = %i.%-2i:' % (bld, pnl, rng, m.fed_id, m.fed_fiber)
+    '''.split('\n'):
+          x = x.strip()
+          if not x:
+              continue
+          a,b,c = x.split(',')
+          bld,pnl,rng = int(a),int(b),int(c)
+          for m in d.modules:
+              if d.moduleOK(m):
+                  if m.bld == bld and m.pnl == pnl and m.rng == rng:
+                      print '%2i,%i,%i = %i.%-2i:' % (bld, pnl, rng, m.fed_id, m.fed_fiber)
 
-if 0:
-    for pcnum in xrange(1,4+1):
-        print pcnum, ':', 
-        print ' '.join([m.name for m in sorted(d.modules, key=module_sorter_by_portcard) if d.moduleOK(m) and m.portcardnum == pcnum])
+    if 0:
+        for pcnum in xrange(1,4+1):
+            print pcnum, ':', 
+            print ' '.join([m.name for m in sorted(d.modules, key=module_sorter_by_portcard) if d.moduleOK(m) and m.portcardnum == pcnum])
