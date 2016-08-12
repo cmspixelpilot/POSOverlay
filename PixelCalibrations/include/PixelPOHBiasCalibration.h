@@ -29,7 +29,8 @@ class PixelPOHBiasCalibration: public PixelCalibrationBase {
 
   std::map<unsigned, TGraphErrors*> rssi_v_bias;
   std::map<unsigned, unsigned> selected_poh_bias_values;
-  std::map<std::string, std::map<unsigned, unsigned>> bias_values_by_portcard_and_aoh;
+  std::map<std::string, std::map<unsigned, unsigned>> bias_values_by_portcard_and_aoh_new;
+  std::map<std::string, std::map<unsigned, unsigned>> bias_values_by_portcard_and_aoh_old;
 };
 
 #endif

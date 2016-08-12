@@ -61,8 +61,11 @@ void PixelPOHBiasCalibration::beginCalibration() {
         const int AOHNumber = portCardAndAOH.second;
         printf("nfed %i nfiber %i\n", NFed, NFiber);
         TGraphErrors* g = rssi_v_bias[key(*gain_itr, NFed, NFiber)] = new TGraphErrors(POHBiasNSteps);
-        g->SetName(TString::Format("rssi_gain%i_FED%i_fiber%i_ROC%i_POH%i", *gain_itr, NFed, NFiber, NROC, AOHNumber));
-        g->SetTitle(TString::Format("gain %i FED %i fiber %i;POH bias value;RSSI (mA)", *gain_itr, NFed, NFiber));
+	TString thismodulename = (*channelsToCalibrate_itr).modulename();
+	TString thispohname = TString::Format(" POH %i", AOHNumber);
+	TString thishistotitle = thismodulename + " " + portCardName + thispohname; 
+        g->SetName(TString::Format("rssi_gain%i_FED%i_fiber%i", *gain_itr, NFed, NFiber));
+        g->SetTitle(thishistotitle);
         g->SetMarkerColor(1);
         g->SetMarkerStyle(21);
         g->SetMarkerSize(1);
@@ -174,19 +177,26 @@ void PixelPOHBiasCalibration::endCalibration() {
         if (DoFits) {
           //Do the fits to the rssi_v_bias to find the best value
           int npoints = rssi_v_bias[channelkey]->GetN();
-          TF1* fit_to_rssi_response = new TF1("fit_to_rssi_response", "pol1", 20, POHBiasMax);
+	  int fitmin = ((POHBiasMax-3*POHBiasStepSize)>20) ? (POHBiasMax-3*POHBiasStepSize) : 20;
+          TF1* fit_to_rssi_response = new TF1("fit_to_rssi_response", "pol1", fitmin , POHBiasMax);
           //Do a linear fit to the RSSI response at very high values where we are below the waveform
           rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
 
           float par0 = fit_to_rssi_response->GetParameter(0);
           float par1 = fit_to_rssi_response->GetParameter(1);
 
-          TF1* evaluate_rssi_response = new TF1("evaluate_rssi_response", "pol1", 0, POHBiasMax);
-          evaluate_rssi_response->SetParameter(0, par0);
-          evaluate_rssi_response->SetParameter(1, par1);
-
+	  TF1* evaluate_rssi_response = new TF1("evaluate_rssi_response", "pol1", 0, POHBiasMax);
+          evaluate_rssi_response->FixParameter(0, par0);
+          evaluate_rssi_response->FixParameter(1, par1);
+	  rssi_v_bias[channelkey]->Fit(evaluate_rssi_response);
           bool looking_for_bias_value=true;
           int max_bias_value = 25;
+
+	  TF1* projection_to_x_axis = new TF1("projection_to_x_axis", "pol1", -1.*(par0/par1), POHBiasMax);
+	  projection_to_x_axis->FixParameter(0, par0);
+	  projection_to_x_axis->FixParameter(1, par1);
+	  projection_to_x_axis->SetLineColor(3);
+	  rssi_v_bias[channelkey]->Fit(fit_to_rssi_response);
 
           while(looking_for_bias_value && max_bias_value >= 3){
             double x1[3] = {0.0};
@@ -196,8 +206,8 @@ void PixelPOHBiasCalibration::endCalibration() {
               fit_eval[i] = evaluate_rssi_response->Eval((max_bias_value-i));
               rssi_v_bias[channelkey]->GetPoint((max_bias_value-1), x1[i], y1[i]);
             }
-            //Error on the points is 0.05. Is the current max_bias_value point far from the fit and above the fit?
-            if((y1[0]-fit_eval[0])>0.1){
+            //Error on the points is 0.005. Is the current max_bias_value point far from the fit and above the fit?
+            if((y1[0]-fit_eval[0])>0.01){
               //Is the point before the max_bias_value above the fit and even worse?
               if((y1[1]-fit_eval[1])>(y1[0]-fit_eval[0])){
                 //And the point before that?
@@ -216,7 +226,7 @@ void PixelPOHBiasCalibration::endCalibration() {
           rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x0, y0);
           double fit_check = evaluate_rssi_response->Eval(selectedBiasValue);
           double bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
-          while((fabs(y0-fit_check) > 2*bias_err) && selectedBiasValue < npoints){
+          while((fabs(y0-fit_check) > bias_err) && selectedBiasValue < npoints){
             selectedBiasValue+=1;
             fit_check = evaluate_rssi_response->Eval(selectedBiasValue);
             rssi_v_bias[channelkey]->GetPoint(selectedBiasValue, x0, y0);
@@ -228,8 +238,9 @@ void PixelPOHBiasCalibration::endCalibration() {
             selected_poh_bias_values[channelkey] = selectedBiasValue;
             //Now set the AOH Bias to this value if gain==2
             if(*gain_itr==2){
-              cout << "Setting the POH bias value for port card " << portCardName << " POH number " << AOHNumber << " to " << selectedBiasValue << endl;
+              cout << "Setting the POH bias value for fed " << NFed << " fiber " << NFiber << " port card " << portCardName << " POH number " << AOHNumber << " Module name " << (*channelsToCalibrate_itr).modulename() << " to " << selectedBiasValue << endl;
               SetAOHBiasToCurrentValue(portCardName, AOHNumber, selectedBiasValue);
+	      bias_values_by_portcard_and_aoh_new[portCardName][AOHNumber] = selectedBiasValue;
             }
           }
           else{
@@ -257,7 +268,7 @@ void PixelPOHBiasCalibration::endCalibration() {
   file.Close();
 
   //Write out the configs
-  for (std::map<std::string, std::map<unsigned int, unsigned int> >::iterator portCardName_itr = bias_values_by_portcard_and_aoh.begin(); portCardName_itr != bias_values_by_portcard_and_aoh.end(); portCardName_itr++){
+  for (std::map<std::string, std::map<unsigned int, unsigned int> >::iterator portCardName_itr = bias_values_by_portcard_and_aoh_new.begin(); portCardName_itr != bias_values_by_portcard_and_aoh_new.end(); portCardName_itr++){
     std::string portCardName = portCardName_itr->first;
     std::map<std::string, PixelPortCardConfig*>::iterator mapNamePortCard_itr = getmapNamePortCard()->find(portCardName);
     assert( mapNamePortCard_itr != getmapNamePortCard()->end());
@@ -265,7 +276,7 @@ void PixelPOHBiasCalibration::endCalibration() {
     for(std::map<unsigned int, unsigned int >::iterator AOHNumber_itr = portCardName_itr->second.begin(); AOHNumber_itr != portCardName_itr->second.end(); AOHNumber_itr++){
       unsigned int AOHNumber = AOHNumber_itr->first;
       unsigned int AOHBiasAddress = thisPortCardConfig->AOHBiasAddressFromAOHNumber(AOHNumber);
-      thisPortCardConfig->setdeviceValues(AOHBiasAddress, bias_values_by_portcard_and_aoh[portCardName][AOHNumber]);
+      thisPortCardConfig->setdeviceValues(AOHBiasAddress, bias_values_by_portcard_and_aoh_new[portCardName][AOHNumber]);
     }
     thisPortCardConfig->writeASCII(outputDir());
     cout << "Wrote the portcard config for port card: " << portCardName << endl;
