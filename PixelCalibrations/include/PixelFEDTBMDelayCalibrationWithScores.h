@@ -23,6 +23,7 @@ class PixelFEDTBMDelayCalibrationWithScores: public PixelFEDCalibrationBase {
   void RetrieveData(unsigned int state);
   void Analyze();
 
+  bool DoFifo1;
   int OverrideFifo1Fiber;
   int the_col, the_row;
 

@@ -19,6 +19,8 @@ void PixelFEDTBMDelayCalibrationWithScores::initializeFED() {
   PixelCalibConfiguration* tempCalibObject = dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
   assert(tempCalibObject != 0);
 
+  DoFifo1 = tempCalibObject->parameterValue("DoFifo1") == "yes";
+
   const std::string OverrideFifo1Fiber_str = tempCalibObject->parameterValue("OverrideFifo1Fiber");
   OverrideFifo1Fiber = -1;
   if (OverrideFifo1Fiber_str.size()) {
@@ -258,65 +260,68 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
 
     // also look at the one fiber in fifo1 for a cross check
 
-    const int F1chA = F1fiber*2 - 1;
-    const int F1chB = F1fiber*2;
+    if (DoFifo1) {
+      const int F1chA = F1fiber*2 - 1;
+      const int F1chB = F1fiber*2;
 
-    if (Dumps) {
-      fed->readTransparentFIFO();
-      fed->readSpyFIFO();
-    }
-
-    PixelPh1FEDInterface::digfifo1 d = fed->readFIFO1(Dumps);
-    if (Dumps) printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
-
-    FillEm(state, key(-F1fiber, "nF1TBMHeaders"),  d.a.n_tbm_h + d.b.n_tbm_h);
-    FillEm(state, key(-F1fiber, "nF1TBMTrailers"), d.a.n_tbm_t + d.b.n_tbm_t);
-    FillEm(state, key(-F1fiber, "nF1ROCHeaders"),  d.a.n_roc_h + d.b.n_roc_h);
-    FillEm(state, key(-F1fiber, "nF1Hits"),        d.a.hits.size() + d.b.hits.size());
-
-    int correct[2] = {0};
-    int wrong[2] = {0};
-    for (int aorb = 0; aorb < 2; ++aorb) {
-      const PixelPh1FEDInterface::encfifo1& z = d.aorb(aorb);
-      for (size_t i = 0; i < z.hits.size(); ++i) {
-        const PixelPh1FEDInterface::encfifo1hit& h = z.hits[i];
-        if (colrows.find(std::make_pair(h.col, h.row)) != colrows.end())
-          ++correct[aorb];
+      if (Dumps) {
+        fed->readTransparentFIFO();
+        fed->readSpyFIFO();
       }
-    }
-    wrong[0] = d.a.hits.size() - correct[0];
-    wrong[1] = d.b.hits.size() - correct[1];
 
-    FillEm(state, key(-F1fiber, "nF1CorrectHits"), correct[0] + correct[1]);
-    FillEm(state, key(-F1fiber, "nF1WrongHits"),   wrong[0] + wrong[1]);
+      PixelPh1FEDInterface::digfifo1 d = fed->readFIFO1(Dumps);
+      if (Dumps) printf("n tbm h a: %i b: %i  tbm t a: %i b: %i  roc h a: %i b: %i\n", d.a.n_tbm_h, d.b.n_tbm_h, d.a.n_tbm_t, d.b.n_tbm_t, d.a.n_roc_h, d.b.n_roc_h);
+
+      FillEm(state, key(-F1fiber, "nF1TBMHeaders"),  d.a.n_tbm_h + d.b.n_tbm_h);
+      FillEm(state, key(-F1fiber, "nF1TBMTrailers"), d.a.n_tbm_t + d.b.n_tbm_t);
+      FillEm(state, key(-F1fiber, "nF1ROCHeaders"),  d.a.n_roc_h + d.b.n_roc_h);
+      FillEm(state, key(-F1fiber, "nF1Hits"),        d.a.hits.size() + d.b.hits.size());
+
+      int correct[2] = {0};
+      int wrong[2] = {0};
+      for (int aorb = 0; aorb < 2; ++aorb) {
+        const PixelPh1FEDInterface::encfifo1& z = d.aorb(aorb);
+        for (size_t i = 0; i < z.hits.size(); ++i) {
+          const PixelPh1FEDInterface::encfifo1hit& h = z.hits[i];
+          if (colrows.find(std::make_pair(h.col, h.row)) != colrows.end())
+            ++correct[aorb];
+        }
+      }
+      wrong[0] = d.a.hits.size() - correct[0];
+      wrong[1] = d.b.hits.size() - correct[1];
+
+      FillEm(state, key(-F1fiber, "nF1CorrectHits"), correct[0] + correct[1]);
+      FillEm(state, key(-F1fiber, "nF1WrongHits"),   wrong[0] + wrong[1]);
       
-    FillEm(state, key(F1chA, "nF1TBMAHeaders"),  d.a.n_tbm_h);
-    FillEm(state, key(F1chA, "nF1TBMATrailers"), d.a.n_tbm_t);
-    FillEm(state, key(F1chA, "nF1ROCAHeaders"),  d.a.n_roc_h);
-    FillEm(state, key(F1chA, "nF1AHits"),        d.a.hits.size());
-    FillEm(state, key(F1chA, "nF1ACorrectHits"), correct[0]);
-    FillEm(state, key(F1chA, "nF1AWrongHits"),   wrong[0]);
+      FillEm(state, key(F1chA, "nF1TBMAHeaders"),  d.a.n_tbm_h);
+      FillEm(state, key(F1chA, "nF1TBMATrailers"), d.a.n_tbm_t);
+      FillEm(state, key(F1chA, "nF1ROCAHeaders"),  d.a.n_roc_h);
+      FillEm(state, key(F1chA, "nF1AHits"),        d.a.hits.size());
+      FillEm(state, key(F1chA, "nF1ACorrectHits"), correct[0]);
+      FillEm(state, key(F1chA, "nF1AWrongHits"),   wrong[0]);
 
-    FillEm(state, key(F1chB, "nF1TBMBHeaders"),  d.b.n_tbm_h);
-    FillEm(state, key(F1chB, "nF1TBMBTrailers"), d.b.n_tbm_t);
-    FillEm(state, key(F1chB, "nF1ROCBHeaders"),  d.b.n_roc_h);
-    FillEm(state, key(F1chB, "nF1BHits"),        d.b.hits.size());
-    FillEm(state, key(F1chB, "nF1BCorrectHits"), correct[1]);
-    FillEm(state, key(F1chB, "nF1BWrongHits"),   wrong[1]);
+      FillEm(state, key(F1chB, "nF1TBMBHeaders"),  d.b.n_tbm_h);
+      FillEm(state, key(F1chB, "nF1TBMBTrailers"), d.b.n_tbm_t);
+      FillEm(state, key(F1chB, "nF1ROCBHeaders"),  d.b.n_roc_h);
+      FillEm(state, key(F1chB, "nF1BHits"),        d.b.hits.size());
+      FillEm(state, key(F1chB, "nF1BCorrectHits"), correct[1]);
+      FillEm(state, key(F1chB, "nF1BWrongHits"),   wrong[1]);
 
-    const int shouldbe = 8 * int(colrows.size());
-    const bool isF1OK =
-      d.a.n_tbm_h == 1 && d.a.n_tbm_t == 1 && d.a.n_roc_h == 8 &&
-      d.b.n_tbm_h == 1 && d.b.n_tbm_t == 1 && d.b.n_roc_h == 8 &&
-      correct[0] == shouldbe &&
-      correct[1] == shouldbe &&
-      wrong[0] == 0 &&
-      wrong[1] == 0;
+      const int shouldbe = 8 * int(colrows.size());
+      const bool isF1OK =
+        d.a.n_tbm_h == 1 && d.a.n_tbm_t == 1 && d.a.n_roc_h == 8 &&
+        d.b.n_tbm_h == 1 && d.b.n_tbm_t == 1 && d.b.n_roc_h == 8 &&
+        correct[0] == shouldbe &&
+        correct[1] == shouldbe &&
+        wrong[0] == 0 &&
+        wrong[1] == 0;
 
-    FillEm(state, key(-F1fiber, "F1OK"), isF1OK);
+      FillEm(state, key(-F1fiber, "F1OK"), isF1OK);
+
+      if (Dumps) printf("correct out of %i: a: %i b: %i   wrong: a: %i b: %i  F1OK? %i thatscore? %i agree? %i\n", shouldbe, correct[0], correct[1], wrong[0], wrong[1], isF1OK, fibers_OK[F1fiber], isF1OK == fibers_OK[F1fiber]);
+    }
 
     if (Dumps) {
-      printf("correct out of %i: a: %i b: %i   wrong: a: %i b: %i  F1OK? %i thatscore? %i agree? %i\n", shouldbe, correct[0], correct[1], wrong[0], wrong[1], isF1OK, fibers_OK[F1fiber], isF1OK == fibers_OK[F1fiber]);
       printf("fibers OK by score:");
       for (int fiber = 1; fiber <= 24; ++fiber)
         if (fibers_OK[fiber])
