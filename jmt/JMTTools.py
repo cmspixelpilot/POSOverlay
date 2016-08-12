@@ -9,6 +9,12 @@ BUILD_HOME = os.environ['BUILD_HOME']
 POS_OUTPUT_DIRS = os.environ['POS_OUTPUT_DIRS']
 PIXELCONFIGURATIONBASE = os.environ['PIXELCONFIGURATIONBASE']
 
+def countem(l):
+    d = defaultdict(int)
+    for x in l:
+        d[x] += 1
+    return dict(d)
+
 def config_fn(x):
     return os.path.join(PIXELCONFIGURATIONBASE, x)
 
