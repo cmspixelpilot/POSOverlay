@@ -4,7 +4,7 @@ from JMTTools import *
 from JMTROOTTools import *
 set_style()
 
-dynrng = 'dynrng' in sys.argv
+dynrng = 'nodynrng' not in sys.argv
 
 run = run_from_argv()
 run_dir = run_dir(run)
