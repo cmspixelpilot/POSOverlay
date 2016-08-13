@@ -99,7 +99,7 @@ int main(int argc, char* argv[]){
   std::string cmd=argv[1];
 
 
-  if (cmd=="--insertConfigAlias"){
+  if (cmd=="--insertConfigAlias" && argc <= 4){
     if (argc < 4) {
       std::cerr << "wrong number of arguments for --insertConfigAlias\n";
       return 1;
