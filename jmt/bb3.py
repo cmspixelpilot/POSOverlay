@@ -31,11 +31,11 @@ for iroc, (roc, l) in enumerate(t.ls.iteritems()):
         d[j].append((e.th, e.sg))
         means[j] += e.th
 
-    nbins = 50
+    nbins = 20
     hs = []
     for j, x in enumerate(['even', 'odd']):
         hs.append({
-                'raw':   ROOT.TH1F('h_%s_raw_%s'   % (x, roc), 'Evens on %s, threshold;VcThr units;pixels/0.8' % roc, nbins, 60, 100),
+                'raw':   ROOT.TH1F('h_%s_raw_%s'   % (x, roc), 'Evens on %s, threshold;VcThr units;pixels/0.8' % roc, nbins, 30, 100),
                 'noise': ROOT.TH1F('h_%s_noise_%s' % (x, roc), 'Evens on %s, width;VcThr units;pixels/0.2'     % roc, nbins, 0, 10),
                 'norm':  ROOT.TH1F('h_%s_norm_%s'  % (x, roc), 'Evens on %s, normed;VcThr units;pixels/0.16'    % roc, nbins, -10, 10),
                 })
@@ -59,8 +59,12 @@ for iroc, (roc, l) in enumerate(t.ls.iteritems()):
             c.cd(1+j*3+ix)
             h = hs[j][x]
             h.Draw()
-            if x == 'norm':
-                h.Fit('gaus', 'q')
+            if x == 'norm' or x == 'raw':
+                res = h.Fit('gaus', 'qs')
+                if x == 'raw':
+                    import pdb
+                    pdb.set_trace()
+
 
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, roc + '.png'))
