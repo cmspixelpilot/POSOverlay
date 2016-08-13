@@ -9,6 +9,12 @@ BUILD_HOME = os.environ['BUILD_HOME']
 POS_OUTPUT_DIRS = os.environ['POS_OUTPUT_DIRS']
 PIXELCONFIGURATIONBASE = os.environ['PIXELCONFIGURATIONBASE']
 
+def mkdir_p(d):
+    try:
+        os.mkdir(d)
+    except OSError:
+        pass
+
 def countem(l):
     d = defaultdict(int)
     for x in l:
@@ -356,6 +362,44 @@ class translation_dat:
         for x in self.l:
             if x.fedid == fedid and x.fedch == fedch:
                 return x.module
+
+class trim_dat:
+    class entry:
+        def __init__(self, sg, th, istat, chi2, prob):
+            self.sg = sg
+            self.th = th
+            self.istat = istat
+            self.chi2 = chi2
+            self.prob = prob
+
+    def __init__(self, fn):
+        self.ls = defaultdict(lambda: [0]*4160)
+        self.seens = defaultdict(set)
+        for iline, line in enumerate(open(fn)):
+            line = line.strip()
+            if not line:
+                continue
+
+            line = line.split()
+            assert len(line) == 9
+            assert line[0] == '[PixelSCurveHistoManager::fit()]RocName='
+            assert line[1].startswith('FPix_')
+            roc = line[1]
+            seen = self.seens[roc]
+            l = self.ls[roc]
+            r, c = int(line[2]), int(line[3])
+            assert 0 <= c <= 51
+            assert 0 <= r <= 79
+            assert (c,r) not in seen
+            seen.add((c,r))
+            sg, th = float(line[4]), float(line[5])
+            assert 0 <= th
+            assert 0 <= sg
+            istat, chi2, prob = float(line[6]), float(line[7]), float(line[8])
+            assert istat in [0,1,2,3]
+            assert 0 <= chi2
+            assert 0 <= prob
+            l[c*80 + r] = trim_dat.entry(sg, th, istat, chi2, prob)
     
 if __name__ == '__main__':
     mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')

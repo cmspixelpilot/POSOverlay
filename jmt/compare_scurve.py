@@ -32,36 +32,12 @@ def convert_doug(fn):
         
 def convert_trimdat(fn):
     d = fn.replace('.dat', '')
-    try:
-        os.mkdir(d)
-    except OSError:
-        pass
-    newls = defaultdict(lambda: [0]*4160)
-    seens = defaultdict(set)
-    for iline, line in enumerate(open(fn)):
-        if iline % 50000 == 0:
-            print iline
-        line = line.strip()
-        if line:
-            line = line.split()
-            assert line[0] == '[PixelSCurveHistoManager::fit()]RocName='
-            assert line[1].startswith('FPix_')
-            roc = line[1]
-            seen = seens[roc]
-            newl = newls[roc]
-            r, c = int(line[2]), int(line[3])
-            assert 0 <= c <= 51
-            assert 0 <= r <= 79
-            assert (c,r) not in seen
-            seen.add((c,r))
-            sg, th = float(line[4]), float(line[5])
-            assert 0 <= th
-            assert 0 <= sg
-            newl[c*80 + r] = (th, sg)
-
-    for roc, newl in newls.iteritems(): 
+    mkdir_p(d)
+    t = trim_dat(fn)
+    for roc, l in t.ls.iteritems(): 
+        l = [(e.th, e.sg) for e in l]
         newfn = os.path.join(d, roc)
-        cPickle.dump(newl, open(newfn, 'wb'), -1)
+        cPickle.dump(l, open(newfn, 'wb'), -1)
 
 def comp(daq_dir, modtests_dir):
     summaries = []
