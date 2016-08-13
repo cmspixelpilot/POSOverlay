@@ -182,13 +182,12 @@ void PixelPOHBiasCalibration::endCalibration() {
           //Do a linear fit to the RSSI response at very high values where we are below the waveform
           rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
 
-          float par0 = fit_to_rssi_response->GetParameter(0);
-          float par1 = fit_to_rssi_response->GetParameter(1);
+          double par0 = fit_to_rssi_response->GetParameter(0);
+          double par1 = fit_to_rssi_response->GetParameter(1);
 
 	  TF1* evaluate_rssi_response = new TF1("evaluate_rssi_response", "pol1", 0, POHBiasMax);
           evaluate_rssi_response->FixParameter(0, par0);
           evaluate_rssi_response->FixParameter(1, par1);
-	  rssi_v_bias[channelkey]->Fit(evaluate_rssi_response);
           bool looking_for_bias_value=true;
           int max_bias_value = 25;
 
@@ -196,7 +195,7 @@ void PixelPOHBiasCalibration::endCalibration() {
 	  projection_to_x_axis->FixParameter(0, par0);
 	  projection_to_x_axis->FixParameter(1, par1);
 	  projection_to_x_axis->SetLineColor(3);
-	  rssi_v_bias[channelkey]->Fit(fit_to_rssi_response);
+	  rssi_v_bias[channelkey]->Fit(projection_to_x_axis);
 
           while(looking_for_bias_value && max_bias_value >= 3){
             double x1[3] = {0.0};
