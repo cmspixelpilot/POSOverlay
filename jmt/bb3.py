@@ -31,20 +31,21 @@ for iroc, (roc, l) in enumerate(t.ls.iteritems()):
         d[j].append((e.th, e.sg))
         means[j] += e.th
 
-    nbins = 20
+    nbins = 100
     hs = []
     for j, x in enumerate(['even', 'odd']):
         hs.append({
-                'raw':   ROOT.TH1F('h_%s_raw_%s'   % (x, roc), 'Evens on %s, threshold;VcThr units;pixels/0.8' % roc, nbins, 30, 100),
-                'noise': ROOT.TH1F('h_%s_noise_%s' % (x, roc), 'Evens on %s, width;VcThr units;pixels/0.2'     % roc, nbins, 0, 10),
-                'norm':  ROOT.TH1F('h_%s_norm_%s'  % (x, roc), 'Evens on %s, normed;VcThr units;pixels/0.16'    % roc, nbins, -10, 10),
+                'raw':   ROOT.TH1F('h_%s_raw_%s'   % (x, roc), '%s on %s, threshold;VcThr units;pixels/0.8' % (x.capitalize() + 's', roc), nbins, 30, 130),
+                'noise': ROOT.TH1F('h_%s_noise_%s' % (x, roc), '%s on %s, width;VcThr units;pixels/0.2'     % (x.capitalize() + 's', roc), nbins, 0, 10),
+                'norm':  ROOT.TH1F('h_%s_norm_%s'  % (x, roc), '%s on %s, normed;VcThr units;pixels/0.16'   % (x.capitalize() + 's', roc), nbins, -10, 10), 
+                'norm2': ROOT.TH1F('h_%s_norm2_%s' % (x, roc), '%s on %s, normed2;VcThr units;pixels/0.16'  % (x.capitalize() + 's', roc), nbins, -10, 10),
                 })
 
     for j in (0,1):
         means[j] /= len(d[j])
         for th, sg in d[j]:
-            if th > 100:
-                print th, sg
+            #if th > 100:
+            #    print th, sg
             hs[j]['raw'].Fill(th)
             hs[j]['noise'].Fill(sg)
             if sg > 1e-9:
@@ -53,18 +54,26 @@ for iroc, (roc, l) in enumerate(t.ls.iteritems()):
                 hs[j]['norm'].Fill(1e9)
 
     c = ROOT.TCanvas('c_' + roc, '', 1920, 1000)
-    c.Divide(3,2)
+    c.Divide(4,2)
+    
+    fits = [None, None]
     for j in (0,1):
         for ix, x in enumerate(['raw', 'noise', 'norm']):
-            c.cd(1+j*3+ix)
+            c.cd(1+j*4+ix)
             h = hs[j][x]
             h.Draw()
             if x == 'norm' or x == 'raw':
                 res = h.Fit('gaus', 'qs')
                 if x == 'raw':
-                    import pdb
-                    pdb.set_trace()
+                    assert fits[j] is None
+                    fits[j] = (res.Parameter(1), res.Parameter(2))
 
+    for j,(mean,sigma) in enumerate(fits):
+        h = hs[j]['norm2']
+        for th, _ in d[j]:
+            h.Fill((th - mean)/sigma)
+        c.cd(1+j*4+3)
+        h.Fit('gaus', 'q')
 
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, roc + '.png'))
