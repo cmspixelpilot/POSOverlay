@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connections>
+        <connection id="T1" uri="chtcp-2.0://ctrl-s2c16-07-01:10203?target=amc-s1g03-13-13-T1:50001" address_table="file:///opt/cactus/etc/amc13/AMC13XG_T1.xml" />
+        <connection id="T2" uri="chtcp-2.0://ctrl-s2c16-07-01:10203?target=amc-s1g03-13-13-T2:50001" address_table="file:///opt/cactus/etc/amc13/AMC13XG_T2.xml" />
+</connections>

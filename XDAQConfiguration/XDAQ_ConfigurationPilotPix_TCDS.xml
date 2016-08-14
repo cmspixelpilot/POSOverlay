@@ -124,6 +124,7 @@
     <xc:Module>${BUILD_HOME}/pixel/lib/libPixelTCDSSupervisor.so</xc:Module>
   </xc:Context>    
 
+
   <xc:Context url="http://psx-pix.cms:9923">
     <xc:Application class="psx" id="30" instance="0" network="xmas" group="dcs" service="psx"/>
   </xc:Context>

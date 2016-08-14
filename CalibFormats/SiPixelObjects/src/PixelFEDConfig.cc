@@ -168,8 +168,8 @@ PixelFEDConfig::PixelFEDConfig(std::string filename):
 	tmp.setType("VME");
       }
       else if (tokens.size() == 4) {
-        assert(tokens[3] == "VME");
-        tmp.setType("VME");
+        assert(tokens[3] == "VME" || tokens[3] == "VMEPiggy");
+        tmp.setType(tokens[3]);
       }
       else {
 	tmp.setType(tokens[3]);

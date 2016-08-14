@@ -297,7 +297,6 @@ int FixBBB(int chan,uint32_t *data);
   // Private variables
   // Channel access 
   uint32_t CHIP[5],CH_SubAddr[9];
-  pos::PixelFEDCard pixelFEDCard; // the FED settings
   
   // Keep track of the expected status of the FED channels
   std::bitset<9> N_enbable_expected, NC_enbable_expected, SC_enbable_expected, S_enbable_expected;

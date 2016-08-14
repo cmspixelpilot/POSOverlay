@@ -10,8 +10,9 @@ gdb=0
 gdbr=0
 dcs=1
 xml=0
-hostn=$(hostname)
+hostn=$(hostname --long)
 port=1973
+b2inport=1914
 ttcci=0
 
 while test $# -gt 0
@@ -39,6 +40,10 @@ do
             shift
             port=$1
             ;;
+        --b2inport)
+            shift
+            b2inport=$1
+            ;;
         --*) echo "bad option $1"
             ;;
         *) echo "argument $1 not parsed"
@@ -61,9 +66,9 @@ if [ "$xml" == "auto" ]; then
 <?xml version='1.0'?>
 <xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
 	
-  <xc:Context id="0" url="http://${hostn}:1973/">
+  <xc:Context id="0" url="http://${hostn}:${port}/">
 
-    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="${hostn}" port="1914" network="xmas"/>
+    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="${hostn}" port="${b2inport}" network="xmas"/>
 
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
     <xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>

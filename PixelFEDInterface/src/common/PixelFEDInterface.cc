@@ -340,6 +340,11 @@ int PixelFEDInterface::resetDigFEDreg(void) {
 int PixelFEDInterface::reset(void) {
   uint32_t data = 0x0; // data for reseta 
 
+  if (hasPilotPiggy) {
+    loadFPGADigFED();
+    usleep(10000);
+  }
+
   cout<<" In reset() "<<endl;
   if (!hasPilotPiggy) {
     if(Printlevel&1)cout<<"FEDID:"<<pixelFEDCard.fedNumber<<" Shutting off Baseline Correction"<<endl;
@@ -6050,4 +6055,6 @@ void PixelFEDInterface::printBoardInfo() {
   get_VMEFirmwareDate();
   for(int i=0;i<5;i++)
     get_FirmwareDate(i);
+  if (hasPilotPiggy)
+    get_PiggyFirmwareVer();
 }

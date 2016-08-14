@@ -652,44 +652,44 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
       ret << "CCU " << std::hex << ccuAddress << " PIA ch " << std::hex << piaChannelAddress << ": ";
 
       if (tokens[1] == "get") {
-	ret << "get ";
+       ret << "get ";
 
-	if (tokens[2] == "gcr") {
-	  ret << "GCR: " << std::hex << int(fecAccess->getPiaChannelGCR(myKey));
-	}
-	else if (tokens[2] == "ddr") {
-	  ret << "DDR: " << std::hex << int(fecAccess->getPiaChannelDDR(myKey));
-	}
-	else if (tokens[2] == "data") {
-	  ret << "Data: " << std::hex << int(fecAccess->getPiaChannelDataReg(myKey));
-	}
-	else if (tokens[2] == "status") {
-	  ret << "status: " << std::hex << int(fecAccess->getPiaChannelStatus(myKey));
-	}
+       if (tokens[2] == "gcr") {
+         ret << "GCR: " << std::hex << int(fecAccess->getPiaChannelGCR(myKey));
+       }
+       else if (tokens[2] == "ddr") {
+         ret << "DDR: " << std::hex << int(fecAccess->getPiaChannelDDR(myKey));
+       }
+       else if (tokens[2] == "data") {
+         ret << "Data: " << std::hex << int(fecAccess->getPiaChannelDataReg(myKey));
+       }
+       else if (tokens[2] == "status") {
+         ret << "status: " << std::hex << int(fecAccess->getPiaChannelStatus(myKey));
+       }
       }
       else if (tokens[1] == "set") {
-	ret << "set ";
+       ret << "set ";
 
-	if (tokens.size() < 4)
-	  return "must have value";
+       if (tokens.size() < 4)
+         return "must have value";
 
-	unsigned setVal = strtol(tokens[3].c_str(), NULL, 16);
+       unsigned setVal = strtol(tokens[3].c_str(), NULL, 16);
 
-	if (tokens[2] == "gcr") {
-	  ret << "GCR: " << std::hex << setVal;
-	  fecAccess->setPiaChannelGCR(myKey, setVal);
-	}
-	else if (tokens[2] == "ddr") {
-	  ret << "DDR: " << std::hex << setVal;
-	  fecAccess->setPiaChannelDDR(myKey, setVal);
-	}
-	else if (tokens[2] == "data") {
-	  ret << "Data: " << std::hex << setVal;
-	  fecAccess->setPiaChannelDataReg(myKey, setVal);
-	}
-	else if (tokens[2] == "status") {
-	  ret << "status: means nothing";
-	}
+       if (tokens[2] == "gcr") {
+         ret << "GCR: " << std::hex << setVal;
+         fecAccess->setPiaChannelGCR(myKey, setVal);
+       }
+       else if (tokens[2] == "ddr") {
+         ret << "DDR: " << std::hex << setVal;
+         fecAccess->setPiaChannelDDR(myKey, setVal);
+       }
+       else if (tokens[2] == "data") {
+         ret << "Data: " << std::hex << setVal;
+         fecAccess->setPiaChannelDataReg(myKey, setVal);
+       }
+       else if (tokens[2] == "status") {
+         ret << "status: means nothing";
+       }
       }
 
       fecAccess->removePiaAccess(myKey);
@@ -726,7 +726,7 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     std::ostringstream ret;
     const char* Jstr[3] = { "J1+J4", "J2+J5", "J3+J6" };
     ret << "Turning " << (turnOn ? "ON" : "OFF") << " the DC-DC attached to port number "
-	<< portNumber << "(" << Jstr[portNumber] << ") of CCUs 0x" << std::hex << ccuAddressEnable << ", 0x" << std::hex << ccuAddressPgood << "\n";
+       << portNumber << "(" << Jstr[portNumber] << ") of CCUs 0x" << std::hex << ccuAddressEnable << ", 0x" << std::hex << ccuAddressPgood << "\n";
 
     ret << pixDCDCCommand(fecAccess, fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, turnOn, portNumber);
 
@@ -923,6 +923,15 @@ string handle(vector<string> tokens, string sector, string group, FecAccess *fec
     
   }
 
+  else if (tokens[0]=="i2cr"){
+    if ( tokens.size()>2) { 
+      unsigned int AddressChannel = strtol (tokens[1].c_str(),NULL,16); 
+      deviceAddress = strtol (tokens[2].c_str(),NULL,16); 
+      return getI2CDevice ( fecAccess, fecAddress, ringAddress, ccuAddress, AddressChannel, deviceAddress, modeType, loop, tms) ;
+    }    
+    else 
+      return string("wrong number of parameters! i2cr needs 2 parameters");
+  }
 
   else if (tokens[0]=="i2cr"){
     if ( tokens.size()>2) { 
@@ -1857,12 +1866,10 @@ int main(int argc, char *argv[])
   int cnt; 
   
   // FEC Address and Ring Address
-  unsigned int fecAddress = 0x9 ;
-  unsigned int ringAddress = 0x8 ;
-  //unsigned int ringAddress = 0x7 ;
-  unsigned int channelAddress = 0x11 ; 
-  //unsigned int ccuAddress = 0x7c;
-  unsigned int ccuAddress = 0x3f;
+  unsigned int fecAddress = 9 ;
+  unsigned int ringAddress = 8 ;
+  unsigned int channelAddress = 0x10 ; 
+  unsigned int ccuAddress = 0x7c ;
   unsigned int piaChannelAddress = 0x30 ;
   long loop = 1 ;
   string sector = "-6P";
@@ -1917,8 +1924,6 @@ int main(int argc, char *argv[])
   printf("\n\n\nJMT JMT JMT NO RESET\n\n\n");
   //resetPlxFec ( fecAccess, fecAddress, ringAddress, loop, 0 );
   //testScanCCU ( fecAccess, fecAddress, ringAddress, false );
-  //pixDCDCCommand(fecAccess, fecAddress, ringAddress, 0x7e, 0x7d, 0x30, true, 0);
-  ////pixDCDCCommand(fecAccess, fecAddress, ringAddress, 0x7e, 0x7d, 0x30, true, 1);
   
   lock.release();
   
@@ -1982,11 +1987,12 @@ int main(int argc, char *argv[])
     }
     else if(tokens[0]=="piaChannel"){
       if (tokens.size()>1) {
-	piaChannelAddress = strtol (tokens[1].c_str(),NULL,16); 
-	cout << "PIA Channel Address set to 0x" << std::hex << piaChannelAddress << endl;
+       piaChannelAddress = strtol (tokens[1].c_str(),NULL,16); 
+       cout << "PIA Channel Address set to 0x" << std::hex << piaChannelAddress << endl;
       } 
       else 
-	cout << "wrong number of parameters! piaChannel needs 1 parameter" << endl;   }
+       cout << "wrong number of parameters! piaChannel needs 1 parameter" << endl;
+    }
     else if(tokens[0]=="loop"){
       if (tokens.size()>1) {
 	loop = atoi(tokens[1].c_str());

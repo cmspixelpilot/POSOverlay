@@ -589,7 +589,7 @@ void PixelGainHistoManager::fit(void){
 	    //          	linearFitStatistic2DMap_[rocName]->Fill(col,row,linearIstat);
 
 	    if(PRINT) cout<<" lin fit "<<col<<" "<<row<<" "<<linearIstat <<" "<<par0<<" "<<par1<<" "<<chis2<<" "<<ndof<<endl;
-
+            delete fitter;
 	  }
 
 
@@ -634,7 +634,7 @@ void PixelGainHistoManager::fit(void){
 	    // tanhFitStatistic2DMap_[rocName]->Fill(col,row,tanhIstat);
 
 	    if(PRINT) cout<<" tanh fit "<<col<<" "<<row<<" "<<tanhIstat <<" "<<par0<<" "<<par1<<endl;
-
+            delete fitter;
 	  }
 	  
 	  /*				
