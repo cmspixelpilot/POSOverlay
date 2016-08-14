@@ -168,7 +168,9 @@ xoap::MessageReference PixelFEDTBMDelayCalibrationWithScores::endCalibration(xoa
         }
 
         if (best_dist != 1000000) {
-          std::cout << "-> new TBMPLL value " << best_v << std::endl;
+          std::cout << "-> ";
+          if (best_dist != 0) std::cout << " NEW ";
+          std::cout << " TBMPLL value " << best_v << std::endl;
           assert(best_v >=0 && best_v <= 255);
           tbm->setTBMPLLDelay((unsigned char)(best_v));
         }
