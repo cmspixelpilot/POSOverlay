@@ -229,14 +229,14 @@ class doer:
     # and disconnected modules from too-short cables
     def portcardOK(self, pc):
         #return True
-        return '_D%i_' % self.curr_disk in pc # and pc == 'FPix_BmI_D3_PRT1'
+        return '_D%i_' % self.curr_disk in pc and pc != 'FPix_BmI_D1_PRT4'
 
     def moduleOK(self, m):
         #return True
         if m.disk != self.curr_disk:
             return False
-        #if m.portcard != 'FPix_BmI_D3_PRT1':
-        #    return False
+        if m.portcard == 'FPix_BmI_D1_PRT4':
+            return False
 
         if m.portcard_hj == '3TA' and m.portcard_connection == 7:
             return False
