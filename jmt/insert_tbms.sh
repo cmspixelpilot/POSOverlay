@@ -41,7 +41,6 @@ echo
 echo the diffs:
 diff -r $oldtbm $newtbm
 echo
-echo if happy, next run:
 echo ${BUILD_HOME}/pixel/bin/PixelConfigDBCmd.exe --insertVersionAlias tbm $newkey Default
-
+${BUILD_HOME}/pixel/bin/PixelConfigDBCmd.exe --insertVersionAlias tbm $newkey Default
 
