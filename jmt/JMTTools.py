@@ -393,14 +393,38 @@ class trim_dat:
             assert (c,r) not in seen
             seen.add((c,r))
             sg, th = float(line[4]), float(line[5])
-            assert 0 <= th
+            #assert 0 <= th
             assert 0 <= sg
             istat, chi2, prob = float(line[6]), float(line[7]), float(line[8])
             assert istat in [0,1,2,3]
             assert 0 <= chi2
             assert 0 <= prob
             l[c*80 + r] = trim_dat.entry(sg, th, istat, chi2, prob)
-    
+
+    def write(self, fn):
+        f = open(fn, 'wt')
+        for roc in sorted(self.ls.keys()):
+            for i in xrange(4160):
+                col = i / 80
+                row = i % 80
+                e = self.ls[roc][i]
+                f.write('[PixelSCurveHistoManager::fit()]RocName= %(roc)s %(row)s %(col)s ' % locals())
+                f.write('%.6f %.6f %i %.6f %.6f\n' % (e.sg, e.th, e.istat, e.chi2, e.prob))
+
+def merge_trim_dats(fns):
+    # assemble a trim_dat from the fns, letting later fns override
+    # results for earlier fns
+    td_merge = defaultdict(lambda: [0]*4160)
+    for fn in fns:
+        print fn
+        td = trim_dat(fn)
+        for roc, l in td.ls.iteritems():
+            ml = td_merge[roc]
+            for i,x in enumerate(l):
+                if x != 0:
+                    ml[i] = x
+    return td_merge
+
 if __name__ == '__main__':
     mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')
     mask.set(0, roc=0, col=25, row=32)
