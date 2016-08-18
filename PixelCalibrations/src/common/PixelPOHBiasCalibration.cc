@@ -195,7 +195,7 @@ void PixelPOHBiasCalibration::endCalibration() {
 	  projection_to_x_axis->FixParameter(0, par0);
 	  projection_to_x_axis->FixParameter(1, par1);
 	  projection_to_x_axis->SetLineColor(3);
-	  rssi_v_bias[channelkey]->Fit(projection_to_x_axis);
+	  rssi_v_bias[channelkey]->Fit(projection_to_x_axis, "QR");
 
           while(looking_for_bias_value && max_bias_value >= 3){
             double x1[3] = {0.0};
@@ -203,22 +203,25 @@ void PixelPOHBiasCalibration::endCalibration() {
             double fit_eval[3] = {0};
             for(int i = 0; i < 3; i++){
               fit_eval[i] = evaluate_rssi_response->Eval((max_bias_value-i));
-              rssi_v_bias[channelkey]->GetPoint((max_bias_value-1), x1[i], y1[i]);
+              rssi_v_bias[channelkey]->GetPoint((max_bias_value-i), x1[i], y1[i]);
             }
-            //Error on the points is 0.005. Is the current max_bias_value point far from the fit and above the fit?
-            if((y1[0]-fit_eval[0])>0.01){
+            //Error on the points is 0.005, but that's due to the granularity of the RSSI readout.
+	    //Real error is more like 0.002.  Is the current max_bias_value point more than
+	    //one sigma from the fit and above the fit?
+            if(fabs((y1[0]-fit_eval[0]))>0.002){
               //Is the point before the max_bias_value above the fit and even worse?
-              if((y1[1]-fit_eval[1])>(y1[0]-fit_eval[0])){
-                //And the point before that?
-                if((y1[2]-fit_eval[2])>(y1[1]-fit_eval[1])){
+	      if(fabs((y1[1]-fit_eval[1]))>fabs((y1[0]-fit_eval[0])) && (y1[1]-fit_eval[1])>(y1[0]-fit_eval[0])){
+		//and the point before that?
+		if(fabs((y1[2]-fit_eval[2]))>fabs((y1[1]-fit_eval[1])) && (y1[2]-fit_eval[2])>(y1[1]-fit_eval[1])){
+		  //cout << max_bias_value 
                   looking_for_bias_value=false;}
               }
             }
             max_bias_value--;
           }
 
-          //march back one value of max_bias_value due to the loop ending on a decrement
-          int selectedBiasValue = max_bias_value;
+          //march back two values of max_bias_value due to the loop ending on a decrement
+          int selectedBiasValue = max_bias_value + 2;
 
           //If the fit screwed up (or the corner of the fit doesn't describe it well) march up until we get a good fit.
           double x0, y0;
