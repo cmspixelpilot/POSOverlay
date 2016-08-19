@@ -27,6 +27,8 @@ if [ $n -ne $ndac ] || [ $n -ne $ntrim ] || [ $n -ne $nmask ]; then
     exit 1
 fi
 
+echo got configs for $n modules
+
 cd tbm
 sed -i 's/DisablePKAMCounter: 0/DisablePKAMCounter: 1/' *
 cd ../dac
