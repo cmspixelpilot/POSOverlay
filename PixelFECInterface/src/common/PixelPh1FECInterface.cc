@@ -13,6 +13,7 @@ using namespace pos;
 
 namespace {
   bool buffermodenever = false;
+  bool mfecbusyprint = true;
 
   bool PRINT = false;
   bool PRINT_old = PRINT;
@@ -284,7 +285,7 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
         } while (((*ch1 & 0x8) == 0x8) && (timeout < CSTIMEOUT));
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "CH1 timeout=" << dec << timeout <<endl;
-        if (timeout>=CSTIMEOUT) { cout << "ERROR mfecbusy channel 1"<<endl; }
+        if (timeout>=CSTIMEOUT && mfecbusyprint) { cout << "ERROR mfecbusy channel 1"<<endl; }
         
     }
     if ((fecchannel == 1) && (fecdebug > 0)) {
@@ -323,7 +324,7 @@ void PixelPh1FECInterface::mfecbusy(int mfec, int fecchannel,
         } while (((*ch2 & 0x8) == 0x8) && (timeout < CSTIMEOUT));
         
         if (PRINT) cout << "PixelPh1FECInterface: "  << "CH2 timeout=" << dec << timeout <<endl;
-        if (timeout>=CSTIMEOUT) { cout << "ERROR mfecbusy channel 2"<<endl; }
+        if (timeout>=CSTIMEOUT && mfecbusyprint) { cout << "ERROR mfecbusy channel 2"<<endl; }
         
     }
     if ((fecchannel == 2) && (fecdebug > 0)) {
@@ -2771,7 +2772,6 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
                                    int& success2, 
                                    int& success3,
                                    int& success4) {
-
 
     //myportaddress = 4;  // redefine the port to 4
     if(myportaddress==7 && myhubaddress==31)  {
