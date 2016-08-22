@@ -1,7 +1,9 @@
 #include <iomanip>
-#include "TGraphErrors.h"
-#include "TFile.h"
+#include "TCanvas.h"
 #include "TF1.h"
+#include "TFile.h"
+#include "TGraphErrors.h"
+#include "TLine.h"
 
 #include "PixelCalibrations/include/PixelPOHBiasCalibration.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
@@ -25,6 +27,8 @@ void PixelPOHBiasCalibration::beginCalibration() {
   POHBiasMin      = 0;
   POHBiasNSteps   = 15;
   POHBiasStepSize = 2;
+  POHCalibrationThreshold = 0.01;
+  if (tempCalibObject->parameterValue("POHCalibrationThreshold") != "") POHCalibrationThreshold = atof(tempCalibObject->parameterValue("POHCalibrationThreshold").c_str());
   if (tempCalibObject->parameterValue("POHGain")      != "") POHGain         = atoi(tempCalibObject->parameterValue("POHGain").c_str());
   if (tempCalibObject->parameterValue("ScanMin")      != "") POHBiasMin      = atoi(tempCalibObject->parameterValue("ScanMin").c_str());
   if (tempCalibObject->parameterValue("ScanNSteps")   != "") POHBiasNSteps   = atoi(tempCalibObject->parameterValue("ScanNSteps").c_str());
@@ -53,7 +57,7 @@ void PixelPOHBiasCalibration::beginCalibration() {
       if (NChannel % 2==0) { // per fiber
         //Get Fed and channel number
         const unsigned int NFed = channelHdwAddress.fednumber();
-        const unsigned int NROC = channelHdwAddress.rocid();
+        //const unsigned int NROC = channelHdwAddress.rocid();
         const unsigned int NFiber = NChannel/2;
         const std::pair<std::string, int> portCardAndAOH = thePortcardMap_->PortCardAndAOH(*channelsToCalibrate_itr);
         const std::string portCardName = portCardAndAOH.first;
@@ -197,11 +201,18 @@ void PixelPOHBiasCalibration::endCalibration() {
 	  projection_to_x_axis->SetLineColor(3);
 	  rssi_v_bias[channelkey]->Fit(projection_to_x_axis, "QR");
 
-          while(looking_for_bias_value && max_bias_value >= 3){
-            double x1[3] = {0.0};
-            double y1[3] = {0.0};
-            double fit_eval[3] = {0};
-            for(int i = 0; i < 3; i++){
+          while(looking_for_bias_value && max_bias_value >= 4){
+            double x1[4] = {0.0};
+            double y1[4] = {0.0};
+            double fit_eval[4] = {0};
+	    fit_to_rssi_response->SetRange(max_bias_value, POHBiasMax);
+	    rssi_v_bias[channelkey]->Fit(fit_to_rssi_response, "QR");
+	    par0 = fit_to_rssi_response->GetParameter(0);
+	    par1 = fit_to_rssi_response->GetParameter(1);
+	    evaluate_rssi_response->FixParameter(0, par0);
+	    evaluate_rssi_response->FixParameter(1, par1);
+            for(int i = 0; i < 4; i++){
+	      
               fit_eval[i] = evaluate_rssi_response->Eval((max_bias_value-i));
               rssi_v_bias[channelkey]->GetPoint((max_bias_value-i), x1[i], y1[i]);
             }
@@ -213,15 +224,16 @@ void PixelPOHBiasCalibration::endCalibration() {
 	      if(fabs((y1[1]-fit_eval[1]))>fabs((y1[0]-fit_eval[0])) && (y1[1]-fit_eval[1])>(y1[0]-fit_eval[0])){
 		//and the point before that?
 		if(fabs((y1[2]-fit_eval[2]))>fabs((y1[1]-fit_eval[1])) && (y1[2]-fit_eval[2])>(y1[1]-fit_eval[1])){
-		  //cout << max_bias_value 
-                  looking_for_bias_value=false;}
-              }
+		  if(fabs((y1[3]-fit_eval[3]))>fabs((y1[2]-fit_eval[2])) && (y1[3]-fit_eval[3])>(y1[2]-fit_eval[2])){
+		    looking_for_bias_value=false;}
+		}
+	      }
             }
             max_bias_value--;
           }
 
-          //march back two values of max_bias_value due to the loop ending on a decrement
-          int selectedBiasValue = max_bias_value + 2;
+          //march back three values of max_bias_value to get back into the good meat
+          int selectedBiasValue = max_bias_value + 3;
 
           //If the fit screwed up (or the corner of the fit doesn't describe it well) march up until we get a good fit.
           double x0, y0;
@@ -235,19 +247,33 @@ void PixelPOHBiasCalibration::endCalibration() {
             bias_err = rssi_v_bias[channelkey]->GetErrorY(selectedBiasValue);
           }
         
-          //store the selected bias value for this channel, or set it unphysical if the fit failed to find anything.
-          if(selectedBiasValue < npoints){
-            selected_poh_bias_values[channelkey] = selectedBiasValue;
-            //Now set the AOH Bias to this value if gain==2
-            if(*gain_itr==2){
-              cout << "Setting the POH bias value for fed " << NFed << " fiber " << NFiber << " port card " << portCardName << " POH number " << AOHNumber << " Module name " << (*channelsToCalibrate_itr).modulename() << " to " << selectedBiasValue << endl;
-              SetAOHBiasToCurrentValue(portCardName, AOHNumber, selectedBiasValue);
-	      bias_values_by_portcard_and_aoh_new[portCardName][AOHNumber] = selectedBiasValue;
-            }
-          }
-          else{
-            selected_poh_bias_values[channelkey] = -999;
-          }
+	  double MaxRSSI = 0.0;
+	  double MaxPOH = 0.0;
+	  double MinRSSI = 0.0;
+	  double MinPOH = 0.0;
+	  rssi_v_bias[channelkey]->GetPoint(rssi_v_bias[channelkey]->GetN() - 1, MaxPOH, MaxRSSI);
+	  rssi_v_bias[channelkey]->GetPoint(0, MinPOH, MinRSSI);
+	  if((MaxRSSI-MinRSSI) < POHCalibrationThreshold) {
+	    cout << "The response for " << NFed << " fiber " << NFiber << " port card " << portCardName << " POH number " << AOHNumber << " Module name " << (*channelsToCalibrate_itr).modulename() << " appears to be flat.  Channel off or disconnected." << endl;;
+	    selected_poh_bias_values[channelkey] = -888;
+	    badchannels.push_back(channelkey);
+	  }
+	  else{
+	    //store the selected bias value for this channel, or set it unphysical if the fit failed to find anything.
+	    if(selectedBiasValue < MaxPOH){
+	      selected_poh_bias_values[channelkey] = selectedBiasValue;
+	      //Now set the AOH Bias to this value if gain==2
+	      if(*gain_itr==2){
+		cout << "Setting the POH bias value for fed " << NFed << " fiber " << NFiber << " port card " << portCardName << " POH number " << AOHNumber << " Module name " << (*channelsToCalibrate_itr).modulename() << " to " << selectedBiasValue << endl;
+		SetAOHBiasToCurrentValue(portCardName, AOHNumber, selectedBiasValue);
+		bias_values_by_portcard_and_aoh_new[portCardName][AOHNumber] = selectedBiasValue;
+	      }
+	    }
+	    else{
+	      cout << "Fit exists for " << NFed << " fiber " << NFiber << " port card " << portCardName << " POH number " << AOHNumber << " Module name " << (*channelsToCalibrate_itr).modulename() << " but failed to find a good fit" << endl;
+	      selected_poh_bias_values[channelkey] = -999;
+	    }
+	  }
         }
 
         unsigned gain = channelkey >> 30;
@@ -261,8 +287,87 @@ void PixelPOHBiasCalibration::endCalibration() {
         if (fed_dirs[gain_fed] == 0)
           fed_dirs[gain_fed] = gd->mkdir(TString::Format("FED%i", fed));
         fed_dirs[gain_fed]->cd();
-        rssi_v_bias[channelkey]->Write();
-        delete rssi_v_bias[channelkey];
+
+        TCanvas* c = new TCanvas(rssi_v_bias[channelkey]->GetName(), "", 1000, 600);
+        
+        rssi_v_bias[channelkey]->Draw("ALP");
+        TLine l(selected_poh_bias_values[channelkey], 0, selected_poh_bias_values[channelkey], 1);
+        l.SetLineColor(kBlue);
+        l.Draw();
+        c->Write();
+        //        rssi_v_bias[channelkey]->Write();
+        //delete rssi_v_bias[channelkey];
+      }
+    }
+    if(!DoFits){
+      std::cout << "We're doing a channel map test and some of the channels appear to be disconnected." << std::endl;
+      std::cout << "Setting all POHBias values to Zero first." << std::endl;
+      Attribute_Vector parametersToTKFEC(1);
+      parametersToTKFEC[0].name_="AOHBias";
+      parametersToTKFEC[0].value_=itoa(0);
+      commandToAllTKFECCrates("SetAOHBiasEnMass", parametersToTKFEC);
+      //After this we finished a loop over all channels.  Now try the different permutations of channels.
+      for(std::vector<unsigned>::const_iterator badit = badchannels.begin(); badit != badchannels.end(); badit++){
+	//If a channel is disconnected it'll be disconnected for all 4 gain values, so only look at zero.
+	const std::set<PixelChannel>& channelsToCalibrate = tempCalibObject->channelList();
+	for(std::set<PixelChannel>::const_iterator channelsToCalibrate_itr = channelsToCalibrate.begin();
+	    channelsToCalibrate_itr != channelsToCalibrate.end(); channelsToCalibrate_itr++){
+	  const PixelHdwAddress& channelHdwAddress = theNameTranslation_->getHdwAddress(*channelsToCalibrate_itr);
+	  //Get Fed and channel number                                                                                                                    
+	  const unsigned int NFed = channelHdwAddress.fednumber();
+	  const unsigned int NChannel = channelHdwAddress.fedchannel();
+	  //2 fed channels per fiber                                                                                                                      
+	  if(NChannel%2==0){
+	    // Get Fiber; then get port card and AOH number.                                                                                                
+	    const unsigned int NFiber = NChannel/2;
+	    const std::pair< std::string, int > portCardAndAOH = thePortcardMap_->PortCardAndAOH(*channelsToCalibrate_itr);
+	    const std::string portCardName = portCardAndAOH.first; assert(portCardName!= "none");
+	    const int AOHNumber = portCardAndAOH.second;
+	    
+	    unsigned channelkey = key(0, NFed, NFiber);
+
+	    if(selected_poh_bias_values[channelkey]==-888 && channelkey!= *badit){
+	      //Set the POH bias on another bad channel on the list to see if it's actually plugged into the one we're trying to test.
+	      int badfed = (*badit >> 5);
+	      int badfiber = (*badit & 0x1f);
+	      std::cout << "Looking for FED " << badfed << " Fiber " << badfiber << " on FED " << NFed << " Fiber " << NFiber << std::endl;
+	      //Set POHBias to min value for this channel
+	      SetAOHBiasToCurrentValue(portCardName, AOHNumber, POHBiasMin);
+	      usleep(100000);
+
+	      const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(NFed);
+	      const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(NFed);
+
+	      Attribute_Vector parametersToFED_read(2);
+	      parametersToFED_read[0].name_ = "VMEBaseAddress"; parametersToFED_read[0].value_ = itoa(vmeBaseAddress);
+	      parametersToFED_read[1].name_ = "Fiber";          parametersToFED_read[1].value_ = itoa(NFiber);
+
+	      xoap::MessageReference reply=SendWithSOAPReply(PixelFEDSupervisors_[fedcrate], "ReadRSSI", parametersToFED_read);
+	      Attribute_Vector returnValuesFromFED(1);
+	      returnValuesFromFED[0].name_="Value";
+	      Receive(reply, returnValuesFromFED);
+	      //First read minrssi value
+
+	      double minrssi = strtod(returnValuesFromFED[0].value_.c_str(), 0) * 1000;
+
+	      
+	      usleep(100000);
+
+	      std::cout << "Setting this bias value to max" << std::endl;
+              SetAOHBiasToCurrentValue(portCardName, AOHNumber, POHBiasMax);
+              usleep(100000);
+
+	      Receive(reply, returnValuesFromFED);
+	      //now read maxrssi value
+	      
+	      double maxrssi = strtod(returnValuesFromFED[0].value_.c_str(), 0) * 1000;
+	      if((maxrssi-minrssi) < POHCalibrationThreshold){
+		std::cout << "This may be the right channel!" << std::endl;
+		//		badchannels.erase(badit);
+	      }
+	    }
+	  }
+	}
       }
     }
   }
@@ -287,7 +392,7 @@ void PixelPOHBiasCalibration::endCalibration() {
 
 std::vector<std::string> PixelPOHBiasCalibration::calibrated(){
   std::vector<std::string> tmp;
-  //tmp.push_back("portcard"); // JMTBAD eventually
+  tmp.push_back("portcard");
   return tmp;
 }
 
