@@ -2,8 +2,9 @@ import sys, csv, os
 from pprint import pprint
 from collections import defaultdict
 
-HC = 'BmI'
-csv_fn = '/home/fnaltest/TriDAS/Config/FROM_TESTING/new.csv'
+HC = 'BpO'
+csv_fn = '/home/fnaltest/TriDAS/Config/FROM_TESTING/bpo.csv'
+fed_offset = 7 # turns fed 1287 into 1294
 
 class Module:
     header = None
@@ -47,7 +48,7 @@ class Module:
         assert hj[1] in 'TB'
         assert hj[2] in 'ABCD'
 
-        self.portcard_connection = int(d['PC connection'])
+        self.portcard_connection = int(d['PC port'])
         self.portcard_identifier = d['PC identifier']
 
         self.dcdc = d['DCDC']
@@ -75,7 +76,7 @@ class Module:
         self.fed_receiver = 'bt'.index(d['FED receiver'])
         self.fed_fiber = (1-self.fed_receiver)*12 + self.poh_fiber
         self.crate = d['FEC/FED crate']
-        self.fed_id = int(d['FED ID'])
+        self.fed_id = int(d['FED ID']) + fed_offset
         self.fed_crate = 1
         assert self.fed_id - self.fed_position == 1293
 
@@ -228,25 +229,39 @@ class doer:
 
     # and disconnected modules from too-short cables
     def portcardOK(self, pc):
-        #return True
-        return '_D%i_' % self.curr_disk in pc #and pc != 'FPix_BmI_D1_PRT4'
+        if pc == 'FPix_BmI_D1_PRT4':
+            return False
+        if pc == 'FPix_BpO_D2_PRT1':
+            return False
+        if '_D%i_' % self.curr_disk not in pc:
+            return False
+        return True
 
     def moduleOK(self, m):
-        #return True
         if m.disk != self.curr_disk:
             return False
-        #if m.portcard == 'FPix_BmI_D1_PRT4':
-        #    return False
 
-        if m.portcard_hj == '3TA' and m.portcard_connection == 7:
+        if not self.portcardOK(m.portcard):
             return False
 
-        not_connected = {
-            'TB': [2,6],
-            'TC': [6],
-            'TD': [2,4],
-            }        
-        return m.portcard_connection not in not_connected.get(m.portcard_hj[-2:], [])
+        if HC == 'BmI':
+            if m.portcard_hj == '3TA' and m.portcard_connection == 7:
+                return False
+
+            not_connected = {
+                'TB': [2,6],
+                'TC': [6],
+                'TD': [2,4],
+                }        
+            if m.portcard_connection in not_connected.get(m.portcard_hj[-2:], []):
+                return False
+
+        if HC == 'BpO':
+            if (m.portcard_hj == '1TA' and m.portcard_connection == 2) or \
+               (m.portcard_hj == '3TC' and m.portcard_connection == 2):
+                return False
+
+        return True
 
     def write_configs(self):
         tkfecid = 'tkfec1'
