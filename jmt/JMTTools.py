@@ -192,24 +192,72 @@ def dec(dcol, pxl):
     row = 80 - pxl/2
     return col, row
 
-def configurations_txt():
-    fn = os.path.join(PIXELCONFIGURATIONBASE, 'configurations.txt')
-    d = {}
-    e = None
-    key = None
-    for line in open(fn):
+class configurations_txt:
+    def __init__(self):
+        fn = os.path.join(PIXELCONFIGURATIONBASE, 'configurations.txt')
+        self.d = d = {}
+        e = None
+        key = None
+        for line in open(fn):
+            line = line.strip()
+            if line:
+                if line.startswith('key'):
+                    if e:
+                        d[key] = e
+                    e = {}
+                    key = int(line.split()[-1])
+                else:
+                    line = line.split()
+                    assert len(line) == 2
+                    e[line[0]] = line[1]
+        if e:
+            d[key] = e
+
+    def __getitem__(self, key):
+        return self.d[key]
+
+    def compare(self, k0, k1):
+        #d0 = set(self.d[k0].items())
+        #d1 = set(self.d[k1].items())
+        #in_k0_not_k1 = d0 - d1
+        #in_k1_not_k0 = d1 - d0
+        #if in_k0_not_k1: print 'in', k0, 'not', k1, in_k0_not_k1
+        #if in_k1_not_k0: print 'in', k1, 'not', k0, in_k1_not_k0
+        #return not in_k0_not_k1 and not in_k1_not_k0
+
+        d0 = self.d[k0]
+        d1 = self.d[k1]
+        if d0 == d1:
+            return True
+        sk0 = set(d0.keys())
+        sk1 = set(d1.keys())
+        print '%-15s%15s%15s' % ('diffs:', k0, k1)
+        for sk in sorted(sk0 | sk1):
+            v0 = d0.get(sk, '')
+            v1 = d1.get(sk, '')
+            if v0 != v1:
+                print '%15s%15s%15s' % (sk, v0, v1)
+        return False
+        
+def aliases_txt():
+    cd, vd = [], []
+
+    fn = os.path.join(PIXELCONFIGURATIONBASE, 'aliases.txt')
+    lines = open(fn).readlines()
+    assert lines[0].strip() == 'ConfigurationAliases'
+    lines.pop(0)
+
+    d = cd
+    for line in lines:
         line = line.strip()
-        if line:
-            if line.startswith('key'):
-                if e:
-                    d[key] = e
-                e = {}
-                key = line.split()[-1]
-            else:
-                line = line.split()
-                assert len(line) == 2
-                e[line[0]] = line[1]
-    return d
+        if line == 'VersionAliases':
+            d = vd
+            continue
+        line = line.split()
+        assert line[-1] == ';'
+        d.append((line[0], int(line[1]), ' '.join(line[2:-1])))
+
+    return cd, vd
 
 class dac_dat:
     DACS = ['Vdd', 'Vana', 'Vsh', 'Vcomp', 'VwllPr', 'VwllSh', 'VHldDel', 'Vtrim', 'VcThr', 'VIbias_bus', 'PHOffset', 'Vcomp_ADC', 'PHScale', 'VIColOr', 'Vcal', 'CalDel', 'TempRange', 'WBC', 'ChipContReg', 'Readback']
@@ -426,6 +474,13 @@ def merge_trim_dats(fns):
     return td_merge
 
 if __name__ == '__main__':
-    mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')
-    mask.set(0, roc=0, col=25, row=32)
-    mask.write('duh')
+    #mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')
+    #mask.set(0, roc=0, col=25, row=32)
+    #mask.write('duh')
+    c = configurations_txt()
+    cd, vd = aliases_txt()
+    z = [y for x,y,z in cd if x.startswith('BumpBondTest')]
+    print len(z)
+    for x in z[1:]:
+        c.compare(z[0], x)
+
