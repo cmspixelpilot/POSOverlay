@@ -449,6 +449,12 @@ class trim_dat:
             assert 0 <= prob
             l[c*80 + r] = trim_dat.entry(sg, th, istat, chi2, prob)
 
+    def update(self, other):
+        for roc, l in other.ls.iteritems():
+            for i, x in enumerate(l):
+                if x != 0:
+                    self.ls[roc][i] = x
+
     def write(self, fn):
         f = open(fn, 'wt')
         for roc in sorted(self.ls.keys()):
@@ -456,22 +462,22 @@ class trim_dat:
                 col = i / 80
                 row = i % 80
                 e = self.ls[roc][i]
-                f.write('X %(roc)s %(row)s %(col)s ' % locals())
-                f.write('%.6f %.6f %i %.2f %.2f\n' % (e.sg, e.th, e.istat, e.chi2, e.prob))
+                if e != 0:
+                    f.write('X %(roc)s %(row)s %(col)s ' % locals())
+                    f.write('%.6f %.6f %i %.2f %.2f\n' % (e.sg, e.th, e.istat, e.chi2, e.prob))
 
-def merge_trim_dats(fns):
+def merge_trim_dats(fns, new_fn=None):
     # assemble a trim_dat from the fns, letting later fns override
     # results for earlier fns
-    td_merge = defaultdict(lambda: [0]*4160)
-    for fn in fns:
+    print fns[0]
+    td_merge = trim_dat(fns[0])
+    for fn in fns[1:]:
         print fn
-        td = trim_dat(fn)
-        for roc, l in td.ls.iteritems():
-            ml = td_merge[roc]
-            for i,x in enumerate(l):
-                if x != 0:
-                    ml[i] = x
-    return td_merge
+        td_merge.update(trim_dat(fn))
+    if new_fn:
+        td_merge.write(new_fn)
+        
+    return td_merge.ls
 
 if __name__ == '__main__':
     #mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')
