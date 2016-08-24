@@ -2,9 +2,8 @@ import sys, csv, os
 from pprint import pprint
 from collections import defaultdict
 
-HC = 'BpO'
-csv_fn = '/home/fnaltest/TriDAS/Config/FROM_TESTING/bpo.csv'
-fed_offset = 7 # turns fed 1287 into 1294
+#HC, csv_fn, fed_offset = 'BmI', '/home/fnaltest/TriDAS/Config/FROM_TESTING/BmI.csv', 0
+HC, csv_fn, fed_offset = 'BpO', '/home/fnaltest/TriDAS/Config/FROM_TESTING/bpo.csv', 7
 
 class Module:
     header = None
@@ -132,6 +131,7 @@ class Module:
 
 module_sorter = lambda m: (m.disk, m.bld, m.pnl, m.rng)
 module_sorter_by_portcard = lambda m: (m.disk, m.portcardnum, m.poh_num)
+module_sorter_by_portcard_phi = lambda m: (m.disk, m.portcardnum, -2*m.portcard_connection + m.portcardstack)
 
 class doer:
     def __init__(self, disk):
