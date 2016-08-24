@@ -163,8 +163,8 @@ for pcnum in xrange(1,max_pcnum+1):
                     elif label == 'bad':
                         x = 1 if x>5 else 0
                         
-                    if label == 'bad' and disk == 3 and pcnum in (1,2,4) and row in (58,59):
-                        x = 0
+                    #if label == 'bad' and disk == 3 and pcnum in (1,2,4) and row in (58,59):
+                    #    x = 0
                         
                     if label == 'bad' and x != 0:
                         bad_counts[roc] += 1
