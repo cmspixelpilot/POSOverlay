@@ -382,7 +382,7 @@ class trim_dat:
 
             line = line.split()
             assert len(line) == 9
-            assert line[0] == '[PixelSCurveHistoManager::fit()]RocName='
+            #assert line[0] == '[PixelSCurveHistoManager::fit()]RocName='
             assert line[1].startswith('FPix_')
             roc = line[1]
             seen = self.seens[roc]
@@ -408,8 +408,8 @@ class trim_dat:
                 col = i / 80
                 row = i % 80
                 e = self.ls[roc][i]
-                f.write('[PixelSCurveHistoManager::fit()]RocName= %(roc)s %(row)s %(col)s ' % locals())
-                f.write('%.6f %.6f %i %.6f %.6f\n' % (e.sg, e.th, e.istat, e.chi2, e.prob))
+                f.write('X %(roc)s %(row)s %(col)s ' % locals())
+                f.write('%.6f %.6f %i %.2f %.2f\n' % (e.sg, e.th, e.istat, e.chi2, e.prob))
 
 def merge_trim_dats(fns):
     # assemble a trim_dat from the fns, letting later fns override
