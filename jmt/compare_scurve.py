@@ -39,11 +39,18 @@ def convert_trimdat(fn):
         newfn = os.path.join(d, roc)
         cPickle.dump(l, open(newfn, 'wb'), -1)
 
-def comp(daq_dir, modtests_dir):
+def comp(out_fn, daq_dir, modtests_dir):
     summaries = []
     class summary:
         def __init__(self):
             pass
+
+    c = ROOT.TCanvas('c', '', 1920, 1000)
+    c.Divide(4,2)
+    c.cd(0)
+    if not out_fn.endswith('.pdf'):
+        out_fn += '.pdf'
+    c.SaveAs(out_fn + '[')
 
     for ifn, daq_fn in enumerate(sorted(glob(os.path.join(daq_dir, 'FPix*')))):
         #if ifn > 50: break
@@ -122,8 +129,6 @@ def comp(daq_dir, modtests_dir):
         h_th_daq_m_modtests.GetYaxis().SetRangeUser(0, 1000)
         h_sg_daq_m_modtests.GetYaxis().SetRangeUser(0, 350)
 
-        c = ROOT.TCanvas('c', '', 1920, 1000)
-        c.Divide(4,2)
         p = c.cd(1)
         h_th_modtests.Draw()
         h_th_daq.Draw('sames')
@@ -158,16 +163,15 @@ def comp(daq_dir, modtests_dir):
         h_th_daq_m_modtests.Draw()
         c.cd(8)
         h_sg_daq_m_modtests.Draw()
-        c.cd(0)
-        c.SaveAs(roc + '.png')
 
-        del c
-        for h in hists:
-            del h
+        c.cd(0)
+        c.SaveAs(out_fn)
+
+    c.SaveAs(out_fn + ']')
 
     return summaries
 
-def draw_summaries(summaries):
+def draw_summaries(out_fn, summaries):
     hs = defaultdict(dict)
     def _h(s, name, title, *binning):
         mod = the_doer.modules_by_name[s.roc.split('_ROC')[0]]
@@ -202,10 +206,13 @@ def draw_summaries(summaries):
     #hs = dict(hs)
     #return hs
 
-    for pc, hpc in sorted(hs.items()):
-        c = ROOT.TCanvas('c', '', 1920, 1000)
-        c.Divide(3,2)
+    c = ROOT.TCanvas('c', '', 1920, 1000)
+    c.Divide(3,2)
+    if not out_fn.endswith('.pdf'):
+        out_fn += '.pdf'
+    c.SaveAs(out_fn + '[')
 
+    for pc, hpc in sorted(hs.items()):
         c.cd(1)
         hpc['h_entries_daq_v_modtests_th'].Draw('colz text00')
         c.cd(4)
@@ -221,8 +228,9 @@ def draw_summaries(summaries):
                 differentiate_stat_box(hpc['h_%s_modtests_%s' % (x,y)], 1)
 
         c.cd(0)
-        c.SaveAs('summary_' + pc + '.png')
-        del c
+        c.SaveAs(out_fn)
+
+    c.SaveAs(out_fn + ']')
 
 def to_pdf():
     summary_cmd = []
