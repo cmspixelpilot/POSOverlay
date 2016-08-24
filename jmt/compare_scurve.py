@@ -3,27 +3,33 @@ from JMTROOTTools import *
 set_style(True)
 ROOT.gStyle.SetOptStat(111111)
 
-from write_other_hc_configs import doer, HC, module_sorter_by_portcard
-disk = 1
-daq_dir = '/home/fnaltest/SCurveInfo/disk1_runs-1227-1238'
+from write_other_hc_configs import doer, HC, module_sorter_by_portcard_phi
+
 modtests_dir = '/home/fnaltest/SCurveInfo/BmI_Configs_m20_SCurveInfo'
+#disk, daq_dir = 1, '/home/fnaltest/SCurveInfo/BmI_disk1_runs-1227-1238'
+#disk, daq_dir = 2, '/home/fnaltest/SCurveInfo/BmI_disk2_run1223'
+disk, daq_dir = 3, '/home/fnaltest/SCurveInfo/BmI_disk3_run1177'
+
 the_doer = doer(disk)
 
 def convert_doug(fn):
+    print "unpacking doug's pickle"
     x = cPickle.load(open(fn, 'rb'))
+    print 'done'
+    os.system('top -abn 1 | head')
     d = fn.replace('.p', '')
-    try:
-        os.mkdir(d)
-    except OSError:
-        pass
-    for roc, v in x.iteritems():
+    mkdir_p(d)
+    print 'n = ', len(x)
+    for iroc, (roc, v) in enumerate(x.iteritems()):
+        if iroc % 7*16 == 0:
+            print 'roc #', iroc
         seen = set()
         newl = [0]*4160
         for i, (c,r, th,sg) in enumerate(v):
             assert 0 <= c <= 51
             assert 0 <= r <= 79
-            assert 0 <= th
-            assert 0 <= sg
+            if th <= 0 or sg <= 0:
+                print c,r,th,sg
             assert (c,r) not in seen
             seen.add((c,r))
             newl[c*80 + r] = (th,sg)
@@ -52,8 +58,17 @@ def comp(out_fn, daq_dir, modtests_dir):
         out_fn += '.pdf'
     c.SaveAs(out_fn + '[')
 
-    for ifn, daq_fn in enumerate(sorted(glob(os.path.join(daq_dir, 'FPix*')))):
-        #if ifn > 50: break
+    daq_fns = []
+    modules = [m.name for m in sorted(the_doer.modules, key=module_sorter_by_portcard_phi) if the_doer.moduleOK(m)]
+    for m in modules:
+        for r in xrange(16):
+            roc = m + '_ROC' + str(r)
+            fn = os.path.join(daq_dir, roc)
+            if os.path.isfile(fn):
+                daq_fns.append(fn)
+
+    for iroc, daq_fn in enumerate(daq_fns):
+        #if iroc > 50: break
         roc = os.path.basename(daq_fn)
         print roc
 
@@ -67,8 +82,8 @@ def comp(out_fn, daq_dir, modtests_dir):
         h_sg_daq   = ROOT.TH1F('h_sg_daq',   roc + ';width (vcal low);pixels/0.06',    100, 0, 6)
         h_th_modtests = ROOT.TH1F('h_th_modtests', roc + ';threshold (vcal low);pixels/0.3', 100, 20, 50)
         h_sg_modtests = ROOT.TH1F('h_sg_modtests', roc + ';width (vcal low);pixels/0.06',    100, 0, 6)
-        for h in (h_th_modtests, h_sg_modtests, h_th_daq, h_sg_daq):
-            h.SetLineWidth(2)
+        #for h in (h_th_modtests, h_sg_modtests, h_th_daq, h_sg_daq):
+        #    h.SetLineWidth(2)
         for h in (h_th_modtests, h_sg_modtests):
             h.SetLineColor(2)
         h_th_daq_v_modtests = ROOT.TH2F('h_th_daq_v_modtests', roc + ';modtests threshold (vcal low);daq threshold (vcal low)', 100, 20, 50, 100, 20, 50)
@@ -232,22 +247,9 @@ def draw_summaries(out_fn, summaries):
 
     c.SaveAs(out_fn + ']')
 
-def to_pdf():
-    summary_cmd = []
-    for pcnum in xrange(1,4+1):
-        print pcnum
-        l = [m.name for m in sorted(the_doer.modules, key=module_sorter_by_portcard) if the_doer.moduleOK(m) and m.portcardnum == pcnum]
-        these = [x + '_ROC%i.png' % roc for roc in xrange(16) for x in l]
-        these2 = [x for x in these if os.path.isfile(x)]
-        print 'missing'
-        pprint(sorted(set(these) - set(these2)))
-        cmd = 'convert ' + ' '.join(these2) + ' %s_D%s_PRT%i.pdf' % (HC, disk, pcnum)
-        #print cmd
-        os.system(cmd)
-        summary_cmd.append('summary_%s_D%s_PRT%i.png' % (HC, disk, pcnum))
-
-    os.system('convert ' + ' '.join(summary_cmd) + ' summary_%s_D%i.pdf' % (HC, disk))
-
+#convert_doug('BpO_Configs_m20_SCurveInfo.p')
 #convert_trimdat('disk1_runs-1227-1238.dat')
-#draw_summaries(comp(daq_dir, modtests_dir))
-to_pdf()
+summaries = comp('comp_disk%i' % disk, daq_dir, modtests_dir)
+draw_summaries('summary_disk%i' % disk, summaries)
+              
+#to_pdf()
