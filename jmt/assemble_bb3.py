@@ -3,7 +3,7 @@ from JMTROOTTools import *
 from write_other_hc_configs import doer, HC, module_sorter_by_portcard
 set_style(light=True)
 
-the_key = disk, which = 2, '50trig'
+the_key = disk, which = None, None
 the_doer = doer(disk)
 
 fns = {
@@ -117,9 +117,91 @@ Run_1545/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299.dat
 Run_1546/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299.dat
 Run_1547/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299.dat
 '''.split('\n') if x.strip()],
+    (3, 'BpO'): [x.strip() for x in '''
+Run_1599/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1600/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1601/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1602/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1603/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1604/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1606/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1608/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1609/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1610/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1611/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1612/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1614/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1615/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1616/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1617/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1618/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1620/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1621/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1622/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1623/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1624/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1626/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1627/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1628/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1629/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1630/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1632/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1633/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1634/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1635/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1636/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1637/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1639/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1640/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1641/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1642/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1643/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1644/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1645/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1647/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1648/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1649/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1650/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1651/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1653/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1654/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1655/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1656/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1657/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1659/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1660/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1661/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1662/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1663/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1665/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1666/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1667/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1668/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1669/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1671/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1672/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1673/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1674/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1675/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1676/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1678/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1679/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1680/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1681/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1682/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1684/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1685/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1686/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1687/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1688/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1689/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1690/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1691/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1692/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+'''.split('\n') if x.strip()],
 }
 
-ns = {(3,'50trig'): 19, (2,'50trig'): 55, (1,'first10'):10, (1,'5trig'):8}
+ns = {(3,'50trig'): 19, (2,'50trig'): 55, (1,'first10'):10, (1,'5trig'):8, (3,'BpO'):80}
 for k,v in ns.iteritems():
     assert len(fns[k]) == v
 
@@ -185,9 +267,12 @@ def write_dat(td_merge):
             e = td_merge[roc][i]
             if e != 0:
                 th, sg = e
-                f.write('[PixelSCurveHistoManager::fit()]RocName= %(roc)s %(row)s %(col)s ' % locals())
-                f.write('%.6f %.6f %i %.6f %.6f\n' % (sg, th, 0, 0, 0))
+                f.write('X %(roc)s %(row)s %(col)s ' % locals())
+                f.write('%.6f %.6f 0 0 0\n' % (sg, th))
 
-tdm = from_pickle()
-plot_missing(tdm)
-write_dat(tdm)
+#tdm = from_pickle()
+#plot_missing(tdm)
+#write_dat(tdm)
+
+merge_trim_dats(fns[(3,'BpO')], 'BpO_disk3.dat')
+
