@@ -133,8 +133,8 @@ module_sorter = lambda m: (m.disk, m.bld, m.pnl, m.rng)
 module_sorter_by_portcard = lambda m: (m.disk, m.portcardnum, m.poh_num)
 module_sorter_by_portcard_phi = lambda m: (m.disk, m.portcardnum, -2*m.portcard_connection + m.portcardstack)
 
-class doer:
-    def __init__(self, disk):
+class cable_map_parser:
+    def __init__(self, disk=-1):
         self.curr_disk = disk
 
         self.module_names_check = []
@@ -233,12 +233,12 @@ class doer:
             return False
         if pc == 'FPix_BpO_D2_PRT1':
             return False
-        if '_D%i_' % self.curr_disk not in pc:
+        if self.curr_disk != -1 and '_D%i_' % self.curr_disk not in pc:
             return False
         return True
 
     def moduleOK(self, m):
-        if m.disk != self.curr_disk:
+        if self.curr_disk != -1 and m.disk != self.curr_disk:
             return False
 
         if not self.portcardOK(m.portcard):
@@ -2558,6 +2558,14 @@ Spare fedcard input 10:0
         print 'now you might want to run unpack_dougs_configs.sh!'
 # end of write_configs
 
+    def modules_from_rocs(self, rocs, sorter=None):
+        modules = [self.modules_by_name[mn] for mn in set([x.split('_ROC')[0] for x in rocs])]
+        if sorter:
+            modules.sort(key=sorter)
+        return modules
+
+doer = cable_map_parser
+
 if __name__ == '__main__':
     disk = None
     for x in sys.argv:
@@ -2568,7 +2576,7 @@ if __name__ == '__main__':
     if disk is None:
         raise ValueError('must supply disk')
 
-    d = doer(disk)
+    d = cable_map_parser(disk)
 
     if 'write' in sys.argv:
         d.write_configs()
