@@ -3,7 +3,7 @@ from JMTROOTTools import *
 from write_other_hc_configs import doer, HC, module_sorter_by_portcard
 set_style(light=True)
 
-the_key = disk, which = None, None
+the_key = disk, which = 3, 'BpO_bb3'
 the_doer = doer(disk)
 
 fns = {
@@ -199,9 +199,29 @@ Run_1690/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
 Run_1691/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
 Run_1692/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
 '''.split('\n') if x.strip()],
+    (3, 'BpO_bb3'): [x.strip() for x in '''
+Run_1695/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1696/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1697/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1698/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1699/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1700/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1701/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+Run_1702/TrimOutputFile_Fed_1294-1295-1296-1297-1298-1299-1300.dat
+'''.split('\n') if x.strip()],
+    (2, 'BpO_bb3'): [x.strip() for x in '''
+Run_1806/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1807/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1808/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1809/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1811/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1813/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1814/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+Run_1815/TrimOutputFile_Fed_1295-1296-1297-1298-1299-1300.dat
+'''.split('\n') if x.strip()],
 }
 
-ns = {(3,'50trig'): 19, (2,'50trig'): 55, (1,'first10'):10, (1,'5trig'):8, (3,'BpO'):80}
+ns = {(3,'50trig'): 19, (2,'50trig'): 55, (1,'first10'):10, (1,'5trig'):8, (3,'BpO'):80, (3,'BpO_bb3'):8}
 for k,v in ns.iteritems():
     assert len(fns[k]) == v
 
@@ -212,12 +232,14 @@ def pickle_fn():
 def dat_fn():
     return make_fn() + '.dat'
 
-def to_pickle():
+def from_fns():
     td_merge = merge_trim_dats(fns[the_key])
     for roc in sorted(td_merge.keys()):
         td_merge[roc] = [((e.th, e.sg) if e != 0 else e) for e in td_merge[roc]]
-    cPickle.dump(dict(td_merge), open(pickle_fn() , 'wb'), -1)
     return td_merge
+
+def to_pickle(td_merge):
+    cPickle.dump(dict(td_merge), open(pickle_fn() , 'wb'), -1)
 
 def from_pickle():
     return cPickle.load(open(pickle_fn(), 'rb'))
@@ -270,9 +292,9 @@ def write_dat(td_merge):
                 f.write('X %(roc)s %(row)s %(col)s ' % locals())
                 f.write('%.6f %.6f 0 0 0\n' % (sg, th))
 
-#tdm = from_pickle()
+tdm = to_pickle()
 #plot_missing(tdm)
-#write_dat(tdm)
+write_dat(tdm)
 
-merge_trim_dats(fns[(3,'BpO')], 'BpO_disk3.dat')
+#merge_trim_dats(fns[(3,'BpO')], 'BpO_disk3.dat')
 
