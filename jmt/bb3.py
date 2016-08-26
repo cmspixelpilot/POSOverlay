@@ -9,12 +9,12 @@ ROOT.gStyle.SetOptStat(111110)
 ROOT.gStyle.SetOptFit(1111)
 
 if len(sys.argv) < 3:
-    print 'usage: bb3.py disk out_fn in_fn'
+    print 'usage: bb3.py disk in_fn out_fn'
     sys.exit(1)
 
 disk = int(sys.argv[1])
-out_fn = sys.argv[2]
-in_fn = sys.argv[3]
+in_fn = sys.argv[2]
+out_fn = sys.argv[3]
 
 the_doer = doer(disk)
 t = trim_dat(in_fn)
@@ -127,82 +127,59 @@ min_pcnum = 2 if disk == 2 else 1
 max_pcnum = 4
 for pcnum in xrange(min_pcnum,max_pcnum+1):
     print pcnum
-#    t = ROOT.TPaveText(0,0,1,1)
-#    t.AddText(
-#    c.cd(1)
-#    t.Draw()
-#    c.cd(0)
-#    c.SaveAs(this_out_fn)
 
     modules = [m for m in sorted(the_doer.modules, key=module_sorter_by_portcard_phi) if the_doer.moduleOK(m) and m.portcardnum == pcnum]
 
     for module in modules:
         print module.name
         for label, d in [('raw', raw), ('norm', norm), ('bad', norm)]:
-            hs = []
-            for i in xrange(16):
-                roc = module.name + '_ROC' + str(i)
-                hs.append(ROOT.TH2F('h_%s_%s' % (roc, label), roc + ' : ' + label, 52, 0, 52, 80, 0, 80))
-                h.SetStats(0)
-
+            lists = []
             any_ok = False
             for i in xrange(16):
                 roc = module.name + '_ROC' + str(i)
                 if not d.has_key(roc):
                     continue
                 any_ok = True
-                h = hs[i]
-                l = d[roc]
-                for i,x in enumerate(l):
-                    col = i / 80
-                    row = i % 80
-                    if x is None:
-                        if label == 'norm':
-                            x = 6
-                        elif label == 'bad':
-                            x = 2
+                lists.append(d[roc])
+
+            if not any_ok:
+                continue
+
+            def xform(label, module_name, rocnum, col, row, val):
+                global bad_counts
+                if val is None:
+                    if label == 'norm':
+                        val = 6
                     elif label == 'bad':
-                        x = 1 if x>5 else 0
-                        
-                    #if label == 'bad' and disk == 3 and pcnum in (1,2,4) and row in (58,59):
-                    #    x = 0
-                        
-                    if label == 'bad' and x != 0:
-                        bad_counts[roc] += 1
+                        val = 2
+                elif label == 'bad':
+                    val = 1 if val>5 else 0
 
-                    if x is not None:
-                        h.SetBinContent(col+1, row+1, float(x))
+                #if label == 'bad' and disk == 3 and pcnum in (1,2,4) and row in (58,59):
+                #    val = 0
 
-            if any_ok:
-                h = FNAL.makeMergedPlot(hs, 'pos')
-                if label == 'raw':
-                    FNAL.setZRange(h, (0,100)) #FNAL.findZRange(hs))
-                elif label == 'norm':
-                    FNAL.setZRange(h, (-5, 6.1)) #FNAL.findZRange(hs))
+                if label == 'bad' and val != 0:
+                    bad_counts[roc] += 1
 
-                fc = FNAL.setupSummaryCanvas(h, moduleName=module.name)
-                #fc.SaveAs(module.name + '_' + label + '.pdf')
-                if c is None:
-                    c = fc
-                    c.SaveAs(this_out_fn + '[')
-                else:
-                    c.cd()
-                    c.Clear()
-                    fc.DrawClonePad()
+                return val
 
-                pt = ROOT.TPaveText(-100,405,1395,432)
-                pt.AddText(label + '   ' + m.portcard + ' ' + m.portcard_hj[1] + ' ' + str(m.portcard_connection) + '   ' + module.name + '   ' + module.module + '   ' + module.internal_name)
-                pt.SetTextAlign(12)
-                pt.SetTextFont(42)
-                pt.SetFillColor(0)
-                pt.SetBorderSize(0)
-                pt.SetFillStyle(0)
-                pt.Draw()
+            hs = flat_to_module(label, module.name, lists, xform)
 
-                #c.SaveAs(module.name + '_' + label + '.root')
+            z_range = None
+            if label == 'raw':
+                z_range = (0,100)
+            elif label == 'norm':
+                z_range = (-5, 6.1)
 
-                c.SaveAs(this_out_fn)
-        
+            title = label + '   ' + m.portcard + ' ' + m.portcard_hj[1] + ' ' + str(m.portcard_connection) + '   ' + module.name + '   ' + module.module + '   ' + module.internal_name
+
+            h, fc, pt = fnal_pixel_plot(hs, module.name, title, z_range=z_range, existing_c=c)
+            #fc.SaveAs(module.name + '_' + label + '.pdf')
+            if c is None:
+                c = fc
+                c.SaveAs(this_out_fn + '[')
+            c.SaveAs(this_out_fn)
+
 c.SaveAs(this_out_fn + ']')
 
 print 'bad by roc:'
