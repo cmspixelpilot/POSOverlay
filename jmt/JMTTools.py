@@ -477,16 +477,22 @@ def merge_trim_dats(fns, new_fn=None):
     if new_fn:
         td_merge.write(new_fn)
         
-    return td_merge.ls
+    return td_merge
 
-if __name__ == '__main__':
-    #mask = mask_dat('/home/fnaltest/TriDAS/Config/mask/100/ROC_Masks_module_FPix_BmI_D3_BLD6_PNL1_RNG2.dat')
-    #mask.set(0, roc=0, col=25, row=32)
-    #mask.write('duh')
-    c = configurations_txt()
-    cd, vd = aliases_txt()
-    z = [y for x,y,z in cd if x.startswith('BumpBondTest')]
-    print len(z)
-    for x in z[1:]:
-        c.compare(z[0], x)
+if __name__ == '__main__' and len(sys.argv) > 1:
+    mode = sys.argv[1]
 
+    if mode == 'merge_trim_dats':
+        if len(sys.argv) < 4:
+            print 'usage: python JMTTools.py %s txt_fn out_fn' % mode
+        else:
+            txt_fn = sys.argv[2]
+            out_fn = sys.argv[3]
+
+            fns = [line.strip() for line in open(txt_fn) if line.strip()]
+            td = merge_trim_dats(fns, out_fn)
+
+    elif mode == 'configs':
+        c = configurations_txt()
+        cd, vd = aliases_txt()
+        print 'configurations.txt in c and aliases.txt in cd, vd'
