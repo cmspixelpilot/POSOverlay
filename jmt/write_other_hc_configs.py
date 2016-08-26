@@ -260,6 +260,8 @@ class doer:
             if (m.portcard_hj == '1TA' and m.portcard_connection == 2) or \
                (m.portcard_hj == '3TC' and m.portcard_connection == 2):
                 return False
+            if m.name == 'FPix_BpO_D2_BLD4_PNL1_RNG1':
+                return False
 
         return True
 
