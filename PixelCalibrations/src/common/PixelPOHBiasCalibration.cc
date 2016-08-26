@@ -324,11 +324,11 @@ void PixelPOHBiasCalibration::endCalibration() {
 	    const std::string portCardName = portCardAndAOH.first; assert(portCardName!= "none");
 	    const int AOHNumber = portCardAndAOH.second;
 	    
-	    unsigned channelkey = key(0, NFed, NFiber);
+	    unsigned channelkey = key(POHGains[0], NFed, NFiber);
 
 	    if(selected_poh_bias_values[channelkey]==-888 && channelkey!= *badit){
 	      //Set the POH bias on another bad channel on the list to see if it's actually plugged into the one we're trying to test.
-	      int badfed = (*badit >> 5);
+	      int badfed = (*badit & 0x3fffffff) >> 5;
 	      int badfiber = (*badit & 0x1f);
 	      std::cout << "Looking for FED " << badfed << " Fiber " << badfiber << " on FED " << NFed << " Fiber " << NFiber << std::endl;
 	      //Set POHBias to min value for this channel
@@ -336,7 +336,7 @@ void PixelPOHBiasCalibration::endCalibration() {
 	      usleep(100000);
 
 	      const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(NFed);
-	      const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(NFed);
+	      const unsigned fedcrate = theFEDConfiguration_->crateFromFEDNumber(NFed); 
 
 	      Attribute_Vector parametersToFED_read(2);
 	      parametersToFED_read[0].name_ = "VMEBaseAddress"; parametersToFED_read[0].value_ = itoa(vmeBaseAddress);
