@@ -134,6 +134,7 @@ struct encfifo1 {
   int n_tbm_h;
   int n_tbm_t;
   int n_roc_h;
+  bool ok() { return n_tbm_h == 1 && n_tbm_t == 1 && n_roc_h == 8; }
 };
 struct digfifo1 {
   std::vector<uint32_t> cFifo1A;
@@ -268,6 +269,8 @@ struct digfifo1 {
   void phaseStabilityTest();
 
   void DumpFitelRegs(int fitel);
+
+  std::vector<std::pair<int, uint64_t> > baddies[5];
 };
 
 std::ostream& operator<<(std::ostream& o, const PixelPh1FEDInterface::decoded_phases& p);

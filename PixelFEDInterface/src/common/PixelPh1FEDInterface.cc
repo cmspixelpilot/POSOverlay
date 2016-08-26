@@ -1998,6 +1998,8 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
     std::cout << "fed#" << pixelFEDCard.fedNumber << " slink64call #" << slink64calls << ", fed event #" << evnum << " \033[1m\033[31mWRONG BX\033[0m bx #" << bxnum << "; blocksize: " << cBlockSize << std::endl;
 
 #else
+  const bool check_baddies = true;
+  const char* baddies_names[5] = {"empties", "missed tbm header", "missed tbm trailer", "missed roc headers", "missed cal"};
 
   data[0] = 0x5000000000000000;
   data[0] |= uint64_t(slink64calls & 0xffffff) << 32;
@@ -2013,6 +2015,30 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
       std::cout << "fed#" << pixelFEDCard.fedNumber << " fifo1 fiber " << fib+1 << std::endl;
 
     digfifo1 f = readFIFO1(do_prints);
+
+    if (check_baddies) {
+      int code = -1;
+      if (!f.a.ok() || !f.b.ok())
+        code = 0;
+      if (f.a.n_tbm_h != 1 || f.b.n_tbm_h != 1)
+        code = 1;
+      if (f.a.n_tbm_t != 1 || f.b.n_tbm_t != 1)
+        code = 2;
+      if (f.a.n_roc_h != 8 || f.b.n_roc_h != 8)
+        code = 3;
+      if ((f.a.tbm_t1 & 2) == 0 || (f.b.tbm_t1 & 2) == 0)
+        code = 4;
+
+      if (code != -1) {
+        baddies[code].push_back(std::make_pair(fib, slink64calls));
+
+        std::cout << "got a baddie, fiber " << fib << " (" << baddies_names[code] << ") at slink64call " << slink64calls << "\n";
+        std::cout << "FIFO1 for A:\n";
+        prettyprintFIFO1Stream(f.cFifo1A, f.cMarkerA);
+        std::cout << "FIFO1 for B:\n";
+        prettyprintFIFO1Stream(f.cFifo1B, f.cMarkerB);
+      }
+    }
 
     const bool oldway = true;
     if (oldway) {
@@ -2062,12 +2088,26 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   // maybe we trashed the 5 in the msb, it's all the decoder cares about...
   data[0] = 0x5000000000000000 | (data[0] & 0xFFFFFFFFFFFFFFF);
 
+#if 0
   if (do_prints) {
     std::cout << "my fake fifo3:\n" << std::hex;
     for (size_t i = 0; i < j; ++i)
       std::cout << "0x" << std::setw(16) << std::setfill('0') << data[i] << std::setfill(' ') << std::endl;
     std::cout << std::dec;
   }
+#endif
+
+  if (check_baddies && slink64calls % 1000 == 1) {
+    for (int ii = 0; ii < 5; ++ii) {
+      if (baddies[ii].size()) {
+        std::cout << baddies_names[ii] << " since last print:\n";
+        for (size_t i = 0; i < baddies[ii].size(); ++i)
+          std::cout << "fib " << baddies[ii][i].first << " @ " << baddies[ii][i].second << "\n";
+        baddies[ii].clear();
+      }
+    }
+  }
+
 #endif
 
 #if 0
