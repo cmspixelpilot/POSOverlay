@@ -8,6 +8,9 @@ else:
     import ROOT; ROOT.TCanvas # make sure libGui gets initialized while '-b' is specified;
     sys.argv.remove('-b')     # and don't mess up sys.argv.
 
+# don't import this until after the above since it does a from ROOT import *
+import moduleSummaryPlottingTools as FNAL
+
 class plot_saver:
     i = 0
     
@@ -250,3 +253,56 @@ def differentiate_stat_box(hist, movement=1, new_color=None, new_size=None, colo
     s.SetX2NDC(x2 - (x2-x1)*m + ox)
     s.SetY1NDC(y1 - (y2-y1)*n + oy)
     s.SetY2NDC(y2 - (y2-y1)*n + oy)
+
+def flat_to_module(label, module_name, lists, xform=None):
+    ''' Take a list of 16 lists, each of which has 4160 values, one
+    per pixel in row major format, and make TH2Fs suitable for shoving
+    into the fnal_pixel_plot function below.
+
+    label is an extra tag for the histograms so they can be unique
+
+    xform is an optional transformation function of the form
+    xform(label, module_name, rocnum, col, row, val) -> new_val.
+
+    Values can be None if skipping desired.
+    '''
+
+    assert len(lists) == 16
+    hs = []
+    for iroc,l in enumerate(lists):
+        roc = module_name + '_ROC' + str(iroc)
+        h = ROOT.TH2F('h_%s_%s' % (label, roc), label + ' : ' + roc, 52, 0, 52, 80, 0, 80)
+        h.SetStats(0)
+        hs.append(h)
+        for i,val in enumerate(l):
+            col = i / 80
+            row = i % 80
+            if xform is not None:
+                val = xform(label, module_name, iroc, col, row, val)
+            if val is not None:
+                h.SetBinContent(col+1, row+1, float(val))
+    return hs
+
+def fnal_pixel_plot(hs, module_name, title, z_range=None, existing_c=None):
+    h = FNAL.makeMergedPlot(hs, 'pos')
+    if z_range == 'auto':
+        z_range = FNAL.findZRange(hs)
+    if z_range is not None:
+        FNAL.setZRange(h, z_range)
+
+    fc = FNAL.setupSummaryCanvas(h, moduleName=module_name)
+    if existing_c is not None:
+        existing_c.cd()
+        existing_c.Clear()
+        fc.DrawClonePad()
+
+    pt = ROOT.TPaveText(-100,405,1395,432)
+    pt.AddText(title)
+    pt.SetTextAlign(12)
+    pt.SetTextFont(42)
+    pt.SetFillColor(0)
+    pt.SetBorderSize(0)
+    pt.SetFillStyle(0)
+    pt.Draw()
+
+    return h, fc, pt
