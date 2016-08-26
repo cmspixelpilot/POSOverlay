@@ -3,7 +3,7 @@ from pprint import pprint
 from JMTTools import *
 from JMTROOTTools import *
 import moduleSummaryPlottingTools as FNAL
-from write_other_hc_configs import doer, HC, module_sorter_by_portcard
+from write_other_hc_configs import doer, HC, module_sorter_by_portcard_phi
 set_style(light=True)
 ROOT.gStyle.SetOptStat(111110)
 ROOT.gStyle.SetOptFit(1111)
@@ -123,8 +123,9 @@ this_out_fn = out_fn + '.module_maps.pdf'
 
 bad_counts = defaultdict(int)
 
-max_pcnum = 3 if disk == 1 else 4
-for pcnum in xrange(1,max_pcnum+1):
+min_pcnum = 2 if disk == 2 else 1
+max_pcnum = 4
+for pcnum in xrange(min_pcnum,max_pcnum+1):
     print pcnum
 #    t = ROOT.TPaveText(0,0,1,1)
 #    t.AddText(
@@ -133,7 +134,7 @@ for pcnum in xrange(1,max_pcnum+1):
 #    c.cd(0)
 #    c.SaveAs(this_out_fn)
 
-    modules = [m for m in sorted(the_doer.modules, key=module_sorter_by_portcard) if the_doer.moduleOK(m) and m.portcardnum == pcnum]
+    modules = [m for m in sorted(the_doer.modules, key=module_sorter_by_portcard_phi) if the_doer.moduleOK(m) and m.portcardnum == pcnum]
 
     for module in modules:
         print module.name
