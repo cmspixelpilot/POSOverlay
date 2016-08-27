@@ -2033,8 +2033,8 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
         baddies[code].push_back(std::make_pair(fib, slink64calls));
 
         std::cout << "got a baddie, fed " << pixelFEDCard.fedNumber << " fiber " << fib << " (" << baddies_names[code] << ") at slink64call " << slink64calls << "\n";
-        readTransparentFIFO();
-        readSpyFIFO();
+        //readTransparentFIFO();
+        //readSpyFIFO();
         std::cout << "FIFO1 for A:\n";
         prettyprintFIFO1Stream(f.cFifo1A, f.cMarkerA);
         std::cout << "FIFO1 for B:\n";
