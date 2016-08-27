@@ -235,6 +235,7 @@ void PixelFEDTBMDelayCalibrationWithScores::RetrieveData(unsigned state) {
       const int chA = fiber * 2 - 1;
       const int chB = fiber * 2;
 
+      // JMTBAD do one block read for the whole thing
       const uint32_t scoreA = fed->getScore(chA);
       const uint32_t scoreB = fed->getScore(chB);
 
