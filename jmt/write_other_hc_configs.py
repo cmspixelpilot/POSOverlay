@@ -47,7 +47,10 @@ class Module:
         assert hj[1] in 'TB'
         assert hj[2] in 'ABCD'
 
-        self.portcard_connection = int(d['PC port'])
+        if HC == 'BmI':
+            self.portcard_connection = int(d['PC connection'])
+        else:
+            self.portcard_connection = int(d['PC port'])
         self.portcard_identifier = d['PC identifier']
 
         self.dcdc = d['DCDC']
