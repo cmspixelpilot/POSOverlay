@@ -5,10 +5,8 @@ ROOT.gStyle.SetOptStat(111111)
 
 from write_other_hc_configs import doer, HC, module_sorter_by_portcard_phi
 
-modtests_dir = '/home/fnaltest/SCurveInfo/BpO_Configs_m20_SCurveInfo'
-#disk, daq_dir = 1, '/home/fnaltest/SCurveInfo/BmI_disk1_runs-1227-1238'
-#disk, daq_dir = 2, '/home/fnaltest/SCurveInfo/BmI_disk2_run1223'
-disk, daq_dir = 3, '/home/fnaltest/SCurveInfo/BpO_disk3'
+modtests_dir = 'BpO_Configs_m20_SCurveInfo'
+disk, daq_dir = 2, 'BpO_D2'
 
 the_doer = doer(disk)
 
@@ -67,6 +65,7 @@ def comp(out_fn, daq_dir, modtests_dir):
             if os.path.isfile(fn):
                 daq_fns.append(fn)
 
+    print 'got', len(daq_fns), 'modules'
     for iroc, daq_fn in enumerate(daq_fns):
         #if iroc > 50: break
         roc = os.path.basename(daq_fn)
@@ -248,8 +247,7 @@ def draw_summaries(out_fn, summaries):
     c.SaveAs(out_fn + ']')
 
 #convert_doug('BpO_Configs_m20_SCurveInfo.p')
-convert_trimdat('BpO_disk3.dat')
-#summaries = comp('comp_disk%i' % disk, daq_dir, modtests_dir)
-#draw_summaries('summary_disk%i' % disk, summaries)
-              
-#to_pdf()
+#convert_trimdat('BpO_D2.dat')
+
+summaries = comp('%s_D%i.comparison' % (HC, disk), daq_dir, modtests_dir)
+draw_summaries('%s_D%i.comparison_summary' % (HC, disk), summaries)
