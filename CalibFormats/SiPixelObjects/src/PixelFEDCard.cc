@@ -1235,6 +1235,19 @@ void PixelFEDCard::clear(void)
   PACKET_NB = 0;
   which_FMC = 0;
   swap_Fitel_order = 0;
+  timeout_checking_enabled = 0;
+  timeout_counter_start = 0;
+  timeout_number_oos_threshold = 0;
+  frontend_disable_backend = 0;
+  acq_mode = 0;
+  calib_mode = 0;
+  calib_mode_num_events = 0;
+  data_type = 0;
+  tbm_trailer_mask = 0;
+  tbm_trailer_mask_2 = 0;
+  private_event_number = 0;
+  event_count_checking_enabled = 0;
+  event_count_num_err_oos = 0;
   FEDBASE_0 = 0 ;
   fedNumber = 999 ;
   for(int i=0;i<36;i++){
@@ -1370,9 +1383,18 @@ void PixelFEDCard::writeASCII(std::string dir) const{
     fprintf(outfile, "PACKET_NB: %x\n", PACKET_NB);
     fprintf(outfile, "Which FMC (lower = 0): %d\n", which_FMC);
     fprintf(outfile, "Fitel channel order swapped: %d\n", swap_Fitel_order);
+    fprintf(outfile, "Acquisition mode (1=TBM fifo, 2=Slink fifo, 4=FEROL): %d\n", acq_mode);
+    fprintf(outfile, "Calibration mode: %d\n", calib_mode);
+    fprintf(outfile, "Calibration mode num events: %d\n", calib_mode_num_events);
+    fprintf(outfile, "Data type (0=real data, 1=constants, 2=pattern): %d\n", data_type);
+    fprintf(outfile, "TBM trailer mask: 0x%x\n", tbm_trailer_mask);
+    fprintf(outfile, "TBM trailer mask 2: 0x%x\n", tbm_trailer_mask_2);
+    fprintf(outfile, "Private event number: 0x%x\n", private_event_number);
     fprintf(outfile, "Timeout checking enabled: %d\n", timeout_checking_enabled);
     fprintf(outfile, "Timeout counter start: %d\n", timeout_counter_start);
     fprintf(outfile, "Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
+    fprintf(outfile, "Event count checking enabled: %d\n", event_count_checking_enabled);
+    fprintf(outfile, "Number event count errors before OOS: %d\n", event_count_num_err_oos);
     fprintf(outfile, "Frontend disable backend: %d\n", frontend_disable_backend);
   }
   else
