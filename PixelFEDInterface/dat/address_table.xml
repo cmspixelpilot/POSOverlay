@@ -343,7 +343,7 @@
         <node id="TBM_MASK_1" address="0x40010004" mask="0xffffffff" />
         <node id="TBM_MASK_2" address="0x40010005" mask="0x0000ffff" />
         <node id="tbm_trailer_status_mask" address="0x40010009" mask="0x000000ff" permission="rw" />
-        <node id="tbm_trailer_status_mask2" address="0x4001000a" mask="0x80000000" permission="rw" />
+        <node id="tbm_trailer_status_mask2" address="0x4001000a" mask="0x00070000" permission="rw" />
         <node id="acq_ctrl" permission="rw">
             <!--bit0 = TBM fifo + ddr + ipbus -->
             <!--bit1 = slink data + ddr + ipbus-->
