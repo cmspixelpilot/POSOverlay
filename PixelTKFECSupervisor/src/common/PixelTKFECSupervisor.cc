@@ -62,7 +62,7 @@ using namespace pos::PortCardSettingNames;
 
 #define MYTEST  // special tests 
 
-//#define NO_PILOT_RESET // don't send crate/ring resets for pilot blade since this turns off/on modules on BmO
+#define NO_PILOT_RESET // don't send crate/ring resets for pilot blade since this turns off/on modules on BmO
 
 const bool DEBUG = true; // some additinal debuging messages
 const bool do_force_ccu_readout = false; // force reading of CCU for each workloop (also force reset if enabled)
