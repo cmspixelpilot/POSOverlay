@@ -957,24 +957,18 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::autoPhas
   regManager->WriteStackReg(cVecReg);
   cVecReg.clear();
 
-  // NOTE: here the register idel_individual_ctrl is the base address
-  // of the registers for all 48 channels. So each 32-bit word
-  // contains the control info for 1 channel. Thus by creating a
-  // vector of 48 32-bit words and writing them at the same time we
-  // can write to each channel without using relative addresses!
-
   std::vector<uint32_t> cValVec;
 
   // set the parameters for IDELAY scan
-  cValVec.assign(48, 0x80000000);
+  cValVec.assign(24, 0x80000000);
   regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
 
   // set auto_delay_scan and set idel_RST
-  cValVec.assign(48, 0xc0000000);
+  cValVec.assign(24, 0xc0000000);
   regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
 
   // set auto_delay_scan and remove idel_RST
-  cValVec.assign(48, 0x80000000);
+  cValVec.assign(24, 0x80000000);
   regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
 
   // initialize Phase Finding
@@ -1015,9 +1009,9 @@ std::vector<PixelPh1FEDInterface::decoded_phases> PixelPh1FEDInterface::manualPh
 
   std::vector<uint32_t> cValVec;
   
-  cValVec.assign(48, 0x40000000 | (15<<5) | 15);
+  cValVec.assign(24, 0x40000000 | (15<<5) | 15);
   regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
-  cValVec.assign(48, 0x00000000);
+  cValVec.assign(24, 0x00000000);
   regManager->WriteBlockReg("fe_ctrl_regs.idel_individual_ctrl", cValVec);
 
   std::vector<PixelPh1FEDInterface::decoded_phases> phases = readPhases();
