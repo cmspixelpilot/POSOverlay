@@ -195,6 +195,33 @@ namespace pos{
     // Ph1 FED: disable data from front end to back end
     int frontend_disable_backend;
 
+    // Ph1 FED: acquisition mode: 1: TBM fifo, 2: Slink FIFO, 4: FEROL
+    int acq_mode;
+
+    // Ph1 FED: calibration mode on? (JMTBAD can we just keep it on?)
+    int calib_mode;
+
+    // Ph1 FED: number of events per ipbus read in calibration mode (JMTBAD only 1 works with the rest of the POS the moment)
+    int calib_mode_num_events;
+
+    // Ph1 FED: data type: 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
+    int data_type;
+
+    // Ph1 FED: tbm trailer mask: bit = 1 = unmasked. Bit7-0: NoTokenPass - ResetTBM - ResetROC - SyncError - SyncTrigger - ClrTrigCnt - CalTrig - Stackful
+    int tbm_trailer_mask;
+
+    // Ph1 FED: tbm trailer mask 2: bit = 1 = unmasked. Bit2-0: WrongNbOfROCs - AutoResetSent - PKAMReseSent
+    int tbm_trailer_mask_2;
+
+    // Ph1 FED: private event number
+    int private_event_number;
+
+    // Ph1 FED: whether event number error checking is enabled
+    int event_count_checking_enabled;
+
+    // Ph1 FED: how many event number errors lead to OOS
+    int event_count_num_err_oos;
+
     // Most recent additions requested by Will and Danek (Dario)
     int BusyHoldMin       ;
     int BusyWhenBehind    ;

@@ -682,6 +682,27 @@ PixelFEDCard::PixelFEDCard(string fileName):
     fscanf(infile, "Fitel channel order swapped: %d\n", &swap_Fitel_order);
     if (localDEBUG) printf("Fitel channel order swapped: %d\n", swap_Fitel_order);
 
+    fscanf(infile, "Acquisition mode (1=TBM fifo, 2=Slink fifo, 4=FEROL): %d\n", &acq_mode);
+    if (localDEBUG) printf("Acquisition mode (1=TBM fifo, 2=Slink fifo, 4=FEROL): %d\n", acq_mode);
+
+    fscanf(infile, "Calibration mode: %d\n", &calib_mode);
+    if (localDEBUG) printf("Calibration mode: %d\n", calib_mode);
+
+    fscanf(infile, "Calibration mode num events: %d\n", &calib_mode_num_events);
+    if (localDEBUG) printf("Calibration mode num events:%d\n", calib_mode_num_events);
+
+    fscanf(infile, "Data type (0=real data, 1=constants, 2=pattern): %d\n", &data_type);
+    if (localDEBUG) printf("Data type (0=real data, 1=constants, 2=pattern):%d\n", data_type);
+
+    fscanf(infile, "TBM trailer mask: %x\n", &tbm_trailer_mask);
+    if (localDEBUG) printf("TBM trailer mask: %x\n", tbm_trailer_mask);
+
+    fscanf(infile, "TBM trailer mask 2: %x\n", &tbm_trailer_mask_2);
+    if (localDEBUG) printf("TBM trailer mask 2: %x\n", tbm_trailer_mask_2);
+
+    fscanf(infile, "Private event number: %d\n", &private_event_number);
+    if (localDEBUG) printf("Private event number:%d\n", private_event_number);
+
     fscanf(infile, "Timeout checking enabled: %d\n", &timeout_checking_enabled);
     if (localDEBUG) printf("Timeout checking enabled: %d\n", timeout_checking_enabled);
 
@@ -690,6 +711,12 @@ PixelFEDCard::PixelFEDCard(string fileName):
 
     fscanf(infile, "Timeout number OOS threshold: %d\n", &timeout_number_oos_threshold);
     if (localDEBUG) printf("Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
+
+    fscanf(infile, "Event count checking enabled: %d\n", &event_count_checking_enabled);
+    if (localDEBUG) printf("Event count checking enabled: %d\n", event_count_checking_enabled);
+
+    fscanf(infile, "Number event count errors before OOS: %d\n", &event_count_num_err_oos);
+    if (localDEBUG) printf("Number event count errors before OOS: %d\n", event_count_num_err_oos);
 
     fscanf(infile, "Frontend disable backend: %d\n", &frontend_disable_backend);
     if (localDEBUG) printf("Frontend disable backend: %d\n", frontend_disable_backend);

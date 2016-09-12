@@ -120,16 +120,17 @@ int PixelPh1FEDInterface::setup() {
   std::vector<std::pair<std::string, uint32_t> > cVecReg = {
     {"pixfed_ctrl_regs.DDR0_end_readout", 0},
     {"pixfed_ctrl_regs.DDR1_end_readout", 0},
-    {"pixfed_ctrl_regs.acq_ctrl.acq_mode", 2},  // 1: TBM fifo, 2: Slink FIFO, 4: FEROL
-    {"pixfed_ctrl_regs.acq_ctrl.calib_mode", 1}, 
-    {"pixfed_ctrl_regs.acq_ctrl.calib_mode_NEvents", 0}, // = nevents - 1
-    {"pixfed_ctrl_regs.data_type", 0}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
+    {"pixfed_ctrl_regs.acq_ctrl.acq_mode", pixelFEDCard.acq_mode},  // 1: TBM fifo, 2: Slink FIFO, 4: FEROL
+    {"pixfed_ctrl_regs.acq_ctrl.calib_mode", pixelFEDCard.calib_mode},
+    {"pixfed_ctrl_regs.acq_ctrl.calib_mode_NEvents", pixelFEDCard.calib_mode_num_events-1}, // = nevents - 1
+    {"pixfed_ctrl_regs.data_type", pixelFEDCard.data_type}, // 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
     {"pixfed_ctrl_regs.fitel_i2c_cmd_reset", 1}, // fitel I2C bus reset & fifo TX & RX reset
     {"pixfed_ctrl_regs.PACKET_NB", pixelFEDCard.PACKET_NB}, // the FW needs to be aware of the true 32 bit workd Block size for some reason! This is the Packet_nb_true in the python script?!
     {"pixfed_ctrl_regs.TBM_MASK_1", tbm_mask_1},
     {"pixfed_ctrl_regs.TBM_MASK_2", tbm_mask_2},
-    {"pixfed_ctrl_regs.tbm_trailer_status_mask", 0x0},
-    {"pixfed_ctrl_regs.slink_ctrl.privateEvtNb", 0x01},
+    {"pixfed_ctrl_regs.tbm_trailer_status_mask", pixelFEDCard.tbm_trailer_mask},
+    {"pixfed_ctrl_regs.tbm_trailer_status_mask2", pixelFEDCard.tbm_trailer_mask_2},
+    {"pixfed_ctrl_regs.slink_ctrl.privateEvtNb", pixelFEDCard.private_event_number},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_source_id", pixelFEDCard.fedNumber},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_FOV", 0xe},
     {"pixfed_ctrl_regs.slink_ctrl.slinkFormatH_Evt_ty", 0},
@@ -137,10 +138,10 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.tts.timeout_check_valid", pixelFEDCard.timeout_checking_enabled},
     {"pixfed_ctrl_regs.tts.timeout_value", pixelFEDCard.timeout_counter_start},
     {"pixfed_ctrl_regs.tts.timeout_nb_oos_thresh", pixelFEDCard.timeout_number_oos_threshold},
-    {"pixfed_ctrl_regs.tts.event_cnt_check_valid", 0},
-    {"pixfed_ctrl_regs.tts.evt_err_nb_oos_thresh", 255},
+    {"pixfed_ctrl_regs.tts.event_cnt_check_valid", pixelFEDCard.event_count_checking_enabled},
+    {"pixfed_ctrl_regs.tts.evt_err_nb_oos_thresh", pixelFEDCard.event_count_num_err_oos}, 
     {"pixfed_ctrl_regs.tts.bc0_ec0_polar", 0},
-    {"pixfed_ctrl_regs.tts.force_RDY", 1},
+    {"pixfed_ctrl_regs.tts.force_RDY", 0},
 #ifdef JMT_FROMFIFO1
     {"fe_ctrl_regs.disable_BE", 1},
 #else
@@ -155,11 +156,19 @@ int PixelPh1FEDInterface::setup() {
     {"pixfed_ctrl_regs.fitel_rx_i2c_req", 0},
   };
 
+
+  // JMTBAD use block write for this one
   for (int i = 0; i < 48; ++i) {
     char buf[256];
     snprintf(buf, 256, "pixfed_ctrl_regs.tts.evt_timeout_value.tbm_ch_%02i", i);
     cVecReg.push_back(std::make_pair(std::string(buf), uint32_t(pixelFEDCard.timeout_counter_start)));
   }
+
+  regManager->WriteStackReg(cVecReg);
+  //std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
+  //for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
+  //  std::cout << std::setfill(' ') << std::setw(60) << cVecReg[i].first << ": 0x" << std::hex << cVecReg[i].second << std::dec << "\n";
+  cVecReg.clear();
 
   std::vector<uint32_t> cVec(24, 0);
   for (int i = 0; i < 24; ++i) {
@@ -169,12 +178,6 @@ int PixelPh1FEDInterface::setup() {
     cVec.push_back(word); 
   }
   regManager->WriteBlockReg("fe_ctrl_regs.number_of_rocs", cVec); 
-
-  //std::cout << "FED#" << pixelFEDCard.fedNumber << " settings:\n";
-  //for (size_t i = 0, ie = cVecReg.size(); i < ie; ++i)
-  //  std::cout << std::setfill(' ') << std::setw(60) << cVecReg[i].first << ": 0x" << std::hex << cVecReg[i].second << std::dec << "\n";
-
-  regManager->WriteStackReg(cVecReg);
 
   usleep(10000);
 
