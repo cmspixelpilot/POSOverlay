@@ -524,7 +524,8 @@
         <node id="initialize_swap" address="0x40030000" mask="0x00000008" permission="w" />
         <node id="bitslip" address="0x40030000" mask="0x00000010" permission="w" />
         <node id="software_trigger_out" address="0x40030000" mask="0x40000000" permission="w" />
-        <node id="idel_individual_ctrl" address="0x40030001" mode="block" size="48" permission="w" />
+        <node id="idel_individual_ctrl" address="0x40030001" mode="block" size="24" permission="w" />
+	<node id="number_of_rocs" address="0x40030019" mode="block" size="24" permission="w" />
         <node id="fifo_config" address="0x40030031" permission="rw">
             <node id="overflow_value" mask="0x000fffff" />
             <node id="overflow_value_TBMa" mask="0x000003ff" />
