@@ -187,14 +187,6 @@ int PixelPh1FEDInterface::setup() {
     ConfigureFitel(1, 1, true);
   }
 
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 1);
-  usleep(10000);
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 1);
-  usleep(10000);
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_gtx_reset", 0);
-  usleep(10000);
-  regManager->WriteReg ("pixfed_ctrl_regs.slink_core_sys_reset", 0);
-
   fNthAcq = 0;
 
   getBoardInfo();
