@@ -109,7 +109,7 @@
         <sessionId xsi:type="xsd:string">dummy-session</sessionId>
         <hardwareLeaseRenewalInterval xsi:type="xsd:string">PT5S</hardwareLeaseRenewalInterval>
         <hardwareConfigurationFile xsi:type="xsd:string">/nfshome0/pixelpro/XDAQConfigurations/pixel_pi_config.txt</hardwareConfigurationFile>
-	<fedEnableMask>40&0%1240&3%</fedEnableMask> <!-- 40&3%1240&0% for VME -->
+	<fedEnableMask xsi:type="xsd:string">40&amp;0%1240&amp;3%</fedEnableMask> <!-- 40&amp;3%1240&amp;0% for VME -->
       </properties>  
     </xc:Application>
     <xc:Module>${XDAQ_ROOT}/lib/libb2inutils.so</xc:Module>
