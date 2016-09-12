@@ -347,14 +347,14 @@ void PixelTBMSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
     int tbmchannelB=15; 
     int hubaddress=theROC.hubaddress();
 
-//    if (doResets) {
-//      pixelFEC->injectrsttbm(mfec, 1);
-//      pixelFEC->injectrstroc(mfec,1);
-//    }
-//    pixelFEC->enablecallatency(mfec,0);
-//    pixelFEC->disableexttrigger(mfec,0);
-//    pixelFEC->injecttrigger(mfec,0);
-//    pixelFEC->callatencycount(mfec,79);
+    if (doResets) {
+      pixelFEC->injectrsttbm(mfec, 1);
+      pixelFEC->injectrstroc(mfec,1);
+    }
+    pixelFEC->enablecallatency(mfec,0);
+    pixelFEC->disableexttrigger(mfec,0);
+    pixelFEC->injecttrigger(mfec,0);
+    pixelFEC->callatencycount(mfec,79);
 
     //pixelFEC->synccontrolregister(mfec);
 
