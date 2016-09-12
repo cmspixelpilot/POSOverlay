@@ -1735,57 +1735,41 @@ int PixelPh1FEDInterface::drainFifo1(uint32_t *data) {
   return 0;
 }
 
+int PixelPh1FEDInterface::drainErrorFifo(uint32_t* data) {
+  // JMTBAD printlevel
+  const bool force = true;
+  std::cout << "drainErrorFifo: " << (force ? "forcing read" : "") << "\n";
+  if (force) regManager->WriteReg("pixfed_ctrl_regs.error_fifo_force_read", 1);
 
-
-int PixelPh1FEDInterface::drainErrorFifo(uint32_t *data) {
-  return 0;
-
-  //    if (pForce)
-  //    {
-  //        std::cout << "Forcing read of ERROR Fifo!" << std::endl;
-  //        //first, enable the error fifo
-  //        WriteReg ("pixfed_ctrl_regs.error_fifo_force_read", 1);
-  //    }
-
-  //then poll for error fifo ready=1
-  int shitty = 0;
+  int swtimeout = 0;
   while (1) {
-    uint32_t fuck = regManager->ReadReg ("pixfed_stat_regs.error_fifo_read_rdy");
-    if (fuck == 1 || shitty++ == 1000) {
-      std::cout << " break with fuck " << fuck << std::endl;
+    const uint32_t rdready = regManager->ReadReg("pixfed_stat_regs.error_fifo_read_rdy");
+    if (rdready == 1 || swtimeout++ == 1000) {
+      std::cout << " break with rdready = " << rdready << " SWtimeout = " << swtimeout << std::endl;
       break;
     }
-    if (fuck != 0)
-      std::cout << " fuck is " << fuck << std::endl;
-    usleep (100);
+    if (rdready != 0) std::cout << " rdready is " << rdready << std::endl;
+    usleep(100);
   }
 
   std::cout << "Error FIFO read ready =1! " << std::endl;
 
-  uint32_t cErrorWords = regManager->ReadReg ("pixfed_stat_regs.error_fifo_wr_data_count");
-  std::cout << "Error FIFO contains " << cErrorWords << " error words!" << std::endl;
+  const uint32_t num_words = regManager->ReadReg("pixfed_stat_regs.error_fifo_wr_data_count");
+  const std::vector<uint32_t> words = regManager->ReadBlockRegValue("ERROR_fifo", num_words);
 
-  //block read the error fifo with cErrorWords words
-  std::vector<uint32_t> cErrors = regManager->ReadBlockRegValue ("ERROR_fifo" , cErrorWords );
+  regManager->WriteReg("pixfed_ctrl_regs.error_fifo_read_done", 1);
+  while (regManager->ReadReg("pixfed_stat_regs.error_fifo_read_rdy")) usleep(100);
+  regManager->WriteReg("pixfed_ctrl_regs.error_fifo_read_done", 0);
 
-  //done reading the error fifo
-  regManager->WriteReg ("pixfed_ctrl_regs.error_fifo_read_done", 1);
+  if (force) regManager->WriteReg("pixfed_ctrl_regs.error_fifo_force_read", 0);
 
-  //then poll for error fifo ready = 0
-  while (regManager->ReadReg ("pixfed_stat_regs.error_fifo_read_rdy") = 1) usleep (100);
-
-  //release
-  regManager->WriteReg ("pixfed_ctrl_regs.error_fifo_read_done", 0);
-
-  //if (pForce) regManager->WriteReg ("pixfed_ctrl_regs.error_fifo_force_read", 0);
-  std::cout << "ERROR Fifo content: " << std::endl;
-
-  for (size_t i = 0; i < cErrors.size(); ++i) {
-    if (data) data[i] = cErrors[i];
-    std::cout << "word " << std::setw(3) << ": 0x" << std::hex << std::setw(8) << cErrors[i] << std::dec << std::endl;
+  std::cout << "Error FIFO contains " << num_words << " error words:" << std::endl;
+  for (size_t i = 0; i < words.size(); ++i) {
+    if (data) data[i] = words[i];
+    std::cout << "word " << std::setw(3) << ": 0x" << std::hex << std::setw(8) << words[i] << std::dec << std::endl;
   }
 
-  return int(cErrors.size());
+  return int(words.size());
 }
 
 int PixelPh1FEDInterface::drainTemperatureFifo(uint32_t* data) {
