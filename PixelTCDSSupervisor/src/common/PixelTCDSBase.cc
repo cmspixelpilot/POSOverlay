@@ -23,7 +23,8 @@ pixel::tcds::PixelTCDSBase::PixelTCDSBase(xdaq::Application* const xdaqApp) :
   tcdsAppClassName_(""),
   tcdsAppInstance_(0),
   hwLeaseHandlerP_(0),
-  hwLeaseRenewalInterval_("PT5S")
+  hwLeaseRenewalInterval_("PT5S"),
+  fedEnableMask_("")
 {
   // Registration of the InfoSpace variables.
   xdaqApp->getApplicationInfoSpace()->fireItemAvailable("tcdsAppClassName", &tcdsAppClassName_);
@@ -31,6 +32,7 @@ pixel::tcds::PixelTCDSBase::PixelTCDSBase(xdaq::Application* const xdaqApp) :
   xdaqApp->getApplicationInfoSpace()->fireItemAvailable("sessionId", &sessionId_);
   xdaqApp->getApplicationInfoSpace()->fireItemAvailable("hardwareLeaseRenewalInterval",
                                                           &hwLeaseRenewalInterval_);
+  xdaqApp->getApplicationInfoSpace()->fireItemAvailable("fedEnableMask", &fedEnableMask_);
 }
 
 
@@ -60,6 +62,12 @@ std::string
 pixel::tcds::PixelTCDSBase::hwLeaseRenewalInterval()
 {
   return hwLeaseRenewalInterval_.toString();
+}
+
+std::string
+pixel::tcds::PixelTCDSBase::fedEnableMask()
+{
+  return fedEnableMask_.toString();
 }
 
 std::string
@@ -278,7 +286,7 @@ pixel::tcds::PixelTCDSBase::createConfigureSOAPCommand(std::string const& hwCfgS
   xoap::MessageReference msg = createComplexSOAPCommand("Configure",sessionId(),"hardwareConfigurationString",hwCfgString);
   // JMTBAD this is real dum
   if (tcdsAppClassName() == "tcds::pi::PIController")
-    addElementToSOAPCommand(msg, "fedEnableMask", "xsd:string", "40&3%1240&0%");
+    addElementToSOAPCommand(msg, "fedEnableMask", "xsd:string", fedEnableMask());
   return msg;
 }
 
