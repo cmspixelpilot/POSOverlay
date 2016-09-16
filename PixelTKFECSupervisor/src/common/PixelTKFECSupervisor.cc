@@ -3377,8 +3377,7 @@ void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) th
         for (int i = 0; i < 3; ++i)
           *out << "<td>" << ddr[slot][ring][ccu][i] << "</td>";
         *out << "</tr>\n";
-        *out << "<tr><td>data</td>\n";
-        *out << "This is a new line";
+        *out << "<tr><td>data</td>";
         for (int i = 0; i < 3; ++i)
           *out << "<td>" << data[slot][ring][ccu][i] << "</td>";
         *out << "</tr>\n";
@@ -3394,11 +3393,14 @@ void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) th
 	    else
 	      M[8 - i - 1] = false;
 	  }
+          *out <<"<tr><td>";
 	  for (int i = 0; i < 8; i++)
 	    *out << M[i];
-	  *out << endl;
+	  *out << "</td>";
+          *out << "</tr>\n";
           for (int bit = 0; bit < 8; bit++)
-	    std::cout << "Channel=" << channelnumber << ";bit=" << bit << ";value=" << (M[bit]) << ":" << (MessageMatrix[channelnumber][bit].c_str()) << " = "<< (M[bit] ? "GOOD" : "Bad") << "." << std::endl;
+	    *out << "<tr><td>Channel=" << channelnumber << ";bit=" << bit << ";value=" << (M[8-bit-1]) << ":" << (MessageMatrix[channelnumber][bit].c_str()) << " = "<< (M[8-1-bit] ? "GOOD" : "Bad") << "." << "</td></tr>\n";
+          *out <<"</tr>\n";
 
 	}
         *out << "</table>\n";
