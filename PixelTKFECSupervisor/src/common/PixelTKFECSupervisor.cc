@@ -3340,6 +3340,31 @@ void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) th
     enable_pgood[pc_name] = std::make_pair(enable, pgood);
   }
 
+  string MessageMatrix[3][8];
+  MessageMatrix[0][0] = "J11 dcdc converter on P1";
+  MessageMatrix[0][1] = "J12 dcdc converter on P1";
+  MessageMatrix[0][2] = "J11 dcdc converter on P2";
+  MessageMatrix[0][3] = "J12 dcdc converter on P2";
+  MessageMatrix[0][4] = "J11 dcdc converter on P3";
+  MessageMatrix[0][5] = "J12 dcdc converter on P3";
+  MessageMatrix[0][6] = "always 1";
+  MessageMatrix[0][7] = "always 1";
+  MessageMatrix[1][0] = "bit 0 dcdc power for P1";
+  MessageMatrix[1][1] = "bit 1 dcdc power for P1";
+  MessageMatrix[1][2] = "bit 2 dcdc power for P1";
+  MessageMatrix[1][3] = "bit 3 dcdc power for P1";
+  MessageMatrix[1][4] = "bit 4 dcdc power for P2";
+  MessageMatrix[1][5] = "bit 5 dcdc power for P2";
+  MessageMatrix[1][6] = "bit 6 dcdc power for P2";
+  MessageMatrix[1][7] = "bit 7 dcdc power for P2";
+  MessageMatrix[2][0] = "bit 0 dcdc power for P3";
+  MessageMatrix[2][1] = "bit 1 dcdc power for P3";
+  MessageMatrix[2][2] = "bit 2 dcdc power for P3";
+  MessageMatrix[2][3] = "bit 3 dcdc power for P3";
+  MessageMatrix[2][4] = "qpll lock for P1";
+  MessageMatrix[2][5] = "qpll lock for P2";
+  MessageMatrix[2][6] = "qpll lock for P3";
+  MessageMatrix[2][7] = "always 1 in my experience but I'm not sure what it's hooked to";
   *out << "raw pia data:<br>\n";
   *out << std::hex;
   for (int slot = 0; slot < 1; ++slot) {
@@ -3352,10 +3377,30 @@ void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) th
         for (int i = 0; i < 3; ++i)
           *out << "<td>" << ddr[slot][ring][ccu][i] << "</td>";
         *out << "</tr>\n";
-        *out << "<tr><td>data</td>";
+        *out << "<tr><td>data</td>\n";
+        *out << "This is a new line";
         for (int i = 0; i < 3; ++i)
           *out << "<td>" << data[slot][ring][ccu][i] << "</td>";
         *out << "</tr>\n";
+        for (int channelnumber = 0; channelnumber < 3; channelnumber++)
+	{
+	  bool *M = new bool[8];
+	  for (int i = 0; i < 8; i++)
+	  {
+	    if (data[slot][ring][ccu][channelnumber] & (1 << i))
+	    {
+	      M[8 - i - 1] = true;
+	    }
+	    else
+	      M[8 - i - 1] = false;
+	  }
+	  for (int i = 0; i < 8; i++)
+	    *out << M[i];
+	  *out << endl;
+          for (int bit = 0; bit < 8; bit++)
+	    std::cout << "Channel=" << channelnumber << ";bit=" << bit << ";value=" << (M[bit]) << ":" << (MessageMatrix[channelnumber][bit].c_str()) << " = "<< (M[bit] ? "GOOD" : "Bad") << "." << std::endl;
+
+	}
         *out << "</table>\n";
       }
     }
