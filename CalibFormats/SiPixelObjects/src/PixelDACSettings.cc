@@ -545,7 +545,6 @@ void PixelDACSettings::writeXML(pos::PixelConfigKey key, int version, std::strin
 //=============================================================================================
 void PixelDACSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
 					     PixelNameTranslation* trans, PixelDetectorConfig* detconfig, bool HVon) const{
-  std::cout << "PixelDACSettings::generateConfiguration HVon=" << int(HVon) << " for " << dacsettings_.size() << " rocs including " << dacsettings_[0].getROCName() << std::endl;
 
   bool bufferData=true;
 
@@ -560,9 +559,6 @@ void PixelDACSettings::generateConfiguration(PixelFECConfigInterface* pixelFEC,
     dacsettings_[i].getDACs(dacs);
 
     PixelHdwAddress theROC=*(trans->getHdwAddress(dacsettings_[i].getROCName()));
-    //std::cout << "generateConfiguration for " << dacsettings_[i].getROCName() << ":\n";
-    //for (int jmt = 0; jmt < dacs.size(); ++jmt)
-    //  std::cout << jmt << ": " << dacs[jmt] << "\n";
 
     //Need to set readout speed (40MHz) and Vcal range (0-1800 mV) and enable the chip
 
