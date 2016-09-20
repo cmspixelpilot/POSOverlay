@@ -567,6 +567,7 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
           }//if meanSig >= rocNoiseMean_
           else
    	    branch_b.rocsWithNoiseGTN     = 1.0;
+
           double rmsSig = tmpHistoNoise1D->GetRMS();
           hRmsNoise->Fill(rmsSig);
           branch_b.noise    = meanSig;
