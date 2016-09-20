@@ -17,10 +17,10 @@
 using namespace std;
 
 struct PixelLinearGainBranch{
-	unsigned int rocsWithSlopeGTN;
-	unsigned int rocsWithInterceptGTN;
-	unsigned int rocsWithChisquareGTN;
-	unsigned int rocsWithProbabilityGTN;
+	float rocsWithSlopeGTN;
+	float rocsWithInterceptGTN;
+	float rocsWithChisquareGTN;
+	float rocsWithProbabilityGTN;
 	float slope;
 	float intercept;
 	float chisquare;
@@ -32,7 +32,7 @@ struct PixelLinearGainBranch{
 };
 
 struct PixelTanhGainBranch{
-	unsigned int rocWithLinearityLTN;
+	float rocWithLinearityLTN;
 	float par0;
 	float par1;
 	float par2;
@@ -589,7 +589,6 @@ void PixelGainHistoManager::fit(void){
 	    //          	linearFitStatistic2DMap_[rocName]->Fill(col,row,linearIstat);
 
 	    if(PRINT) cout<<" lin fit "<<col<<" "<<row<<" "<<linearIstat <<" "<<par0<<" "<<par1<<" "<<chis2<<" "<<ndof<<endl;
-            delete fitter;
 	  }
 
 
@@ -634,7 +633,6 @@ void PixelGainHistoManager::fit(void){
 	    // tanhFitStatistic2DMap_[rocName]->Fill(col,row,tanhIstat);
 
 	    if(PRINT) cout<<" tanh fit "<<col<<" "<<row<<" "<<tanhIstat <<" "<<par0<<" "<<par1<<endl;
-            delete fitter;
 	  }
 	  
 	  /*				
@@ -778,9 +776,9 @@ void PixelGainHistoManager::makeSummaryPlots(void){
  
 
   struct BadDecodingBranch{                                     //added from PixelHistoManager.cc
-        int numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
         float percentOfBadPixels;                                    //added from PixelHistoManager.cc
-        unsigned int numberOfBadPixels;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixels;                                    //added from PixelHistoManager.cc
         char rocName[40];                                    //added from PixelHistoManager.cc
   };
 
@@ -789,18 +787,16 @@ void PixelGainHistoManager::makeSummaryPlots(void){
   branchVariables_a.str("");				//added from PixelHistoManager.cc
   branchVariables_a << "Number_of_wrongly_decoded_pixels=0/i" << ":Percentage_wrongly_decoded_pixels/F" << ":Number_wrongly_decoded_pixels/i" << ":ROCName/C";	//added from PixelHistoManager.cc
 
-  TBranch *wronglyBranch = summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
+  summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
  
   PixelLinearGainBranch theLinearBranch;
   stringstream branchVariables;
-  TBranch *linearBranch = 0;
-  TBranch *tanhBranch = 0;
   if(linearFit_)
   {
     branchVariables.str("");
-    branchVariables << "Rocs with Slope < " << rocSlopeMean_ << "/i" << ":Rocs with Intercept < " << rocInterceptMean_ << "/i" << ":Rocs with Chisquare < " << rocChisquareMean_ << "/i" <<":Rocs with Probability > "
-    	            << rocProbabilityMean_ << "/i" << ":Slope/F"  << ":Intercept/F" << ":Chisquare/F" << ":Probability/F" << ":FitStatistics/F" << ":SlopeRMS/F" << ":InterceptRMS/F" << ":ROCName/C";
-    linearBranch = summaryTree_->Branch("LinearFit",&theLinearBranch,branchVariables.str().c_str());
+    branchVariables << "Rocs with Slope < " << rocSlopeMean_ << "/F" << ":Rocs with Intercept < " << rocInterceptMean_ << "/F" << ":Rocs with Chisquare < " << rocChisquareMean_ << "/F" <<":Rocs with Probability > "
+    	            << rocProbabilityMean_ << "/F" << ":Slope/F"  << ":Intercept/F" << ":Chisquare/F" << ":Probability/F" << ":FitStatistics/F" << ":SlopeRMS/F" << ":InterceptRMS/F" << ":ROCName/C";
+    summaryTree_->Branch("LinearFit",&theLinearBranch,branchVariables.str().c_str());
   }//linearFit_
   
   PixelTanhGainBranch theTanhBranch;
@@ -808,7 +804,7 @@ void PixelGainHistoManager::makeSummaryPlots(void){
   {
     branchVariables.str("");
     branchVariables << "Rocs with Linearity < " << tanhLinearityMean_ << "/i" << ":Par0/F" << ":Par1 (Linearity check)/F" << ":Par2/F" << ":Par3/F" << ":FitStatistics/F" << ":ROCName/C";
-    tanhBranch = summaryTree_->Branch("TanhFit",&theTanhBranch,branchVariables.str().c_str());
+    summaryTree_->Branch("TanhFit",&theTanhBranch,branchVariables.str().c_str());
   }//tanFit_
   
   /////////////SUMMARY HISTOS DECLARATION///////////////////////
@@ -893,10 +889,11 @@ void PixelGainHistoManager::makeSummaryPlots(void){
         float percentageBAD = 100.0*nOfWronglyDecoded/(52.0*80.0);                                      //added from PixelHistoManager.cc
         unsigned int GT0 = 1;                                                                   //added from PixelHistoManager.cc
         if(nOfWronglyDecoded > 0)                                                               //added from PixelHistoManager.cc
-          GT0 = 0;                                                                              //added from PixelHistoManager.cc
+          GT0 = 0.0;                                                                              //added from PixelHistoManager.cc
         branch_a.numberOfBadPixelsGT0 = GT0;                                                    //added from PixelHistoManager.cc
         branch_a.percentOfBadPixels = percentageBAD;                                            //added from PixelHistoManager.cc
-        branch_a.numberOfBadPixels  = nOfWronglyDecoded;                                        //added from PixelHistoManager.cc
+	double doubleNOfWronglyDecoded = nOfWronglyDecoded * 1.0;
+        branch_a.numberOfBadPixels  = doubleNOfWronglyDecoded;                                        //added from PixelHistoManager.cc
 
         if(!thePixelConfigurationsManager_->isDataToAnalyze(rocName))
           continue;
@@ -913,10 +910,10 @@ void PixelGainHistoManager::makeSummaryPlots(void){
 	    if(meanThr>rocSlopeMean_)
             {
 	      *logger_ << mthn << "ROC="<< rocName <<" Mean Slope=" << meanThr << endl;
-	      theLinearBranch.rocsWithSlopeGTN = 0;
+	      theLinearBranch.rocsWithSlopeGTN = 0.0;
 	    }//if     meanThr>rocSlopeMean_
             else
-	      theLinearBranch.rocsWithSlopeGTN = 1;
+	      theLinearBranch.rocsWithSlopeGTN = 1.0;
 	    double     rmsThr = tmpHistoSlope1D->GetRMS();
 	    hRmsSlope->Fill(rmsThr);
 	    theLinearBranch.slope        = meanThr;
@@ -934,10 +931,10 @@ void PixelGainHistoManager::makeSummaryPlots(void){
 	    if (meanSig>rocInterceptMean_)
             {
 	      *logger_ << mthn << "ROC="<< rocName <<" Mean Intercept=" << meanSig <<endl;
-	      theLinearBranch.rocsWithInterceptGTN = 0;
+	      theLinearBranch.rocsWithInterceptGTN = 0.0;
 	    }//if     meanSig > rocInterceptMean_
             else
-	      theLinearBranch.rocsWithInterceptGTN = 1;
+	      theLinearBranch.rocsWithInterceptGTN = 1.0;
 	    double     rmsSig = tmpHistoIntercept1D->GetRMS();
 	    hRmsIntercept->Fill(rmsSig);
 	    theLinearBranch.intercept        = meanSig;
@@ -952,10 +949,10 @@ void PixelGainHistoManager::makeSummaryPlots(void){
 	    if(meanSig>rocChisquareMean_)
             {
 	      *logger_ << mthn << "ROC="<< rocName <<" Mean Chis2 t=" << meanSig << endl;
-	      theLinearBranch.rocsWithChisquareGTN = 0;
+	      theLinearBranch.rocsWithChisquareGTN = 0.0;
 	    }//if     meanSig > rocChisquareMean_
             else
-	      theLinearBranch.rocsWithChisquareGTN = 1;
+	      theLinearBranch.rocsWithChisquareGTN = 1.0;
 	    theLinearBranch.chisquare        = meanSig;
           }//if tmpHistoChisquare1D->GetEntries()>0
 
@@ -967,10 +964,10 @@ void PixelGainHistoManager::makeSummaryPlots(void){
 	    if (meanSig<rocProbabilityMean_)
             {
 	      *logger_ << mthn << "ROC="<< rocName <<" Mean Prob. =" << meanSig << endl;
-	      theLinearBranch.rocsWithProbabilityGTN = 0;
+	      theLinearBranch.rocsWithProbabilityGTN = 0.0;
 	    }//if     meanSig < rocProbabilityMean_
             else
-	      theLinearBranch.rocsWithProbabilityGTN = 1;
+	      theLinearBranch.rocsWithProbabilityGTN = 1.0;
 	    theLinearBranch.probability        = meanSig;
           }//if tmpHistoProbability1D->GetEntries()>0
           
@@ -1023,10 +1020,10 @@ void PixelGainHistoManager::makeSummaryPlots(void){
 	    if (mean>tanhLinearityMean_)
             {
 	      *logger_ << mthn << "ROC="<< rocName <<" Mean Linearity=" << mean << endl;
-	      theTanhBranch.rocWithLinearityLTN = 0;
+	      theTanhBranch.rocWithLinearityLTN = 0.0;
 	    }//if     mean>tanhLinearityMean_
             else
-	      theTanhBranch.rocWithLinearityLTN = 1;
+	      theTanhBranch.rocWithLinearityLTN = 1.0;
 	    theTanhBranch.par1     = mean;
           }//iftanhFit_
 
@@ -1070,9 +1067,6 @@ void PixelGainHistoManager::makeSummaryPlots(void){
       }//for ROC		  					        
     }//for Channel
   }//for FED
-  summaryTree_->Print();
-  summaryTree_->SetScanField(0);
-  summaryTree_->Scan("*","","",100);
 }//makeSummaryPlots
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
