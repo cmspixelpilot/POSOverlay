@@ -50,8 +50,9 @@ void sigprocess(int sigproc){
 }
 
 ////////////////////////////////////////////////////////////////////////
-PixelHistoViewer::PixelHistoViewer(xdaq::ApplicationStub * s)
-  throw (xdaq::exception::Exception): xdaq::Application(s){			
+PixelHistoViewer::PixelHistoViewer(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception)
+  : xdaq::Application(s)
+{			
   signal(SIGINT,sigprocess);
   signal(SIGQUIT,sigprocess);
   std::string mthn = "[PixelHistoViewer::PixelHistoViewer()]\t";

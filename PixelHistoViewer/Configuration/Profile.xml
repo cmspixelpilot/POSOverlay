@@ -28,6 +28,4 @@
 	<!-- HyperDAQ -->
 	<xp:Application class="hyperdaq::Application" id="3"  service="hyperdaq" network="local"/>
 	<xp:Module>${XDAQ_ROOT}/lib/libhyperdaq.so</xp:Module>	
-<!--
--->
 </xp:Profile>
