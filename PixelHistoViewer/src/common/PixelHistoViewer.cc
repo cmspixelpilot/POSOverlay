@@ -26,6 +26,8 @@
 
 #include <signal.h>
 
+#include "xgi/framework/Method.h"
+
 using namespace std;
 
 XDAQ_INSTANTIATOR_IMPL(PixelHistoViewer)
@@ -62,13 +64,13 @@ PixelHistoViewer::PixelHistoViewer(xdaq::ApplicationStub * s) throw (xdaq::excep
   xgi::bind(this, &PixelHistoViewer::XGI_RefreshFileList, 		"XGI_RefreshFileList");
   xgi::bind(this, &PixelHistoViewer::XGI_RefreshFileDirectory,"XGI_RefreshFileDirectory");
   xgi::bind(this, &PixelHistoViewer::XGI_RefreshContentList,	"XGI_RefreshContentList");
-	xgi::bind(this, &PixelHistoViewer::XGI_RequestHistogram,		"XGI_RequestHistogram");
-	xgi::bind(this, &PixelHistoViewer::XGI_DetectorNavigator,		"XGI_DetectorNavigator");	
-	xgi::bind(this, &PixelHistoViewer::XGI_DetectorRocRequest,	"XGI_DetectorRocRequest");	
-	xgi::bind(this, &PixelHistoViewer::XGI_CanvasControl,				"XGI_CanvasControl");		
-	xgi::bind(this, &PixelHistoViewer::XGI_PrintView,						"XGI_PrintView");		
-	xgi::bind(this, &PixelHistoViewer::XGI_RequestFedAssignment,"XGI_RequestFedAssignment");	
-	xgi::bind(this, &PixelHistoViewer::XGI_Turtle,							"XGI_Turtle");	
+  xgi::bind(this, &PixelHistoViewer::XGI_RequestHistogram,		"XGI_RequestHistogram");
+  xgi::bind(this, &PixelHistoViewer::XGI_DetectorNavigator,		"XGI_DetectorNavigator");	
+  xgi::bind(this, &PixelHistoViewer::XGI_DetectorRocRequest,	"XGI_DetectorRocRequest");	
+  xgi::bind(this, &PixelHistoViewer::XGI_CanvasControl,				"XGI_CanvasControl");		
+  xgi::bind(this, &PixelHistoViewer::XGI_PrintView,						"XGI_PrintView");		
+  xgi::bind(this, &PixelHistoViewer::XGI_RequestFedAssignment,"XGI_RequestFedAssignment");	
+  xgi::bind(this, &PixelHistoViewer::XGI_Turtle,							"XGI_Turtle");	
 
   theInstance_ = this;
 	

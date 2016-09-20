@@ -40,8 +40,10 @@
 
 /* Libraries for acting as a XDAQ web applet */ 
 #include "xdaq/WebApplication.h"
+#include "xdaq/Application.h"
 #include "xgi/Utils.h"
 #include "xgi/Method.h"
+#include "xgi/framework/UIManager.h"
 //#include "cgicc/CgiDefs.h"
 //#include "cgicc/Cgicc.h"
 //#include "cgicc/HTTPHTMLHeader.h"
@@ -155,7 +157,7 @@ public:
 
 
 /* PixelMonitor is the XDAQ applet that collects black level monitoring information */
-class PixelMonitor: public xdaq::Application, public toolbox::task::TimerListener
+class PixelMonitor: public xdaq::Application, public xgi::framework::UIManager, public toolbox::task::TimerListener
 {
  public:
   XDAQ_INSTANTIATOR();
