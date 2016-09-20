@@ -47,7 +47,7 @@ Packages=\
 	PixelFECInterface \
 	PixelSupervisorConfiguration \
 	PixelCalibrations \
-        PixelFEDSupervisor \
+    PixelFEDSupervisor \
 	PixelFECSupervisor \
 	PixelTKFECSupervisor \
 	PixelSupervisor \
@@ -59,7 +59,8 @@ Packages=\
 endif
 
 #	PixelConfigDBGUI \
-
+#   PixelMonitor   \
+#   PixelFEDMonitor \
 
 #	RUBuilderExample/RUBController \
 #	RUBuilderExample/EventGenerator \
