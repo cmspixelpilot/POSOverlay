@@ -1,4 +1,0 @@
-pdflatex UsersGuide
-bibtex UsersGuide
-pdflatex UsersGuide
-
