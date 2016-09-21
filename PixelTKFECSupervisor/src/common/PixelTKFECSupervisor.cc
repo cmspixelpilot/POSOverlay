@@ -1262,7 +1262,6 @@ std::string const msg_error_oha = "Failure to create GlobalKey";
     PixelGlobalDelay25* newGlobalDelay25=0;
     PixelConfigInterface::get(newGlobalDelay25, "pixel/globaldelay25/", *newGlobalKey);
     if (newGlobalDelay25==0) XCEPT_RAISE(xdaq::exception::Exception,"The globalDelay25 object is null!");
-    std::cout << "newGlobalDelay25 = " << newGlobalDelay25->getDelay(0);
     
     enumDeviceType modeType = PHILIPS ;
     //loop over portcards
@@ -2820,7 +2819,6 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 		}
 		
 
-		//std::cout << "portCardName: " << portCardName << " AOHnumber " << AOHNumber << " AOHGain " << AOHGain << std::endl;
 		
 		// Change the AOH gain and record the address for this AOH.
 		portCardToChange->first.setAOHGain(AOHNumber, AOHGain);
@@ -3000,10 +2998,10 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
   rclock_->take(); if (workloopContinueRC_) rclock_->give();  else {rclock_->give(); return true;}
   //return true so that cancel() never fails
 
-  //#ifdef PRINT_MORE
+#ifdef PRINT_MORE
   cout<<"Running [checkForResets] "<<wait<<endl;
   //  return true;
-  //#endif
+#endif
 
   try {
 
