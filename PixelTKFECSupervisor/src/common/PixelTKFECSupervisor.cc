@@ -3337,7 +3337,77 @@ void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) th
     
     enable_pgood[pc_name] = std::make_pair(enable, pgood);
   }
+  
+  enum PIARegisterType{
+    GoodAndBad=1,
+    OnAndOff=2,
+    EnableAndDisable=3
+  };
 
+  const long N_PIACHANNELS = 3 ; 
+  const long N_PIABITS = 8 ;
+
+  enum PIA_CHANNELS{
+    PIA0x31 = 0 , 
+    PIA0x32 = 1 , 
+    PIA0x33 = 2  
+  };
+
+  PIARegisterType regType[ N_PIACHANNELS ][ N_PIABITS];
+  regType[PIA0x31][0]=EnableAndDisable;
+  regType[PIA0x31][1]=EnableAndDisable;
+  regType[PIA0x31][2]=EnableAndDisable;
+  regType[PIA0x31][3]=EnableAndDisable;
+  regType[PIA0x31][4]=EnableAndDisable;
+  regType[PIA0x31][5]=EnableAndDisable;
+  regType[PIA0x31][6]=GoodAndBad;
+  regType[PIA0x31][7]=GoodAndBad;
+
+  regType[PIA0x32][0]=OnAndOff;
+  regType[PIA0x32][1]=OnAndOff;
+  regType[PIA0x32][2]=OnAndOff;
+  regType[PIA0x32][3]=OnAndOff;
+  regType[PIA0x32][4]=OnAndOff;
+  regType[PIA0x32][5]=OnAndOff;
+  regType[PIA0x32][6]=OnAndOff;
+  regType[PIA0x32][7]=OnAndOff;
+
+  regType[PIA0x33][0]=OnAndOff;
+  regType[PIA0x33][1]=OnAndOff;
+  regType[PIA0x33][2]=OnAndOff;
+  regType[PIA0x33][3]=OnAndOff;
+  regType[PIA0x33][4]=GoodAndBad;
+  regType[PIA0x33][5]=GoodAndBad;
+  regType[PIA0x33][6]=GoodAndBad;
+  regType[PIA0x33][7]=GoodAndBad;
+
+  string MessageMatrix[3][8];
+  MessageMatrix[PIA0x31][0] = "J11 dcdc converter pair setting on P1";
+  MessageMatrix[PIA0x31][1] = "J12 dcdc converter pair setting on P1";
+  MessageMatrix[PIA0x31][2] = "J11 dcdc converter pair setting on P2";
+  MessageMatrix[PIA0x31][3] = "J12 dcdc converter pair setting on P2";
+  MessageMatrix[PIA0x31][4] = "J11 dcdc converter pair setting on P3";
+  MessageMatrix[PIA0x31][5] = "J12 dcdc converter pair setting on P3";
+  MessageMatrix[PIA0x31][6] = "always 1";
+  MessageMatrix[PIA0x31][7] = "always 1";
+
+  MessageMatrix[PIA0x32][0] = "bit 0 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][1] = "bit 1 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][2] = "bit 2 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][3] = "bit 3 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][4] = "bit 4 dcdc power_Good from P2";
+  MessageMatrix[PIA0x32][5] = "bit 5 dcdc power_Good from P2";
+  MessageMatrix[PIA0x32][6] = "bit 6 dcdc power_Good from P2";
+  MessageMatrix[PIA0x32][7] = "bit 7 dcdc power_Good from P2";
+
+  MessageMatrix[PIA0x33][0] = "bit 0 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][1] = "bit 1 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][2] = "bit 2 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][3] = "bit 3 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][4] = "qpll lock for P1";
+  MessageMatrix[PIA0x33][5] = "qpll lock for P2";
+  MessageMatrix[PIA0x33][6] = "qpll lock for P3";
+  MessageMatrix[PIA0x33][7] = "always 1 in my experience but I'm not sure what it's hooked to";
   *out << "raw pia data:<br>\n";
   *out << std::hex;
   for (int slot = 0; slot < 1; ++slot) {
@@ -3347,14 +3417,43 @@ void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) th
         *out << "ccu 0x" << ccus[ccu] << "<br>\n";
         *out << "<table><tr><td>pia</td><td>0x31</td><td>0x32</td><td>0x33</td></tr>\n";
         *out << "<tr><td>DDR</td>";
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < N_PIACHANNELS; ++i)
           *out << "<td>" << ddr[slot][ring][ccu][i] << "</td>";
         *out << "</tr>\n";
         *out << "<tr><td>data</td>";
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < N_PIACHANNELS; ++i)
           *out << "<td>" << data[slot][ring][ccu][i] << "</td>";
         *out << "</tr>\n";
         *out << "</table>\n";
+        for (int channelnumber = 0; channelnumber < N_PIACHANNELS ; channelnumber++)
+	{
+	  bool *M = new bool[8];
+	  for (int i = 0; i < 8; i++)
+	  {
+	    M[i] = data[slot][ring][ccu][channelnumber] & (1 << i) ;
+	  }
+
+          *out <<"<p>";
+	  for (int i = 0; i < 8; i++)
+	    *out << M[8-1-i];
+	  *out << "<br/>";
+          *out << "</p>";
+	
+         // *out << "</table>\n";
+          *out <<"<p>";
+          for (int bit = 0; bit < N_PIABITS; bit++)
+          {
+            string StatusPIA="";
+            if(regType[channelnumber][bit]==PIARegisterType::OnAndOff)
+              StatusPIA=M[bit]? "On":"Off";
+            else if(regType[channelnumber][bit]==PIARegisterType::GoodAndBad)
+              StatusPIA=M[bit]? "Good":"bad";
+            else
+              StatusPIA=M[bit]? "Disable":"Enable";
+            *out << "Channel=" << channelnumber << ";bit=" << bit << ";value=" << (M[bit]) << ":" << (MessageMatrix[channelnumber][bit].c_str()) << " = "<< StatusPIA << "." << "<br/>";
+          }
+          *out <<"</p>";
+        }
       }
     }
   }
