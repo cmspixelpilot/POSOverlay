@@ -431,7 +431,8 @@ class trim_dat:
             line = line.split()
             assert len(line) == 9
             #assert line[0] == '[PixelSCurveHistoManager::fit()]RocName='
-            assert line[1].startswith('FPix_')
+            sanity = line[1].startswith('FPix_') or line[1].startswith('Pilt_')
+            assert sanity
             roc = line[1]
             seen = self.seens[roc]
             l = self.ls[roc]
