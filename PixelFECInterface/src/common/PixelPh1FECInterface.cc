@@ -116,10 +116,8 @@ int PixelPh1FECInterface::getversion(unsigned long *data) {
 //-----------------------------------------------------------------------
 // Get the STATUS word of the FEC. Includes the QPLL/TTCrx ready bits
 int PixelPh1FECInterface::getStatus(void) {
-    valword value;
-    value = pRegManager->ReadReg("STATUS");
-    if (PRINT) cout << "PixelPh1FECInterface: " <<"Get FEC status "<<value.value()<<endl;
-    return value;
+  // JMT: fake up what was in the trigger fpga status
+  return (hasclock() << 1) | (clocklost() << 2);
 }
 //--------------------------------------------------------------------------
 int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
