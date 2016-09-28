@@ -47,7 +47,6 @@
 #include "log4cplus/logger.h"
 #include "log4cplus/loggingmacros.h"
 
-#include "xgi/framework/Method.h"
 using namespace std;
 using namespace pos;
 using namespace pos::PortCardSettingNames;
@@ -77,7 +76,7 @@ static FILE *stdchan_ = stderr ;
 XDAQ_INSTANTIATOR_IMPL(PixelTKFECSupervisor)
 
 PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception) 
-: xdaq::Application(s), xgi::framework::UIManager(this)
+  : xdaq::Application(s)
   , SOAPCommander(this)
   , PixelTKFECSupervisorConfiguration(&runNumber_,&outputDir_)
   , executeReconfMethodMutex(toolbox::BSem::FULL)
@@ -151,13 +150,13 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   xoap::bind(this, &PixelTKFECSupervisor::ResumeFromSoftError, "ResumeFromSoftError", XDAQ_NS_URI);
 
   // Binding XGI Callbacks for messages from the browser
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::Default, "Default");
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::XgiHandler, "XgiHandler");
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::CCUBoardGUI, "CCUBoardGUI");
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::CCUBoardGUI_XgiHandler, "CCUBoardGUI_XgiHandler");
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::FPixDCDCSummary, "FPixDCDCSummary");
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::FPixDCUSummary, "FPixDCUSummary");
-  xgi::framework::deferredbind(this, this, &PixelTKFECSupervisor::PortcardDevicesSummary, "PortcardDevicesSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::Default, "Default");
+  xgi::bind(this, &PixelTKFECSupervisor::XgiHandler, "XgiHandler");
+  xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI, "CCUBoardGUI");
+  xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI_XgiHandler, "CCUBoardGUI_XgiHandler");
+  xgi::bind(this, &PixelTKFECSupervisor::FPixDCDCSummary, "FPixDCDCSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::FPixDCUSummary, "FPixDCUSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::PortcardDevicesSummary, "PortcardDevicesSummary");
 
   //DIAGNOSTIC REQUESTED CALLBACK
   // xgi::bind(this,&PixelTKFECSupervisor::configureDiagSystem, "configureDiagSystem");

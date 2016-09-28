@@ -42,7 +42,6 @@
 #include "xdaq/WebApplication.h"
 #include "xgi/Method.h"
 #include "xgi/Utils.h"
-#include "xgi/framework/UIManager.h"
 #include "cgicc/HTMLClasses.h"
 #include "toolbox/fsm/FiniteStateMachine.h"
 #include "toolbox/fsm/FailedEvent.h"
@@ -59,7 +58,7 @@
 #include <string>
 #include <sstream>
 
-class PixelDCStoTrkFECDpInterface : public PixelDCSDpInterface, public xgi::framework::UIManager
+class PixelDCStoTrkFECDpInterface : public PixelDCSDpInterface
 {
 public:
 

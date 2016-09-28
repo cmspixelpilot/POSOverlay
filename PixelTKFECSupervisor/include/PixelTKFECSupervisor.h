@@ -42,7 +42,6 @@
 #include "xdaq/WebApplication.h"
 #include "xgi/Method.h"
 #include "xgi/Utils.h"
-#include "xgi/framework/UIManager.h"
 #include "cgicc/HTMLClasses.h"
 
 // gio
@@ -90,7 +89,7 @@ namespace log4cplus{
 	class Logger;
 	}
 
-class PixelTKFECSupervisor: public xdaq::Application, public xgi::framework::UIManager, public SOAPCommander, public PixelTKFECSupervisorConfiguration
+class PixelTKFECSupervisor: public xdaq::Application, public SOAPCommander, public PixelTKFECSupervisorConfiguration
 
 {
 

@@ -37,7 +37,6 @@
 #include "xgi/Method.h"
 #include "xgi/Utils.h"
 #include "cgicc/HTMLClasses.h"
-#include "xgi/framework/Method.h"
 
 // #include <diagbag/DiagBagWizard.h>
 // #include "DiagCompileOptions.h"
@@ -106,7 +105,7 @@ namespace log4cplus{
 	class Logger;
 	}
 
-class PixelFECSupervisor: public xdaq::Application, public xgi::framework::UIManager, public SOAPCommander, public Pixelb2inCommander
+class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public Pixelb2inCommander
 {
   public:
 

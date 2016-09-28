@@ -21,7 +21,6 @@
 #include "xdaq/exception/Exception.h"
 #include "xoap/MessageReference.h"
 #include "xgi/Method.h"
-#include "xgi/framework/UIManager.h"
 #include "toolbox/fsm/AsynchronousFiniteStateMachine.h"
 #include "toolbox/lang/Class.h"
 #include "toolbox/task/WaitingWorkLoop.h"
@@ -52,7 +51,7 @@ class PixelDCSPVSSCommander;
 class PixelDCSSMICommander;
 class PixelDCSSMIConnectionManager;
 
-class PixelDCSFSMInterface : public xdaq::Application, public xgi::framework::UIManager, public SOAPCommander //, public toolbox::task::TimerListener
+class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander //, public toolbox::task::TimerListener
 {
  public:
   XDAQ_INSTANTIATOR();

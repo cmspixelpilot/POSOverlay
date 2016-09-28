@@ -27,8 +27,6 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCDACSettings.h"
 
-#include "xdaq/Application.h"
-#include "xgi/framework/UIManager.h"
 class PixelDCStoFEDDpNameTable;
 class PixelDCStoFEDDpValueTable;
 class PixelDCStoFEDDpFilterTable;
@@ -38,7 +36,7 @@ class PixelDCStoFEDDpFilterRow;
 class PixelDCSSOAPCommander;
 class PixelDCSPVSSCommander;
 
-class PixelDCStoFEDDpInterface : public PixelDCSDpInterface, public xgi::framework::UIManager
+class PixelDCStoFEDDpInterface : public PixelDCSDpInterface
 {
  public:
 

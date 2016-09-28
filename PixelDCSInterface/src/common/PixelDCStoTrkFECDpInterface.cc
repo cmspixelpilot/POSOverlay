@@ -19,7 +19,6 @@
 #include <cmath>
 #include <iomanip>
 
-#include "xgi/framework/Method.h"
 #include "PixelUtilities/PixelGUIUtilities/include/HTML2XGI.h"
 
 #include "PixelUtilities/PixelTKFECDataTools/include/PortCardDCU.h"
@@ -35,7 +34,7 @@ using std::cout;
 using std::endl;
 
 PixelDCStoTrkFECDpInterface::PixelDCStoTrkFECDpInterface(xdaq::ApplicationStub * s) throw (xcept::Exception) 
-  : PixelDCSDpInterface(s), xgi::framework::UIManager(this)
+  : PixelDCSDpInterface(s)
   , psx_system_name_("cms_trk_dcs_1:")//old cms_trk_dcs_07
   , weight_(0.5)
   //, debug_(false)
@@ -64,8 +63,8 @@ PixelDCStoTrkFECDpInterface::PixelDCStoTrkFECDpInterface(xdaq::ApplicationStub *
   xoap::bind(this, &PixelDCStoTrkFECDpInterface::updateDpValueTrkFEC, PortCard::SOAP_ReadAll::name_command_, XDAQ_NS_URI);
 
   // Binding XGI Callbacks for messages from the browser
-  xgi::framework::deferredbind(this, this, &PixelDCStoTrkFECDpInterface::Default, "Default");
-  xgi::framework::deferredbind(this, this, &PixelDCStoTrkFECDpInterface::XgiHandler, "XgiHandler");
+  xgi::bind(this, &PixelDCStoTrkFECDpInterface::Default, "Default");
+  xgi::bind(this, &PixelDCStoTrkFECDpInterface::XgiHandler, "XgiHandler");
 
   // Initialize parameters defined by .xml configuration file
 

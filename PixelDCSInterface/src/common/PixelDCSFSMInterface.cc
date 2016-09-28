@@ -17,7 +17,6 @@
 #include "xdaq/ApplicationContext.h"
 #include "xdaq/ApplicationStub.h"
 #include "xgi/Utils.h"
-#include "xgi/framework/Method.h"
 #include "cgicc/HTMLClasses.h"
 #include "toolbox/fsm/FailedEvent.h"
 #include "toolbox/task/WorkLoopFactory.h"
@@ -93,7 +92,7 @@ std::string getTagNamePartitionSummary_color(const std::string& fsmPartitionName
 bool debug_ = false;
 
 PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq::exception::Exception) 
-  : xdaq::Application(s), xgi::framework::UIManager(this), SOAPCommander(this), executeReconfMethodMutex(toolbox::BSem::FULL),fsm_("urn:toolbox-task-workloop:PixelDCSFSMInterface")
+  : xdaq::Application(s), SOAPCommander(this), executeReconfMethodMutex(toolbox::BSem::FULL),fsm_("urn:toolbox-task-workloop:PixelDCSFSMInterface")
 {
 
   // diagService_ = new DiagBagWizard(("ReconfigurationModule") ,
@@ -119,14 +118,14 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
 
 //--- binde XGI call-back functions 
 //    to messages from the browser
-  xgi::framework::deferredbind(this, this, &PixelDCSFSMInterface::Default, "Default");
-  xgi::framework::deferredbind(this, this, &PixelDCSFSMInterface::XgiHandler, "XgiHandler");
+  xgi::bind(this, &PixelDCSFSMInterface::Default, "Default");
+  xgi::bind(this, &PixelDCSFSMInterface::XgiHandler, "XgiHandler");
 
 //--- bind AJAX handler 
 //    to "server" requests originating from the browser
 //    (automatically triggered periodically by some Javascript code
 //     contained in webpage created in PixelDCSFSMInterface::Default method)
-  xgi::framework::deferredbind(this, this, &PixelDCSFSMInterface::AjaxHandler, "AjaxHandler");
+  xgi::bind(this, &PixelDCSFSMInterface::AjaxHandler, "AjaxHandler");
 
 //--- define the states 
 //    of the Finite State Machine
@@ -149,8 +148,8 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
 
 //--- bind XGI call-back functions 
 //    to messages originating from the browser
-  xgi::framework::deferredbind(this, this, &PixelDCSFSMInterface::Default, "Default");
-  xgi::framework::deferredbind(this, this, &PixelDCSFSMInterface::XgiHandler, "XgiHandler");
+  xgi::bind(this, &PixelDCSFSMInterface::Default, "Default");
+  xgi::bind(this, &PixelDCSFSMInterface::XgiHandler, "XgiHandler");
 
 //--- bind SOAP call-back functions
 //    to PVSS FSM state transitions

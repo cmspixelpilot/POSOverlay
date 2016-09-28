@@ -33,7 +33,6 @@
 #include "xdata/Properties.h"
 
 
-#include "xgi/framework/UIManager.h"
 #include "xgi/Utils.h"
 #include "xgi/Method.h"
 #include "cgicc/CgiDefs.h"
@@ -83,7 +82,7 @@ namespace log4cplus{
 	class Logger;
 	}
 
-class PixelSupervisor: public xdaq::Application, public xgi::framework::UIManager, public PixelSupervisorConfiguration, public SOAPCommander //, public toolbox::task::TimerListener
+class PixelSupervisor: public xdaq::Application, public PixelSupervisorConfiguration, public SOAPCommander //, public toolbox::task::TimerListener
 {
  public:
 
