@@ -75,7 +75,6 @@ class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander //, 
   xoap::MessageReference FSMStateRequest(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
 
   xoap::MessageReference getPartitionState_Power(xoap::MessageReference soapRequest) throw (xoap::exception::Exception);
-  xoap::MessageReference mynotify(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   xoap::MessageReference updatePartitionState_Power(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   xoap::MessageReference updatePartitionState_ReadoutChips(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   

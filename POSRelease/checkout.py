@@ -128,6 +128,9 @@ def main():
   
   # option parsing
   parser=optparse.OptionParser(usage="python %prog [options]")
+  parser.add_option("--status", dest="status",
+                    action="store_true", default=False,
+                    help="update all packages")
   parser.add_option("--update", dest="update",
                     action="store_true", default=False,
                     help="update all packages")
@@ -159,11 +162,12 @@ def main():
   for opt, value in options.__dict__.items():
     print "--> %20s: %s" %(opt, value)
   print "-"*100
+  status = options.status
   update = options.update
   replace = options.replace
   switch = options.switch
   checkout = True
-  if (update or replace or switch):
+  if (update or replace or switch or status):
     checkout = False
   force = options.force
   noauth = options.noauth
@@ -173,11 +177,11 @@ def main():
   option_types = (update, replace, switch, checkout)
   true_count =  sum([1 for ot in option_types if ot])
   if true_count > 1:
-      parser.error("options --update, --replace, --switch and --checkout are mutually exclusive")
+      parser.error("options --status, --update, --replace, --switch and --checkout are mutually exclusive")
 
   # SVN authentication
   authString = ""
-  if (not noauth):
+  if (not noauth and not status):
     if userPass=="":
       userName,userPass = getPassword(userName)
     authString = "--username %s" %userName
@@ -263,6 +267,16 @@ def main():
       print "-----------------------------------------------"
     print "Updating done."
 
+  elif (status):
+    print "Status of packages in %s" %os.getcwd()
+    for name,package in packageDict.items():
+      print "Working on package %s" %(name)
+      svnCommand = "svn status %s %s" %(authString, name)
+      hasChange = executeSvn(svnCommand, package, logDir)
+#      if hasChange:
+#        print "%s updated successfully" % name
+      print "-----------------------------------------------"
+#    print "Updating done."
 
 
 if __name__ == "__main__":

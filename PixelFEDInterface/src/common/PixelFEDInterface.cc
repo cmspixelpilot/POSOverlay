@@ -4784,8 +4784,8 @@ int PixelFEDInterface::spySlink64(uint64_t *data) {
         //drain whole other half of spy fifo
         vmeDevicePtr->readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
 
-        cout<<"Dumping spy fifo-3 buffer"<<endl;
-        for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
+   // cout<<"Dumping spy fifo-3 buffer"<<endl;
+   // for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
         cout<<"Dumping fifo state"<<endl;
         dump_FifoStatus(getFifoStatus());
         cout<<"Dumping TTS fifo"<<endl;
@@ -4890,8 +4890,8 @@ int PixelFEDInterface::spySlink64(uint64_t *data) {
    //drain whole other half of spy fifo
    vmeDevicePtr->readBlock("RdSpyFifoDn",mlength,(char *) mbuffer,HAL::HAL_NO_INCREMENT,moffset);
 
-   cout<<"Dumping spy fifo-3 buffer"<<endl;
-    for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
+   // cout<<"Dumping spy fifo-3 buffer"<<endl;
+   // for(int ij=0;ij<1024;ij++)cout<<hex<<(data[ij]+ (uint64_t)(mbuffer[ij]))<<dec<<endl;
    cout<<"Dumping fifo state"<<endl;
     dump_FifoStatus(getFifoStatus());
    cout<<"Dumping TTS fifo"<<endl;

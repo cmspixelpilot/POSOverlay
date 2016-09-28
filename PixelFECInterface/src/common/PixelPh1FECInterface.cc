@@ -2241,6 +2241,7 @@ int PixelPh1FECInterface::roctrimload(int mfec, int fecchannel,
         
         writeCSregister(mfec, fecchannel, 0x17);
         
+        wordvec.clear();
     }
     
     if (fecdebug == 2) mfecbusy(mfec, fecchannel, &ch1stat, &ch2stat);

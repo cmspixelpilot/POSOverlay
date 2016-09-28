@@ -43,7 +43,6 @@ void PixelGainAliveSCurveCalibration::beginCalibration(){
   }
 
   sendTTCTBMReset();
-  //  sleep(3);
   diagService_->reportError("PixelSupervisor:: --- Running for " + mode_ + "Calibration ---",DIAGINFO);
   //cout << "\nPixelSupervisor:: --- Running for "<<mode<<"Calibration ---";
 

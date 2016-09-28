@@ -419,14 +419,18 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
 
   if (currentState=="Halted") {
 
+    *out<<"       <legend>Possible Configurations:</legend>" <<std::endl;
+    *out<<"<select name=\"Alias\" size=\"10\" >" <<std::endl;
     for (std::vector <std::pair<std::string, unsigned int> >::iterator i_aliasesAndKeys=aliasesAndKeys_.begin();
          i_aliasesAndKeys!=aliasesAndKeys_.end(); ++i_aliasesAndKeys) {
       std::string alias=i_aliasesAndKeys->first;
       if ( (alias[0]!='T' || alias[1]!='T' || alias[2]!='C') && isAliasOK(alias)) {
-        *out<<"        <input type=\"radio\" name=\"Alias\" value=\""<<alias<<"\">"<<alias<<"<br/>"                               <<std::endl;
+	*out<<"  <option value=\""<<alias<<"\">"<<alias<<"</option>" <<std::endl;
+	//*out<<"        <input type=\"radio\" name=\"Alias\" value=\""<<alias<<"\">"<<alias<<"<br/>"                               <<std::endl;
       }
     }
 
+    *out<<"</select>"<<std::endl;
   } else if (currentState=="Configuring") {
 
     *out<<"        "<<percentageConfigured_<<"% complete"                                                                         <<std::endl;
@@ -521,13 +525,13 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
   *out<<"  <hr/>"                                                                                                                 <<std::endl;
 
 
-  // DiagSystem GUI
-  std::string urlDiag_ = "/"; \
-  urlDiag_ += getApplicationDescriptor()->getURN(); \
-  urlDiag_ += "/callDiagSystemPage"; \
-  *out << "<h2> Error Dispatcher </h2> "<<std::endl;
-  *out << "<a href=" << urlDiag_ << ">Configure DiagSystem</a>" <<std::endl;
-  *out << " <hr/> " << std::endl;
+  //  // DiagSystem GUI
+  //  std::string urlDiag_ = "/";
+  //  urlDiag_ += getApplicationDescriptor()->getURN();
+  //  urlDiag_ += "/callDiagSystemPage";
+  //  *out << "<h2> Error Dispatcher </h2> "<<std::endl;
+  //  *out << "<a href=" << urlDiag_ << ">Configure DiagSystem</a>" <<std::endl;
+  //  *out << " <hr/> " << std::endl;
 
   // Rendering Low Level GUI
 
@@ -1037,8 +1041,6 @@ string PixelSupervisor::getHtmlColorFromState( const string & state ) {
 xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  std::cout << "useTCDS is " <<  useTCDS_ << " " <<  TTCSupervisorApplicationName_.toString() << " " <<  LTCSupervisorApplicationName_.toString() << std::endl;
-    assert(useTTC_ != useTCDS_);
 
 std::string const msg_info_txo = "Entered SOAP message callback method PixelSupervisor::Initialize";
  LOG4CPLUS_INFO(sv_logger_,msg_info_txo);

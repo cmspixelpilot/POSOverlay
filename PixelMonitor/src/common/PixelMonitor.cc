@@ -12,6 +12,7 @@
  */
 
 #include "PixelMonitor.h"
+#include "xgi/framework/Method.h"
 
 using namespace std;
 
@@ -59,8 +60,8 @@ void BaselineCorrectionReading::set_baselineCorrectionSquawk(int sq) {baselineCo
 // provides factory method for instantion of PixelMonitor XDAQ web application
 //
 XDAQ_INSTANTIATOR_IMPL(PixelMonitor)
-  PixelMonitor::PixelMonitor(xdaq::ApplicationStub * s)
-  throw (xdaq::exception::Exception):xdaq::Application(s)
+  PixelMonitor::PixelMonitor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception)
+     : xdaq::Application(s), xgi::framework::UIManager(this)
 
 {	
   /* The first time timer event triggers the DIAGSYSTEM inititalization macro.
@@ -147,7 +148,7 @@ XDAQ_INSTANTIATOR_IMPL(PixelMonitor)
   */
 
   // Allow users to access web page.
-  xgi::bind(this,&PixelMonitor::Default, "Default");
+  xgi::framework::deferredbind(this, this,&PixelMonitor::Default, "Default");
 }
 
 
@@ -186,7 +187,7 @@ void PixelMonitor::Default(xgi::Input * in, xgi::Output * out ) throw (xgi::exce
   *out<<"<head>"<<std::endl;
 
   // Auto-refresh.
-  *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"" << REFRESH_DELAY << "; URL=Default\"/>" << std::endl;
+    *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"" << REFRESH_DELAY << "; URL=/" << getApplicationDescriptor()->getURN() <<"/Default\"/>" << std::endl;
   *out<<"</head>"<<std::endl;
   // xgi::Utils::getPageHeader(*out, "PixelMonitor", "Running");
 

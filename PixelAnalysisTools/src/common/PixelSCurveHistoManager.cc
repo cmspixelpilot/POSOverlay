@@ -18,10 +18,10 @@
 using namespace std;
 
 struct PixelSCurveBranch{
-	unsigned int rocsWithThresholdGTN;       
-	unsigned int rocsWithNoiseGTN; 	        
-	unsigned int rocsWithChisquareGTN;
-	unsigned int rocsWithProbabilityGTN;
+	float rocsWithThresholdGTN;       
+	float rocsWithNoiseGTN; 	        
+	float rocsWithChisquareGTN;
+	float rocsWithProbabilityGTN;
 	float threshold;	        
 	float noise;			        
 	float chisquare;	        
@@ -72,7 +72,7 @@ PixelSCurveHistoManager::PixelSCurveHistoManager(PixelXmlReader* xmlReader, Pixe
 	}
 	saveGoodFits_ = false;
   if(thePixelXmlReader_->getXMLAttribute("SaveGoodFits","DoIt" ) == "Yes"){
-		saveGoodFits_ = false;
+		saveGoodFits_ = true;
 	}
 	fitFunction_ = new TF1("myscurve",&fitfcn,0,255,2);
   fitFunction_->SetParNames("threshold","noise");
@@ -466,9 +466,9 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
   summaryTree_ = new TTree("SummaryTree","SummaryTree");
 
   struct BadDecodingBranch{                                     //added from PixelHistoManager.cc
-        int numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
         float percentOfBadPixels;                                    //added from PixelHistoManager.cc
-        unsigned int numberOfBadPixels;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixels;                                    //added from PixelHistoManager.cc
         char rocName[40];                                    //added from PixelHistoManager.cc
   };
 
@@ -480,11 +480,11 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
   PixelSCurveBranch branch_b;
   stringstream branchVariables;
   branchVariables.str("");
-  branchVariables <<"Rocs with threshold < " << rocThresholdMean_ << "/i" <<":Rocs with noise < " << rocNoiseMean_ << "/i" << ":Rocs with Chisquare < " << rocChisquareMean_ << "/i" << ":Rocs with Probability > "
-                        << rocProbabilityMean_ << "/i" << ":Threshold/F" <<":Noise/F" <<":Chisquare/F" <<":Probability/F" <<":ThresholdRMS/F" << ":NoiseRMS/F" << ":ROCName/C";
+  branchVariables <<"Rocs with threshold < " << rocThresholdMean_ << "/i" <<":Rocs with noise < " << rocNoiseMean_ << "/i" << ":Rocs with Chisquare < " << rocChisquareMean_ << "/i" 
+    << ":Rocs with Probability > " << rocProbabilityMean_ << "/i" << ":Threshold/F" <<":Noise/F" <<":Chisquare/F" <<":Probability/F" <<":ThresholdRMS/F" << ":NoiseRMS/F" << ":ROCName/C";
 
-  TBranch *wronglyBranch = summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
-  TBranch *pixelBranch = summaryTree_->Branch("Pixels",&branch_b,branchVariables.str().c_str());
+  summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
+  summaryTree_->Branch("Pixels", &branch_b,branchVariables.str().c_str());
 
   /////////////SUMMARY HISTOS DECLARATION///////////////////////
   summaryDir_->cd();											  
@@ -520,10 +520,11 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
         float percentageBAD = 100.0*nOfWronglyDecoded/(52.0*80.0);                                      //added from PixelHistoManager.cc
         unsigned int GT0 = 1;                                                                   //added from PixelHistoManager.cc
         if(nOfWronglyDecoded > 0)                                                               //added from PixelHistoManager.cc
-          GT0 = 0;                                                                              //added from PixelHistoManager.cc
+          GT0 = 0.0;                                                                              //added from PixelHistoManager.cc
         branch_a.numberOfBadPixelsGT0 = GT0;                                                    //added from PixelHistoManager.cc
         branch_a.percentOfBadPixels = percentageBAD;                                            //added from PixelHistoManager.cc
-        branch_a.numberOfBadPixels  = nOfWronglyDecoded;                                        //added from PixelHistoManager.cc
+	double doubleNOfWronglyDecoded = nOfWronglyDecoded * 1.0;
+        branch_a.numberOfBadPixels  = doubleNOfWronglyDecoded;                                        //added from PixelHistoManager.cc
 
         if(!thePixelConfigurationsManager_->isDataToAnalyze(rocName))
         {
@@ -541,10 +542,10 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
           if (meanThr >= rocThresholdMean_)
           {
             *logger_ << mthn << "ROC="<< rocName <<" Mean Threshold=" << meanThr << endl;
-	    branch_b.rocsWithThresholdGTN     = 0;
+	    branch_b.rocsWithThresholdGTN     = 0.0;
           }//if meanThr >= rocThresholdMean_
           else
-            branch_b.rocsWithThresholdGTN     = 1;
+            branch_b.rocsWithThresholdGTN     = 1.0;
 
           double rmsThr = tmpHistoThreshold1D->GetRMS();
           hRmsThreshold->Fill(rmsThr);
@@ -562,10 +563,11 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
           if (meanSig >= rocNoiseMean_)
           {
             *logger_ << mthn << "ROC="<< rocName <<" Mean Noise=" << meanSig << endl;
-	branch_b.rocsWithNoiseGTN     = 0;
+	    branch_b.rocsWithNoiseGTN     = 0.0;
           }//if meanSig >= rocNoiseMean_
           else
-	branch_b.rocsWithNoiseGTN     = 1;
+   	    branch_b.rocsWithNoiseGTN     = 1.0;
+
           double rmsSig = tmpHistoNoise1D->GetRMS();
           hRmsNoise->Fill(rmsSig);
           branch_b.noise    = meanSig;
@@ -580,10 +582,10 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
           if (meanSig >= rocChisquareMean_)
           {
             *logger_ << mthn << "ROC="<< rocName <<" Mean Chisquare=" << meanSig << endl;
-            branch_b.rocsWithChisquareGTN = 0;
+            branch_b.rocsWithChisquareGTN = 0.0;
           }//if meanSig >=rocChisquareMean
           else
-            branch_b.rocsWithChisquareGTN = 1;
+            branch_b.rocsWithChisquareGTN = 1.0;
           branch_b.chisquare    = meanSig;
         }//if tmpHistoChisquare1D->GetEntries()>0)
 
@@ -595,10 +597,10 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
           if (meanSig <= rocProbabilityMean_)
           {
             *logger_ << mthn << "ROC="<< rocName <<" Mean Probability=" << meanSig << endl;
-	branch_b.rocsWithProbabilityGTN     = 0;
+	    branch_b.rocsWithProbabilityGTN     = 0.0;
           }//if tmpHistoProbability1D->GetEntries()>0) 
           else
-	branch_b.rocsWithProbabilityGTN     = 1;
+    	    branch_b.rocsWithProbabilityGTN     = 1.0;
           branch_b.probability    = meanSig;
         }//if (tmpHistoProbability1D->GetEntries()>0) 
 
@@ -622,9 +624,6 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
     }//Channel
     summaryTree_->Fill();
   }//FED	  					          
-  summaryTree_->Print();
-  summaryTree_->SetScanField(0);
-  summaryTree_->Scan("*","","",100);
 }//makeSummaryPlots
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

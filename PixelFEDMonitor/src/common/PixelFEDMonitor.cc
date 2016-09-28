@@ -6,6 +6,7 @@
  */
 
 #include "PixelFEDMonitor.h"
+#include "xgi/framework/Method.h"
 
 using namespace std;
 
@@ -13,8 +14,8 @@ using namespace std;
 // provides factory method for instantion of PixelFEDMonitor application
 //
 XDAQ_INSTANTIATOR_IMPL(PixelFEDMonitor)
-  PixelFEDMonitor::PixelFEDMonitor(xdaq::ApplicationStub * s)
-  throw (xdaq::exception::Exception):xdaq::Application(s)
+  PixelFEDMonitor::PixelFEDMonitor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception)
+     :xdaq::Application(s), xgi::framework::UIManager(this)
   
 {	
   /* Set up communications with DIAGSYSTEM, mostly cargo cult code */
@@ -108,7 +109,7 @@ XDAQ_INSTANTIATOR_IMPL(PixelFEDMonitor)
   monitorInfoSpace->unlock();
   
   /* Set page refresh to trigger Default method */
-  xgi::bind(this,&PixelFEDMonitor::Default, "Default");
+  xgi::framework::deferredbind(this, this,&PixelFEDMonitor::Default, "Default");
 }
 
 void PixelFEDMonitor::timeExpired (toolbox::task::TimerEvent& e)

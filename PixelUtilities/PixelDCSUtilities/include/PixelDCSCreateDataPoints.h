@@ -19,6 +19,7 @@
 #include "xdaq/exception/Exception.h"
 #include "xoap/MessageReference.h"
 #include "xgi/Method.h"
+#include "xgi/framework/UIManager.h"
 #include "toolbox/fsm/FiniteStateMachine.h"
 #include "toolbox/lang/Class.h"
 #include "toolbox/task/WaitingWorkLoop.h"
@@ -32,7 +33,7 @@
 class SOAPCommander;
 class PixelDCSPVSSCommander;
 
-class PixelDCSCreateDataPoints : public xdaq::Application
+class PixelDCSCreateDataPoints : public xdaq::Application, public xgi::framework::UIManager
 {
  public:
   

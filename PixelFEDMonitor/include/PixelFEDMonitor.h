@@ -20,6 +20,7 @@ using namespace std;
 #include "xdaq/WebApplication.h"
 //#include "xgi/Utils.h"
 #include "xgi/Method.h"
+#include "xgi/framework/UIManager.h"
 //#include "cgicc/CgiDefs.h"
 //#include "cgicc/Cgicc.h"
 //#include "cgicc/HTTPHTMLHeader.h"
@@ -62,7 +63,7 @@ using namespace std;
 /* PixelFEDMonitor is the XDAQ application that collects black level monitoring 
  * information for a particular crate from a FED Supervisor application, creating
  * a CSV formatted web page. */
-class PixelFEDMonitor: public xdaq::Application, public toolbox::task::TimerListener,
+class PixelFEDMonitor: public xdaq::Application, public xgi::framework::UIManager, public toolbox::task::TimerListener,
 		        public xdata::ActionListener
 {
  public:

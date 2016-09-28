@@ -154,7 +154,6 @@ PixelDCSFSMInterface::PixelDCSFSMInterface(xdaq::ApplicationStub* s) throw (xdaq
 //--- bind SOAP call-back functions
 //    to PVSS FSM state transitions
   xoap::bind(this, &PixelDCSFSMInterface::getPartitionState_Power, "fsmStateRequest", XDAQ_NS_URI);//PSX_SMI_NS_URI);
-  //xoap::bind(this, &PixelDCSFSMInterface::mynotify, "notify", PSX_SMI_NS_URI);
   xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_Power, "notify", PSX_SMI_NS_URI);
   //  xoap::bind(this, &PixelDCSFSMInterface::updatePartitionState_ReadoutChips, "fsmStateNotification", XDAQ_NS_URI);
 
@@ -1512,7 +1511,6 @@ xoap::MessageReference PixelDCSFSMInterface::Connect(xoap::MessageReference soap
 //--- create a new work-loop
 //    if not already active
     std::string workloopName = std::string("PixelDCSFSMInterface_workloop") + std::string("_") + std::string(fsmPartition->getName());
-    std::cout << "Workloop name " << workloopName << std::endl;
     lock_->take();
     bool workloopIsActive = !(workloopStatus_[workloopName] == "" || workloopStatus_[workloopName] == "inactive");
     lock_->give();
@@ -1984,24 +1982,6 @@ void PixelDCSFSMInterface::updateSupervisors(string overrideA4602,string overrid
   }
 
 }
-
-xoap::MessageReference PixelDCSFSMInterface::mynotify(xoap::MessageReference soapMessage) throw (xoap::exception::Exception)
-{
-  std::cout << "<mynotify>:" << std::endl; //jmt debug
-  std::cout << "soapMessage:\n";
-  soapMessage->writeTo(std::cout);
-  std::cout << std::endl;
-
-  xoap::MessageReference reply = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
-  xoap::SOAPName responseName = envelope.createName( "notifyResponse", "smi", PSX_SMI_NS_URI);
-  envelope.getBody().addBodyElement ( responseName );
-  std::cout << "reply:\n";
-  reply->writeTo(std::cout);
-  std::cout << std::endl;
-  return reply;     
-}
-
 
 xoap::MessageReference PixelDCSFSMInterface::updatePartitionState_Power(xoap::MessageReference soapMessage) throw (xoap::exception::Exception)
 {

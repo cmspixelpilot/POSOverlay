@@ -36,7 +36,7 @@ FileTreeWindow.createWindow = function(){
       width:        450,
       split:        true,
       collapsible:  true,
-      title:        "Files in /nfshome0/pixelpro/TriDAS/pixel/PixelRuns/Runs",
+      title:        "Files in search path (see Configuration/SearchPaths.xml)",
       loader:       new Ext.tree.TreeLoader(  { url: "XGI_RefreshFileDirectory",	}),
       buttonAlign:  'center',																					
       buttons:      [{ text: 'Refresh', listeners: {click: FileTreeWindow.refreshFiles} } , { text: 'Toggle Dir.', listeners: {click: FileTreeWindow.updateFlattenFileFlag} }

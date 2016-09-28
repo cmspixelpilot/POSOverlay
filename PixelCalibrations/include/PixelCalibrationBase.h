@@ -26,7 +26,7 @@ class PixelCalibrationBase : public PixelSupervisorConfiguration, public SOAPCom
   PixelCalibrationBase( const PixelSupervisorConfiguration &,
 			const SOAPCommander& soapCommander);
 
-  virtual ~PixelCalibrationBase() {}
+  virtual ~PixelCalibrationBase();
 
   virtual void beginCalibration();
 

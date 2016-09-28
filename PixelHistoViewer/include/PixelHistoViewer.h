@@ -6,7 +6,9 @@
 #define _PixelHistoViewer_h_
 
 #include "xdaq/WebApplication.h"
+#include "xdaq/Application.h"
 #include "xgi/Method.h"
+#include "xgi/framework/UIManager.h"
 #include "cgicc/HTMLClasses.h"
 
 #include "PixelUtilities/PixelRootUtilities/include/PixelHistoDispatcher.h"

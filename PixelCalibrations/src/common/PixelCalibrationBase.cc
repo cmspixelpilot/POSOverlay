@@ -50,6 +50,7 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
 
   ttcCalSyncThrottlingTimer_.start();
 }
+PixelCalibrationBase::~PixelCalibrationBase(){}
 
 
 void PixelCalibrationBase::sendBeginCalibrationToFEDs(){

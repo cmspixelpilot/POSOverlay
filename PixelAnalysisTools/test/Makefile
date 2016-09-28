@@ -11,7 +11,7 @@ Project=pixel
 Package=$(MainDir)/test
 
 #Sources = MyTest.cc
-Executables=PixelAnalysis.cc PixelAlive.cc FastHistoFromRaw.cc PixelTrim.cc PixelTrimBits.cc PixelTrimAnalysis.cc PixelModVana.cc PixelTrimVcThr.cc PixelIntimeVana.cc
+Executables=PixelAnalysis.cc PixelAlive.cc FastHistoFromRaw.cc PixelTrim.cc PixelTrimBits.cc PixelTrimAnalysis.cc PixelModVana.cc PixelTrimVcThr.cc PixelIntimeVana.cc AddressLevelComparison.cc AddLevelFindOscillatingROCs.cc PixelAliveComparison.cc SCurveComparison.cc
 
 #Executables=myPixelCalibTest.cc   
 
@@ -43,7 +43,8 @@ UserCCFlags = -O -Wno-deprecated -pg
 #Libraries= $(MainDir) $(ExtDir) xerces-c
 Libraries= $(MainDir) PixelConfigDBInterface SiPixelObjects PixelFEDDataTools PixelRootUtilities PixelXmlUtilities xerces-c\
            Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread pthread m dl \
-           occi nnz12 clntsh xcept toolbox log4cplus asyncresolv config uuid xdaq xoap xdata xgi cgicc peer log4cplus logxmlappender logudpappender mimetic
+           occi nnz12 clntsh xcept toolbox log4cplus asyncresolv config uuid \
+					 xdaq xoap xdata xgi cgicc peer log4cplus logxmlappender logudpappender mimetic
 #	   Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics pthread m dl Gui X3d Thread 
 
 include $(XDAQ_ROOT)/config/Makefile.rules

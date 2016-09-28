@@ -16,9 +16,9 @@
 using namespace std;
 
 struct PixelAliveBadPixelsBranch{
-        unsigned int rocsWithNumberOfDeadPixelsGTN;
+        float rocsWithNumberOfDeadPixelsGTN;
 	float percentageOfDeadPixels;
-	int numberOfDeadPixels;
+	float numberOfDeadPixels;
         char rocName[40];
 };
 
@@ -158,9 +158,9 @@ void PixelAliveHistoManager::makeSummaryPlots(void){
    summaryTree_ = new TTree("SummaryTree","SummaryTree");//********
 
   struct BadDecodingBranch{					//added from PixelHistoManager.cc
-        int numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
         float percentOfBadPixels;                                    //added from PixelHistoManager.cc
-        unsigned int numberOfBadPixels;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixels;                                    //added from PixelHistoManager.cc
         char rocName[40];                                    //added from PixelHistoManager.cc
   };
 
@@ -172,10 +172,10 @@ void PixelAliveHistoManager::makeSummaryPlots(void){
   PixelAliveBadPixelsBranch branch_b;
   stringstream branchVariables_b;
   branchVariables_b.str("");
-  branchVariables_b << "Rocs_with_number_of_dead_pixels_LT_N/i" << ":Percentage_of_dead_pixels/F" << ":Number_of_dead_pixels/I" << ":ROCName/C";
+  branchVariables_b << "Rocs_with_number_of_dead_pixels_LT_N/i" << ":Percentage_of_dead_pixels/F" << ":Number_of_dead_pixels/i" << ":ROCName/C";
 
-  TBranch *wronglyBranch = summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
-  TBranch *pixelBranch = summaryTree_->Branch("Pixels", &branch_b, branchVariables_b.str().c_str());
+  summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
+  summaryTree_->Branch("Pixels", &branch_b, branchVariables_b.str().c_str());
 
 
   /////////////SUMMARY HISTOS DECLARATION///////////////////////
@@ -202,15 +202,15 @@ void PixelAliveHistoManager::makeSummaryPlots(void){
         string rocName = rocNameMap_[fed][channel][roc];					//added from PixelHistoManager.cc
         strcpy(branch_a.rocName,rocName.c_str());						//added from PixelHistoManager.cc
         strcpy(branch_b.rocName,rocName.c_str());  
-        unsigned int nOfWronglyDecoded = wrongAddressMap_[fed][channel][roc];			//added from PixelHistoManager.cc
+        float nOfWronglyDecoded = wrongAddressMap_[fed][channel][roc];			//added from PixelHistoManager.cc
         float percentageBAD = 100.0*nOfWronglyDecoded/(52.0*80.0);					//added from PixelHistoManager.cc
-        unsigned int GT0 = 1;									//added from PixelHistoManager.cc
+        float GT0 = 1;									//added from PixelHistoManager.cc
         if(nOfWronglyDecoded > 0)								//added from PixelHistoManager.cc
-          GT0 = 0;										//added from PixelHistoManager.cc
+          GT0 = 0.0;										//added from PixelHistoManager.cc
 
         float percentageDEAD = 0;
-        int numberOfBadChannelsPerRoc = 0;
-        unsigned int GTN = 1;
+        float numberOfBadChannelsPerRoc = 0;
+        float GTN = 1;
         TH2 * tmpHisto = (TH2*)(*rocNameHistoMap_[rocName])[0];
 	if(tmpHisto->GetEntries() != 0)
 	{   
@@ -229,15 +229,17 @@ void PixelAliveHistoManager::makeSummaryPlots(void){
 	}//if tmpHisto->GetEntries(0 != 0
 
         if(numberOfBadChannelsPerRoc >= maxBadChannelsPerRoc_)
-          GTN=0;
+          GTN=0.0;
 
         branch_b.rocsWithNumberOfDeadPixelsGTN = GTN;
         branch_b.percentageOfDeadPixels = percentageDEAD;
-        branch_b.numberOfDeadPixels     = numberOfBadChannelsPerRoc;
+        double doubleNumberOfBadChannelsPerRoc = numberOfBadChannelsPerRoc * 1.0;
+        branch_b.numberOfDeadPixels     = doubleNumberOfBadChannelsPerRoc;
 
         branch_a.numberOfBadPixelsGT0 = GT0;							//added from PixelHistoManager.cc
         branch_a.percentOfBadPixels = percentageBAD;						//added from PixelHistoManager.cc
-        branch_a.numberOfBadPixels  = nOfWronglyDecoded;					//added from PixelHistoManager.cc
+	double doubleNOfWronglyDecoded = nOfWronglyDecoded * 1.0;
+        branch_a.numberOfBadPixels  = doubleNOfWronglyDecoded;					//added from PixelHistoManager.cc
         summaryTree_->Fill();//        branch->Fill();       //added from PixelHistoManager.cc
         i++;							//added from PixelHistoManager.cc		
       }//for itRoc						//added from PixelHistoManager.cc
