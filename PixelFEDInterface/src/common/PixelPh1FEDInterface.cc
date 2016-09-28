@@ -1,4 +1,4 @@
-#define JMT_FROMFIFO1
+//#define JMT_FROMFIFO1
 
 #include <cassert>
 #include <iostream>
