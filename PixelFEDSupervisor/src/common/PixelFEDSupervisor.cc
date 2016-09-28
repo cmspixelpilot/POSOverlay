@@ -46,6 +46,7 @@
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 
 
+#include "xgi/framework/Method.h"
 
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
@@ -86,7 +87,7 @@ XDAQ_INSTANTIATOR_IMPL(PixelFEDSupervisor)
 
 PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
                                 throw (xdaq::exception::Exception)
-                                : xdaq::Application(s),
+                                : xdaq::Application(s), xgi::framework::UIManager(this),
                                 SOAPCommander(this),
                                 PixelFEDSupervisorConfiguration(&runNumber_,&outputDir_,this),
                                 executeReconfMethodMutex(toolbox::BSem::FULL),
@@ -184,10 +185,10 @@ PixelFEDSupervisor::PixelFEDSupervisor(xdaq::ApplicationStub * s)
   i2o::bind(this,&PixelFEDSupervisor::callback_TA_CREDIT,I2O_TA_CREDIT,XDAQ_ORGANIZATION_ID);
 #endif
 
-  xgi::bind(this, &PixelFEDSupervisor::Default, "Default");
-  xgi::bind(this, &PixelFEDSupervisor::StateMachineXgiHandler, "StateMachineXgiHandler");
-  xgi::bind(this, &PixelFEDSupervisor::LowLevelCommands, "LowLevelCommands");
-  xgi::bind(this, &PixelFEDSupervisor::LowLevelXgiHandler, "LowLevelXgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelFEDSupervisor::Default, "Default");
+  xgi::framework::deferredbind(this, this, &PixelFEDSupervisor::StateMachineXgiHandler, "StateMachineXgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelFEDSupervisor::LowLevelCommands, "LowLevelCommands");
+  xgi::framework::deferredbind(this, this, &PixelFEDSupervisor::LowLevelXgiHandler, "LowLevelXgiHandler");
 
   //DIAGNOSTIC REQUESTED CALLBACK
   // xgi::bind(this,&PixelFEDSupervisor::configureDiagSystem, "configureDiagSystem");

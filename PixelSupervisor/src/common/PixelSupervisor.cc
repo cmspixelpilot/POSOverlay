@@ -56,6 +56,7 @@ but this is non-trivial enough that I don't want to do it during steady running
 #include "log4cplus/logger.h"
 #include "log4cplus/loggingmacros.h"
 
+#include "xgi/framework/Method.h"
 
 using namespace pos;
 
@@ -66,6 +67,7 @@ XDAQ_INSTANTIATOR_IMPL(PixelSupervisor)
 PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
                           throw (xdaq::exception::Exception)
                           :xdaq::Application(s),
+                          xgi::framework::UIManager(this),
                           PixelSupervisorConfiguration(&runNumber_,&outputDir_, this),
                           SOAPCommander(this),
                           executeReconfMethodMutex(toolbox::BSem::FULL),
@@ -127,11 +129,11 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
 
   xoap::bind(this, &PixelSupervisor::StatusNotification, "StatusNotification", XDAQ_NS_URI);
 
-  xgi::bind(this, &PixelSupervisor::Default, "Default");
-  xgi::bind(this, &PixelSupervisor::Experimental, "Experimental");
-  xgi::bind(this, &PixelSupervisor::StateMachineXgiHandler, "StateMachineXgiHandler");
-  xgi::bind(this, &PixelSupervisor::LowLevelXgiHandler, "LowLevelXgiHandler");
-  xgi::bind(this, &PixelSupervisor::ExperimentalXgiHandler, "ExperimentalXgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelSupervisor::Default, "Default");
+  xgi::framework::deferredbind(this, this, &PixelSupervisor::Experimental, "Experimental");
+  xgi::framework::deferredbind(this, this, &PixelSupervisor::StateMachineXgiHandler, "StateMachineXgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelSupervisor::LowLevelXgiHandler, "LowLevelXgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelSupervisor::ExperimentalXgiHandler, "ExperimentalXgiHandler");
 
   //DIAGNOSTIC REQUESTED CALLBACK
   // xgi::bind(this,&PixelSupervisor::configureDiagSystem, "configureDiagSystem");

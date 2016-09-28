@@ -16,6 +16,7 @@
 #include <time.h>
 #include <sstream>
 
+#include "xgi/framework/Method.h"
 #include "cgicc/HTMLClasses.h"
 
 #include "PixelDCSInterface/include/PixelDCStoFEDDpNameTable.h"
@@ -49,7 +50,7 @@ void setTempRange(std::map<pos::PixelROCName, unsigned int>& dacValues_set, std:
 //
 
 PixelDCStoFEDDpInterface::PixelDCStoFEDDpInterface(xdaq::ApplicationStub* s) throw (xdaq::exception::Exception) 
-  : PixelDCSDpInterface(s)
+  : PixelDCSDpInterface(s), xgi::framework::UIManager(this)
 {
 //--- constructor 
 //    for XDAQ web applications
@@ -62,8 +63,8 @@ PixelDCStoFEDDpInterface::PixelDCStoFEDDpInterface(xdaq::ApplicationStub* s) thr
   xoap::bind(this, &PixelDCStoFEDDpInterface::updateDpValueLastDAC, "updateDpValueLastDAC", XDAQ_NS_URI);
 
 //--- bind XGI Callbacks for messages from the browser
-  xgi::bind(this, &PixelDCStoFEDDpInterface::Default, "Default");
-  xgi::bind(this, &PixelDCStoFEDDpInterface::XgiHandler, "XgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelDCStoFEDDpInterface::Default, "Default");
+  xgi::framework::deferredbind(this, this, &PixelDCStoFEDDpInterface::XgiHandler, "XgiHandler");
 
   httpPageHeader_ = "Pixel DCS to FED Interface";
 

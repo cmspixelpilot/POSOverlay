@@ -22,6 +22,8 @@
 // #include "DiagCompileOptions.h"
 // #include <toolbox/convertstring.h>
 
+#include "xdaq/Application.h"
+#include "xgi/framework/UIManager.h"
 using namespace pos;
 
 //#define USE_SEU_DETECT
@@ -30,7 +32,7 @@ XDAQ_INSTANTIATOR_IMPL(PixelFECSupervisor)
 
 enum  { kProg_DACs_set, kProg_DACs_increase, kProg_DACs_decrease };
 
-PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception) : xdaq::Application(s), SOAPCommander(this), Pixelb2inCommander(this), executeReconfMethodMutex(toolbox::BSem::FULL),fsm_("urn:toolbox-task-workloop:PixelFECSupervisor")
+PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception) : xdaq::Application(s), xgi::framework::UIManager(this), SOAPCommander(this), Pixelb2inCommander(this), executeReconfMethodMutex(toolbox::BSem::FULL),fsm_("urn:toolbox-task-workloop:PixelFECSupervisor")
 ,phlock_(new toolbox::BSem(toolbox::BSem::FULL,true))
 ,workloopContinue_(false)
 ,sv_logger_(getApplicationLogger())
@@ -96,14 +98,14 @@ PixelFECSupervisor::PixelFECSupervisor(xdaq::ApplicationStub * s) throw (xdaq::e
   xoap::bind(this, &PixelFECSupervisor::Null, "Null", XDAQ_NS_URI);
   
   // Binding XGI Callbacks for messages from the browser
-  xgi::bind(this, &PixelFECSupervisor::Default, "Default");
-  xgi::bind(this, &PixelFECSupervisor::StateMachineXgiHandler, "StateMachineXgiHandler");
-  xgi::bind(this, &PixelFECSupervisor::mFECsHubs, "mFECsHubs");
-  xgi::bind(this, &PixelFECSupervisor::mFECsHubs_XgiHandler, "mFECsHubs_XgiHandler");
-  xgi::bind(this, &PixelFECSupervisor::Panel, "Panel");
-  xgi::bind(this, &PixelFECSupervisor::Panel_XgiHandler, "Panel_XgiHandler");
-  xgi::bind(this, &PixelFECSupervisor::ROC, "ROC");
-  xgi::bind(this, &PixelFECSupervisor::ROC_XgiHandler, "ROC_XgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::Default, "Default");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::StateMachineXgiHandler, "StateMachineXgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::mFECsHubs, "mFECsHubs");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::mFECsHubs_XgiHandler, "mFECsHubs_XgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::Panel, "Panel");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::Panel_XgiHandler, "Panel_XgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::ROC, "ROC");
+  xgi::framework::deferredbind(this, this, &PixelFECSupervisor::ROC_XgiHandler, "ROC_XgiHandler");
 
   //DIAGNOSTIC REQUESTED CALLBACK
   // xgi::bind(this,&PixelFECSupervisor::configureDiagSystem, "configureDiagSystem");
