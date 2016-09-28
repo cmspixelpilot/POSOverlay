@@ -1276,8 +1276,9 @@ void PixelFEDCard::clear(void)
   event_count_num_err_oos = 0;
   FEDBASE_0 = 0 ;
   fedNumber = 999 ;
-  for(int i=0;i<36;i++){
+  for(int i=0;i<48;i++)
     NRocs[i]    = 0;
+  for(int i=0;i<36;i++){
     offs_dac[i] = 0;
     BlackHi[i]  = 0;
     BlackLo[i]  = 0;
