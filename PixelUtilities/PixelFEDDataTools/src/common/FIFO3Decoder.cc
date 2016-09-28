@@ -2,6 +2,10 @@
 #include <iostream>
 #include <assert.h>
 
+bool FIFO3Decoder::is_trailer_word(uint64_t word) const {
+  return (word >> 46) == 0x28000; // utca channel 40 rocs 0-7 can reproduce the old 0xa0
+}
+
 FIFO3Decoder::FIFO3Decoder(uint64_t *buffer)
 {
 
@@ -13,7 +17,7 @@ FIFO3Decoder::FIFO3Decoder(uint64_t *buffer)
   
   unsigned int counter=1;
 
-  while ((buffer[counter] >> 56) != 0xa0) {
+  while (!is_trailer_word(buffer[counter])) {
 
     for(unsigned int index=counter*2;index<counter*2+2;index++){
 

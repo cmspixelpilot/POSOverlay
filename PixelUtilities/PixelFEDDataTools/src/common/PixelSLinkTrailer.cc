@@ -6,7 +6,7 @@ using namespace pos;
 
 PixelSLinkTrailer::PixelSLinkTrailer(Word64 word)
 {
-  if (word.getBits(60, 63)==0xa) {
+  if (word.getBits(46, 63)==0x28000) {
     trailer_=word;
   } else {
     trailer_=Word64(0);
@@ -15,7 +15,7 @@ PixelSLinkTrailer::PixelSLinkTrailer(Word64 word)
 
 PixelSLinkTrailer::PixelSLinkTrailer(uint64_t word)
 {
-  if (Word64(word).getBits(60, 63)==0xa) {
+  if (Word64(word).getBits(46, 63)==0x28000) {
     trailer_=Word64(word);
   } else {
     trailer_=Word64(0);
@@ -48,7 +48,7 @@ unsigned int PixelSLinkTrailer::getEOE()
 
 unsigned int PixelSLinkTrailer::getEvt_lgth()
 {
-  unsigned int evt_lgth=(unsigned int)trailer_.getBits(32, 55);
+  unsigned int evt_lgth=(unsigned int)trailer_.getBits(32, 45);
   return evt_lgth;
 }
 
