@@ -172,10 +172,9 @@ int PixelPh1FEDInterface::setup() {
 
   std::vector<uint32_t> cVec(24, 0);
   for (int i = 0; i < 24; ++i) {
-    uint32_t word = ((pixelFEDCard.NRocs[2*i+1] & 0xf) << 16) | (pixelFEDCard.NRocs[2*i] & 0xf);
-    if (i>17) word = 0x80008;
-    //std::cout << "fed fiber " << i << " NRocs[A] = " << pixelFEDCard.NRocs[2*i] << " NRocs[B] " << pixelFEDCard.NRocs[2*i+1] << " number of roc register: 0x" << std::hex << word << std::dec << std::endl;
-    cVec.push_back(word); 
+    cVec[i] = ((pixelFEDCard.NRocs[2*i+1] & 0xf) << 16) | (pixelFEDCard.NRocs[2*i] & 0xf);
+    //if (i>17) cVec[i] = 0x80008;
+    //std::cout << "fed fiber " << i << " NRocs[A] = " << pixelFEDCard.NRocs[2*i] << " NRocs[B] " << pixelFEDCard.NRocs[2*i+1] << " number of roc register: 0x" << std::hex << cVec[i] << std::dec << std::endl;
   }
   regManager->WriteBlockReg("fe_ctrl_regs.number_of_rocs", cVec); 
 
