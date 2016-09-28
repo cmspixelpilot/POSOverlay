@@ -1201,7 +1201,7 @@ void PixelPh1FEDInterface::getSFPStatus(uint8_t pFMCId) {
 void PixelPh1FEDInterface::PrintSlinkStatus() {
 
   printTTSState();
-
+  getSFPStatus(0);
     //check the link status
     uint8_t sync_loss =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.sync_loss");
     uint8_t link_down =  regManager->ReadReg ("pixfed_stat_regs.slink_core_status.link_down");
@@ -1237,7 +1237,7 @@ void PixelPh1FEDInterface::PrintSlinkStatus() {
     else if ( (cLinkStatus & 0x00000007) == 4)
         std::cout << "   State machine: Closing block" << std::endl;
     else
-        std::cout << "   State machine: fucked (Return value: " <<  (cLinkStatus & 0x00000007) << ")" << std::endl;
+        std::cout << "   State machine: messed up (Return value: " <<  (cLinkStatus & 0x00000007) << ")" << std::endl;
 
 
     //Status CORE
@@ -1724,6 +1724,7 @@ PixelPh1FEDInterface::digfifo1 PixelPh1FEDInterface::readFIFO1(bool print) {
   df.b = decodeFIFO1Stream(df.cFifo1B, df.cMarkerB);
   //  assert(df.a.event == 0 || df.b.event == 0 || df.a.event == df.b.event);
   if (print) {
+    printTTSState();
     std::cout << "FIFO1 for A:\n";
     prettyprintFIFO1Stream(df.cFifo1A, df.cMarkerA);
     std::cout << "FIFO1 for B:\n";
@@ -1940,6 +1941,7 @@ int PixelPh1FEDInterface::spySlink64(uint64_t *data) {
   while ( cVal == 0 );
   const uint32_t cNWords32 = regManager->ReadReg("pixfed_stat_regs.cnt_word32from_start");
   const uint32_t cBlockSize = cNWords32 + (2 * 2 * last_calib_mode_nevents);
+  //std::cout << "nwords is " << cNWords32 << " block size " << cBlockSize << std::endl;
   usleep(10);
   std::vector<uint32_t> cData = regManager->ReadBlockRegValue("DDR0", cBlockSize);
   usleep(10);
@@ -2328,6 +2330,7 @@ int PixelPh1FEDInterface::readEventCounter() {
 }
 
 uint32_t PixelPh1FEDInterface::getFifoStatus() {
+    printTTSState();
   return 0;
 }
 
