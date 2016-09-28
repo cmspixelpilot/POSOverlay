@@ -509,7 +509,7 @@ void PixelPortCardConfig::setAOHGain(std::string settingName, unsigned int value
 	string::size_type GainPosition = settingName.find("Gain");
 	unsigned int whichAOH;
 
-	if ( settingName[GainPosition-2] == 'H' ) whichAOH = 0; // fpix
+	if ( settingName[GainPosition-2] == 'H' ) whichAOH = 0; // fpix or pilt
 	else  // bpix or p1fpix
 	{
 		char whichAOHDigit[2]={0,0};
@@ -519,7 +519,7 @@ void PixelPortCardConfig::setAOHGain(std::string settingName, unsigned int value
 	char digit[2]={0,0};
 	digit[0]=settingName[GainPosition+4];
 	unsigned int channelOnAOH = atoi( digit );
-	assert( (type_=="p1fpix" && 1 <= whichAOH && whichAOH <= 2)||(type_=="fpix" && whichAOH==0)||(type_=="bpix" && 1 <= whichAOH&&whichAOH <= 4) );
+	assert( (type_=="pilt" && whichAOH == 0)||(type_=="p1fpix" && 1 <= whichAOH && whichAOH <= 2)||(type_=="fpix" && whichAOH==0)||(type_=="bpix" && 1 <= whichAOH&&whichAOH <= 4) );
         if (type_ == "fpix" || type_ == "bpix")
           assert( 1 <= channelOnAOH && channelOnAOH <= 6 );
         else if (type_ == "pilt" || type_ == "p1fpix")
@@ -528,7 +528,10 @@ void PixelPortCardConfig::setAOHGain(std::string settingName, unsigned int value
           assert(0);
 	
         if (type_ == "pilt" || type_ == "p1fpix") {
-          if      ( whichAOH == 1 && channelOnAOH <= 3 ) i2c_address = k_p1fpix_bPOH_Gain123_address;
+	  if      ( whichAOH == 0 && channelOnAOH <= 3 ) i2c_address = k_pilt_POH_Gain123_address;
+	  else if ( whichAOH == 0 && channelOnAOH == 4 ) i2c_address = k_pilt_POH_Gain4_address;
+	  else if ( whichAOH == 0 && channelOnAOH >= 5 ) i2c_address = k_pilt_POH_Gain567_address;
+          else if ( whichAOH == 1 && channelOnAOH <= 3 ) i2c_address = k_p1fpix_bPOH_Gain123_address;
           else if ( whichAOH == 1 && channelOnAOH == 4 ) i2c_address = k_p1fpix_bPOH_Gain4_address;
           else if ( whichAOH == 1 && channelOnAOH >= 5 ) i2c_address = k_p1fpix_bPOH_Gain567_address;
           else if ( whichAOH == 2 && channelOnAOH <= 3 ) i2c_address = k_p1fpix_tPOH_Gain123_address;
@@ -1303,6 +1306,22 @@ unsigned int PixelPortCardConfig::AOHBiasAddressFromAOHNumber(unsigned int AOHNu
 				<< std::endl; 
 				assert(0);}
 	}
+	else if ( type_ == "pilt" )
+	{
+		if      (AOHNumber == 1) return PortCardSettingNames::k_pilt_POH_Bias1_address;
+		else if (AOHNumber == 2) return PortCardSettingNames::k_pilt_POH_Bias2_address;
+		else if (AOHNumber == 3) return PortCardSettingNames::k_pilt_POH_Bias3_address;
+		else if (AOHNumber == 4) return PortCardSettingNames::k_pilt_POH_Bias4_address;
+		else if (AOHNumber == 5) return PortCardSettingNames::k_pilt_POH_Bias5_address;
+		else if (AOHNumber == 6) return PortCardSettingNames::k_pilt_POH_Bias6_address;
+		else if (AOHNumber == 7) return PortCardSettingNames::k_pilt_POH_Bias7_address;
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For pilt, AOH number must be in the range 1-7, but the given AOH number was "
+				<< AOHNumber
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
 	else if ( type_ == "p1fpix" )
 	{
 		if      (AOHNumber ==  1) return PortCardSettingNames::k_p1fpix_bPOH_Bias1_address;
@@ -1375,6 +1394,22 @@ std::string PixelPortCardConfig::AOHGainStringFromAOHNumber(unsigned int AOHNumb
 		else if (AOHNumber == 6) return "AOH_Gain6";
 		else {std::cout << __LINE__ << "]\t" << mthn 
 		                << "ERROR: For fpix, AOH number must be in the range 1-6, but the given AOH number was "
+				<< AOHNumber 
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
+	else if ( type_ == "pilt" )
+	{
+		if      (AOHNumber == 1) return "AOH_Gain1";
+		else if (AOHNumber == 2) return "AOH_Gain2";
+		else if (AOHNumber == 3) return "AOH_Gain3";
+		else if (AOHNumber == 4) return "AOH_Gain4";
+		else if (AOHNumber == 5) return "AOH_Gain5";
+		else if (AOHNumber == 6) return "AOH_Gain6";
+		else if (AOHNumber == 7) return "AOH_Gain7";
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For pilt, AOH number must be in the range 1-7, but the given AOH number was "
 				<< AOHNumber 
 				<< "."
 				<< std::endl; 
@@ -1453,6 +1488,22 @@ unsigned int PixelPortCardConfig::AOHGainAddressFromAOHNumber(unsigned int AOHNu
 		else if (AOHNumber == 6) address =  PortCardSettingNames::k_fpix_AOH_Gain456_address;
 		else {std::cout << __LINE__ << "]\t" << mthn 
 		                << "ERROR: For fpix, AOH number must be in the range 1-6, but the given AOH number was "
+				<< AOHNumber 
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
+	else if ( type_ == "pilt" )
+	{
+		if      (AOHNumber == 1) address =  PortCardSettingNames::k_pilt_POH_Gain123_address;
+		else if (AOHNumber == 2) address =  PortCardSettingNames::k_pilt_POH_Gain123_address;
+		else if (AOHNumber == 3) address =  PortCardSettingNames::k_pilt_POH_Gain123_address;
+		else if (AOHNumber == 4) address =  PortCardSettingNames::k_pilt_POH_Gain4_address;
+		else if (AOHNumber == 5) address =  PortCardSettingNames::k_pilt_POH_Gain567_address;
+		else if (AOHNumber == 6) address =  PortCardSettingNames::k_pilt_POH_Gain567_address;
+		else if (AOHNumber == 7) address =  PortCardSettingNames::k_pilt_POH_Gain567_address;
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For pilt, AOH number must be in the range 1-7, but the given AOH number was "
 				<< AOHNumber 
 				<< "."
 				<< std::endl; 
