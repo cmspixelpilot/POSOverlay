@@ -1,6 +1,6 @@
 import socket,time
 host='localhost'
-for port in range(2000,2011):
+for port in range(2000,2016):
     s = socket.socket ( socket.AF_INET, socket.SOCK_STREAM )
     try:
         s.connect ( (host,port) )
