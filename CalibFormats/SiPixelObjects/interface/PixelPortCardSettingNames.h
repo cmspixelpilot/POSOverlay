@@ -202,6 +202,120 @@ namespace pos{
     const unsigned int k_p1fpix_tPOH_Gain4_address = k_p1fpix_tPOH_base + k_POH_Gain4_offset;
     const unsigned int k_p1fpix_tPOH_Gain567_address = k_p1fpix_tPOH_base + k_POH_Gain567_offset;
 
+     //ph1 bpix
+    const std::string k_POH7_Bias1 = "POH7_Bias1";
+    const std::string k_POH7_Bias2 = "POH7_Bias2";
+    const std::string k_POH7_Bias3 = "POH7_Bias3";
+    const std::string k_POH7_Bias4 = "POH7_Bias4";
+    const std::string k_POH7_Gain12 = "POH7_Gain12";
+    const std::string k_POH7_Gain34   = "POH7_Gain34";
+
+    const std::string k_POH6_Bias1 = "POH6_Bias1";
+    const std::string k_POH6_Bias2 = "POH6_Bias2";
+    const std::string k_POH6_Bias3 = "POH6_Bias3";
+    const std::string k_POH6_Bias4 = "POH6_Bias4";
+    const std::string k_POH6_Gain12 = "POH6_Gain12";
+    const std::string k_POH6_Gain34   = "POH6_Gain34";
+
+    const std::string k_POH5_Bias1 = "POH5_Bias1";
+    const std::string k_POH5_Bias2 = "POH5_Bias2";
+    const std::string k_POH5_Bias3 = "POH5_Bias3";
+    const std::string k_POH5_Bias4 = "POH5_Bias4";
+    const std::string k_POH5_Gain12 = "POH5_Gain12";
+    const std::string k_POH5_Gain34   = "POH5_Gain34";
+
+    const std::string k_POH4_Bias1 = "POH4_Bias1";
+    const std::string k_POH4_Bias2 = "POH4_Bias2";
+    const std::string k_POH4_Bias3 = "POH4_Bias3";
+    const std::string k_POH4_Bias4 = "POH4_Bias4";
+    const std::string k_POH4_Gain12 = "POH4_Gain12";
+    const std::string k_POH4_Gain34   = "POH4_Gain34";
+
+    const std::string k_POH3_Bias1 = "POH3_Bias1";
+    const std::string k_POH3_Bias2 = "POH3_Bias2";
+    const std::string k_POH3_Bias3 = "POH3_Bias3";
+    const std::string k_POH3_Bias4 = "POH3_Bias4";
+    const std::string k_POH3_Gain12 = "POH3_Gain12";
+    const std::string k_POH3_Gain34   = "POH3_Gain34";
+
+    const std::string k_POH2_Bias1 = "POH2_Bias1";
+    const std::string k_POH2_Bias2 = "POH2_Bias2";
+    const std::string k_POH2_Bias3 = "POH2_Bias3";
+    const std::string k_POH2_Bias4 = "POH2_Bias4";
+    const std::string k_POH2_Gain12 = "POH2_Gain12";
+    const std::string k_POH2_Gain34   = "POH2_Gain34";
+
+    const std::string k_POH1_Bias1 = "POH1_Bias1";
+    const std::string k_POH1_Bias2 = "POH1_Bias2";
+    const std::string k_POH1_Bias3 = "POH1_Bias3";
+    const std::string k_POH1_Bias4 = "POH1_Bias4";
+    const std::string k_POH1_Gain12 = "POH1_Gain12";
+    const std::string k_POH1_Gain34   = "POH1_Gain34";
+ 
+    const unsigned int k_POH_ph1bpix_Bias1_offset = 0x0;
+    const unsigned int k_POH_ph1bpix_Bias2_offset = 0x2;
+    const unsigned int k_POH_ph1bpix_Bias3_offset = 0x4;
+    const unsigned int k_POH_ph1bpix_Bias4_offset = 0x6;
+    const unsigned int k_POH_ph1bpix_Gain12_offset = 0x3;
+    const unsigned int k_POH_ph1bpix_Gain34_offset   = 0x7;
+
+     // POH ph1bpix
+
+    const unsigned int k_ph1bpix_POH1_base = 0x0;
+    const unsigned int k_ph1bpix_POH1_Bias1_address = k_ph1bpix_POH1_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH1_Bias2_address = k_ph1bpix_POH1_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH1_Bias3_address = k_ph1bpix_POH1_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH1_Bias4_address = k_ph1bpix_POH1_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH1_Gain12_address = k_ph1bpix_POH1_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH1_Gain34_address = k_ph1bpix_POH1_base + k_POH_ph1bpix_Gain34_offset;
+
+    const unsigned int k_ph1bpix_POH2_base = 0x8;
+    const unsigned int k_ph1bpix_POH2_Bias1_address = k_ph1bpix_POH2_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH2_Bias2_address = k_ph1bpix_POH2_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH2_Bias3_address = k_ph1bpix_POH2_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH2_Bias4_address = k_ph1bpix_POH2_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH2_Gain12_address = k_ph1bpix_POH2_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH2_Gain34_address = k_ph1bpix_POH2_base + k_POH_ph1bpix_Gain34_offset;
+
+    const unsigned int k_ph1bpix_POH3_base = 0x10;
+    const unsigned int k_ph1bpix_POH3_Bias1_address = k_ph1bpix_POH3_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH3_Bias2_address = k_ph1bpix_POH3_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH3_Bias3_address = k_ph1bpix_POH3_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH3_Bias4_address = k_ph1bpix_POH3_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH3_Gain12_address = k_ph1bpix_POH3_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH3_Gain34_address = k_ph1bpix_POH3_base + k_POH_ph1bpix_Gain34_offset;
+
+    const unsigned int k_ph1bpix_POH4_base = 0x18;
+    const unsigned int k_ph1bpix_POH4_Bias1_address = k_ph1bpix_POH4_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH4_Bias2_address = k_ph1bpix_POH4_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH4_Bias3_address = k_ph1bpix_POH4_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH4_Bias4_address = k_ph1bpix_POH4_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH4_Gain12_address = k_ph1bpix_POH4_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH4_Gain34_address = k_ph1bpix_POH4_base + k_POH_ph1bpix_Gain34_offset;
+
+    const unsigned int k_ph1bpix_POH5_base = 0x20;
+    const unsigned int k_ph1bpix_POH5_Bias1_address = k_ph1bpix_POH5_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH5_Bias2_address = k_ph1bpix_POH5_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH5_Bias3_address = k_ph1bpix_POH5_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH5_Bias4_address = k_ph1bpix_POH5_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH5_Gain12_address = k_ph1bpix_POH5_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH5_Gain34_address = k_ph1bpix_POH5_base + k_POH_ph1bpix_Gain34_offset;
+
+    const unsigned int k_ph1bpix_POH6_base = 0x28;
+    const unsigned int k_ph1bpix_POH6_Bias1_address = k_ph1bpix_POH6_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH6_Bias2_address = k_ph1bpix_POH6_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH6_Bias3_address = k_ph1bpix_POH6_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH6_Bias4_address = k_ph1bpix_POH6_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH6_Gain12_address = k_ph1bpix_POH6_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH6_Gain34_address = k_ph1bpix_POH6_base + k_POH_ph1bpix_Gain34_offset;
+
+    const unsigned int k_ph1bpix_POH7_base = 0x30;
+    const unsigned int k_ph1bpix_POH7_Bias1_address = k_ph1bpix_POH7_base + k_POH_ph1bpix_Bias1_offset;
+    const unsigned int k_ph1bpix_POH7_Bias2_address = k_ph1bpix_POH7_base + k_POH_ph1bpix_Bias2_offset;
+    const unsigned int k_ph1bpix_POH7_Bias3_address = k_ph1bpix_POH7_base + k_POH_ph1bpix_Bias3_offset;
+    const unsigned int k_ph1bpix_POH7_Bias4_address = k_ph1bpix_POH7_base + k_POH_ph1bpix_Bias4_offset;
+    const unsigned int k_ph1bpix_POH7_Gain12_address = k_ph1bpix_POH7_base + k_POH_ph1bpix_Gain12_offset;
+    const unsigned int k_ph1bpix_POH7_Gain34_address = k_ph1bpix_POH7_base + k_POH_ph1bpix_Gain34_offset;
     // PLL
     const std::string k_PLL_CTR1 = "PLL_CTR1";
     const std::string k_PLL_CTR2 = "PLL_CTR2";
@@ -270,6 +384,14 @@ namespace pos{
     const unsigned int k_bpix_Delay25_TRG_address = k_bpix_Delay25_base + k_Delay25_CR1_offset;
     const unsigned int k_bpix_Delay25_SCL_address = k_bpix_Delay25_base + k_Delay25_CR4_offset;
     const unsigned int k_bpix_Delay25_GCR_address = k_bpix_Delay25_base + k_Delay25_CR5_offset;
+    // Delay25 ph1bpix
+    const unsigned int k_ph1bpix_Delay25_base = 0x60;
+    const unsigned int k_ph1bpix_Delay25_RDA_address = k_ph1bpix_Delay25_base + k_Delay25_CR1_offset;
+    const unsigned int k_ph1bpix_Delay25_RCL_address = k_ph1bpix_Delay25_base + k_Delay25_CR0_offset;
+    const unsigned int k_ph1bpix_Delay25_SDA_address = k_ph1bpix_Delay25_base + k_Delay25_CR2_offset;
+    const unsigned int k_ph1bpix_Delay25_TRG_address = k_ph1bpix_Delay25_base + k_Delay25_CR3_offset;
+    const unsigned int k_ph1bpix_Delay25_SCL_address = k_ph1bpix_Delay25_base + k_Delay25_CR4_offset;
+    const unsigned int k_ph1bpix_Delay25_GCR_address = k_ph1bpix_Delay25_base + k_Delay25_CR5_offset;
 
     // DOH
     const std::string k_DOH_Ch0Bias_CLK  = "DOH_Ch0Bias_CLK";

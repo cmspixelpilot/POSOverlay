@@ -305,7 +305,7 @@ PixelPortCardConfig::PixelPortCardConfig(vector < vector< string> >  &tableMat):
 	     (settingName.find("_BIAS") != std::string::npos) || 
 	     (settingName.find("PLL_CTR2") != std::string::npos) ||
 	     (settingName.find("PLL_CTR5") != std::string::npos)  ||
-	     ((settingName.find("DOH_SEU_GAIN") != std::string::npos) && type_=="bpix")) 
+         ((settingName.find("DOH_SEU_GAIN") != std::string::npos) && (type_=="bpix" || type_=="ph1bpix") ))	    
 	    //Note that DOH_SEU_GAIN will be *ignored* for fpix
 	    {
 	      map<string,string>::iterator iter = nameDBtoFileConversion_.find(settingName);
@@ -402,7 +402,7 @@ PixelPortCardConfig::PixelPortCardConfig(std::string filename):
   if ( dummy == "Type:" ) // read in the type, defaulting to "fpix" if not specified
   {
     in >> type_;
-    assert( type_ == "fpix" || type_ == "bpix" || type_ == "pilt" || type_ == "p1fpix" );
+    assert( type_ == "fpix" || type_ == "bpix" || type_ == "pilt" || type_ == "p1fpix" || type_ == "ph1bpix");
     in >> dummy;
   }
   else
@@ -519,11 +519,13 @@ void PixelPortCardConfig::setAOHGain(std::string settingName, unsigned int value
 	char digit[2]={0,0};
 	digit[0]=settingName[GainPosition+4];
 	unsigned int channelOnAOH = atoi( digit );
-	assert( (type_=="p1fpix" && 1 <= whichAOH && whichAOH <= 2)||(type_=="fpix" && whichAOH==0)||(type_=="bpix" && 1 <= whichAOH&&whichAOH <= 4) );
+	assert( (type_=="p1fpix" && 1 <= whichAOH && whichAOH <= 2)||(type_=="fpix" && whichAOH==0)||(type_=="bpix" && 1 <= whichAOH&&whichAOH <= 4)||(type_=="ph1bpix" && 1 <= whichAOH && whichAOH <= 7) );
         if (type_ == "fpix" || type_ == "bpix")
           assert( 1 <= channelOnAOH && channelOnAOH <= 6 );
         else if (type_ == "pilt" || type_ == "p1fpix")
           assert( 1 <= channelOnAOH && channelOnAOH <= 7 );
+        else if (type_ == "ph1bpix")
+          assert( 1 <= channelOnAOH && channelOnAOH <= 4 );        
         else
           assert(0);
 	
@@ -534,6 +536,22 @@ void PixelPortCardConfig::setAOHGain(std::string settingName, unsigned int value
           else if ( whichAOH == 2 && channelOnAOH <= 3 ) i2c_address = k_p1fpix_tPOH_Gain123_address;
           else if ( whichAOH == 2 && channelOnAOH == 4 ) i2c_address = k_p1fpix_tPOH_Gain4_address;
           else if ( whichAOH == 2 && channelOnAOH >= 5 ) i2c_address = k_p1fpix_tPOH_Gain567_address;
+        }
+        else if (type_ == "ph1bpix") {
+          if      ( whichAOH == 1 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH1_Gain12_address;
+          else if ( whichAOH == 1 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH1_Gain34_address;
+          else if ( whichAOH == 2 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH2_Gain12_address;
+          else if ( whichAOH == 2 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH2_Gain34_address;
+          else if ( whichAOH == 3 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH3_Gain12_address;
+          else if ( whichAOH == 3 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH3_Gain34_address;
+          else if ( whichAOH == 4 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH4_Gain12_address;
+          else if ( whichAOH == 4 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH4_Gain34_address;
+          else if ( whichAOH == 5 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH5_Gain12_address;
+          else if ( whichAOH == 5 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH5_Gain34_address;
+          else if ( whichAOH == 6 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH6_Gain12_address;
+          else if ( whichAOH == 6 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH6_Gain34_address;
+          else if ( whichAOH == 7 && channelOnAOH <= 2 ) i2c_address = k_ph1bpix_POH7_Gain12_address;
+          else if ( whichAOH == 7 && channelOnAOH >= 3 ) i2c_address = k_ph1bpix_POH7_Gain34_address;
         }
         else {
           if      ( whichAOH == 0 && channelOnAOH <= 3 ) i2c_address = k_fpix_AOH_Gain123_address;
@@ -837,6 +855,75 @@ void PixelPortCardConfig::fillNameToAddress()
 		nameToAddress_[PortCardSettingNames::k_DOH_Ch1Bias_Data] = PortCardSettingNames::k_bpix_DOH_Ch1Bias_Data_address;
 		nameToAddress_[PortCardSettingNames::k_DOH_Gain_SEU]     = PortCardSettingNames::k_bpix_DOH_Gain_SEU_address;
 	}
+        else if ( type_ == "ph1bpix" )
+        {
+
+                nameToAddress_[PortCardSettingNames::k_POH1_Bias1] = PortCardSettingNames::k_ph1bpix_POH1_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH1_Bias2] = PortCardSettingNames::k_ph1bpix_POH1_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH1_Bias3] = PortCardSettingNames::k_ph1bpix_POH1_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH1_Bias4] = PortCardSettingNames::k_ph1bpix_POH1_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH1_Gain12] = PortCardSettingNames::k_ph1bpix_POH1_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH1_Gain34] = PortCardSettingNames::k_ph1bpix_POH1_Gain34_address;
+
+                nameToAddress_[PortCardSettingNames::k_POH2_Bias1] = PortCardSettingNames::k_ph1bpix_POH2_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH2_Bias2] = PortCardSettingNames::k_ph1bpix_POH2_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH2_Bias3] = PortCardSettingNames::k_ph1bpix_POH2_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH2_Bias4] = PortCardSettingNames::k_ph1bpix_POH2_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH2_Gain12] = PortCardSettingNames::k_ph1bpix_POH2_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH2_Gain34] = PortCardSettingNames::k_ph1bpix_POH2_Gain34_address;
+
+                nameToAddress_[PortCardSettingNames::k_POH3_Bias1] = PortCardSettingNames::k_ph1bpix_POH3_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH3_Bias2] = PortCardSettingNames::k_ph1bpix_POH3_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH3_Bias3] = PortCardSettingNames::k_ph1bpix_POH3_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH3_Bias4] = PortCardSettingNames::k_ph1bpix_POH3_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH3_Gain12] = PortCardSettingNames::k_ph1bpix_POH3_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH3_Gain34] = PortCardSettingNames::k_ph1bpix_POH3_Gain34_address;
+
+                nameToAddress_[PortCardSettingNames::k_POH4_Bias1] = PortCardSettingNames::k_ph1bpix_POH4_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH4_Bias2] = PortCardSettingNames::k_ph1bpix_POH4_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH4_Bias3] = PortCardSettingNames::k_ph1bpix_POH4_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH4_Bias4] = PortCardSettingNames::k_ph1bpix_POH4_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH4_Gain12] = PortCardSettingNames::k_ph1bpix_POH4_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH4_Gain34] = PortCardSettingNames::k_ph1bpix_POH4_Gain34_address;
+
+                nameToAddress_[PortCardSettingNames::k_POH5_Bias1] = PortCardSettingNames::k_ph1bpix_POH5_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH5_Bias2] = PortCardSettingNames::k_ph1bpix_POH5_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH5_Bias3] = PortCardSettingNames::k_ph1bpix_POH5_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH5_Bias4] = PortCardSettingNames::k_ph1bpix_POH5_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH5_Gain12] = PortCardSettingNames::k_ph1bpix_POH5_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH5_Gain34] = PortCardSettingNames::k_ph1bpix_POH5_Gain34_address;
+
+                nameToAddress_[PortCardSettingNames::k_POH6_Bias1] = PortCardSettingNames::k_ph1bpix_POH6_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH6_Bias2] = PortCardSettingNames::k_ph1bpix_POH6_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH6_Bias3] = PortCardSettingNames::k_ph1bpix_POH6_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH6_Bias4] = PortCardSettingNames::k_ph1bpix_POH6_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH6_Gain12] = PortCardSettingNames::k_ph1bpix_POH6_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH6_Gain34] = PortCardSettingNames::k_ph1bpix_POH6_Gain34_address;
+
+                nameToAddress_[PortCardSettingNames::k_POH7_Bias1] = PortCardSettingNames::k_ph1bpix_POH7_Bias1_address;
+                nameToAddress_[PortCardSettingNames::k_POH7_Bias2] = PortCardSettingNames::k_ph1bpix_POH7_Bias2_address;
+                nameToAddress_[PortCardSettingNames::k_POH7_Bias3] = PortCardSettingNames::k_ph1bpix_POH7_Bias3_address;
+                nameToAddress_[PortCardSettingNames::k_POH7_Bias4] = PortCardSettingNames::k_ph1bpix_POH7_Bias4_address;
+                nameToAddress_[PortCardSettingNames::k_POH7_Gain12] = PortCardSettingNames::k_ph1bpix_POH7_Gain12_address;
+                nameToAddress_[PortCardSettingNames::k_POH7_Gain34] = PortCardSettingNames::k_ph1bpix_POH7_Gain34_address;
+                
+                nameToAddress_[PortCardSettingNames::k_PLL_CTR1] = PortCardSettingNames::k_bpix_PLL_CTR1_address;
+                nameToAddress_[PortCardSettingNames::k_PLL_CTR2] = PortCardSettingNames::k_bpix_PLL_CTR2_address;
+                nameToAddress_[PortCardSettingNames::k_PLL_CTR3] = PortCardSettingNames::k_bpix_PLL_CTR3_address;
+                nameToAddress_[PortCardSettingNames::k_PLL_CTR4or5] = PortCardSettingNames::k_bpix_PLL_CTR4or5_address;
+
+                nameToAddress_[PortCardSettingNames::k_Delay25_RDA] = PortCardSettingNames::k_ph1bpix_Delay25_RDA_address;
+                nameToAddress_[PortCardSettingNames::k_Delay25_RCL] = PortCardSettingNames::k_ph1bpix_Delay25_RCL_address;
+                nameToAddress_[PortCardSettingNames::k_Delay25_SDA] = PortCardSettingNames::k_ph1bpix_Delay25_SDA_address;
+                nameToAddress_[PortCardSettingNames::k_Delay25_TRG] = PortCardSettingNames::k_ph1bpix_Delay25_TRG_address;
+                nameToAddress_[PortCardSettingNames::k_Delay25_SCL] = PortCardSettingNames::k_ph1bpix_Delay25_SCL_address;
+                nameToAddress_[PortCardSettingNames::k_Delay25_GCR] = PortCardSettingNames::k_ph1bpix_Delay25_GCR_address;
+                
+                nameToAddress_[PortCardSettingNames::k_DOH_Ch0Bias_CLK]  = PortCardSettingNames::k_bpix_DOH_Ch0Bias_CLK_address;
+                nameToAddress_[PortCardSettingNames::k_DOH_Dummy]        = PortCardSettingNames::k_bpix_DOH_Dummy_address;
+                nameToAddress_[PortCardSettingNames::k_DOH_Ch1Bias_Data] = PortCardSettingNames::k_bpix_DOH_Ch1Bias_Data_address;
+                nameToAddress_[PortCardSettingNames::k_DOH_Gain_SEU]     = PortCardSettingNames::k_bpix_DOH_Gain_SEU_address;
+        }
 	else assert(0);
 	
 	return;
@@ -1084,7 +1171,51 @@ void PixelPortCardConfig::fillDBToFileAddress()
       //   nameDBtoFileConversion_["PLL3_CTR3"             ] = ;
       //   nameDBtoFileConversion_["PLL3_CTR4_5"           ] = ;
     }
-    
+else if(type_ == "ph1bpix")
+    {
+      nameDBtoFileConversion_["POH1_BIAS1"                ] = k_POH1_Bias1 ;
+      nameDBtoFileConversion_["POH1_BIAS2"                ] = k_POH1_Bias2 ;
+      nameDBtoFileConversion_["POH1_BIAS3"                ] = k_POH1_Bias3 ;
+      nameDBtoFileConversion_["POH1_BIAS4"                ] = k_POH1_Bias4 ;
+      nameDBtoFileConversion_["POH2_BIAS1"                ] = k_POH2_Bias1 ;
+      nameDBtoFileConversion_["POH2_BIAS2"                ] = k_POH2_Bias2 ;
+      nameDBtoFileConversion_["POH2_BIAS3"                ] = k_POH2_Bias3 ;
+      nameDBtoFileConversion_["POH2_BIAS4"                ] = k_POH2_Bias4 ;
+      nameDBtoFileConversion_["POH3_BIAS1"                ] = k_POH3_Bias1 ;
+      nameDBtoFileConversion_["POH3_BIAS2"                ] = k_POH3_Bias2 ;
+      nameDBtoFileConversion_["POH3_BIAS3"                ] = k_POH3_Bias3 ;
+      nameDBtoFileConversion_["POH3_BIAS4"                ] = k_POH3_Bias4 ;
+      nameDBtoFileConversion_["POH4_BIAS1"                ] = k_POH4_Bias1 ;
+      nameDBtoFileConversion_["POH4_BIAS2"                ] = k_POH4_Bias2 ;
+      nameDBtoFileConversion_["POH4_BIAS3"                ] = k_POH4_Bias3 ;
+      nameDBtoFileConversion_["POH4_BIAS4"                ] = k_POH4_Bias4 ;
+      nameDBtoFileConversion_["POH5_BIAS1"                ] = k_POH5_Bias1 ;
+      nameDBtoFileConversion_["POH5_BIAS2"                ] = k_POH5_Bias2 ;
+      nameDBtoFileConversion_["POH5_BIAS3"                ] = k_POH5_Bias3 ;
+      nameDBtoFileConversion_["POH5_BIAS4"                ] = k_POH5_Bias4 ;
+      nameDBtoFileConversion_["POH6_BIAS1"                ] = k_POH6_Bias1 ;
+      nameDBtoFileConversion_["POH6_BIAS2"                ] = k_POH6_Bias2 ;
+      nameDBtoFileConversion_["POH6_BIAS3"                ] = k_POH6_Bias3 ;
+      nameDBtoFileConversion_["POH6_BIAS4"                ] = k_POH6_Bias4 ;
+      nameDBtoFileConversion_["POH7_BIAS1"                ] = k_POH7_Bias1 ;
+      nameDBtoFileConversion_["POH7_BIAS2"                ] = k_POH7_Bias2 ;
+      nameDBtoFileConversion_["POH7_BIAS3"                ] = k_POH7_Bias3 ;
+      nameDBtoFileConversion_["POH7_BIAS4"                ] = k_POH7_Bias4 ;
+      nameDBtoFileConversion_["DELAY25_GCR"              ] = k_Delay25_GCR ;
+      nameDBtoFileConversion_["DELAY25_SCL"              ] = k_Delay25_SCL ;
+      nameDBtoFileConversion_["DELAY25_TRG"              ] = k_Delay25_TRG ;
+      nameDBtoFileConversion_["DELAY25_SDA"              ] = k_Delay25_SDA ;
+      nameDBtoFileConversion_["DELAY25_RCL"              ] = k_Delay25_RCL ;
+      nameDBtoFileConversion_["DELAY25_RDA"              ] = k_Delay25_RDA ;
+      nameDBtoFileConversion_["DOH_BIAS0"            ] = k_DOH_Ch0Bias_CLK  ;
+      nameDBtoFileConversion_["DOH_BIAS1"            ] = k_DOH_Ch1Bias_Data ;
+      nameDBtoFileConversion_["DOH_SEU_GAIN"         ] = k_DOH_Gain_SEU     ;
+      nameDBtoFileConversion_["PLL_CTR1"             ] = k_PLL_CTR1 ;
+      nameDBtoFileConversion_["PLL_CTR2"             ] = k_PLL_CTR2 ;
+      nameDBtoFileConversion_["PLL_CTR3"             ] = k_PLL_CTR3 ;
+      nameDBtoFileConversion_["PLL_CTR4"             ] = k_PLL_CTR4 ;
+      nameDBtoFileConversion_["PLL_CTR5"             ] = k_PLL_CTR5 ;
+ }   
     
 }
 
@@ -1359,6 +1490,43 @@ unsigned int PixelPortCardConfig::AOHBiasAddressFromAOHNumber(unsigned int AOHNu
 				<< std::endl; 
 				assert(0);}
 	}
+	else if ( type_ == "ph1bpix" )
+	{
+		if      (AOHNumber ==  1) return PortCardSettingNames::k_ph1bpix_POH1_Bias1_address;
+		else if (AOHNumber ==  2) return PortCardSettingNames::k_ph1bpix_POH1_Bias2_address;
+		else if (AOHNumber ==  3) return PortCardSettingNames::k_ph1bpix_POH1_Bias3_address;
+		else if (AOHNumber ==  4) return PortCardSettingNames::k_ph1bpix_POH1_Bias4_address;
+		else if (AOHNumber ==  5) return PortCardSettingNames::k_ph1bpix_POH2_Bias1_address;
+		else if (AOHNumber ==  6) return PortCardSettingNames::k_ph1bpix_POH2_Bias2_address;
+		else if (AOHNumber ==  7) return PortCardSettingNames::k_ph1bpix_POH2_Bias3_address;
+		else if (AOHNumber ==  8) return PortCardSettingNames::k_ph1bpix_POH2_Bias4_address;
+		else if (AOHNumber ==  9) return PortCardSettingNames::k_ph1bpix_POH3_Bias1_address;
+		else if (AOHNumber == 10) return PortCardSettingNames::k_ph1bpix_POH3_Bias2_address;
+		else if (AOHNumber == 11) return PortCardSettingNames::k_ph1bpix_POH3_Bias3_address;
+		else if (AOHNumber == 12) return PortCardSettingNames::k_ph1bpix_POH3_Bias4_address;
+		else if (AOHNumber == 13) return PortCardSettingNames::k_ph1bpix_POH4_Bias1_address;
+		else if (AOHNumber == 14) return PortCardSettingNames::k_ph1bpix_POH4_Bias2_address;
+		else if (AOHNumber == 15) return PortCardSettingNames::k_ph1bpix_POH4_Bias3_address;
+		else if (AOHNumber == 16) return PortCardSettingNames::k_ph1bpix_POH4_Bias4_address;
+		else if (AOHNumber == 17) return PortCardSettingNames::k_ph1bpix_POH5_Bias1_address;
+		else if (AOHNumber == 18) return PortCardSettingNames::k_ph1bpix_POH5_Bias2_address;
+		else if (AOHNumber == 19) return PortCardSettingNames::k_ph1bpix_POH5_Bias3_address;
+		else if (AOHNumber == 20) return PortCardSettingNames::k_ph1bpix_POH5_Bias4_address;
+		else if (AOHNumber == 21) return PortCardSettingNames::k_ph1bpix_POH6_Bias1_address;
+		else if (AOHNumber == 22) return PortCardSettingNames::k_ph1bpix_POH6_Bias2_address;
+		else if (AOHNumber == 23) return PortCardSettingNames::k_ph1bpix_POH6_Bias3_address;
+		else if (AOHNumber == 24) return PortCardSettingNames::k_ph1bpix_POH6_Bias4_address;
+		else if (AOHNumber == 25) return PortCardSettingNames::k_ph1bpix_POH7_Bias1_address;
+		else if (AOHNumber == 26) return PortCardSettingNames::k_ph1bpix_POH7_Bias2_address;
+		else if (AOHNumber == 27) return PortCardSettingNames::k_ph1bpix_POH7_Bias3_address;
+		else if (AOHNumber == 28) return PortCardSettingNames::k_ph1bpix_POH7_Bias4_address;
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For ph1bpix, POH number must be in the range 1-28, but the given POH number was "
+				<< AOHNumber
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
 	else assert(0);
 }
 
@@ -1431,6 +1599,43 @@ std::string PixelPortCardConfig::AOHGainStringFromAOHNumber(unsigned int AOHNumb
 		else if (AOHNumber ==24) return "AOH4_Gain6";
 		else {std::cout << __LINE__ << "]\t" << mthn 
 		                << "ERROR: For bpix, AOH number must be in the range 1-24, but the given AOH number was "
+				<< AOHNumber
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
+	else if ( type_ == "ph1bpix" )
+	{
+		if      (AOHNumber == 1) return "POH1_Gain12";
+		else if (AOHNumber == 2) return "POH1_Gain12";
+		else if (AOHNumber == 3) return "POH1_Gain34";
+		else if (AOHNumber == 4) return "POH1_Gain34";
+		else if (AOHNumber == 5) return "POH2_Gain12";
+		else if (AOHNumber == 6) return "POH2_Gain12";
+		else if (AOHNumber == 7) return "POH2_Gain34";
+		else if (AOHNumber == 8) return "POH2_Gain34";
+		else if (AOHNumber == 9) return "POH3_Gain12";
+		else if (AOHNumber ==10) return "POH3_Gain12";
+		else if (AOHNumber ==11) return "POH3_Gain34";
+		else if (AOHNumber ==12) return "POH3_Gain34";
+		else if (AOHNumber ==13) return "POH4_Gain12";
+		else if (AOHNumber ==14) return "POH4_Gain12";
+		else if (AOHNumber ==15) return "POH4_Gain34";
+		else if (AOHNumber ==16) return "POH4_Gain34";
+		else if (AOHNumber ==17) return "POH5_Gain12";
+		else if (AOHNumber ==18) return "POH5_Gain12";
+		else if (AOHNumber ==19) return "POH5_Gain34";
+		else if (AOHNumber ==20) return "POH5_Gain34";
+		else if (AOHNumber ==21) return "POH6_Gain12";
+		else if (AOHNumber ==22) return "POH6_Gain12";
+		else if (AOHNumber ==23) return "POH6_Gain34";
+		else if (AOHNumber ==24) return "POH6_Gain34";
+		else if (AOHNumber ==25) return "POH7_Gain12";
+		else if (AOHNumber ==26) return "POH7_Gain12";
+		else if (AOHNumber ==27) return "POH7_Gain34";
+		else if (AOHNumber ==28) return "POH7_Gain34";
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For ph1bpix, POH number must be in the range 1-14, but the given POH number was "
 				<< AOHNumber
 				<< "."
 				<< std::endl; 
@@ -1509,6 +1714,43 @@ unsigned int PixelPortCardConfig::AOHGainAddressFromAOHNumber(unsigned int AOHNu
 		else if (AOHNumber ==24) address =  PortCardSettingNames::k_bpix_AOH4_Gain456_address;
 		else {std::cout << __LINE__ << "]\t" << mthn 
 		                << "ERROR: For bpix, AOH number must be in the range 1-24, but the given AOH number was "
+				<< AOHNumber
+				<< "."
+				<< std::endl; 
+				assert(0);}
+	}
+	else if ( type_ == "ph1bpix" )
+	{
+		if      (AOHNumber == 1) address =  PortCardSettingNames::k_ph1bpix_POH1_Gain12_address;
+		else if (AOHNumber == 2) address =  PortCardSettingNames::k_ph1bpix_POH1_Gain12_address;
+		else if (AOHNumber == 3) address =  PortCardSettingNames::k_ph1bpix_POH1_Gain34_address;
+		else if (AOHNumber == 4) address =  PortCardSettingNames::k_ph1bpix_POH1_Gain34_address;
+		else if (AOHNumber == 5) address =  PortCardSettingNames::k_ph1bpix_POH2_Gain12_address;
+		else if (AOHNumber == 6) address =  PortCardSettingNames::k_ph1bpix_POH2_Gain12_address;
+		else if (AOHNumber == 7) address =  PortCardSettingNames::k_ph1bpix_POH2_Gain34_address;
+		else if (AOHNumber == 8) address =  PortCardSettingNames::k_ph1bpix_POH2_Gain34_address;
+		else if (AOHNumber == 9) address =  PortCardSettingNames::k_ph1bpix_POH3_Gain12_address;
+		else if (AOHNumber ==10) address =  PortCardSettingNames::k_ph1bpix_POH3_Gain12_address;
+		else if (AOHNumber ==11) address =  PortCardSettingNames::k_ph1bpix_POH3_Gain34_address;
+		else if (AOHNumber ==12) address =  PortCardSettingNames::k_ph1bpix_POH3_Gain34_address;
+		else if (AOHNumber ==13) address =  PortCardSettingNames::k_ph1bpix_POH4_Gain12_address;
+		else if (AOHNumber ==14) address =  PortCardSettingNames::k_ph1bpix_POH4_Gain12_address;
+		else if (AOHNumber ==15) address =  PortCardSettingNames::k_ph1bpix_POH4_Gain34_address;
+		else if (AOHNumber ==16) address =  PortCardSettingNames::k_ph1bpix_POH4_Gain34_address;
+		else if (AOHNumber ==17) address =  PortCardSettingNames::k_ph1bpix_POH5_Gain12_address;
+		else if (AOHNumber ==18) address =  PortCardSettingNames::k_ph1bpix_POH5_Gain12_address;
+		else if (AOHNumber ==19) address =  PortCardSettingNames::k_ph1bpix_POH5_Gain34_address;
+		else if (AOHNumber ==20) address =  PortCardSettingNames::k_ph1bpix_POH5_Gain34_address;
+		else if (AOHNumber ==21) address =  PortCardSettingNames::k_ph1bpix_POH6_Gain12_address;
+		else if (AOHNumber ==22) address =  PortCardSettingNames::k_ph1bpix_POH6_Gain12_address;
+		else if (AOHNumber ==23) address =  PortCardSettingNames::k_ph1bpix_POH6_Gain34_address;
+		else if (AOHNumber ==24) address =  PortCardSettingNames::k_ph1bpix_POH6_Gain34_address;
+		else if (AOHNumber ==25) address =  PortCardSettingNames::k_ph1bpix_POH7_Gain12_address;
+		else if (AOHNumber ==26) address =  PortCardSettingNames::k_ph1bpix_POH7_Gain12_address;
+		else if (AOHNumber ==27) address =  PortCardSettingNames::k_ph1bpix_POH7_Gain34_address;
+		else if (AOHNumber ==28) address =  PortCardSettingNames::k_ph1bpix_POH7_Gain34_address;
+		else {std::cout << __LINE__ << "]\t" << mthn 
+		                << "ERROR: For ph1bpix, POH number must be in the range 1-14, but the given POH number was "
 				<< AOHNumber
 				<< "."
 				<< std::endl; 
