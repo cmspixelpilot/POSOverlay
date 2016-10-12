@@ -263,6 +263,14 @@ void PixelPh1FEDInterface::setChannelOfInterest(int ch) {
   regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", ch);  // do we always want to keep them in tandem?
 }
 
+void PixelPh1FEDInterface::setFIFO1(int ch) {
+  if (ch < 0 || ch > 23) {
+    std::cout << "set FIFO1 with ch " << ch << " not allowed" << std::endl;
+    assert(0);
+  }
+
+  regManager->WriteReg("fe_ctrl_regs.fifo_1_to_read", ch);
+}
 void PixelPh1FEDInterface::setPixelForScore(int dc, int pxl) {
   regManager->WriteReg("fe_ctrl_regs.scan_DC", dc);
   regManager->WriteReg("fe_ctrl_regs.scan_pxl", pxl);

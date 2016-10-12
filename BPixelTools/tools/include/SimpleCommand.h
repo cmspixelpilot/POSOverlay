@@ -69,7 +69,7 @@ public:
   bool Keyword(const string&, int& value1, int& value2, int& value3);
   bool Keyword(const string&, int& value1, int& value2, int& value3, int& value4, int& value5, int& value6);
   bool Keyword(const string&, int& value1, int& value2, const string&);
-
+  bool Keyword(const string& keyword, int& value1, int& value2, int& value3, int& value4);
   bool Keyword(const string&  keyword, float& value1, float& value2);
 
   bool Keyword(const string&, sector_t& sect);

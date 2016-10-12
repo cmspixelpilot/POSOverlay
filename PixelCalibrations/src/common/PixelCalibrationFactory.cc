@@ -42,6 +42,7 @@
 #include "PixelCalibrations/include/PixelROCDelay25Calibration.h"
 #include "PixelCalibrations/include/PixelTBMDelayCalibration.h"
 #include "PixelCalibrations/include/PixelTBMDelayCalibrationWithScores.h"
+#include "PixelCalibrations/include/PixelTBMDelayCalibrationBPIX.h"
 
 //PixelFEDSupervisor calibrations
 #include "PixelCalibrations/include/PixelFEDEmulatedPhysics.h"
@@ -69,6 +70,7 @@
 #include "PixelCalibrations/include/PixelFEDROCDelay25Calibration.h"
 #include "PixelCalibrations/include/PixelFEDTBMDelayCalibration.h"
 #include "PixelCalibrations/include/PixelFEDTBMDelayCalibrationWithScores.h"
+#include "PixelCalibrations/include/PixelFEDTBMDelayCalibrationBPIX.h"
 
 //PixelTKFECSupervisor calibrations
 #include "PixelCalibrations/include/PixelTKFECDelay25Calibration.h"
@@ -197,6 +199,10 @@ PixelCalibrationBase* PixelCalibrationFactory::getCalibration(const std::string&
 
   if (calibName=="TBMDelayWithScores") {
     return new PixelTBMDelayCalibrationWithScores(*pixSupConfPtr, soapCmdrPtr);
+  }
+
+  if (calibName=="TBMDelayBPIX") {
+    return new PixelTBMDelayCalibrationBPIX(*pixSupConfPtr, soapCmdrPtr);
   }
 
   return 0;
@@ -329,6 +335,10 @@ PixelFEDCalibrationBase* PixelCalibrationFactory::getFEDCalibration(const std::s
 
   if (calibName=="TBMDelayWithScores") {
     return new PixelFEDTBMDelayCalibrationWithScores(*pixFEDSupConfPtr, soapCmdrPtr);
+  } 
+
+  if (calibName=="TBMDelayBPIX") {
+    return new PixelFEDTBMDelayCalibrationBPIX(*pixFEDSupConfPtr, soapCmdrPtr);
   }
 
   return 0;
