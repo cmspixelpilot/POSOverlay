@@ -30,6 +30,7 @@ class PixelPh1FEDInterface : public PixelFEDInterfaceBase {
   int setup();  // run the setup 
 
   void setChannelOfInterest(int ch);
+  void setFIFO1(int ch);
   void disableBE(bool disable);
   void setPixelForScore(int dc, int pxl);
   uint32_t getScore(int channel);
