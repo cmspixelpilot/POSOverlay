@@ -2773,12 +2773,6 @@ int PixelPh1FECInterface::delay25Test(int mymfec,
                                    int& success4) {
 
     //myportaddress = 4;  // redefine the port to 4
-    if(myportaddress==7 && myhubaddress==31)  {
-        cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" "
-        <<mytbmchannel<<" "<<myportaddress<<" "
-        <<myrocid<<" redefine hub address to 30"<<endl; 
-        myhubaddress = 30; // avoid the 31 and 7 combination
-    }
 
     const unsigned prints = 0x0; // bit 0 turns on any prints, bits 1-5 define prints for cmds 1-5 later.
     if (prints & 0x1) cout<<" For mfec/chan/hub/tbm/port/roc " <<mymfec<<" "<<myfecchannel<<" "<<myhubaddress<<" " <<mytbmchannel<<" "<<myportaddress<<"\n";
