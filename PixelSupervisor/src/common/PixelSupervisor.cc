@@ -8,7 +8,6 @@
 
 /* jmt:
 idea for the future -- revive the lastMessage_ variable to really hold the last error
-that was handled. Basically, in any catch block, put e.what() into lastMessage_.
 
 Then have this reported to the L1FM via inError()
 
@@ -17,13 +16,12 @@ but this is non-trivial enough that I don't want to do it during steady running
 
 // Change to the new (version X) style state changes. d.k. 11/1/2012
 // Modification from Manuel (default alias). 2/14
-
 #include "PixelSupervisor/include/PixelSupervisor.h"
 
 //gio
-#include <toolbox/convertstring.h>
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <toolbox/convertstring.h>
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 #include "b2in/utils/MessengerCacheListener.h"
 #include "xdata/String.h"
 
@@ -54,6 +52,9 @@ but this is non-trivial enough that I don't want to do it during steady running
 #include "xcept/Exception.h"
 #include "xdaq/exception/ApplicationInstantiationFailed.h"
 
+#include "PixelSupervisor/include/exception/Exception.h"
+#include "log4cplus/logger.h"
+#include "log4cplus/loggingmacros.h"
 
 
 using namespace pos;
@@ -69,29 +70,30 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
                           SOAPCommander(this),
                           executeReconfMethodMutex(toolbox::BSem::FULL),
                           rcmsStateNotifier_(getApplicationLogger(), getApplicationDescriptor(),getApplicationContext()),
-			  extratimers_(false)
+			  extratimers_(false),
+		          sv_logger_(getApplicationLogger())	
 {
-  diagService_ = new DiagBagWizard(
-                                   ("ReconfigurationModule") ,
-                                   this->getApplicationLogger(),
-                                   getApplicationDescriptor()->getClassName(),
-                                   getApplicationDescriptor()->getInstance(),
-                                   getApplicationDescriptor()->getLocalId(),
-                                   (xdaq::WebApplication *)this,
-                                   "Pixel",
-                                   "PixelSupervisor"
-                                   );
-
-
-  DIAG_DECLARE_USER_APP
+  // diagService_ = new DiagBagWizard(
+  //                                  ("ReconfigurationModule") ,
+  //                                  this->getApplicationLogger(),
+  //                                  getApplicationDescriptor()->getClassName(),
+  //                                  getApplicationDescriptor()->getInstance(),
+  //                                  getApplicationDescriptor()->getLocalId(),
+  //                                  (xdaq::WebApplication *)this,
+  //                                  "Pixel",
+  //                                  "PixelSupervisor"
+  //                                  );
+  //
+  //
+  // DIAG_DECLARE_USER_APP
 
     //uncomment these if you want to test the operation of the diagSystem
     // diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGTRACE);
     //diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGDEBUG);
     //diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGINFO);
     //diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGWARN);
-    diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
   //  diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGERROR);
+//    diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
 
   // xoap bindings
   xoap::bind(this, &PixelSupervisor::Initialize, "Initialize", XDAQ_NS_URI);
@@ -132,9 +134,9 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   xgi::bind(this, &PixelSupervisor::ExperimentalXgiHandler, "ExperimentalXgiHandler");
 
   //DIAGNOSTIC REQUESTED CALLBACK
-  xgi::bind(this,&PixelSupervisor::configureDiagSystem, "configureDiagSystem");
-  xgi::bind(this,&PixelSupervisor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
-  xgi::bind(this,&PixelSupervisor::callDiagSystemPage, "callDiagSystemPage");
+  // xgi::bind(this,&PixelSupervisor::configureDiagSystem, "configureDiagSystem");
+  // xgi::bind(this,&PixelSupervisor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
+  // xgi::bind(this,&PixelSupervisor::callDiagSystemPage, "callDiagSystemPage");
 
   //b2in callback registration
   b2in::nub::bind(this, &PixelSupervisor::b2inEvent);
@@ -237,6 +239,7 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   theCalibObject_=0;
   theCalibAlgorithm_=0;
   theTTCciConfig_=0;
+  theAMC13Config_=0;
 
   calibWorkloop_ = toolbox::task::getWorkLoopFactory()->getWorkLoop("WaitingWorkLoop", "waiting");
   calibJob_ = toolbox::task::bind(this, &PixelSupervisor::CalibRunning, "CalibRunning");
@@ -262,14 +265,14 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   lastMessage_="";
 
   //Diag configure timer
-  std::stringstream timerName;
-  timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
-  timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
-  toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
-  toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
-  toolbox::TimeVal start;
-  start = toolbox::TimeVal::gettimeofday() + interval;
-  timer->schedule( this, start,  0, "" );
+  // std::stringstream timerName;
+  // timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
+  // timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
+  // toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
+  // toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
+  // toolbox::TimeVal start;
+  // start = toolbox::TimeVal::gettimeofday() + interval;
+  // timer->schedule( this, start,  0, "" );
 
   // Check the infospace to see if run numbers should be booked from a database
   useRunInfo_=false;
@@ -284,13 +287,8 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   configurationTimer_.setName("PixelSupervisorConfigurationTimer");
 
   // Check infospace for TCDS/TTC running
-#ifdef SETUP_TIF
   useTCDS_ = false;
   useTTC_  = true;
-#else
-  useTCDS_ = true;
-  useTTC_  = false;
-#endif
   TTCSupervisorApplicationName_="ttc::TTCciControl"; // pixel::ici::PixeliCISupervisor
   if (useTCDS_) TTCSupervisorApplicationName_="pixel::tcds::PixeliCISupervisor";
   LTCSupervisorApplicationName_="";
@@ -299,23 +297,20 @@ PixelSupervisor::PixelSupervisor(xdaq::ApplicationStub * s)
   getApplicationInfoSpace()->fireItemAvailable("UseTCDS", &useTCDS_);
   getApplicationInfoSpace()->fireItemAvailable("TTCSupervisorApplicationName", &TTCSupervisorApplicationName_);
   getApplicationInfoSpace()->fireItemAvailable("LTCSupervisorApplicationName", &LTCSupervisorApplicationName_);
-  
-  std::cout << "useTCDS is " <<  useTCDS_ << " " <<  TTCSupervisorApplicationName_.toString() << " " <<  LTCSupervisorApplicationName_.toString() << std::endl;
 
-  //  assert(useTTC_ != useTCDS_);
 }
 
 //gio
-void PixelSupervisor::timeExpired (toolbox::task::TimerEvent& e)
-{
-  DIAG_EXEC_FSM_INIT_TRANS
-}
+// void PixelSupervisor::timeExpired (toolbox::task::TimerEvent& e)
+// {
+//   DIAG_EXEC_FSM_INIT_TRANS
+// }
 
 // DiagSystem XGI Binding
-void PixelSupervisor::callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception)
-{
-  diagService_->getDiagSystemHtmlPage(in, out,getApplicationDescriptor()->getURN());
-}
+// void PixelSupervisor::callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception)
+// {
+//   diagService_->getDiagSystemHtmlPage(in, out,getApplicationDescriptor()->getURN());
+// }
 
 
 void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception) {
@@ -330,10 +325,10 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
   *out<<"<head>"<<std::endl;
   if (autoRefresh_ || currentState == "Configuring" || currentState == "Running") {
     const int refresh_delay = currentState == "Running" ? 10 : 2;
-    *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"" << refresh_delay << "; URL=Default\"/>" <<endl;
+    *out << " <meta HTTP-EQUIV=\"Refresh\" CONTENT=\"" << refresh_delay << "; URL=/" << getApplicationDescriptor()->getURN() << "/Default\"/>" <<endl;
   }
   *out<<"</head>"<<std::endl;
-  xgi::Utils::getPageHeader(*out, "PixelSupervisor", fsm_.getStateName(fsm_.getCurrentState()));
+  // xgi::Utils::getPageHeader(*out, "PixelSupervisor", fsm_.getStateName(fsm_.getCurrentState()));
 
   std::set<std::string> allInputs=fsm_.getInputs();
   std::set<std::string> clickableInputs=fsm_.getInputs(fsm_.getCurrentState());
@@ -373,9 +368,9 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
   *out<<"<p>States of underlying supervisors:<br>"<<endl;
   if (useTCDS_){
     for ( SupervisorStates::const_iterator iSup=statePixelTTCSupervisors_.begin() ; iSup!=statePixelTTCSupervisors_.end() ; ++iSup)
-      *out<<"PixeliCISupervisor: <font color=\""<<getHtmlColorFromState(iSup->second)<<"\"><b>"<<iSup->second<<"</b></font><br>"<<endl;
+      *out<<"PixeliCISupervisor "<<iSup->first<<": <font color=\""<<getHtmlColorFromState(iSup->second)<<"\"><b>"<<iSup->second<<"</b></font><br>"<<endl;
     for ( SupervisorStates::const_iterator iSup=statePixelLTCSupervisors_.begin() ; iSup!=statePixelLTCSupervisors_.end() ; ++iSup)
-      *out<<"PixelPISupervisor: <font color=\""<<getHtmlColorFromState(iSup->second)<<"\"><b>"<<iSup->second<<"</b></font><br>"<<endl;
+      *out<<"PixelPISupervisor "<<iSup->first<<": <font color=\""<<getHtmlColorFromState(iSup->second)<<"\"><b>"<<iSup->second<<"</b></font><br>"<<endl;
   }
   for ( SupervisorStates::const_iterator iSup=statePixelDCSFSMInterface_.begin() ; iSup!=statePixelDCSFSMInterface_.end() ; ++iSup)
     *out<<"PixelDCSFSMInterface: <font color=\""<<getHtmlColorFromState(iSup->second)<<"\"><b>"<<iSup->second<<"</b></font><br>"<<endl;
@@ -424,14 +419,18 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
 
   if (currentState=="Halted") {
 
+    *out<<"       <legend>Possible Configurations:</legend>" <<std::endl;
+    *out<<"<select name=\"Alias\" size=\"10\" >" <<std::endl;
     for (std::vector <std::pair<std::string, unsigned int> >::iterator i_aliasesAndKeys=aliasesAndKeys_.begin();
          i_aliasesAndKeys!=aliasesAndKeys_.end(); ++i_aliasesAndKeys) {
       std::string alias=i_aliasesAndKeys->first;
       if ( (alias[0]!='T' || alias[1]!='T' || alias[2]!='C') && isAliasOK(alias)) {
-        *out<<"        <input type=\"radio\" name=\"Alias\" value=\""<<alias<<"\">"<<alias<<"<br/>"                               <<std::endl;
+	*out<<"  <option value=\""<<alias<<"\">"<<alias<<"</option>" <<std::endl;
+	//*out<<"        <input type=\"radio\" name=\"Alias\" value=\""<<alias<<"\">"<<alias<<"<br/>"                               <<std::endl;
       }
     }
 
+    *out<<"</select>"<<std::endl;
   } else if (currentState=="Configuring") {
 
     *out<<"        "<<percentageConfigured_<<"% complete"                                                                         <<std::endl;
@@ -526,13 +525,13 @@ void PixelSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi::exc
   *out<<"  <hr/>"                                                                                                                 <<std::endl;
 
 
-  // DiagSystem GUI
-  std::string urlDiag_ = "/"; \
-  urlDiag_ += getApplicationDescriptor()->getURN(); \
-  urlDiag_ += "/callDiagSystemPage"; \
-  *out << "<h2> Error Dispatcher </h2> "<<std::endl;
-  *out << "<a href=" << urlDiag_ << ">Configure DiagSystem</a>" <<std::endl;
-  *out << " <hr/> " << std::endl;
+  //  // DiagSystem GUI
+  //  std::string urlDiag_ = "/";
+  //  urlDiag_ += getApplicationDescriptor()->getURN();
+  //  urlDiag_ += "/callDiagSystemPage";
+  //  *out << "<h2> Error Dispatcher </h2> "<<std::endl;
+  //  *out << "<a href=" << urlDiag_ << ">Configure DiagSystem</a>" <<std::endl;
+  //  *out << " <hr/> " << std::endl;
 
   // Rendering Low Level GUI
 
@@ -633,7 +632,7 @@ void PixelSupervisor::ExperimentalXgiHandler (xgi::Input *in, xgi::Output *out) 
 
   // First deal with the incoming Xgi message in the HTTP request
   cgicc::Cgicc cgi(in);
-  std::string fsmInput=cgi.getElement("FSMInput")->getValue(); // This should be in a try catch
+  std::string fsmInput=cgi.getElement("FSMInput")->getValue(); 
   if (fsmInput=="Initialize") {
     xoap::MessageReference msg = MakeSOAPMessageReference("Initialize");
     xoap::MessageReference reply = Initialize(msg);
@@ -853,7 +852,8 @@ void PixelSupervisor::StateMachineXgiHandler (xgi::Input *in, xgi::Output *out) 
       std::string password=cgi.getElement("password")->getValue();
       unsigned int runNumber=bookRunNumber(dbLogin, password);
       if (runNumber == 0) {
-	diagService_->reportError("Problem booking run number. Check username and password!",DIAGERROR);
+std::string const msg_error_hjj = "Problem booking run number. Check username and password!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_hjj);
 	problem=true;
       }
       std::string runNumber_string=itoa(runNumber);
@@ -1006,7 +1006,8 @@ void PixelSupervisor::LowLevelXgiHandler (xgi::Input *in, xgi::Output *out) thro
       for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
         std::string reply = Send(i_PixelTTCSupervisor->second, input);
         if (reply!= input+"Response") {
-          diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be execute "+input+" command.",DIAGERROR);
+std::string const msg_error_gyo = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be execute "+input+" command.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_gyo);
           *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not execute "<<input<<"command."<<std::endl;
         }
       }
@@ -1040,7 +1041,9 @@ string PixelSupervisor::getHtmlColorFromState( const string & state ) {
 xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("Entered SOAP message callback method PixelSupervisor::Initialize", DIAGINFO);
+
+std::string const msg_info_txo = "Entered SOAP message callback method PixelSupervisor::Initialize";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_txo);
   *console_<<"Entered SOAP message callback method PixelSupervisor::Initialize"<<std::endl;
 
   if (useTCDS_)
@@ -1048,12 +1051,30 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
       // TCDSSessionID_=toolbox::toString("#%d",rand());
       // TCDS session ID fixed to string for now, above solution is better and should be used again later
       TCDSSessionID_="PixelTCDS";
-      diagService_->reportError("Created TCDS session ID: "+TCDSSessionID_, DIAGINFO);
+std::string const msg_info_ioo = "Created TCDS session ID: "+TCDSSessionID_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ioo);
       *console_<<"Created TCDS session ID: " + TCDSSessionID_<<std::endl;
       std::cout <<"Created TCDS session ID: " + TCDSSessionID_<<std::endl;
     }
 
   fillBadAliasList(); //method of PixelSupervisorConfiguration, to be run once per POS session
+
+  try {
+    std::set<xdaq::ApplicationDescriptor*> set_PixelAMC13Controller = getApplicationContext()->getDefaultZone()->getApplicationGroup("daq")->getApplicationDescriptors("PixelAMC13Controller");
+    for (std::set<xdaq::ApplicationDescriptor*>::iterator i_set_PixelAMC13Controller=set_PixelAMC13Controller.begin();
+         i_set_PixelAMC13Controller!=set_PixelAMC13Controller.end();
+         ++i_set_PixelAMC13Controller) {
+      PixelAMC13Controllers_.insert(make_pair((*i_set_PixelAMC13Controller)->getInstance(), *(i_set_PixelAMC13Controller)));
+    }
+    std::string const msg_info_kob = stringF(PixelAMC13Controllers_.size()) + " AMC13Controller(s) of type PixelAMC13Controller found in the \"daq\" group in the Configuration XML file";
+    LOG4CPLUS_INFO(sv_logger_,msg_info_kob);
+    *console_<<msg_info_kob<<std::endl;
+  } catch (xdaq::exception::Exception& e) {
+    std::string const msg_error_brr = "No AMC13Controller of type PixelAMC13Controller found in the \"daq\" group in the Configuration XML file";
+    LOG4CPLUS_ERROR(sv_logger_,msg_error_brr);
+    XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_brr, e);
+    this->notifyQualified("fatal",f);
+  }
 
   // Get all TTCciControls/PixelTTCSupervisors in the "daq" group.
 
@@ -1064,10 +1085,14 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
          ++i_set_PixelTTCSupervisor) {
       PixelTTCSupervisors_.insert(make_pair((*i_set_PixelTTCSupervisor)->getInstance(), *(i_set_PixelTTCSupervisor)));
     }
-    diagService_->reportError(stringF(PixelTTCSupervisors_.size()) + " TTCSupervisor(s) of type " + TTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file", DIAGINFO);
+std::string const msg_info_kob = stringF(PixelTTCSupervisors_.size()) + " TTCSupervisor(s) of type " + TTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kob);
     *console_<<PixelTTCSupervisors_.size()<<" TTCSupervisor(s) of type " + TTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file"<<std::endl;
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No TTCSupervisor of type " + TTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file", DIAGERROR);
+std::string const msg_error_brr = "No TTCSupervisor of type " + TTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_brr);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_brr, e);
+this->notifyQualified("fatal",f);
   }
 
   if (useTCDS_) {
@@ -1079,10 +1104,14 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
            ++i_set_PixelLTCSupervisor) {
         PixelLTCSupervisors_.insert(make_pair((*i_set_PixelLTCSupervisor)->getInstance(), *(i_set_PixelLTCSupervisor)));
       }
-      diagService_->reportError(stringF(PixelLTCSupervisors_.size()) + " LTCSupervisor(s) of type " + LTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file", DIAGINFO);
+std::string const msg_info_wsn = stringF(PixelLTCSupervisors_.size()) + " LTCSupervisor(s) of type " + LTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wsn);
       *console_<<PixelLTCSupervisors_.size()<<" LTCSupervisor(s) of type " + LTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file"<<std::endl;
     } catch (xdaq::exception::Exception& e) {
-      diagService_->reportError("No LTCSupervisor of type " + LTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file", DIAGERROR);
+std::string const msg_error_hfg = "No LTCSupervisor of type " + LTCSupervisorApplicationName_.toString() + " found in the \"daq\" group in the Configuration XML file";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_hfg);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_hfg, e);
+this->notifyQualified("fatal",f);
     }
 
 
@@ -1095,12 +1124,16 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
           {
             PixelTTCControllers_.insert(make_pair((*i_set_PixelTTCController)->getInstance(), *(i_set_PixelTTCController)));
           }
-        diagService_->reportError(stringF(PixelTTCControllers_.size()) + " TTCController(s) of type tcds::ici::ICIController found in the \"tcds\" group in the Configuration XML file", DIAGINFO);
+std::string const msg_info_kch = stringF(PixelTTCControllers_.size()) + " TTCController(s) of type tcds::ici::ICIController found in the \"tcds\" group in the Configuration XML file";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kch);
         *console_<<PixelTTCControllers_.size()<<" TTCController(s) of type tcds::ici::ICIController found in the \"tcds\" group in the Configuration XML file"<<std::endl;
       }
     catch (xdaq::exception::Exception& e)
       {
-        diagService_->reportError("No TTCController found in the \"tcds\" group in the Configuration XML file.", DIAGERROR);
+ std::string const msg_error_zay = "No TTCController found in the \"tcds\" group in the Configuration XML file.";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_zay);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_zay, e);
+this->notifyQualified("fatal",f);
       }
 
 
@@ -1116,11 +1149,13 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
             parameters[0].name_="TCDSSessionID";
             parameters[0].value_=TCDSSessionID_;
             string reply = Send(i_PixelTTCSupervisor->second, "Handshake", parameters);
-            diagService_->reportError("TTCSupervisor #" + stringF(i_PixelTTCSupervisor->first) + ": Sending Handshake reply: " + reply, DIAGINFO);
+std::string const msg_info_qba = "TTCSupervisor #" + stringF(i_PixelTTCSupervisor->first) + ": Sending Handshake reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_qba);
             *console_<< "TTCSupervisor #" << (i_PixelTTCSupervisor->first) << ": Sending Handshake reply: " << reply <<std::endl;
             if (reply!= "HandshakeResponse")
               {
-                diagService_->reportError("TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not receive TCDS session ID.",DIAGERROR);
+std::string const msg_error_jml = "TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not receive TCDS session ID.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_jml);
                 *console_<<"TTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not receive TCDS session ID for initialisation step: "<<reply<<std::endl;
               }
           }
@@ -1128,11 +1163,13 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
         for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
           {
             string reply = Send(i_PixelTTCSupervisor->second, "Initialize");
-            diagService_->reportError("TTCSupervisor #" + stringF(i_PixelTTCSupervisor->first) + ": Sending Initialize reply: " + reply, DIAGINFO);
+std::string const msg_info_qnr = "TTCSupervisor #" + stringF(i_PixelTTCSupervisor->first) + ": Sending Initialize reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_qnr);
             *console_<<"TTCSupervisor #" << (i_PixelTTCSupervisor->first) << ": Sending Initialize reply: " << reply <<std::endl;
             if (reply!= "InitializeResponse")
               {
-                diagService_->reportError("TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be halted for initialisation step.",DIAGERROR);
+std::string const msg_error_kiy = "TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be halted for initialisation step.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_kiy);
                 *console_<<"TTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be halted for initialisation step: "<<reply<<std::endl;
               }
           }
@@ -1145,7 +1182,10 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
       }
     catch( xcept::Exception & e )
       {
-        diagService_->reportError("Failed to Halt TTCSupervisor with exception: "+string(e.what()),DIAGERROR);
+ std::string const msg_error_djs = "Failed to Halt TTCSupervisor with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_djs);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_djs, e );
+this->notifyQualified("fatal",f);
       }
 
     // handshake with PISupervisors and status reset to Initial
@@ -1159,11 +1199,13 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
             parameters[0].name_="TCDSSessionID";
             parameters[0].value_=TCDSSessionID_;
             string reply = Send(i_PixelLTCSupervisor->second, "Handshake", parameters);
-            diagService_->reportError("LTCSupervisor #" + stringF(i_PixelLTCSupervisor->first) + ": Sending Handshake reply: " + reply, DIAGINFO);
+std::string const msg_info_pvf = "LTCSupervisor #" + stringF(i_PixelLTCSupervisor->first) + ": Sending Handshake reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_pvf);
             *console_<< "LTCSupervisor #" << (i_PixelLTCSupervisor->first) << ": Sending Handshake reply: " << reply <<std::endl;
             if (reply!= "HandshakeResponse")
               {
-                diagService_->reportError("LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not receive TCDS session ID.",DIAGERROR);
+std::string const msg_error_hxp = "LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not receive TCDS session ID.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_hxp);
                 *console_<<"LTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first)<<" could not receive TCDS session ID for initialisation step: "<<reply<<std::endl;
               }
           }
@@ -1171,11 +1213,13 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
         for (i_PixelLTCSupervisor=PixelLTCSupervisors_.begin();i_PixelLTCSupervisor!=PixelLTCSupervisors_.end();++i_PixelLTCSupervisor)
           {
             string reply = Send(i_PixelLTCSupervisor->second, "Initialize");
-            diagService_->reportError("LTCSupervisor #" + stringF(i_PixelLTCSupervisor->first) + ": Sending Initialize reply: " + reply, DIAGINFO);
+std::string const msg_info_nxl = "LTCSupervisor #" + stringF(i_PixelLTCSupervisor->first) + ": Sending Initialize reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_nxl);
             *console_<<"LTCSupervisor #" << (i_PixelLTCSupervisor->first) << ": Sending Initialize reply: " << reply <<std::endl;
             if (reply!= "InitializeResponse")
               {
-                diagService_->reportError("LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be halted for initialisation step.",DIAGERROR);
+std::string const msg_error_yni = "LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be halted for initialisation step.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_yni);
                 *console_<<"LTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first)<<" could not be halted for initialisation step: "<<reply<<std::endl;
               }
           }
@@ -1188,7 +1232,10 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
       }
     catch( xcept::Exception & e )
       {
-        diagService_->reportError("Failed to Halt LTCSupervisor with exception: "+string(e.what()),DIAGERROR);
+ std::string const msg_error_nlk = "Failed to Halt LTCSupervisor with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_nlk);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_nlk,e );
+this->notifyQualified("fatal",f);
       }
 
 
@@ -1204,33 +1251,22 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
         std::string fsmState=Send(*i_set_PixelFECSupervisor, "FSMStateRequest");
         PixelFECSupervisors_.insert(make_pair((*i_set_PixelFECSupervisor)->getInstance(), *(i_set_PixelFECSupervisor)));
         statePixelFECSupervisors_.insert(make_pair((*i_set_PixelFECSupervisor)->getInstance(), fsmState));
-        diagService_->reportError("PixelFECSupervisor instance "+stringF((*i_set_PixelFECSupervisor)->getInstance())+" is in FSM state "+fsmState, DIAGDEBUG);
+std::string const msg_debug_aao = "PixelFECSupervisor instance "+stringF((*i_set_PixelFECSupervisor)->getInstance())+" is in FSM state "+fsmState;
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_aao);
         *console_<<"PixelFECSupervisor instance "<<(*i_set_PixelFECSupervisor)->getInstance()<<" is in FSM state "<<fsmState<<std::endl;
       } catch (xdaq::exception::Exception& e) {
-        diagService_->reportError("PixelFECSupervisor instance "+stringF((*i_set_PixelFECSupervisor)->getInstance())+" could not report its FSM state", DIAGERROR);
+std::string const msg_error_xlf = "PixelFECSupervisor instance "+stringF((*i_set_PixelFECSupervisor)->getInstance())+" could not report its FSM state";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_xlf);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_xlf, e);
+this->notifyQualified("fatal",f);
       }
     }
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No PixelFECSupervisor found in the \"daq\" group in the Configuration XML file.", DIAGERROR);
+std::string const msg_error_plu = "No PixelFECSupervisor found in the \"daq\" group in the Configuration XML file.";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_plu);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_plu, e);
+this->notifyQualified("fatal",f);
   }
-  //////Testing XaaS////////////////////////
-  //  try
-  //    {
-  //      std::string const msg = "This is an xdaq::exception::ApplicationInstantiationFailed test message send from the PixelSupervisor";
-  //      XCEPT_RAISE(xdaq::exception::ApplicationInstantiationFailed, msg.c_str());
-  //    }
-  //  catch (xdaq::exception::ApplicationInstantiationFailed& exceptionObj)
-  //    {
-  //      std::stringstream msg;
-  //      msg << "This is a XaaS test message send from the PixelSupervisor";
-  //      XCEPT_DECLARE_NESTED(xdaq::exception::ApplicationInstantiationFailed, f, msg.str(),exceptionObj);
-  //      //XCEPT_DECLARE(xmas::sensor::exception::Exception, exceptionObj, msg.str());
-  //      this->notifyQualified("warning", f);
-  //      std::cout << "caught an exception" << std::endl;
-  //      //return;
-  //    }
-  /////////////////////////////////////////////
-
   // Get all PixelFEDSupervisors in the "daq" group mentioned in the Configuration XML file, and
   // Try to handshake with them by asking for their FSM state.
   try {
@@ -1240,14 +1276,21 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
         std::string fsmState=Send(*i_set_PixelFEDSupervisor, "FSMStateRequest");
         PixelFEDSupervisors_.insert(make_pair((*i_set_PixelFEDSupervisor)->getInstance(), *(i_set_PixelFEDSupervisor)));
         statePixelFEDSupervisors_.insert(make_pair((*i_set_PixelFEDSupervisor)->getInstance(), fsmState));
-        diagService_->reportError("PixelFEDSupervisor instance "+stringF((*i_set_PixelFEDSupervisor)->getInstance())+" is in FSM state "+fsmState, DIAGDEBUG);
+std::string const msg_debug_dtz = "PixelFEDSupervisor instance "+stringF((*i_set_PixelFEDSupervisor)->getInstance())+" is in FSM state "+fsmState;
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_dtz);
         *console_<<"PixelFEDSupervisor instance "<<(*i_set_PixelFEDSupervisor)->getInstance()<<" is in FSM state "<<fsmState<<std::endl;
       } catch (xdaq::exception::Exception& e) {
-        diagService_->reportError("PixelFEDSupervisor instance "+stringF((*i_set_PixelFEDSupervisor)->getInstance())+" could not report its FSM state", DIAGERROR);
+std::string const msg_error_jeg = "PixelFEDSupervisor instance "+stringF((*i_set_PixelFEDSupervisor)->getInstance())+" could not report its FSM state";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_jeg);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_jeg, e);
+this->notifyQualified("fatal",f);
       }
     }
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No PixelFEDSupervisor found in the \"daq\" group in the Configuration XML file.", DIAGERROR);
+std::string const msg_error_lsz = "No PixelFEDSupervisor found in the \"daq\" group in the Configuration XML file.";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_lsz);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_lsz, e);
+this->notifyQualified("fatal",f);
   }
 
   // Get all PixelTKFECSupervisors in the "daq" group mentioned in the Configuration XML file, and
@@ -1259,15 +1302,22 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
         std::string fsmState=Send(*i_set_PixelTKFECSupervisor, "FSMStateRequest");
         PixelTKFECSupervisors_.insert(make_pair((*i_set_PixelTKFECSupervisor)->getInstance(), *(i_set_PixelTKFECSupervisor)));
         statePixelTKFECSupervisors_.insert(make_pair((*i_set_PixelTKFECSupervisor)->getInstance(), fsmState));
-        diagService_->reportError("PixelTKFECSupervisor instance "+stringF((*i_set_PixelTKFECSupervisor)->getInstance())+" is in FSM state "+fsmState, DIAGDEBUG);
+std::string const msg_debug_rfc = "PixelTKFECSupervisor instance "+stringF((*i_set_PixelTKFECSupervisor)->getInstance())+" is in FSM state "+fsmState;
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_rfc);
 	cout<<"[PixelSupervisor::Initialize] PixelTKFECSupervisor "<<(*i_set_PixelTKFECSupervisor)->getInstance() <<" has FSM state = "<<fsmState<<endl;
         *console_<<"PixelTKFECSupervisor instance "<<(*i_set_PixelTKFECSupervisor)->getInstance()<<" is in FSM state "<<fsmState<<std::endl;
       } catch (xdaq::exception::Exception& e) {
-        diagService_->reportError("PixelTKFECSupervisor instance "+stringF((*i_set_PixelTKFECSupervisor)->getInstance())+" could not report its FSM state", DIAGERROR);
+std::string const msg_error_msn = "PixelTKFECSupervisor instance "+stringF((*i_set_PixelTKFECSupervisor)->getInstance())+" could not report its FSM state";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_msn);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_msn, e);
+this->notifyQualified("fatal",f);
       }
     }
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No PixelTKFECSupervisor found in the \"daq\" group in the Configuration XML file.", DIAGERROR);
+std::string const msg_error_uej = "No PixelTKFECSupervisor found in the \"daq\" group in the Configuration XML file.";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_uej);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_uej, e);
+this->notifyQualified("fatal",f);
   }
 
   //DCS FSMStateRequest
@@ -1281,10 +1331,16 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
       cout<<"[PixelSupervisor::Initialize] PixelDCSFSMInterface has FSM state = "<<fsmState<<endl;
       PixelDCSFSMInterface_.insert(make_pair((*i_set_PixelDCSFSMInterface)->getInstance(), *(i_set_PixelDCSFSMInterface)));
       statePixelDCSFSMInterface_.insert(make_pair((*i_set_PixelDCSFSMInterface)->getInstance(), fsmState));
-      if (PixelDCSFSMInterface_.size() >1) diagService_->reportError("[PixelSupervisor::Initialize] There is more than one PixelDCSFSMInterface!",DIAGERROR);
+      if (PixelDCSFSMInterface_.size() >1) {
+std::string const msg_error_aev = "[PixelSupervisor::Initialize] There is more than one PixelDCSFSMInterface!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_aev);
+	}
     }
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("[PixelSupervisor::Initialize] PixelDCSFSMInterface not found in the XML file.", DIAGWARN);
+std::string const msg_warn_ymh = "[PixelSupervisor::Initialize] PixelDCSFSMInterface not found in the XML file.";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_ymh);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_warn_ymh, e);
+this->notifyQualified("fatal",f);
   }
 
 
@@ -1297,11 +1353,15 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
       psxServers_.insert(make_pair((*i_set_psxServer)->getInstance(), *(i_set_psxServer)));
     }
 
-    diagService_->reportError(stringF(psxServers_.size()) + " psxServer(s) found in the \"daq\" found.",DIAGINFO);
+std::string const msg_info_vua = stringF(psxServers_.size()) + " psxServer(s) found in the \"daq\" found.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_vua);
     *console_<<psxServers_.size()<<" psxServers(s) found in the \"dcs\" group."<<std::endl;
 
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No psxServers(s) found in the \"dcs\" group.",DIAGWARN);
+std::string const msg_warn_fod = "No psxServers(s) found in the \"dcs\" group.";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_fod);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_warn_fod, e);
+this->notifyQualified("fatal",f);
     *console_<<"No psxServer(s) found in the \"dcs\" group."<<std::endl;
   }
 
@@ -1316,10 +1376,14 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
 	    statePixelDCStoTrkFECDpInterface_.insert(make_pair((*i_set_PixelDCStoTrkFECDpInterface)->getInstance(), "Halted"));
     }
 
-    diagService_->reportError(" PixelDCStoTrkFECDpInterface(s) have been found in the \"dcs\" group.",DIAGINFO);
+std::string const msg_info_mdk = " PixelDCStoTrkFECDpInterface(s) have been found in the \"dcs\" group.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mdk);
     *console_<<PixelDCStoTrkFECDpInterface_.size()<<" PixelDCStoTrkFECDpInterface(s) have been found in the \"dcs\" group."<<std::endl;
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No PixelDCStoTrkFECDpInterface(s) have been found in the \"dcs\" group.",DIAGWARN);
+std::string const msg_warn_ebt = "No PixelDCStoTrkFECDpInterface(s) have been found in the \"dcs\" group.";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_ebt);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_warn_ebt, e);
+this->notifyQualified("fatal",f);
     *console_<<"No PixelDCStoTrkFECDpInterface(s) have been found in the \"dcs\" group."<<std::endl;
   }
 
@@ -1332,11 +1396,15 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
 	 ++i_set_PixelSlinkMonitor) {
       PixelSlinkMonitors_.insert(make_pair((*i_set_PixelSlinkMonitor)->getInstance(), *(i_set_PixelSlinkMonitor)));
     }
-    diagService_->reportError(stringF(PixelSlinkMonitors_.size()) + " PixelSlinkMonitor(s) found in the \"daq\" group.",DIAGDEBUG);
+std::string const msg_debug_pio = stringF(PixelSlinkMonitors_.size()) + " PixelSlinkMonitor(s) found in the \"daq\" group.";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_pio);
     *console_<<PixelSlinkMonitors_.size()<<" PixelSlinkMonitor(s) found in the \"daq\" group."<<std::endl;
 
   } catch (xdaq::exception::Exception& e) {
-    diagService_->reportError("No PixelSlinkMonitor(s) found in the \"daq\" group.",DIAGDEBUG);
+std::string const msg_error_qos = "No PixelSlinkMonitor(s) found in the \"daq\" group.";
+LOG4CPLUS_DEBUG(sv_logger_,msg_error_qos);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_qos, e);
+this->notifyQualified("fatal",f);
     *console_<<"No PixelSlinkMonitor(s) found in the \"daq\" group."<<std::endl;
   }
 
@@ -1352,8 +1420,11 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
       cout<<"Job Control Workloop activated!"<<endl;
     }
   } catch (xcept::Exception & e) {
+std::string const msg_warn_ats = "Failed to start Job Control monitoring. Exception: "+string(e.what());
+LOG4CPLUS_WARN(sv_logger_,msg_warn_ats);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_warn_ats, e);
+this->notifyQualified("fatal",f);
     //mostly this will happen when the jc group does not exist
-    diagService_->reportError("Failed to start Job Control monitoring. Exception: "+string(e.what()),DIAGWARN);
     jobcontrolWorkloop_ =0; //use this as a key to whether we are doing this monitoring
   }
 
@@ -1362,7 +1433,8 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "Initialize");
     if (reply!="InitializeDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate "+stringF(i_PixelFEDSupervisor->first) + " could not be initialized!",DIAGFATAL);
+std::string const msg_fatal_lzn = "PixelFEDSupervisor supervising crate "+stringF(i_PixelFEDSupervisor->first) + " could not be initialized!";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_lzn);
       *console_<<"PixelFEDSupervisor supervising crate "<<(i_PixelFEDSupervisor->first)<<" could not be initialized!"<<std::endl;
     }
   }
@@ -1373,7 +1445,8 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
     for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
       std::string reply = Send(i_PixelSlinkMonitor->second, "Initialize");
       if (reply!="InitializeDone") {
-	diagService_->reportError("PixelSlinkMonitor #"+stringF(i_PixelSlinkMonitor->first)+" could not be initialized!", DIAGERROR);
+std::string const msg_error_vwe = "PixelSlinkMonitor #"+stringF(i_PixelSlinkMonitor->first)+" could not be initialized!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_vwe);
 	*console_<<"PixelSlinkMonitor #"<<(i_PixelSlinkMonitor->first)<<" could not be initialized!"<<std::endl;
       }
     }
@@ -1384,7 +1457,8 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
   for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
     std::string reply = Send(i_PixelTKFECSupervisor->second, "Initialize");
     if (reply!="InitializeDone") {
-      diagService_->reportError("PixelTKFECSupervisor supervising crate "+stringF(i_PixelTKFECSupervisor->first) + " could not be initialized!",DIAGERROR);
+std::string const msg_error_hor = "PixelTKFECSupervisor supervising crate "+stringF(i_PixelTKFECSupervisor->first) + " could not be initialized!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_hor);
       *console_<<"PixelTKFECSupervisor supervising crate "<<(i_PixelTKFECSupervisor->first)<<" could not be initialized!"<<std::endl;
     }
   }
@@ -1394,7 +1468,8 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
   for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
     std::string reply = Send(i_PixelFECSupervisor->second, "Initialize");
     if (reply!="InitializeDone") {
-      diagService_->reportError("PixelFECSupervisor supervising crate "+stringF(i_PixelFECSupervisor->first) + " could not be initialized!",DIAGFATAL);
+std::string const msg_fatal_hns = "PixelFECSupervisor supervising crate "+stringF(i_PixelFECSupervisor->first) + " could not be initialized!";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_hns);
       *console_<<"PixelFECSupervisor supervising crate "<<(i_PixelFECSupervisor->first)<<" could not be initialized!"<<std::endl;
     }
   }
@@ -1404,7 +1479,8 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
   for (i_PixelDCSFSMInterface=PixelDCSFSMInterface_.begin();i_PixelDCSFSMInterface!=PixelDCSFSMInterface_.end();++i_PixelDCSFSMInterface) {
     std::string reply = Send(i_PixelDCSFSMInterface->second, "Initialize");
     if (reply!="InitializeDone") {
-      diagService_->reportError("PixelDCSFSMInterface supervising crate "+stringF(i_PixelDCSFSMInterface->first) + " could not be initialized!",DIAGFATAL);
+std::string const msg_fatal_hgy = "PixelDCSFSMInterface supervising crate "+stringF(i_PixelDCSFSMInterface->first) + " could not be initialized!";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_hgy);
       *console_<<"PixelDCSFSMInterface supervising crate "<<(i_PixelDCSFSMInterface->first)<<" could not be initialized!"<<std::endl;
     }
   }
@@ -1416,13 +1492,17 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
     toolbox::Event::Reference e(new toolbox::Event("Initialize", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
+std::string const msg_warn_vrw = "Invalid FSM command Initialize";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_vrw);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_warn_vrw, e);
+this->notifyQualified("fatal",f);
     XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
-    diagService_->reportError("Invalid FSM command Initialize", DIAGWARN);
     *console_<<"Invalid FSM Command"<<std::endl;
   }
 
   xoap::MessageReference reply=MakeSOAPMessageReference ("InitializeDone");
-  diagService_->reportError("Exiting SOAP message callback method PixelSupervisor::Initialize",DIAGINFO);
+std::string const msg_info_lyr = "Exiting SOAP message callback method PixelSupervisor::Initialize";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_lyr);
   *console_<<"Exiting SOAP message callback method PixelSupervisor::Initialize"<<std::endl;
 
   return reply;
@@ -1430,7 +1510,8 @@ xoap::MessageReference PixelSupervisor::Initialize (xoap::MessageReference msg) 
 
 xoap::MessageReference PixelSupervisor::ColdReset (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("Entering SOAP callback for ColdReset.",DIAGINFO);
+std::string const msg_info_nbq = "Entering SOAP callback for ColdReset.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_nbq);
   *console_<<"PixelSupervisor: Entering SOAP callback for ColdReset."<<std::endl;
   std::string response( "ColdResetDone" );
   //std::cout << "Entering cold reset" <<std::endl;
@@ -1446,7 +1527,8 @@ xoap::MessageReference PixelSupervisor::ColdReset (xoap::MessageReference msg) t
             if (reply != "TTCciControlFSMReset")
               {
   		// attempt reset (response might be resetResponse)
-      		diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be reset.",DIAGERROR);
+std::string const msg_error_lyk = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be reset.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_lyk);
       		*console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)
                          <<" could not be reset: "<<reply<<std::endl;
       		response="ColdResetFailed"; // not sure
@@ -1459,7 +1541,8 @@ xoap::MessageReference PixelSupervisor::ColdReset (xoap::MessageReference msg) t
       		if (reply != "coldResetResponse")
                   {
                     // attempt cold reset
-                    diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be coldReset.",DIAGERROR);
+std::string const msg_error_kmr = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be coldReset.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_kmr);
                     *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)
                              <<" could not be coldReset: "<<reply<<std::endl;
                     response="ColdResetFailed"; // not sure
@@ -1469,12 +1552,16 @@ xoap::MessageReference PixelSupervisor::ColdReset (xoap::MessageReference msg) t
       }
     catch( xcept::Exception & e )
       {
-  	diagService_->reportError("Failed to coldReset with exception: "+string(e.what()),DIAGERROR);
+ std::string const msg_error_bjm = "Failed to coldReset with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_bjm);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_bjm, e );
+this->notifyQualified("fatal",f);
   	fsmTransition("Failure"); //fire FSM transition
       }
   }
   if (useTCDS_) {
-    diagService_->reportError("Failed to coldReset: Not yet implemented for TCDS",DIAGERROR);
+std::string const msg_error_zwu = "Failed to coldReset: Not yet implemented for TCDS";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_zwu);
   }
 
   //std::cout << "Exiting cold reset" << std::endl;
@@ -1484,11 +1571,13 @@ xoap::MessageReference PixelSupervisor::ColdReset (xoap::MessageReference msg) t
 
 xoap::MessageReference PixelSupervisor::Configure (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("Entering SOAP callback for Configure.",DIAGINFO);
+std::string const msg_info_dal = "Entering SOAP callback for Configure.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_dal);
   *console_<<"PixelSupervisor: Entering SOAP callback for Configure."<<std::endl;
 
   if (state_!="Halted") {
-    diagService_->reportError("Configure transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_sko = "Configure transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_sko);
     return MakeSOAPMessageReference("ConfigureNotDone");
   }
 
@@ -1503,7 +1592,8 @@ xoap::MessageReference PixelSupervisor::Configure (xoap::MessageReference msg) t
   Receive(msg, parametersReceived);
   runType_=parametersReceived[0].value_;
   if (runType_=="InvalidInput") return MakeSOAPMessageReference("ConfigureNotDone");
-  diagService_->reportError("PixelSupervisor:: Run Type = "+runType_,DIAGINFO);
+std::string const msg_info_vjt = "PixelSupervisor:: Run Type = "+runType_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_vjt);
   *console_<<"PixelSupervisor:: Run Type = "<<runType_<<std::endl;
   unsigned int globalKey=PixelConfigInterface::getAliases_map().find(runType_)->second;
   theGlobalKey_=new PixelConfigKey(globalKey);
@@ -1518,7 +1608,8 @@ xoap::MessageReference PixelSupervisor::Configure (xoap::MessageReference msg) t
   bool isOK = fsmTransition("Configure") ;
   if (!isOK) reply=MakeSOAPMessageReference("ConfigureFailed");
 
-  diagService_->reportError("Exiting SOAP callback for Configure.",DIAGINFO);
+std::string const msg_info_bte = "Exiting SOAP callback for Configure.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_bte);
   *console_<<"PixelSupervisor: Exiting SOAP callback for Configure."<<std::endl;
 
   return reply;
@@ -1527,10 +1618,12 @@ xoap::MessageReference PixelSupervisor::Configure (xoap::MessageReference msg) t
 
 xoap::MessageReference PixelSupervisor::Reconfigure (xoap::MessageReference msg)
 {
-  diagService_->reportError("Entering SOAP callback for Reconfigure.",DIAGINFO);
+std::string const msg_info_tzl = "Entering SOAP callback for Reconfigure.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_tzl);
 
   if (state_!="Configured" && state_!="Paused") { //sanity
-    diagService_->reportError("Reconfigure transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_wod = "Reconfigure transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_wod);
     return MakeSOAPMessageReference("ReconfigureNotDone");
   }
 
@@ -1550,7 +1643,8 @@ xoap::MessageReference PixelSupervisor::Reconfigure (xoap::MessageReference msg)
     Receive(msg, parametersReceived);
     runType_=parametersReceived[0].value_;
     if (runType_=="InvalidInput") return MakeSOAPMessageReference("ReconfigureNotDone");
-    diagService_->reportError("Reconfiguring with Run Type = "+runType_,DIAGINFO);
+std::string const msg_info_str = "Reconfiguring with Run Type = "+runType_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_str);
     //fetch global key for this new alias
     unsigned int globalKey=PixelConfigInterface::getAliases_map().find(runType_)->second;
 
@@ -1560,7 +1654,8 @@ xoap::MessageReference PixelSupervisor::Reconfigure (xoap::MessageReference msg)
     PixelConfigKey* newGlobalKey=new PixelConfigKey(globalKey); //make the new global key
     if (newGlobalKey==0) XCEPT_RAISE(xdaq::exception::Exception,"Reconfigure failed to create a new global key!");
 
-    diagService_->reportError("Reconfiguring with configuration key="+stringF(newGlobalKey->key()), DIAGINFO);
+std::string const msg_info_lgx = "Reconfiguring with configuration key="+stringF(newGlobalKey->key());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_lgx);
 
     // **** adapted from ::stateConfiguring
     // These are parameters sets which will be sent to the underlying Supervisors
@@ -1594,21 +1689,26 @@ xoap::MessageReference PixelSupervisor::Reconfigure (xoap::MessageReference msg)
     theGlobalKey_=newGlobalKey;
 
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Failed to reconfigure with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_amu = "Failed to reconfigure with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_amu);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_amu, e);
+this->notifyQualified("fatal",f);
     //this leaves the hardware in an unknown state -- or at least, a state which can only be determined by
     //expert study of the logs; but i want to avoid going to an Error state
   }
   reconfigureTimer.stop();
   cout<<"Time for reconfigure = "<<reconfigureTimer.tottime()<<endl;
 
-  diagService_->reportError("Exiting SOAP callback for Reconfigure.",DIAGINFO);
+std::string const msg_info_aeb = "Exiting SOAP callback for Reconfigure.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_aeb);
   xoap::MessageReference reply=MakeSOAPMessageReference("ReconfigureDone");
 
   return reply;
 }
 
 xoap::MessageReference PixelSupervisor::ResetTBM (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  diagService_->reportError("Entering SOAP callback for ResetTBM.",DIAGINFO);
+std::string const msg_info_anl = "Entering SOAP callback for ResetTBM.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_anl);
   //   *console_<<"PixelSupervisor: Entering SOAP callback for ResetTBM."<<std::endl;
 
   xoap::MessageReference replymsg=MakeSOAPMessageReference("ResetTBMDone");
@@ -1624,7 +1724,8 @@ xoap::MessageReference PixelSupervisor::ResetTBM (xoap::MessageReference msg) th
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
       if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userPixelTTCSupervisorResponse") {
         cout<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
-        diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not Reset TBM.",DIAGERROR);
+std::string const msg_error_ggz = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not Reset TBM.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ggz);
         *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not Reset TBM."<<std::endl;
         replymsg=MakeSOAPMessageReference("ResetTBMFailed");
       }
@@ -1645,21 +1746,24 @@ xoap::MessageReference PixelSupervisor::ResetTBM (xoap::MessageReference msg) th
     for (i_PixelTTCController=PixelTTCControllers_.begin();i_PixelTTCController!=PixelTTCControllers_.end();++i_PixelTTCController) {
       if (Send(i_PixelTTCController->second, "SendBgo", paramToTTC, varToTTC)!="SendBgoResponse") {
         std::cout<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not be used! Maybe it is not yet configured?"<<std::endl;
-        diagService_->reportError("PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not Reset TBM.",DIAGERROR);
+std::string const msg_error_nfk = "PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not Reset TBM.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_nfk);
         *console_<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not Reset TBM."<<std::endl;
         replymsg=MakeSOAPMessageReference("ResetTBMFailed");
       }
     }
   }
 
-  diagService_->reportError("Exiting SOAP callback for ResetTBM.",DIAGINFO);
+std::string const msg_info_rqz = "Exiting SOAP callback for ResetTBM.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rqz);
   //   *console_<<"PixelSupervisor: Exiting SOAP callback for ResetTBM."<<std::endl;
 
   return replymsg;
 }
 
 xoap::MessageReference PixelSupervisor::ResetROC (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  diagService_->reportError("Entering SOAP callback for ResetROC.",DIAGINFO);
+std::string const msg_info_zmu = "Entering SOAP callback for ResetROC.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zmu);
   //   *console_<<"PixelSupervisor: Entering SOAP callback for ResetROC."<<std::endl;
 
   xoap::MessageReference replymsg=MakeSOAPMessageReference("ResetROCDone");
@@ -1676,7 +1780,8 @@ xoap::MessageReference PixelSupervisor::ResetROC (xoap::MessageReference msg) th
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
       if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userPixelTTCSupervisorResponse") {
         cout<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
-        diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not Reset ROC.",DIAGERROR);
+std::string const msg_error_cbj = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not Reset ROC.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_cbj);
         *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not Reset ROC."<<std::endl;
         replymsg=MakeSOAPMessageReference("ResetROCFailed");
       }
@@ -1697,20 +1802,23 @@ xoap::MessageReference PixelSupervisor::ResetROC (xoap::MessageReference msg) th
     for (i_PixelTTCController=PixelTTCControllers_.begin();i_PixelTTCController!=PixelTTCControllers_.end();++i_PixelTTCController) {
       if (Send(i_PixelTTCController->second, "SendBgo", paramToTTC, varToTTC)!="SendBgoResponse") {
         std::cout<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not be used! Maybe it is not yet configured?"<<std::endl;
-        diagService_->reportError("PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not Reset ROC.",DIAGERROR);
+std::string const msg_error_lci = "PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not Reset ROC.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_lci);
         *console_<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not Reset ROC."<<std::endl;
         replymsg=MakeSOAPMessageReference("ResetROCFailed");
       }
     }
   }
 
-  diagService_->reportError("Exiting SOAP callback for ResetROC.",DIAGINFO);
+std::string const msg_info_jkf = "Exiting SOAP callback for ResetROC.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_jkf);
   //   *console_<<"PixelSupervisor: Exiting SOAP callback for ResetROC."<<std::endl;
   return replymsg;
 }
 
 xoap::MessageReference PixelSupervisor::ResetCCU (xoap::MessageReference msg) throw (xoap::exception::Exception) {
-  diagService_->reportError("Entering SOAP callback for ResetCCU.",DIAGINFO);
+std::string const msg_info_uxz = "Entering SOAP callback for ResetCCU.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_uxz);
   //  *console_<<"PixelSupervisor: Entering SOAP callback for ResetCCU."<<std::endl;
 
   xoap::MessageReference replymsg=MakeSOAPMessageReference("ResetCCUDone");
@@ -1719,14 +1827,16 @@ xoap::MessageReference PixelSupervisor::ResetCCU (xoap::MessageReference msg) th
   for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
     std::string reply = Send(i_PixelTKFECSupervisor->second, "ResetCCU");
     if (reply!= "ResetCCUResponse") {
-      diagService_->reportError("PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not Reset CCU.",DIAGERROR);
+std::string const msg_error_tox = "PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not Reset CCU.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_tox);
       *console_<<"PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not Reset CCU."<<std::endl;
       replymsg=MakeSOAPMessageReference("ResetCCUFailed");
     }
   }
 
 
-  diagService_->reportError("Exiting SOAP callback for ResetCCU.",DIAGINFO);
+std::string const msg_info_yvn = "Exiting SOAP callback for ResetCCU.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_yvn);
   //  *console_<<"PixelSupervisor: Exiting SOAP callback for ResetCCU."<<std::endl;
   return replymsg;
 
@@ -1734,7 +1844,8 @@ xoap::MessageReference PixelSupervisor::ResetCCU (xoap::MessageReference msg) th
 
 xoap::MessageReference PixelSupervisor::FSMStateNotification (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("Entering SOAP callback for FSMStateNotification.",DIAGTRACE);
+std::string const msg_trace_buu = "Entering SOAP callback for FSMStateNotification.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_buu);
   *console_<<"PixelSupervisor: Entering SOAP callback for FSMStateNotification."<<std::endl;
 
   Attribute_Vector parameters(3);
@@ -1743,7 +1854,8 @@ xoap::MessageReference PixelSupervisor::FSMStateNotification (xoap::MessageRefer
   parameters[2].name_="FSMState";
   Receive(msg, parameters);
 
-  diagService_->reportError("[PixelSupervisor::FSMStateNotification] Supervisor = "+parameters[0].value_+" Instance = "+parameters[1].value_+" FSMState = "+parameters[2].value_,DIAGINFO);
+std::string const msg_info_stm = "[PixelSupervisor::FSMStateNotification] Supervisor = "+parameters[0].value_+" Instance = "+parameters[1].value_+" FSMState = "+parameters[2].value_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_stm);
 
   if (parameters[0].value_=="PixelFECSupervisor") {
     statePixelFECSupervisors_[atoi(parameters[1].value_.c_str())]=parameters[2].value_;
@@ -1776,14 +1888,16 @@ xoap::MessageReference PixelSupervisor::FSMStateNotification (xoap::MessageRefer
     }
     else if (state_=="Recovering" && parameters[2].value_=="Halted") {
       //this is what we want to see
-      diagService_->reportError("Reached Halted state. Will restart recovery process.",DIAGDEBUG);
+std::string const msg_debug_wdg = "Reached Halted state. Will restart recovery process.";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_wdg);
       toolbox::Event::Reference e(new toolbox::Event("Recover", this));
       fsm_.fireEvent(e);
     }
     else if (state_=="Recovering" && parameters[2].value_=="Configured") {
       //the recovery process is waiting for a supervisor to finish configuring
       //fire a Recover transition to re-enter stateRecovering
-      diagService_->reportError("Reached Configured state. Will restart recovery process.",DIAGDEBUG);
+std::string const msg_debug_lwu = "Reached Configured state. Will restart recovery process.";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_lwu);
       toolbox::Event::Reference e(new toolbox::Event("Recover", this));
       fsm_.fireEvent(e);
     }
@@ -1796,10 +1910,14 @@ xoap::MessageReference PixelSupervisor::FSMStateNotification (xoap::MessageRefer
       fsm_.fireEvent(e);
     }
   } catch (toolbox::fsm::exception::Exception & ex) { //unlikely that anything other than the fsm transition will throw
-    diagService_->reportError("[PixelSupervisor::FSMStateNotification] Invalid command: "+string(ex.what()),DIAGERROR);
+std::string const msg_error_bzu = "[PixelSupervisor::FSMStateNotification] Invalid command: "+string(ex.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_bzu);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_bzu, ex);
+this->notifyQualified("fatal",f);
   }
 
-  diagService_->reportError("Exiting SOAP callback for FSMStateNotification for supervisor " + parameters[0].value_ + " instance #" + parameters[1].value_ + " state: " + parameters[2].value_, DIAGTRACE);
+std::string const msg_trace_zdn = "Exiting SOAP callback for FSMStateNotification for supervisor " + parameters[0].value_ + " instance #" + parameters[1].value_ + " state: " + parameters[2].value_;
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_zdn);
   *console_<< "PixelSupervisor: Exiting SOAP callback for FSMStateNotification for supervisor " << parameters[0].value_.c_str() << " instance #" << parameters[1].value_.c_str() << " state: " << parameters[2].value_.c_str() << std::endl;
   xoap::MessageReference reply=MakeSOAPMessageReference("FSMStateNotificationReceived");
   return reply;
@@ -1846,30 +1964,36 @@ xoap::MessageReference PixelSupervisor::StatusNotification (xoap::MessageReferen
 
 xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw (xoap::exception::Exception) {
 
-  diagService_->reportError("Entering transition HALT",DIAGINFO);
+std::string const msg_info_paw = "Entering transition HALT";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_paw);
   *console_<<"--- Halting ---"<<std::endl;
 
   if (state_!="Running" && state_!="RunningSoftErrorDetected" && state_!="RunningDegraded" && state_!="Done" && state_!="Configured" && state_!="Paused" && state_!="TestTTS") {
-    diagService_->reportError("Halt transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_cun = "Halt transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_cun);
     return MakeSOAPMessageReference("HaltFailed");
   }
 
   std::string response="HaltDone";
-
+  std::string supervisorError="";
   if ( theCalibObject_!=0 ) {
 
     if ( state_ == "Paused" ) {
 
       calibWorkloop_->remove(calibJob_);
-      diagService_->reportError("[PixelSupervisor::Halt] Removed job from the calib workloop.",DIAGINFO);
+std::string const msg_info_toz = "[PixelSupervisor::Halt] Removed job from the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_toz);
 
     } else if ( state_ == "Running" ) {
 
       calibWorkloop_->cancel();
-      diagService_->reportError( "[PixelSupervisor::Halt] Cancelled the calib workloop.",DIAGINFO);
+std::string const msg_info_eum =  "[PixelSupervisor::Halt] Cancelled the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_eum);
       calibWorkloop_->remove(calibJob_);
-      diagService_->reportError("[PixelSupervisor::Halt] Removed job from the calib workloop.",DIAGINFO);
-      diagService_->reportError("[PixelSupervisor::Halt] Attempting to run end calibration.",DIAGINFO);
+std::string const msg_info_opm = "[PixelSupervisor::Halt] Removed job from the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_opm);
+std::string const msg_info_dwh = "[PixelSupervisor::Halt] Attempting to run end calibration.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_dwh);
       theCalibAlgorithm_->runEndCalibration();
 
     } else if ( state_ == "Done" ) {
@@ -1883,7 +2007,8 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       unsigned int nTypes=updates_->nTypes();
       for(unsigned int iType=0;iType<nTypes;iType++){
         std::string type=updates_->type(iType);
-	diagService_->reportError("[PixelSupervisor::Halt] iType, type="+stringF(iType)+" "+type,DIAGINFO);
+std::string const msg_info_non = "[PixelSupervisor::Halt] iType, type="+stringF(iType)+" "+type;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_non);
         bool update=false;
         bool found=false;
         for(unsigned int i=0;i<names.size();i++){
@@ -1895,7 +2020,8 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
         }
         assert(found);
         if (update) {
-	diagService_->reportError( "[PixelSupervisor::Halt] will update data for type:"+type,DIAGINFO);
+std::string const msg_info_dhr =  "[PixelSupervisor::Halt] will update data for type:"+type;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_dhr);
         //now will look for aliases to uupdate;
         vector<string> aliasesToUpdate;
         vector<string> aliases=updates_->aliases(iType);
@@ -1935,7 +2061,8 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
     // TCDSSessionID_=toolbox::toString("#%d",rand());
     // TCDS session ID fixed to string for now, above solution is better and should be used again later
     TCDSSessionID_="PixelTCDS";
-    diagService_->reportError("Created new TCDS session ID: "+TCDSSessionID_, DIAGINFO);
+std::string const msg_info_klk = "Created new TCDS session ID: "+TCDSSessionID_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_klk);
     *console_<<"Created new TCDS session ID: " + TCDSSessionID_<<std::endl;
     std::cout <<"Created new TCDS session ID: " + TCDSSessionID_<<std::endl;
 
@@ -1951,9 +2078,11 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
         reply = Send(i_PixelTTCSupervisor->second, "Halt");
       }
       if ((useTCDS_ && reply!= "HaltResponse") || (useTTC_ && reply!= "TTCciControlFSMReset")) {
-        diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_grx = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_grx);
         *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be halted: "<<reply<<std::endl;
         response="HaltFailed";
+        supervisorError=msg_error_grx;
       }
       else{
         if (useTCDS_){
@@ -1964,10 +2093,12 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
           parameters[0].name_="TCDSSessionID";
           parameters[0].value_=TCDSSessionID_;
           reply = Send(i_PixelTTCSupervisor->second, "Handshake", parameters);
-          diagService_->reportError("TTCSupervisor: Sending Handshake reply: " + reply, DIAGINFO);
+std::string const msg_info_wgd = "TTCSupervisor: Sending Handshake reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wgd);
           *console_<<"TTCSupervisor: Sending Handshake reply: " << reply <<std::endl;
           if (reply!= "HandshakeResponse"){
-            diagService_->reportError("TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not receive new TCDS session ID.",DIAGERROR);
+std::string const msg_error_svs = "TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not receive new TCDS session ID.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_svs);
             *console_<<"TTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not receive new TCDS session ID for halting step: "<<reply<<std::endl;
           }
         }
@@ -1979,9 +2110,11 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       for (i_PixelLTCSupervisor=PixelLTCSupervisors_.begin();i_PixelLTCSupervisor!=PixelLTCSupervisors_.end();++i_PixelLTCSupervisor) {
         std::string reply = Send(i_PixelLTCSupervisor->second, "Halt");
         if (reply!= "HaltResponse") {
-          diagService_->reportError("PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_fnr = "PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_fnr);
           *console_<<"PixelLTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first)<<" could not be halted: "<<reply<<std::endl;
           response="HaltFailed";
+          supervisorError=msg_error_fnr;
         }
         else{
           std::string fsmState=Send(i_PixelLTCSupervisor->second, "QueryFSMState");
@@ -1991,10 +2124,12 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
           parameters[0].name_="TCDSSessionID";
           parameters[0].value_=TCDSSessionID_;
           reply = Send(i_PixelLTCSupervisor->second, "Handshake", parameters);
-          diagService_->reportError("LTCSupervisor: Sending Handshake reply: " + reply, DIAGINFO);
+std::string const msg_info_ssm = "LTCSupervisor: Sending Handshake reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ssm);
           *console_<<"LTCSupervisor: Sending Handshake reply: " << reply <<std::endl;
           if (reply!= "HandshakeResponse"){
-            diagService_->reportError("LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not receive new TCDS session ID.",DIAGERROR);
+std::string const msg_error_iyr = "LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not receive new TCDS session ID.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_iyr);
             *console_<<"LTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first)<<" could not receive new TCDS session ID for halting step: "<<reply<<std::endl;
           }
         }
@@ -2020,9 +2155,11 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
     for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
       std::string reply = Send(i_PixelFECSupervisor->second, "Halt");
       if (reply!= "HaltDone") {
-        diagService_->reportError("PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_ayi = "PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ayi);
         *console_<<"PixelFECSupervisor supervising crate #"<<(i_PixelFECSupervisor->first)<<" could not be halted."<<std::endl;
         response="HaltFailed";
+        supervisorError=msg_error_ayi;
       } else {
         statePixelFECSupervisors_[i_PixelFECSupervisor->first]="Halted";
       }
@@ -2032,9 +2169,11 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
     for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
       std::string reply = Send(i_PixelTKFECSupervisor->second, "Halt");
       if (reply!= "HaltDone") {
-        diagService_->reportError("PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_ybx = "PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ybx);
         *console_<<"PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not be halted."<<std::endl;
         response="HaltFailed";
+        supervisorError=msg_error_ybx;
       }
     }
 
@@ -2043,7 +2182,8 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
         std::string reply = Send(i_PixelSlinkMonitor->second, "Halt");
         if (reply!= "HaltDone") {
-          diagService_->reportError("PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_rqg = "PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_rqg);
           *console_<<"PixelSlinkMonitor supervising crate #"<<(i_PixelSlinkMonitor->first)<<" could not be halted."<<std::endl;
         }
       }
@@ -2054,7 +2194,8 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       for (i_PixelDCStoTrkFECDpInterface=PixelDCStoTrkFECDpInterface_.begin(); i_PixelDCStoTrkFECDpInterface!=PixelDCStoTrkFECDpInterface_.end(); ++i_PixelDCStoTrkFECDpInterface) {
         std::string reply=Send(i_PixelDCStoTrkFECDpInterface->second, "Halt");
         if (reply!="HaltDone") {
-          diagService_->reportError("PixelDCStoTrkFECDpInterface #"+stringF(i_PixelDCStoTrkFECDpInterface->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_gte = "PixelDCStoTrkFECDpInterface #"+stringF(i_PixelDCStoTrkFECDpInterface->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_gte);
           *console_<<"PixelDCStoTrkFECDpInterface #"<<(i_PixelDCStoTrkFECDpInterface->first)<<" could not be halted."<<std::endl;
         }
       }
@@ -2065,15 +2206,20 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
       for (i_PixelDCSFSMInterface=PixelDCSFSMInterface_.begin(); i_PixelDCSFSMInterface!=PixelDCSFSMInterface_.end(); ++i_PixelDCSFSMInterface) {
         std::string reply=Send(i_PixelDCSFSMInterface->second, "Halt");
         if (reply!="HaltDone") {
-          diagService_->reportError("PixelDCSFSMInterface #"+stringF(i_PixelDCSFSMInterface->first) + " could not be halted.",DIAGERROR);
+std::string const msg_error_yym = "PixelDCSFSMInterface #"+stringF(i_PixelDCSFSMInterface->first) + " could not be halted.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_yym);
           *console_<<"PixelDCSFSMInterface #"<<(i_PixelDCSFSMInterface->first)<<" could not be halted."<<std::endl;
         }
       }
     }
   }
   } catch ( xcept::Exception & err) {
-    diagService_->reportError("Halt transition failed with exception: "+string(err.what()),DIAGERROR);
+std::string const msg_error_vpv = "Halt transition failed with exception: "+string(err.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_vpv);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_vpv, err);
+this->notifyQualified("fatal",f);
     response="HaltFailed";
+    supervisorError=msg_error_vpv;
   }
 
   if (response=="HaltDone") {
@@ -2086,10 +2232,12 @@ xoap::MessageReference PixelSupervisor::Halt (xoap::MessageReference msg) throw 
     *console_<<"---------------"<<std::endl;
   } else { // Do not go to the Halted state, do not delete Global Keys etc
     fsmTransition("Failure"); //fire FSM transition
+    rcmsStateNotifier_.stateChanged("Failure", supervisorError);
     *console_<<"--- Halting Failed! ---"<<std::endl;
   }
 
-  diagService_->reportError("Exiting transition HALT",DIAGINFO);
+std::string const msg_info_kcb = "Exiting transition HALT";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kcb);
 
   return MakeSOAPMessageReference(response);
 
@@ -2119,16 +2267,18 @@ void PixelSupervisor::stateRecovering(toolbox::fsm::FiniteStateMachine & fsm)  {
   state_=fsm_.getStateName(fsm_.getCurrentState());
 
   if ( theCalibObject_ != 0 ) {
-    diagService_->reportError( "[PixelSupervisor::stateRecovering] A calibration is active",DIAGDEBUG);
+std::string const msg_debug_eov =  "[PixelSupervisor::stateRecovering] A calibration is active";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_eov);
     try {
       if ( calibWorkloop_->isActive() ) {
 	calibWorkloop_->cancel();
-	diagService_->reportError( "[PixelSupervisor::stateRecovering] Cancelled the calib workloop.",DIAGINFO);
+std::string const msg_info_wms =  "[PixelSupervisor::stateRecovering] Cancelled the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wms);
       }
-      calibWorkloop_->remove(calibJob_); //this may fail
-    } catch (xcept::Exception & e) {
-      diagService_->reportError( "[PixelSupervisor::stateRecovering] Caught an exception while ending the calib workloop: "
-				 +string(e.what()),DIAGDEBUG);
+   calibWorkloop_->remove(calibJob_); //this may fail
+	}catch (xcept::Exception & e) {
+std::string const msg_debug_uxh =  "[PixelSupervisor::stateRecovering] Cancelled the calib workloop.";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_uxh);
     }
 
     //I think we should not try to run the endCalibration method
@@ -2172,12 +2322,14 @@ void PixelSupervisor::stateRecovering(toolbox::fsm::FiniteStateMachine & fsm)  {
       }
       else { //nobody is in Error, but not everybody is Halted
 	//this could happen if the error is recovered but somebody is still configuring
-	diagService_->reportError("Error recovery successful. Waiting for Supervisors to Halt",DIAGDEBUG);
+std::string const msg_debug_zop = "Error recovery successful. Waiting for Supervisors to Halt";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_zop);
 	//	return;
       }
     }
     else { //still have errors
-      diagService_->reportError("A Supervisor is still in Error",DIAGDEBUG);
+std::string const msg_debug_zag = "A Supervisor is still in Error";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_zag);
       //proceed with recovery of the supervisors (below)
     }
 
@@ -2202,7 +2354,8 @@ void PixelSupervisor::stateRecovering(toolbox::fsm::FiniteStateMachine & fsm)  {
         err<<"PixelTTCSupervisor #"<<i_PixelTTCSupervisor->first<<" could not be halted: "<<reply;
         //	XCEPT_RAISE(xdaq::exception::Exception, err.str());
         //spit out a warning and continue...
-        diagService_->reportError(err.str(),DIAGINFO);
+std::string const msg_info_puj = err.str();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_puj);
       }
       if (useTCDS_) {
 	std::string fsmState=Send(i_PixelTTCSupervisor->second, "QueryFSMState");
@@ -2220,7 +2373,8 @@ void PixelSupervisor::stateRecovering(toolbox::fsm::FiniteStateMachine & fsm)  {
           err<<"PixelLTCSupervisor #"<<i_PixelLTCSupervisor->first<<" could not be halted: "<<reply;
           //      XCEPT_RAISE(xdaq::exception::Exception, err.str());
           //spit out a warning and continue...
-          diagService_->reportError(err.str(),DIAGINFO);
+std::string const msg_info_zlh = err.str();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zlh);
         }
         std::string fsmState=Send(i_PixelLTCSupervisor->second, "QueryFSMState");
         statePixelLTCSupervisors_[i_PixelLTCSupervisor->first]=fsmState;
@@ -2262,8 +2416,11 @@ void PixelSupervisor::stateRecovering(toolbox::fsm::FiniteStateMachine & fsm)  {
     //the final step is to delete the global key etc. That is done in FSMStateNotification.
 
   } catch ( xcept::Exception & e ) {
+std::string const msg_error_urh = "Failure while trying to recover from Error state. Caught exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_urh);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_urh, e );
+this->notifyQualified("fatal",f);
     //If we have a failure here then we return to the Error state
-    diagService_->reportError("Failure while trying to recover from Error state. Caught exception: "+string(e.what()),DIAGERROR);
     fsmTransition("Failure") ;
   }
 }
@@ -2283,7 +2440,8 @@ bool PixelSupervisor::recoverSupervisors( const Supervisors & supervisor, const 
       //if there is a quick attempt at recovery the FECSupervisor will still be Configuring
       //so we wait for the Configuring supervisor to finish, then Halt it
       //of course if it subsequently goes into Error, then we must Recover it
-      diagService_->reportError(supervisorName+" #"+stringF(iSupervisor->first) + " is still configuring. Recover process is waiting for it to finish",DIAGINFO);
+std::string const msg_info_mgk = supervisorName+" #"+stringF(iSupervisor->first) + " is still configuring. Recover process is waiting for it to finish";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mgk);
       return true;
     }
     else if (istate=="Error") {
@@ -2311,11 +2469,13 @@ bool PixelSupervisor::recoverSupervisors( const Supervisors & supervisor, const 
 
 xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
 
-  diagService_->reportError("Entering transition START",DIAGINFO);
+std::string const msg_info_qbb = "Entering transition START";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_qbb);
   *console_<<"--- Starting ---"<<std::endl;
 
   if (state_!="Configured") {
-    diagService_->reportError("Start transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_aew = "Start transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_aew);
     return MakeSOAPMessageReference("StartFailed");
   }
 
@@ -2326,7 +2486,10 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
     runNumber_=parameters[0].value_;
   }
   catch (xcept::Exception & e) {
-    diagService_->reportError("Failed to get run number with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_hjs = "Failed to get run number with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_hjs);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_hjs, e);
+this->notifyQualified("fatal",f);
     return MakeSOAPMessageReference("StartFailed");
   }
 
@@ -2340,23 +2503,29 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
     }
   }
 
-  diagService_->reportError("Start Run "+runNumber_,DIAGINFO);
+std::string const msg_info_glp = "Start Run "+runNumber_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_glp);
   *console_<<"PixelSupervisor::Start Run "<<runNumber_<<"."<<std::endl;
 
   std::string response="StartDone";
-
+  std::string supervisorError="";
   try{
     Supervisors::iterator i_PixelTKFECSupervisor;
     for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
       std::string reply = Send(i_PixelTKFECSupervisor->second, "Start", parameters);
       if (reply!= "StartDone") {
-        diagService_->reportError("PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be started.",DIAGERROR);
+std::string const msg_error_iku = "PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be started.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_iku);
         *console_<<"PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not be started."<<std::endl;
         response="StartFailed";
+        supervisorError = msg_error_iku;
       }
     }
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Failure while sending Start SOAP to PixelTKFECSupervisors. Exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_ndw = "Failure while sending Start SOAP to PixelTKFECSupervisors. Exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_ndw);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_ndw, e);
+this->notifyQualified("fatal",f);
     response="StartFailed";
   }
 
@@ -2365,13 +2534,18 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
     for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
       std::string reply = Send(i_PixelFECSupervisor->second, "Start", parameters);
       if (reply!= "StartDone") {
-        diagService_->reportError("PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be started.",DIAGERROR);
+std::string const msg_error_lxj = "PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be started.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_lxj);
         *console_<<"PixelFECSupervisor supervising crate #"<<(i_PixelFECSupervisor->first)<<" could not be started."<<std::endl;
         response="StartFailed";
+        supervisorError = msg_error_lxj;
       }
     }
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Failure while sending Start SOAP to PixelFECSupervisors. Exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_gqa = "Failure while sending Start SOAP to PixelFECSupervisors. Exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_gqa);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_gqa, e);
+this->notifyQualified("fatal",f);
     response="StartFailed";
   }
 
@@ -2380,13 +2554,18 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
     for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
       std::string reply = Send(i_PixelFEDSupervisor->second, "Start", parameters);
       if (reply!= "StartDone") {
-        diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be started.",DIAGERROR);
+std::string const msg_error_ywz = "PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be started.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ywz);
         *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be started."<<std::endl;
         response="StartFailed";
+        supervisorError = msg_error_ywz;
       }
     }
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Failure while sending Start SOAP to PixelFEDSupervisors. Exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_hmy = "Failure while sending Start SOAP to PixelFEDSupervisors. Exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_hmy);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_hmy, e);
+this->notifyQualified("fatal",f);
     response="StartFailed";
   }
 
@@ -2402,9 +2581,11 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
         reply = Send(i_PixelTTCSupervisor->second, "Start", parametersToTCDS);
       }
       if ((useTTC_ && reply!= "enableResponse") || (useTCDS_ && reply!= "StartResponse")) {
-        diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be started.",DIAGERROR);
+std::string const msg_error_cil = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be started.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_cil);
         *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first) <<" could not be started: "<<reply<<std::endl;
         response="StartFailed";
+        supervisorError = msg_error_cil;
       }
       else{
 	if(useTCDS_){
@@ -2414,7 +2595,10 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
       }
     }
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Failure while sending Start SOAP to PixelTTCSupervisor Supervisors. Exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_pxm = "Failure while sending Start SOAP to PixelTTCSupervisor Supervisors. Exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_pxm);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_pxm, e);
+this->notifyQualified("fatal",f);
     response="StartFailed";
   }
 
@@ -2430,9 +2614,11 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
         reply = Send(i_PixelLTCSupervisor->second, "Start", parametersToTCDS);
 
         if (reply!= "StartResponse") {
-          diagService_->reportError("PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be started.",DIAGERROR);
+std::string const msg_error_kgy = "PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be started.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_kgy);
           *console_<<"PixelLTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first) <<" could not be started: "<<reply<<std::endl;
           response="StartFailed";
+          supervisorError = msg_error_kgy;
         }
         else{
           std::string fsmState=Send(i_PixelLTCSupervisor->second, "QueryFSMState");
@@ -2440,14 +2626,18 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
         }
       }
     } catch (xcept::Exception & e) {
-      diagService_->reportError("Failure while sending Start SOAP to PixelLTCSupervisor Supervisors. Exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_huj = "Failure while sending Start SOAP to PixelLTCSupervisor Supervisors. Exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_huj);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_huj, e);
+this->notifyQualified("fatal",f);
       response="StartFailed";
     }
 
   }
 
 
-  diagService_->reportError("We are about to send Start to PixelSlinkMonitor",DIAGERROR);
+std::string const msg_error_hyv = "We are about to send Start to PixelSlinkMonitor";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_hyv);
   try {
     if (!PixelSlinkMonitors_.empty()) {
       Attribute_Vector parametersToSlinkMonitor(2);
@@ -2457,13 +2647,17 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
       for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
         std::string reply = Send(i_PixelSlinkMonitor->second, "Start", parametersToSlinkMonitor);
         if (reply!= "StartDone") {
-  	diagService_->reportError("PixelSlinkMonitor crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be started.",DIAGERROR);
+std::string const msg_error_eqh = "PixelSlinkMonitor crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be started.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_eqh);
   	*console_<<"PixelSlinkMonitor supervising crate #"<<(i_PixelSlinkMonitor->first)<<" could not be configured."<<std::endl;
         }
       }
     }
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Failure while sending Start SOAP to PixelSlinkMonitor Supervisors. Exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_unr = "Failure while sending Start SOAP to PixelSlinkMonitor Supervisors. Exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_unr);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_unr, e);
+this->notifyQualified("fatal",f);
     response="StartFailed";
   }
 
@@ -2480,7 +2674,8 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
       PixelDCSSOAPCommander dcsSoapCommander(this);
 
       if (psxServers_.size()!=1) {
-	diagService_->reportError("PixelSupervisor::stateRunning psxServers_.size()="+stringF(psxServers_.size())+"\n"+"Expect to have exactly one psxServer in configuration.",DIAGFATAL);
+std::string const msg_fatal_xhc = "PixelSupervisor::stateRunning psxServers_.size()="+stringF(psxServers_.size())+"\n"+"Expect to have exactly one psxServer in configuration.";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_xhc);
       //::abort();
       }
       PixelDCSPVSSCommander pvssCommander(this, psxServers_.begin()->second);
@@ -2495,7 +2690,8 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
 						   );
 
       if (theCalibAlgorithm_==0){
-	diagService_->reportError("[PixelSupervisor::Start] Could not find calibration for mode="+mode,DIAGFATAL);
+std::string const msg_fatal_euk = "[PixelSupervisor::Start] Could not find calibration for mode="+mode;
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_euk);
 	assert(theCalibAlgorithm_!=0);
       }
 
@@ -2508,11 +2704,13 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
       runBeginCalibration_=true;
       calibWorkloop_->submit(calibJob_);
 
-      diagService_->reportError("[PixelSupervisor::Start]: Calib job submitted to the workloop.",DIAGINFO);
+std::string const msg_info_cfz = "[PixelSupervisor::Start]: Calib job submitted to the workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_cfz);
 
       calibWorkloop_->activate();
 
-      diagService_->reportError("PixelSupervisor::Start: Calib workloop activated.",DIAGINFO);
+std::string const msg_info_zwz = "PixelSupervisor::Start: Calib workloop activated.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zwz);
 
     }
 
@@ -2535,38 +2733,45 @@ xoap::MessageReference PixelSupervisor::Start (xoap::MessageReference msg) {
     *console_<<"---------------"<<std::endl;
   } else {
     fsmTransition("Failure");
+    rcmsStateNotifier_.stateChanged("Failure", supervisorError);
     *console_<<"--- Start Failed! ---"<<std::endl;
   }
-  diagService_->reportError("Exiting transition START",DIAGINFO);
+std::string const msg_info_nkj = "Exiting transition START";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_nkj);
   return MakeSOAPMessageReference(response);
 
 }
 
 xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw (xoap::exception::Exception) {
 
-  diagService_->reportError("Entering transition STOP",DIAGINFO);
+std::string const msg_info_wpy = "Entering transition STOP";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wpy);
   *console_<<"--- Stopping ---"<<std::endl;
 
   if (state_!="Running" && state_!="RunningSoftErrorDetected" && state_!="RunningDegraded" && state_!="Paused") {
-    diagService_->reportError("Stop transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_nuq = "Stop transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_nuq);
     return MakeSOAPMessageReference("StopFailed");
   }
   std::string response="StopDone";
-
+  std::string supervisorError="";
   if ( theCalibObject_!=0 )
   {
     if ( state_ == "Paused" )
     {
       calibWorkloop_->remove(calibJob_);
 
-      diagService_->reportError( "PixelSupervisor::Stop: Removed job from the calib workloop.",DIAGINFO);
+std::string const msg_info_esa =  "PixelSupervisor::Stop: Removed job from the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_esa);
     }
     else if ( state_ == "Running" )
     {
       calibWorkloop_->cancel();
-      diagService_->reportError("PixelSupervisor::Stop: Cancelled the calib workloop.",DIAGINFO);
+std::string const msg_info_ryb = "PixelSupervisor::Stop: Cancelled the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ryb);
       calibWorkloop_->remove(calibJob_);
-      diagService_->reportError("PixelSupervisor::Stop: Removed job from the calib workloop.",DIAGINFO);
+std::string const msg_info_vlt = "PixelSupervisor::Stop: Removed job from the calib workloop.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_vlt);
     }
     else if ( state_ == "Done" )
     {
@@ -2591,9 +2796,11 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
   for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
     std::string reply = Send(i_PixelTKFECSupervisor->second, "Stop");
     if (reply!= "StopDone") {
-      diagService_->reportError("PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be stopped.",DIAGERROR);
+std::string const msg_error_dac = "PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be stopped.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_dac);
       *console_<<"PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not be stopped."<<std::endl;
       response="StopFailed";
+      supervisorError = msg_error_dac;
     }
   }
 
@@ -2601,9 +2808,11 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
   for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
     std::string reply = Send(i_PixelFECSupervisor->second, "Stop");
     if (reply!= "StopDone") {
-      diagService_->reportError("PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be stopped.",DIAGERROR);
+std::string const msg_error_tre = "PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be stopped.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_tre);
       *console_<<"PixelFECSupervisor supervising crate #"<<(i_PixelFECSupervisor->first)<<" could not be stopped."<<std::endl;
       response="StopFailed";
+      supervisorError = msg_error_tre;
     }
   }
 
@@ -2611,9 +2820,11 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "Stop");
     if (reply!= "StopDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be stopped.",DIAGERROR);
+std::string const msg_error_vxa = "PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be stopped.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_vxa);
       *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be stopped."<<std::endl;
       response="StopFailed";
+      supervisorError = msg_error_vxa;
     }
   }
 
@@ -2623,9 +2834,11 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
       std::string reply = Send(i_PixelTTCSupervisor->second, "stop"); // DO we have to also configure here?????????????????  d.k.
       if (reply != "stopResponse") {
-        diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be stopped.",DIAGERROR);
+std::string const msg_error_pbv = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be stopped.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_pbv);
         *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first) <<" could not be stopped: "<<reply<<std::endl;
         response="StopFailed";
+        supervisorError = msg_error_pbv;
       }
     }
   }
@@ -2633,9 +2846,11 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
       std::string reply = Send(i_PixelTTCSupervisor->second, "Stop");
       if (reply != "StopResponse") {
-        diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be configured after halting for stop transition.",DIAGERROR);
+std::string const msg_error_vct = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be configured after halting for stop transition.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_vct);
         *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first) <<" could not be configured after halting for stop transition: "<<reply<<std::endl;
         response="StopFailed";
+        supervisorError = msg_error_vct;
       }
       std::string fsmState=Send(i_PixelTTCSupervisor->second, "QueryFSMState");
       statePixelTTCSupervisors_[i_PixelTTCSupervisor->first]=fsmState;
@@ -2649,9 +2864,11 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
     for (i_PixelLTCSupervisor=PixelLTCSupervisors_.begin();i_PixelLTCSupervisor!=PixelLTCSupervisors_.end();++i_PixelLTCSupervisor) {
       std::string reply = Send(i_PixelLTCSupervisor->second, "Stop");
       if (reply != "StopResponse") {
-        diagService_->reportError("PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be configured after halting for stop transition.",DIAGERROR);
+std::string const msg_error_kwa = "PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be configured after halting for stop transition.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_kwa);
         *console_<<"PixelLTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first) <<" could not be configured after halting for stop transition: "<<reply<<std::endl;
         response="StopFailed";
+        supervisorError = msg_error_kwa;
       }
       std::string fsmState=Send(i_PixelLTCSupervisor->second, "QueryFSMState");
       statePixelLTCSupervisors_[i_PixelLTCSupervisor->first]=fsmState;
@@ -2665,14 +2882,19 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
     for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
       std::string reply = Send(i_PixelSlinkMonitor->second, "Stop");
       if (reply!= "StopDone") {
-	diagService_->reportError("PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be stoppped!",DIAGERROR);
+std::string const msg_error_xbp = "PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be stoppped!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_xbp);
 	*console_<<"PixelSlinkMonitor supervising crate #"<<(i_PixelSlinkMonitor->first)<<" could not be stopped!"<<std::endl;
       }
     }
   }
   } catch (xcept::Exception & err) {
-    diagService_->reportError("Stop transition failed with exception: "+string(err.what()),DIAGERROR);
+std::string const msg_error_gkb = "Stop transition failed with exception: "+string(err.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_gkb);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_gkb, err);
+this->notifyQualified("fatal",f);
     response="StopFailed";
+    supervisorError = msg_error_gkb;
   }
 
   if (response=="StopDone") {
@@ -2680,10 +2902,12 @@ xoap::MessageReference PixelSupervisor::Stop (xoap::MessageReference msg) throw 
     *console_<<"--------------------"<<std::endl;
   } else {
     fsmTransition("Failure");
+    rcmsStateNotifier_.stateChanged("Failure", supervisorError);
     *console_<<"--- Stopping Failed ---"<<std::endl;
   }
 
-  diagService_->reportError("Exiting transition STOP",DIAGINFO);
+std::string const msg_info_ojk = "Exiting transition STOP";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ojk);
   return MakeSOAPMessageReference(response);
 
 }
@@ -2692,20 +2916,23 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
   PixelTimer pausetimer;
   pausetimer.start();
 
-  diagService_->reportError("Entering transition PAUSE",DIAGINFO);
+std::string const msg_info_fif = "Entering transition PAUSE";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fif);
   *console_<<"--- Pausing ---"<<std::endl;
 
   if (state_!="Running"&&state_!="RunningSoftErrorDetected" && state_!="RunningDegraded") {
-    diagService_->reportError("Pause transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_zfe = "Pause transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_zfe);
     return MakeSOAPMessageReference("PauseFailed");
   }
 
   std::string response="PauseDone";
-
+  std::string supervisorError="";
   if( theCalibObject_!=0 )
     {
       calibWorkloop_->cancel();
-      diagService_->reportError("PixelSupervisor::Pause: Calib workloop canceled for pausing",DIAGINFO);
+std::string const msg_info_ldn = "PixelSupervisor::Pause: Calib workloop canceled for pausing";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ldn);
     }
 
   try {
@@ -2714,9 +2941,11 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
   for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
     std::string reply = Send(i_PixelTKFECSupervisor->second, "Pause");
     if (reply!= "PauseDone") {
-      diagService_->reportError("PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be paused.",DIAGERROR);
+std::string const msg_error_pnk = "PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be paused.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_pnk);
       *console_<<"PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not be paused."<<std::endl;
       response="PauseFailed";
+      supervisorError = msg_error_pnk;
     }
   }
 
@@ -2724,9 +2953,11 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
   for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
     std::string reply = Send(i_PixelFECSupervisor->second, "Pause");
     if (reply!= "PauseDone") {
-      diagService_->reportError("PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be paused.",DIAGERROR);
+std::string const msg_error_bxx = "PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be paused.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_bxx);
       *console_<<"PixelFECSupervisor supervising crate #"<<(i_PixelFECSupervisor->first)<<" could not be paused."<<std::endl;
       response="PauseFailed";
+      supervisorError = msg_error_bxx;
     }
   }
 
@@ -2734,9 +2965,11 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "Pause");
     if (reply!= "PauseDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be paused.",DIAGERROR);
+std::string const msg_error_lqg = "PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be paused.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_lqg);
       *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be paused."<<std::endl;
       response="PauseFailed";
+      supervisorError = msg_error_lqg;
     }
   }
 
@@ -2750,9 +2983,11 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
       reply = Send(i_PixelTTCSupervisor->second, "Suspend");
     }
     if ((useTTC_ && reply!= "suspendResponse") || (useTCDS_ && reply!= "SuspendResponse")) {
-      diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be paused.",DIAGERROR);
+std::string const msg_error_ddg = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be paused.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ddg);
       *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first) <<" could not be paused."<<reply<<std::endl;
       response="PauseFailed";
+      supervisorError = msg_error_ddg;
     }
     if (useTCDS_) {
       std::string fsmState=Send(i_PixelTTCSupervisor->second, "QueryFSMState");
@@ -2767,9 +3002,11 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
       std::string reply = Send(i_PixelLTCSupervisor->second, "Suspend");
 
       if (reply!= "SuspendResponse") {
-        diagService_->reportError("PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be paused.",DIAGERROR);
+std::string const msg_error_qop = "PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be paused.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_qop);
         *console_<<"PixelLTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first) <<" could not be paused."<<reply<<std::endl;
         response="PauseFailed";
+        supervisorError = msg_error_qop;
       }
 
       std::string fsmState=Send(i_PixelLTCSupervisor->second, "QueryFSMState");
@@ -2784,15 +3021,20 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
     for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
       std::string reply = Send(i_PixelSlinkMonitor->second, "Pause");
       if (reply!= "PauseDone") {
-	diagService_->reportError("PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be paused!",DIAGERROR);
+std::string const msg_error_lmt = "PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be paused!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_lmt);
 	*console_<<"PixelSlinkMonitor supervising crate #"<<(i_PixelSlinkMonitor->first)<<" could not be paused!"<<std::endl;
       }
     }
   }
 
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Pause failed with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_zet = "Pause failed with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_zet);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_zet, e);
+this->notifyQualified("fatal",f);
     response="PauseFailed";
+    supervisorError = msg_error_zet;
   }
 
   if (response=="PauseDone") {
@@ -2800,35 +3042,41 @@ xoap::MessageReference PixelSupervisor::Pause (xoap::MessageReference msg) throw
     *console_<<"--------------------"<<std::endl;
   } else { // Do not advance to next state
     fsmTransition("Failure");
+    rcmsStateNotifier_.stateChanged("Failure", supervisorError);
     *console_<<"--- Pausing Failed! ---"<<std::endl;
   }
 
   pausetimer.stop();
-  diagService_->reportError("Exiting transition PAUSE "+stringF(pausetimer.tottime()),DIAGINFO);
+std::string const msg_info_wpi = "Exiting transition PAUSE "+stringF(pausetimer.tottime());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wpi);
   return MakeSOAPMessageReference(response);
 }
 
 xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("Entering transition RESUME",DIAGINFO);
+std::string const msg_info_rvs = "Entering transition RESUME";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rvs);
   *console_<<"--- Resuming ---"<<std::endl;
 
   if (state_!="Paused") {
-    diagService_->reportError("Resume transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_xba = "Resume transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_xba);
     return MakeSOAPMessageReference("ResumeFailed");
   }
   std::string response="ResumeDone";
-
+  std::string supervisorError="";
   try {
 
   Supervisors::iterator i_PixelTKFECSupervisor;
   for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
     std::string reply = Send(i_PixelTKFECSupervisor->second, "Resume");
     if (reply!= "ResumeDone") {
-      diagService_->reportError("PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_lox = "PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_lox);
       *console_<<"PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not be resumed."<<std::endl;
       response="ResumeFailed";
+      supervisorError = msg_error_lox;
     }
   }
 
@@ -2836,9 +3084,11 @@ xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) thro
   for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
     std::string reply = Send(i_PixelFECSupervisor->second, "Resume");
     if (reply!= "ResumeDone") {
-      diagService_->reportError("PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_ntx = "PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ntx);
       *console_<<"PixelFECSupervisor supervising crate #"<<(i_PixelFECSupervisor->first)<<" could not be resumed."<<std::endl;
       response="ResumeFailed";
+      supervisorError = msg_error_ntx;
     }
   }
 
@@ -2846,9 +3096,11 @@ xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) thro
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "Resume");
     if (reply!= "ResumeDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_rxl = "PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_rxl);
       *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be resumed."<<std::endl;
       response="ResumeFailed";
+      supervisorError = msg_error_rxl;
     }
   }
 
@@ -2862,9 +3114,11 @@ xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) thro
       reply = Send(i_PixelTTCSupervisor->second, "Resume");
     }
     if ((useTTC_ && reply!= "enableResponse") | (useTCDS_ && reply!= "ResumeResponse")) {
-      diagService_->reportError("PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_agc = "PixelTTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_agc);
       *console_<<"PixelTTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first) <<" could not be resumed: "<<reply<<std::endl;
       response="ResumeFailed";
+      supervisorError = msg_error_agc;
     }
     if (useTCDS_) {
       std::string fsmState=Send(i_PixelTTCSupervisor->second, "QueryFSMState");
@@ -2877,9 +3131,11 @@ xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) thro
     for (i_PixelLTCSupervisor=PixelLTCSupervisors_.begin();i_PixelLTCSupervisor!=PixelLTCSupervisors_.end();++i_PixelLTCSupervisor) {
       std::string reply = Send(i_PixelLTCSupervisor->second, "Resume");
       if (reply!= "ResumeResponse") {
-        diagService_->reportError("PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_jfz = "PixelLTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_jfz);
         *console_<<"PixelLTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first) <<" could not be resumed: "<<reply<<std::endl;
         response="ResumeFailed";
+        supervisorError = msg_error_jfz;
       }
       std::string fsmState=Send(i_PixelLTCSupervisor->second, "QueryFSMState");
       statePixelLTCSupervisors_[i_PixelLTCSupervisor->first]=fsmState;
@@ -2892,20 +3148,26 @@ xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) thro
     for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
       std::string reply = Send(i_PixelSlinkMonitor->second, "Resume");
       if (reply!= "ResumeDone") {
-	diagService_->reportError("PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be resumed!",DIAGERROR);
+std::string const msg_error_huj = "PixelSlinkMonitor supervising crate #"+stringF(i_PixelSlinkMonitor->first) + " could not be resumed!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_huj);
 	*console_<<"PixelSlinkMonitor supervising crate #"<<(i_PixelSlinkMonitor->first)<<" could not be resumed!"<<std::endl;
       }
     }
   }
   } catch (xcept::Exception & e) {
-    diagService_->reportError("Resume failed with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_ujb = "Resume failed with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_ujb);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_ujb, e);
+this->notifyQualified("fatal",f);
     response="ResumeFailed";
+    supervisorError = msg_error_ujb;
   }
 
   if ( theCalibObject_!=0 )
   {
     calibWorkloop_->activate();
-    diagService_->reportError("PixelSupervisor::Resume: Activated workloop again.",DIAGINFO);
+std::string const msg_info_oie = "PixelSupervisor::Resume: Activated workloop again.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_oie);
   }
 
   if (response=="ResumeDone") {
@@ -2913,10 +3175,12 @@ xoap::MessageReference PixelSupervisor::Resume (xoap::MessageReference msg) thro
     *console_<<"--------------------"<<std::endl;
   } else {
     fsmTransition("Failure");
+    rcmsStateNotifier_.stateChanged("Failure", supervisorError);
     *console_<<"--- Resuming Failed! ---"<<std::endl;
   }
 
-  diagService_->reportError("Exiting transition RESUME",DIAGINFO);
+std::string const msg_info_rnc = "Exiting transition RESUME";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rnc);
   return MakeSOAPMessageReference(response);
 }
 
@@ -2928,22 +3192,25 @@ xoap::MessageReference PixelSupervisor::Done (xoap::MessageReference msg) throw 
 
   assert( state_ == "Running" || state_ == "Paused" );
 
-  diagService_->reportError("PixelSupervisor::Done: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_oeg = "PixelSupervisor::Done: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_oeg);
 
   if ( state_ == "Running" ) // state_ is the previous state
   {
     calibWorkloop_->cancel();
-    diagService_->reportError("PixelSupervisor::Done:  Calib workloop cancelled." ,DIAGINFO);
+std::string const msg_info_zvs = "PixelSupervisor::Done: Calib workloop cancelled." ;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zvs);
   }
 
   calibWorkloop_->remove(calibJob_);
 
-  diagService_->reportError("PixelSupervisor::Done: Removed the calib job from the workloop." ,DIAGINFO);
+std::string const msg_info_htn = "PixelSupervisor::Done: Removed the calib job from the workloop." ;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_htn);
   if (response=="DoneDone") {
     try {
       toolbox::Event::Reference e(new toolbox::Event("Done", this));
       fsm_.fireEvent(e);
-    } catch (toolbox::fsm::exception::Exception & e) {
+    }catch(toolbox::fsm::exception::Exception & e){
       XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
     }
     *console_<<"--------------------"<<std::endl;
@@ -2957,7 +3224,8 @@ xoap::MessageReference PixelSupervisor::Done (xoap::MessageReference msg) throw 
 xoap::MessageReference PixelSupervisor::PrepareTTSTestMode (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("Entering transition PrepareTTSTestMode",DIAGINFO);
+std::string const msg_info_eqt = "Entering transition PrepareTTSTestMode";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_eqt);
   *console_<<"--- Entering PreparingTTSTestMode ---"<<std::endl;
 
   std::string response="PrepareTTSTestModeDone";
@@ -2966,7 +3234,8 @@ xoap::MessageReference PixelSupervisor::PrepareTTSTestMode (xoap::MessageReferen
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "PrepareTTSTestMode");
     if (reply!= "PrepareTTSTestModeDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be prepared for TTS Test Mode.",DIAGERROR);
+std::string const msg_error_hfe = "PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be prepared for TTS Test Mode.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_hfe);
       *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be prepared for TTS Test Mode!"<<std::endl;
       response="PrepareTTSTestModeFailed";
     }
@@ -2976,7 +3245,7 @@ xoap::MessageReference PixelSupervisor::PrepareTTSTestMode (xoap::MessageReferen
     try {
       toolbox::Event::Reference e(new toolbox::Event("PrepareTTSTestMode", this));
       fsm_.fireEvent(e);
-    } catch (toolbox::fsm::exception::Exception & e) {
+	}catch(toolbox::fsm::exception::Exception & e ){
       XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
     }
     *console_<<"-------------------"<<std::endl;
@@ -2984,7 +3253,8 @@ xoap::MessageReference PixelSupervisor::PrepareTTSTestMode (xoap::MessageReferen
     *console_<<"--- Preparing TTS Test Mode Failed! ---"<<std::endl;
   }
 
-  diagService_->reportError("Exiting transition PrepareTTSTestMode",DIAGINFO);
+std::string const msg_info_zgp = "Exiting transition PrepareTTSTestMode";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zgp);
   *console_<<"--- Exiting PreparingTTSTestMode ---"<<std::endl;
   return MakeSOAPMessageReference(response);
 
@@ -2993,7 +3263,8 @@ xoap::MessageReference PixelSupervisor::PrepareTTSTestMode (xoap::MessageReferen
 xoap::MessageReference PixelSupervisor::TestTTS (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("Entering transition TestTTS",DIAGINFO);
+std::string const msg_info_wxv = "Entering transition TestTTS";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wxv);
   *console_<<"--- Entering transition TestTTS ---"<<std::endl;
   std::string response="TestTTS";
 
@@ -3008,7 +3279,8 @@ xoap::MessageReference PixelSupervisor::TestTTS (xoap::MessageReference msg) thr
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "TestTTS", parameters);
     if (reply!= "TestTTSDone") {
-      diagService_->reportError("PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be TTS tested.",DIAGERROR);
+std::string const msg_error_pif = "PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be TTS tested.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_pif);
       *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be TTS tested!"<<std::endl;
       response="TestTTSFailed";
     }
@@ -3022,16 +3294,20 @@ xoap::MessageReference PixelSupervisor::TestTTS (xoap::MessageReference msg) thr
       XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
     }
     *console_<<"-------------------"<<std::endl;
-    diagService_->reportError("-------------------",DIAGINFO);
+std::string const msg_info_xpi = "-------------------";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xpi);
   } else {
     *console_<<"--- Testing TTS Failed! ---"<<std::endl;
-    diagService_->reportError("--- Testing TTS Failed! ---",DIAGINFO);
+std::string const msg_info_zjy = "--- Testing TTS Failed! ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zjy);
 
   }
 
-  diagService_->reportError("Exiting transition TestTTS",DIAGINFO);
+std::string const msg_info_qzc = "Exiting transition TestTTS";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_qzc);
   *console_<<"--- Exiting TestTTS ---"<<std::endl;
-  diagService_->reportError("--- Exiting TestTTS ---",DIAGINFO);
+std::string const msg_info_egl = "--- Exiting TestTTS ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_egl);
   return MakeSOAPMessageReference(response);
 
 }
@@ -3050,16 +3326,19 @@ void PixelSupervisor::enteringError (toolbox::Event::Reference e) throw (toolbox
 	<<  " to: "
 	<< fe.getToState()
 	<< " exception: " << fe.getException().what();
-  diagService_->reportError(errstr.str(),DIAGERROR);
+std::string const msg_error_uyf = errstr.str();
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_uyf);
 
 }
 
 void PixelSupervisor::stateInitial (toolbox::fsm::FiniteStateMachine & fsm) throw (toolbox::fsm::exception::Exception)
 {
-  diagService_->reportError("--- PixelSupervisor is in its Initial state ---",DIAGINFO);
+std::string const msg_info_mto = "--- PixelSupervisor is in its Initial state ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mto);
   state_ = fsm_.getStateName (fsm_.getCurrentState());
 
-  diagService_->reportError("PixelSupervisor::stateInitial: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_cyq = "PixelSupervisor::stateInitial: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_cyq);
 
 }
 
@@ -3075,10 +3354,14 @@ void PixelSupervisor::statePaused (toolbox::fsm::FiniteStateMachine & fsm) throw
     rcmsStateNotifier_.stateChanged("Paused", "");
   }
   catch(xcept::Exception &e) {
-    diagService_->reportError("Failed to notify state change : "+ xcept::stdformat_exception_history(e),DIAGERROR);
+std::string const msg_error_euu = "Failed to notify state change : "+ xcept::stdformat_exception_history(e);
+LOG4CPLUS_ERROR(sv_logger_,msg_error_euu);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_euu,e);
+this->notifyQualified("fatal",f);
   }
 
-  diagService_->reportError("PixelSupervisor::statePaused: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_rkm = "PixelSupervisor::statePaused: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rkm);
 }
 
 void PixelSupervisor::stateRunning (toolbox::fsm::FiniteStateMachine & fsm) throw (toolbox::fsm::exception::Exception)
@@ -3089,10 +3372,14 @@ void PixelSupervisor::stateRunning (toolbox::fsm::FiniteStateMachine & fsm) thro
     rcmsStateNotifier_.stateChanged("Running", "");
   }
   catch(xcept::Exception &e) {
-    diagService_->reportError("Failed to notify state change : "+ xcept::stdformat_exception_history(e),DIAGERROR);
+std::string const msg_error_vqf = "Failed to notify state change : "+ xcept::stdformat_exception_history(e);
+LOG4CPLUS_ERROR(sv_logger_,msg_error_vqf);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_vqf,e);
+this->notifyQualified("fatal",f);
   }
 
-  diagService_->reportError("PixelSupervisor::stateRunning: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_buq = "PixelSupervisor::stateRunning: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_buq);
 
 }
 
@@ -3101,12 +3388,14 @@ void PixelSupervisor::stateDone (toolbox::fsm::FiniteStateMachine & fsm) throw (
   if ( state_ == "Running" ) // state_ is the previous state
   {
     if ( calibWorkloop_->isActive() ) calibWorkloop_->cancel();
-    diagService_->reportError("PixelSupervisor::stateDone:  Calib workloop cancelled.",DIAGINFO);
+std::string const msg_info_xpf = "PixelSupervisor::stateDone: Calib workloop cancelled.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xpf);
   }
 
   state_ = fsm_.getStateName (fsm_.getCurrentState());
 
-  diagService_->reportError("PixelSupervisor::stateDone: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_hvi = "PixelSupervisor::stateDone: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_hvi);
 }
 
 void PixelSupervisor::stateHalted (toolbox::fsm::FiniteStateMachine & fsm) throw (toolbox::fsm::exception::Exception)
@@ -3115,9 +3404,11 @@ void PixelSupervisor::stateHalted (toolbox::fsm::FiniteStateMachine & fsm) throw
   runType_="";
   percentageConfigured_=0.0;
   aliasesAndKeys_=PixelConfigInterface::getAliases();
-  diagService_->reportError("PixelSupervisor::stateHalted: aliases and keys reloaded",DIAGINFO);
+std::string const msg_info_rkp = "PixelSupervisor::stateHalted: aliases and keys reloaded";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rkp);
   state_ = fsm_.getStateName (fsm_.getCurrentState());
-  diagService_->reportError("PixelSupervisor::stateHalted: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_xvf = "PixelSupervisor::stateHalted: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xvf);
 
   //(hopefully) make RCMS aware of successful Recovery
   //need to test that: (a) this works and (b) this does not break anything (regular Halt transition)
@@ -3127,7 +3418,10 @@ void PixelSupervisor::stateHalted (toolbox::fsm::FiniteStateMachine & fsm) throw
   }
   catch(xcept::Exception &e)
   {
-    diagService_->reportError("Failed to notify state change : "+ xcept::stdformat_exception_history(e),DIAGERROR);
+ std::string const msg_error_wlr = "Failed to notify state change : "+ xcept::stdformat_exception_history(e);
+LOG4CPLUS_ERROR(sv_logger_,msg_error_wlr);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_wlr,e);
+this->notifyQualified("fatal",f);
   }
 
 }
@@ -3146,7 +3440,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
   // Update the state_ member data so that Infospace may publish this information
   // Advertize more on webpage, console etc
   state_=fsm_.getStateName(fsm_.getCurrentState());
-  diagService_->reportError("PixelSupervisor::stateConfiguring: Entering",DIAGINFO);
+std::string const msg_info_axa = "PixelSupervisor::stateConfiguring: Entering";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_axa);
   *console_<<"PixelSupervisor::stateConfiguring: Entering"<<std::endl;
 
   // We're going to time various aspects of configuration
@@ -3172,12 +3467,14 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
     //configure PixelDCSFSMInterface
     if (!PixelDCSFSMInterface_.empty() ) {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] PixelDCSFSMInterface exists...",DIAGDEBUG);
+std::string const msg_debug_kpw = "[PixelSupervisor::stateConfiguring] PixelDCSFSMInterface exists...";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_kpw);
       Supervisors::iterator i_PixelDCSFSMInterface;
       for (i_PixelDCSFSMInterface=PixelDCSFSMInterface_.begin(); i_PixelDCSFSMInterface!=PixelDCSFSMInterface_.end(); ++i_PixelDCSFSMInterface) {
         unsigned int instance = i_PixelDCSFSMInterface->first;
 
-        diagService_->reportError("[PixelSupervisor::stateConfiguring] DCSFSMInterface instance "+stringF(instance)+" has state "+statePixelDCSFSMInterface_[instance],DIAGINFO);
+std::string const msg_info_oez = "[PixelSupervisor::stateConfiguring] DCSFSMInterface instance "+stringF(instance)+" has state "+statePixelDCSFSMInterface_[instance];
+ LOG4CPLUS_INFO(sv_logger_,msg_info_oez);
 
         std::string fsmState=Send(i_PixelDCSFSMInterface->second, "FSMStateRequest");
 
@@ -3189,10 +3486,12 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
           }
         }
         else if (statePixelDCSFSMInterface_[instance]=="Initial") {
-          diagService_->reportError("[PixelSupervisor::stateConfiguring] PixelDCSFSMInterface is stuck in the Initial state!",DIAGERROR);
+std::string const msg_error_wth = "[PixelSupervisor::stateConfiguring] PixelDCSFSMInterface is stuck in the Initial state!";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_wth);
         }
         if (statePixelDCSFSMInterface_[instance]!="Configured") { //it is not done yet
-          diagService_->reportError("[PixelSupervisor::stateConfiguring] DCS Interface not configured yet",DIAGINFO);
+std::string const msg_info_xql = "[PixelSupervisor::stateConfiguring] DCS Interface not configured yet";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xql);
           return;
         }
       }
@@ -3224,7 +3523,6 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
     }
   }
 
-
   if (useTCDS_) {
 
     Supervisors::iterator i_PixelLTCSupervisor;
@@ -3244,12 +3542,37 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
 
   if (!configuredTTCs) {
+    if (!PixelAMC13Controllers_.empty()) {
+      PixelConfigInterface::get(theAMC13Config_, "pixel/amc13/", *theGlobalKey_);
+      if (theAMC13Config_==0)  XCEPT_RAISE (xdaq::exception::Exception,"Failed to load PixelAMC13Config configuration data");
+      //if (1) std::cout << "The AMC13 config:\n" << theAMC13Config_->toASCII() << std::endl;
+      // gonna parse it again in PixelAMC13Controller since I don't want to make the latter know about config interface etc.
+      // (vague idea that it might become a standalone component usable by other detectors...)
+      for (Supervisors::iterator i_PixelAMC13Controller=PixelAMC13Controllers_.begin();i_PixelAMC13Controller!=PixelAMC13Controllers_.end();++i_PixelAMC13Controller) {
+        std::string app_class_name = "PixelAMC13Controller";
+        std::string parameter_name = "Configuration";
+        std::string config = "# AMC13 magic string\n";
+        config += "# TTCSupervisorApplicationName = " + std::string(TTCSupervisorApplicationName_) + "\n";
+        config += theAMC13Config_->toASCII();
+        xoap::MessageReference msg = MakeSOAPConfigMessage(app_class_name,parameter_name, config);
+        std::string reply = Send(i_PixelAMC13Controller->second, msg);
+        //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
+        if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
+        if (TTCSupervisorApplicationName_ != app_class_name) {
+          reply = Send(i_PixelAMC13Controller->second, "configure");
+          //std::cout << "The AMC13 reply, just out of curiosity, was " << reply << std::endl;
+          if (reply=="Fault") XCEPT_RAISE (xdaq::exception::Exception,"PixelAMC13Controller returned SOAP reply Fault!");
+        }
+      }
+    }
+
     if (!PixelTTCSupervisors_.empty()) {
       // Send a SOAP message to PixelTTCSupervisor
       //if(useTTC_){
         SendConfigurationToTTC();
         //}
-      diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelTTCSupervisors",DIAGINFO);
+std::string const msg_info_lxc = "PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelTTCSupervisors";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_lxc);
 
       TTCConfigureTime.start();
       for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
@@ -3274,7 +3597,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       TTCConfigureTime.stop();
     }
     else {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] no TTCSupervisors exist...",DIAGFATAL);
+std::string const msg_fatal_ocn = "[PixelSupervisor::stateConfiguring] no TTCSupervisors exist...";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_ocn);
     }
     proceed = false; // do not continue with other supervisors before TTCSupervisors are not configured
   }
@@ -3290,7 +3614,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       // Send a SOAP message to PixelLTCSupervisor
       SendConfigurationToLTC();
 
-      diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelLTCSupervisors",DIAGINFO);
+std::string const msg_info_arh = "PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelLTCSupervisors";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_arh);
       Supervisors::iterator i_PixelLTCSupervisor;
       for (i_PixelLTCSupervisor=PixelLTCSupervisors_.begin();i_PixelLTCSupervisor!=PixelLTCSupervisors_.end();++i_PixelLTCSupervisor) {
         // Configuring only allowed from halted
@@ -3309,13 +3634,19 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       }
     }
     else {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] no LTCSupervisors exist...",DIAGFATAL);
+std::string const msg_fatal_ltg = "[PixelSupervisor::stateConfiguring] no LTCSupervisors exist...";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_ltg);
     }
     proceed = false; // do not continue with other supervisors before LTCSupervisors are not configured
-    sleep(20);
+    sleep(useTTC_ ? 1 : 10);
   }
 
 
+  if (!proceed) {
+    std::string const msg_info_blx = "[PixelSupervisor::stateConfiguring] TCDS supervisors not yet configured.";
+    LOG4CPLUS_INFO(sv_logger_,msg_info_blx);
+    sleep(useTTC_ ? 1 : 10);
+  }
 
 
   // Send a SOAP message to PixelTKFECSupervisor to configure
@@ -3323,16 +3654,19 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
   bool configuredTKFECs=true;
 
   if (!PixelTKFECSupervisors_.empty()) {
-    diagService_->reportError("[PixelSupervisor::stateConfiguring] TKFECs exist...",DIAGINFO);
+std::string const msg_info_bld = "[PixelSupervisor::stateConfiguring] TKFECs exist...";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_bld);
     Supervisors::iterator i_PixelTKFECSupervisor;
     for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
       unsigned int instance=i_PixelTKFECSupervisor->first;
 
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] TKFECs instance "+stringF(instance)+" has state "+statePixelTKFECSupervisors_[instance],DIAGINFO);
+std::string const msg_info_zsi = "[PixelSupervisor::stateConfiguring] TKFECs instance "+stringF(instance)+" has state "+statePixelTKFECSupervisors_[instance];
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zsi);
 
       if (statePixelTKFECSupervisors_[instance]=="Halted") {
 
-        diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelTKFECSupervisor "+stringF(instance),DIAGINFO);
+std::string const msg_info_ikk = "PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelTKFECSupervisor "+stringF(instance);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ikk);
 
         statePixelTKFECSupervisors_[instance]="Configuring";
         std::string reply = Send(i_PixelTKFECSupervisor->second, "Configure", parametersToTKFEC);
@@ -3342,7 +3676,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
         }
       }
       if (statePixelTKFECSupervisors_[instance]!="Configured") {
-        diagService_->reportError("[PixelSupervisor::stateConfiguring] TKFEC not configured yet",DIAGINFO);
+std::string const msg_info_ldo = "[PixelSupervisor::stateConfiguring] TKFEC not configured yet";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ldo);
         configuredTKFECs=false;
       }
     }
@@ -3357,18 +3692,21 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
   // Send a SOAP message to PixelFECSupervisor
   if (!PixelFECSupervisors_.empty()) {
-    diagService_->reportError("[PixelSupervisor::stateConfiguring] FECs exist...",DIAGINFO);
+std::string const msg_info_lwp = "[PixelSupervisor::stateConfiguring] FECs exist...";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_lwp);
     Supervisors::iterator i_PixelFECSupervisor;
     for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
       unsigned int instance=i_PixelFECSupervisor->first;
       std::string fsmState=statePixelFECSupervisors_[instance];
 
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] FEC instance "+stringF(instance)+" has state "+fsmState,DIAGINFO);
+std::string const msg_info_npp = "[PixelSupervisor::stateConfiguring] FEC instance "+stringF(instance)+" has state "+fsmState;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_npp);
 
       if (fsmState=="Halted") {
         FECConfigureTime.start();
 
-        diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelFECSupervisor "+instance,DIAGINFO);
+std::string const msg_info_yye = "PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelFECSupervisor "+instance;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_yye);
 
         statePixelFECSupervisors_[instance]="Configuring";
 	      //don't actually have to send the global key here anymore, but it doesn't hurt either
@@ -3381,13 +3719,15 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       }
       if (fsmState!="Configured") {
 
-        diagService_->reportError("[PixelSupervisor::stateConfiguring] Cannot proceed to Configured because PixelFECSupervisor instance "+stringF(instance)+" is not Configured yet.",DIAGINFO);
+std::string const msg_info_pwb = "[PixelSupervisor::stateConfiguring] Cannot proceed to Configured because PixelFECSupervisor instance "+stringF(instance)+" is not Configured yet.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_pwb);
         proceed=false;
       }
     }
   }
   else {
-    diagService_->reportError("[PixelSupervisor::stateConfiguring] no FECs exist...",DIAGFATAL);
+std::string const msg_fatal_mri = "[PixelSupervisor::stateConfiguring] no FECs exist...";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_mri);
   }
 
   // Pixel FEDs can only configure once clock is present
@@ -3396,18 +3736,21 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
     // Send a SOAP message to PixelFEDSupervisor
     if (!PixelFEDSupervisors_.empty()) {
 
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] FEDs exist...",DIAGINFO);
+std::string const msg_info_kgl = "[PixelSupervisor::stateConfiguring] FEDs exist...";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kgl);
       Supervisors::iterator i_PixelFEDSupervisor;
       for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
         unsigned int instance=i_PixelFEDSupervisor->first;
         std::string fsmState=statePixelFEDSupervisors_[instance];
 
-        diagService_->reportError("[PixelSupervisor::stateConfiguring] FED instance "+stringF(instance)+" has state "+fsmState,DIAGINFO);
+std::string const msg_info_fcr = "[PixelSupervisor::stateConfiguring] FED instance "+stringF(instance)+" has state "+fsmState;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fcr);
 
         if (fsmState=="Halted") {
           FEDConfigureTime.start();
 
-  	      diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelFEDSupervisor "+stringF(instance),DIAGINFO);
+std::string const msg_info_lcq = "PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelFEDSupervisor "+stringF(instance);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_lcq);
 
           statePixelFEDSupervisors_[instance]="Configuring";
           std::string reply = Send(i_PixelFEDSupervisor->second, "Configure", parametersToFED);
@@ -3416,23 +3759,27 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
             *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be configured."<<std::endl;
   	        XCEPT_RAISE (xdaq::exception::Exception,"PixelFEDSupervisor configuration failure, instance="+string(itoa(instance)));
           } else {
-  	        diagService_->reportError("PixelSupervisor::stateConfiguring: Received SOAP reply from PixelFEDSupervisors",DIAGINFO);
+std::string const msg_info_yya = "PixelSupervisor::stateConfiguring: Received SOAP reply from PixelFEDSupervisors";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_yya);
           }
         }
 
         if (fsmState!="Configured") {
-  	      diagService_->reportError("[PixelSupervisor::stateConfiguring] Cannot proceed to Configured because PixelFEDSupervisor instance "+stringF(instance)+" is not Configured yet.",DIAGINFO);
+std::string const msg_info_tpr = "[PixelSupervisor::stateConfiguring] Cannot proceed to Configured because PixelFEDSupervisor instance "+stringF(instance)+" is not Configured yet.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_tpr);
           proceed=false;
         }
       }
     }
     else {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] no FEDs exist...",DIAGFATAL);
+std::string const msg_fatal_zbv = "[PixelSupervisor::stateConfiguring] no FEDs exist...";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_zbv);
     }
   }
   else {
     if (!PixelFEDSupervisors_.empty()) {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] no TTCs exist, cannot configure FEDs!",DIAGFATAL);
+std::string const msg_fatal_lsz = "[PixelSupervisor::stateConfiguring] no TTCs exist, cannot configure FEDs!";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_lsz);
       XCEPT_RAISE (xdaq::exception::Exception,"Cannot configure PixelFEDSupervisors without TTCs!");
     }
   }
@@ -3445,7 +3792,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
     for (i_PixelDCStoTrkFECDpInterface=PixelDCStoTrkFECDpInterface_.begin(); i_PixelDCStoTrkFECDpInterface!=PixelDCStoTrkFECDpInterface_.end(); ++i_PixelDCStoTrkFECDpInterface) {
       if (  statePixelDCStoTrkFECDpInterface_[i_PixelDCStoTrkFECDpInterface->first] == "Halted" ) {
 
-	      diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP message to PixelDCStoTrkFECDpInterface",DIAGINFO);
+std::string const msg_info_mve = "PixelSupervisor::stateConfiguring: Sending SOAP message to PixelDCStoTrkFECDpInterface";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mve);
         std::string reply = Send(i_PixelDCStoTrkFECDpInterface->second, "Configure");
         //at the moment this class never returns anything other than ConfigureDone...so no need to look at the reply
         cout<<"done sending soap to PixelDCStoTrkFECDpInterface"<<endl;
@@ -3468,7 +3816,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
     // Send a SOAP message to PixelSlinkMonitor
     if (!PixelSlinkMonitors_.empty()) {
-      diagService_->reportError("PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelSlinkMonitor",DIAGINFO);
+std::string const msg_info_kox = "PixelSupervisor::stateConfiguring: Sending SOAP messages to PixelSlinkMonitor";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kox);
       Supervisors::iterator i_PixelSlinkMonitor;
       for (i_PixelSlinkMonitor=PixelSlinkMonitors_.begin();i_PixelSlinkMonitor!=PixelSlinkMonitors_.end();++i_PixelSlinkMonitor) {
         std::string reply = Send(i_PixelSlinkMonitor->second, "Configure");
@@ -3481,7 +3830,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
     // Advertize the timing results
 
-    diagService_->reportError("PixelSupervisor::stateConfiguration: TTC configuration time  :"+stringF(TTCConfigureTime.tottime()),DIAGINFO);
+std::string const msg_info_tti = "PixelSupervisor::stateConfiguration: TTC configuration time :"+stringF(TTCConfigureTime.tottime());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_tti);
     //    diagService_->reportError("PLEASE IGNORE: PixelSupervisor::stateConfiguration: FED configuration time  :"+stringF(FEDConfigureTime.tottime()),DIAGINFO);
     //    diagService_->reportError("PLEASE IGNORE: PixelSupervisor::stateConfiguration: FEC configuration time  :"+stringF(FECConfigureTime.tottime()),DIAGINFO);
 
@@ -3489,18 +3839,28 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
       toolbox::Event::Reference e(new toolbox::Event("ConfiguringDone", this));
       fsm_.fireEvent(e);
     } catch (toolbox::fsm::exception::Exception & e) {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] Invalid command "+stringF(e.what()),DIAGERROR);
+std::string const msg_error_udq = "[PixelSupervisor::stateConfiguring] Invalid command "+stringF(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_udq);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_udq, e);
+this->notifyQualified("fatal",f);
     }
 
   }
 
   } catch (xdaq::exception::Exception & e) {
-    diagService_->reportError("[PixelSupervisor::stateConfiguring] Failed to configure with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_qce = "[PixelSupervisor::stateConfiguring] Failed to configure with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_qce);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_qce, e);
+this->notifyQualified("fatal",f);
     try {
       toolbox::Event::Reference ev(new toolbox::Event("Failure", this));
       fsm_.fireEvent(ev);
     } catch (...) {
-      diagService_->reportError("[PixelSupervisor::stateConfiguring] Failed to transfer FSM to Error state",DIAGFATAL);
+std::string const msg_fatal_ysi = "[PixelSupervisor::stateConfiguring] Failed to transfer FSM to Error state";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_ysi);
+pixel::PixelSupervisorException trivial_exception("PixelSupervisorException","module",msg_fatal_ysi,3740,"PixelSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine&)");
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_fatal_ysi,trivial_exception);
+this->notifyQualified("fatal",f);
     }
 
   }
@@ -3509,7 +3869,8 @@ void PixelSupervisor::stateConfiguring (toolbox::fsm::FiniteStateMachine & fsm)
 
 
   // Advertize the exiting of this method
-  diagService_->reportError("PixelSupervisor::stateConfiguring: Exiting",DIAGINFO);
+std::string const msg_info_gak = "PixelSupervisor::stateConfiguring: Exiting";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_gak);
   *console_<<"PixelSupervisor::stateConfiguring: Exiting"<<std::endl;
 
 
@@ -3528,7 +3889,10 @@ void PixelSupervisor::stateConfigured (toolbox::fsm::FiniteStateMachine & fsm) t
   }
   catch(xcept::Exception &e)
   {
-    diagService_->reportError("Failed to notify state change : "+ xcept::stdformat_exception_history(e),DIAGERROR);
+ std::string const msg_error_tph = "Failed to notify state change : "+ xcept::stdformat_exception_history(e);
+LOG4CPLUS_ERROR(sv_logger_,msg_error_tph);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_tph,e);
+this->notifyQualified("fatal",f);
   }
 
   PixelTimer debugTimer;
@@ -3542,11 +3906,13 @@ void PixelSupervisor::stateConfigured (toolbox::fsm::FiniteStateMachine & fsm) t
     string confsource(getenv("PIXELCONFIGURATIONBASE"));
     if (confsource != "DB") confsource = "files";
 
-    diagService_->reportError("Total configuration time ["+confsource+"] = "+stringF(configurationTimer_.tottime()),DIAGUSERINFO);
+std::string const msg_info_xzm = "Total configuration time ["+confsource+"] = "+stringF(configurationTimer_.tottime());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xzm);
     configurationTimer_.reset();
   }
 
-  diagService_->reportError( "PixelSupervisor::stateConfigured: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGDEBUG);
+std::string const msg_debug_bwk =  "PixelSupervisor::stateConfigured: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_bwk);
 
 }
 
@@ -3564,16 +3930,19 @@ void PixelSupervisor::inError (toolbox::fsm::FiniteStateMachine & fsm) throw (to
 
 xoap::MessageReference PixelSupervisor::reset (xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  diagService_->reportError("New state before reset is: " + fsm_.getStateName (fsm_.getCurrentState()),DIAGINFO);
+std::string const msg_info_vxv = "New state before reset is: " + fsm_.getStateName (fsm_.getCurrentState());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_vxv);
 
   fsm_.reset();
 
   xoap::MessageReference reply = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = reply->getSOAPPart().getEnvelope();
+  xoap::SOAPPart part = reply->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPName responseName = envelope.createName("ResetResponse", "xdaq", XDAQ_NS_URI);
   (void) envelope.getBody().addBodyElement ( responseName );
 
-  diagService_->reportError("New state after reset is: " + fsm_.getStateName (fsm_.getCurrentState()),DIAGINFO);
+std::string const msg_info_ead = "New state after reset is: " + fsm_.getStateName (fsm_.getCurrentState());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ead);
 
   return reply;
 }
@@ -3612,11 +3981,13 @@ void PixelSupervisor::transitionHaltedToConfiguring (toolbox::Event::Reference e
 
   if (extratimers_)  debugTimer.printTime("getting the name translation");
   // Retrieve the Pixel Name Translation from database
-  diagService_->reportError("Retrieving Name Translation table from database... ", DIAGTRACE);
+std::string const msg_trace_ixl = "Retrieving Name Translation table from database... ";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_ixl);
   *console_<<"Retrieving Name Translation from database... ";
   PixelConfigInterface::get(theNameTranslation_, "pixel/nametranslation/", *theGlobalKey_);
   if (theNameTranslation_==0) XCEPT_RAISE(toolbox::fsm::exception::Exception, "Failed to load nametranslation!");
-  diagService_->reportError("... Name Translation table retrieved.", DIAGTRACE);
+std::string const msg_trace_dwy = "... Name Translation table retrieved.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_dwy);
   *console_<<"done."<<std::endl;
 
   if (extratimers_)  debugTimer.printTime("getting the calib object");
@@ -3635,19 +4006,23 @@ void PixelSupervisor::transitionHaltedToConfiguring (toolbox::Event::Reference e
   if (!PixelTKFECSupervisors_.empty()) {
 
     // Retrieve the Tracker-FEC Configuration from datbase
-    diagService_->reportError("Retrieving TKFEC Configuration Table... ", DIAGTRACE);
+std::string const msg_trace_mvq = "Retrieving TKFEC Configuration Table... ";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_mvq);
     *console_<<"Retrieving TKFEC Configuration Table... ";
     PixelConfigInterface::get(theTKFECConfiguration_, "pixel/tkfecconfig/", *theGlobalKey_);
     if (theTKFECConfiguration_==0)  XCEPT_RAISE(toolbox::fsm::exception::Exception, "Failed to load TKFEC Configuration!");
-    diagService_->reportError("... TKFEC Configuration Table retrieved.", DIAGTRACE);
+std::string const msg_trace_hfm = "... TKFEC Configuration Table retrieved.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_hfm);
     *console_<<"done."<<std::endl;
 
     // Retrieve the PortCard Map from database
-    diagService_->reportError("Retrieving PortCard Map... ", DIAGTRACE);
+std::string const msg_trace_mqs = "Retrieving PortCard Map... ";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_mqs);
     *console_<<"Retrieving PortCard Map... ";
     PixelConfigInterface::get(thePortcardMap_, "pixel/portcardmap/", *theGlobalKey_);
     if (thePortcardMap_==0)  XCEPT_RAISE(toolbox::fsm::exception::Exception, "Failed to load portcardmap!");
-    diagService_->reportError("... PortCard Map retrieved.", DIAGTRACE);
+std::string const msg_trace_nhb = "... PortCard Map retrieved.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_nhb);
     *console_<<"done."<<std::endl;
 
     // PortCard settings (mapNamePortCard) are dynamically loaded when needed
@@ -3655,19 +4030,23 @@ void PixelSupervisor::transitionHaltedToConfiguring (toolbox::Event::Reference e
 
   // Retrieve Pixel-FEC configuration from database if PixelFECSupervisor exists
   if (!PixelFECSupervisors_.empty()) {
-    diagService_->reportError("Retrieving FEC Configuration Table... ", DIAGTRACE);
+std::string const msg_trace_ean = "Retrieving FEC Configuration Table... ";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_ean);
     *console_<<"Retrieving FEC Configuration Table... ";
     PixelConfigInterface::get(theFECConfiguration_, "pixel/fecconfig/", *theGlobalKey_);
-    diagService_->reportError("... FEC Configuration Table retrieved.", DIAGTRACE);
+std::string const msg_trace_xuw = "... FEC Configuration Table retrieved.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_xuw);
     *console_<<"done."<<std::endl;
   }
 
   // Retrieve the Pixel-FED configuration from database if PixelFEDSupervisor exists
   if (!PixelFEDSupervisors_.empty()) {
-    diagService_->reportError("Retrieving FED configuration... ",DIAGTRACE);
+std::string const msg_trace_vtr = "Retrieving FED configuration... ";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_vtr);
     *console_<<"Retrieving FED configuration... ";
     PixelConfigInterface::get(theFEDConfiguration_, "pixel/fedconfig/", *theGlobalKey_);
-    diagService_->reportError("... FED Configuration Table retrieved.", DIAGTRACE);
+std::string const msg_trace_abx = "... FED Configuration Table retrieved.";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_abx);
     *console_<<"done."<<std::endl;
   }
 
@@ -3677,7 +4056,7 @@ void PixelSupervisor::transitionHaltedToConfiguring (toolbox::Event::Reference e
     //    throw;
     this->notifyQualified("error",e);
   }
-  catch (std::exception & e) {  //translate std::exception to the correct type
+  catch (std::exception & e){
     XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
   }
 
@@ -3693,12 +4072,13 @@ bool PixelSupervisor::fsmTransition(const string & transition) {
   try {
     toolbox::Event::Reference e(new toolbox::Event(transition, this));
     fsm_.fireEvent(e);
-  } catch (toolbox::fsm::exception::Exception & e) {
+}catch(toolbox::fsm::exception::Exception &e) {
     isok=false;
     ostringstream err;
     err<<"Failed to transition FSM from current state: "<<state_.toString()<<" with transition: "
        << transition<<". Exception: "<<e.what();
-    diagService_->reportError(err.str(),DIAGERROR);
+std::string const msg_error_gbq = err.str();
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_gbq);
   }
   return isok;
 }
@@ -3750,10 +4130,12 @@ void PixelSupervisor::printConfiguration(PixelConfigKey& theGlobalKey){
 
   std::vector<std::pair< std::string, unsigned int> > versions=PixelConfigInterface::getVersions(theGlobalKey);
 
-  diagService_->reportError("Configuration key="+stringF(theGlobalKey.key()), DIAGINFO);
+std::string const msg_info_koh = "Configuration key="+stringF(theGlobalKey.key());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_koh);
   for(unsigned int i=0;i<versions.size();i++){
 
-    diagService_->reportError(versions[i].first+" "+stringF(versions[i].second)+"\n", DIAGDEBUG);
+std::string const msg_debug_aih = versions[i].first+" "+stringF(versions[i].second)+"\n";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_aih);
   }
 
 }
@@ -3788,7 +4170,8 @@ void PixelSupervisor::updateConfig(string path, vector<string> aliases){
   }
   else {
 
-    diagService_->reportError("[PixelSupervisor::updateConfig] path="+path+" is unknown.", DIAGERROR);
+std::string const msg_error_noc = "[PixelSupervisor::updateConfig] path="+path+" is unknown.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_noc);
     assert(0);
   }
 
@@ -3818,7 +4201,8 @@ void PixelSupervisor::updateConfig(string path, vector<string> aliases){
   }
   else {
 
-    diagService_->reportError("[PixelSupervisor::updateConfig] path="+path+" is unknown.", DIAGERROR);
+std::string const msg_error_drc = "[PixelSupervisor::updateConfig] path="+path+" is unknown.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_drc);
     assert(0);
   }
 
@@ -3841,7 +4225,8 @@ void PixelSupervisor::updateConfig(string path, vector<string> aliases){
   }
   else {
 
-    diagService_->reportError("[PixelSupervisor::updateConfig] path="+path+" is unknown.", DIAGERROR);
+std::string const msg_error_ghn = "[PixelSupervisor::updateConfig] path="+path+" is unknown.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ghn);
     assert(0);
   }
 
@@ -3959,10 +4344,12 @@ void PixelSupervisor::updateConfig(string path, vector<string> aliases){
     }
   }
 
-  diagService_->reportError("[PixelSupervisor::updateConfig] inserted new "+path+" with version="+stringF(version), DIAGINFO);
+std::string const msg_info_gua = "[PixelSupervisor::updateConfig] inserted new "+path+" with version="+stringF(version);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_gua);
 
   for (unsigned int iAlias=0;iAlias<aliases.size();iAlias++){
-    diagService_->reportError("[PixelSupervisor::updateConfig] updated "+path+" alias "+aliases[iAlias]+" to version="+stringF(version), DIAGINFO);
+std::string const msg_info_sbw = "[PixelSupervisor::updateConfig] updated "+path+" alias "+aliases[iAlias]+" to version="+stringF(version);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_sbw);
 
     PixelConfigInterface::addVersionAlias(path,version,aliases[iAlias]);
 
@@ -3972,7 +4359,10 @@ void PixelSupervisor::updateConfig(string path, vector<string> aliases){
     PixelConfigInterface::commit(0) ;
   }
   catch (xdaq::exception::Exception &e) {
-    diagService_->reportError(e.what(),DIAGERROR);
+std::string const msg_error_zzg = e.what();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_zzg);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_zzg,e);
+this->notifyQualified("fatal",f);
     toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //FIXME..i should catch possible exceptions here....
     fsm_.fireEvent(ev);
   }
@@ -3990,7 +4380,8 @@ unsigned int PixelSupervisor::bookRunNumber(std::string dbLogin, std::string pas
   bookingCommand+=" "+dbUsername_.toString();
   bookingCommand+=" "+runSequence_.toString();
 
-  diagService_->reportError("[PixelSupervisor::bookRunNumber] Booking command = "+bookingCommand, DIAGINFO);
+std::string const msg_info_cxj = "[PixelSupervisor::bookRunNumber] Booking command = "+bookingCommand;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_cxj);
 
   // Use pstream to execute this
   redi::ipstream book(bookingCommand.c_str());
@@ -4005,7 +4396,8 @@ unsigned int PixelSupervisor::bookRunNumber(std::string dbLogin, std::string pas
   } while (runNumberPosition==std::string::npos && book.good());
   if (runNumberPosition!=std::string::npos) {
 
-    diagService_->reportError("[PixelSupervisor::bookRunNumber] runNumber line = "+line+", so run number = "+line.substr(11), DIAGINFO);
+std::string const msg_info_tza = "[PixelSupervisor::bookRunNumber] runNumber line = "+line+", so run number = "+line.substr(11);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_tza);
 
     runNumber=atoi(line.substr(11).c_str());
   }
@@ -4027,7 +4419,8 @@ void PixelSupervisor::writeRunInfo(std::string dbLogin, std::string password, st
   writingCommand+=" "+parameterValue;
   writingCommand+=" "+runSequence_.toString();
 
-  diagService_->reportError("[PixelSupervisor::writeRunInfo] Writing command = "+writingCommand, DIAGINFO);
+std::string const msg_info_ugw = "[PixelSupervisor::writeRunInfo] Writing command = "+writingCommand;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ugw);
   // Use pstream to execute this
   redi::ipstream book(writingCommand.c_str());
 
@@ -4057,7 +4450,8 @@ xoap::MessageReference PixelSupervisor::MakeSOAPConfigMessage(const std::string 
 
    xoap::MessageReference msg = xoap::createMessage();
 
-   xoap::SOAPEnvelope env = msg->getEnvelope();
+   xoap::SOAPPart part = msg->getSOAPPart();
+   xoap::SOAPEnvelope env = part.getEnvelope();
    env.addNamespaceDeclaration ("xsi", XSI_NS);
 
    xoap::SOAPBody body = env.getBody();
@@ -4106,12 +4500,14 @@ void PixelSupervisor::SendConfigurationToTTC() {
         if (linenr==0){
           std::string::size_type pos = line.find("#TCDS");
           if (pos == std::string::npos){
-            diagService_->reportError("The provided configuration does not start with #TCDS and is therefore not accepted as a valid TCDS configuration! The default configuration will be used.",DIAGERROR);
+std::string const msg_error_hvr = "The provided configuration does not start with #TCDS and is therefore not accepted as a valid TCDS configuration! The default configuration will be used.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_hvr);
             std::cout << "using default iCI configuration" << std::endl;
             return;
           }
           else{
-            diagService_->reportError("The provided configuration is a valid TCDS configuration.",DIAGINFO);   
+std::string const msg_info_sbh = "The provided configuration is a valid TCDS configuration.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_sbh);
             std::cout << "using provided iCI configuration" << std::endl;
           }
         }
@@ -4153,10 +4549,12 @@ void PixelSupervisor::SendConfigurationToTTC() {
       parameters[0].name_="TCDSConfigString";
       parameters[0].value_=text;
       string reply = Send(i_PixelTTCSupervisor->second, "ReceiveConfigString", parameters);
-      diagService_->reportError("TTCSupervisor #" + stringF(i_PixelTTCSupervisor->first) + ": Sending TCDSConfiguration reply: " + reply, DIAGINFO);
+std::string const msg_info_mgi = "TTCSupervisor #" + stringF(i_PixelTTCSupervisor->first) + ": Sending TCDSConfiguration reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mgi);
       *console_<< "TTCSupervisor #" << (i_PixelTTCSupervisor->first) << ": Sending TCDSConfiguration reply: " << reply <<std::endl;
       if (reply!= "ReceiveConfigStringResponse") {
-        diagService_->reportError("TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not receive TCDS configuration.",DIAGERROR);
+std::string const msg_error_kax = "TTCSupervisor supervising crate #"+stringF(i_PixelTTCSupervisor->first) + " could not receive TCDS configuration.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_kax);
         *console_<<"TTCSupervisor supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not receive TCDS configuration: "<<reply<<std::endl;
       }
     }
@@ -4186,12 +4584,14 @@ void PixelSupervisor::SendConfigurationToLTC() {
         if (linenr==0){ 
           std::string::size_type pos = line.find("#TCDS");
           if (pos == std::string::npos){
-            diagService_->reportError("The provided configuration does not start with #TCDS and is therefore not accepted as a valid TCDS configuration! The default configuration will be used.",DIAGERROR);
+std::string const msg_error_jdl = "The provided configuration does not start with #TCDS and is therefore not accepted as a valid TCDS configuration! The default configuration will be used.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_jdl);
             std::cout << "using default PI configuration" << std::endl;
             return;
           }
           else{ 
-            diagService_->reportError("The provided configuration is a valid TCDS configuration.",DIAGINFO);
+std::string const msg_info_qlj = "The provided configuration is a valid TCDS configuration.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_qlj);
             std::cout << "using provided PI configuration" << std::endl;
           }
         }
@@ -4218,10 +4618,12 @@ void PixelSupervisor::SendConfigurationToLTC() {
       parameters[0].name_="TCDSConfigString";
       parameters[0].value_=text;
       string reply = Send(i_PixelLTCSupervisor->second, "ReceiveConfigString", parameters);
-      diagService_->reportError("LTCSupervisor #" + stringF(i_PixelLTCSupervisor->first) + ": Sending TCDSConfiguration reply: " + reply, DIAGINFO);
+std::string const msg_info_sxi = "LTCSupervisor #" + stringF(i_PixelLTCSupervisor->first) + ": Sending TCDSConfiguration reply: " + reply;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_sxi);
       *console_<< "LTCSupervisor #" << (i_PixelLTCSupervisor->first) << ": Sending TCDSConfiguration reply: " << reply <<std::endl;
       if (reply!= "ReceiveConfigStringResponse") {
-        diagService_->reportError("LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not receive TCDS configuration.",DIAGERROR);
+std::string const msg_error_vsf = "LTCSupervisor supervising crate #"+stringF(i_PixelLTCSupervisor->first) + " could not receive TCDS configuration.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_vsf);
         *console_<<"LTCSupervisor supervising crate #"<<(i_PixelLTCSupervisor->first)<<" could not receive TCDS configuration: "<<reply<<std::endl;
       }
     }
@@ -4234,11 +4636,13 @@ void PixelSupervisor::SendConfigurationToLTC() {
 
 xoap::MessageReference PixelSupervisor::DetectSoftError (xoap::MessageReference msg)
 {
-  diagService_->reportError("Entering SOAP callback for DetectSoftError.",DIAGINFO);
+std::string const msg_info_law = "Entering SOAP callback for DetectSoftError.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_law);
   *console_<<"PixelSupervisor: Entering SOAP callback for DetectSoftError."<<std::endl;
 
   if (state_!="Running"&&state_!="RunningSoftErrorDetected"&& state_!="RunningDegraded") {
-    diagService_->reportError("DetectSoftError transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_osc = "DetectSoftError transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_osc);
     return MakeSOAPMessageReference("DetectSoftErrorNotDone");
   }
 
@@ -4250,7 +4654,8 @@ xoap::MessageReference PixelSupervisor::DetectSoftError (xoap::MessageReference 
   bool isOK = fsmTransition("DetectSoftError") ;
   if (!isOK) reply=MakeSOAPMessageReference("DetectSoftErrorFailed");
 
-  diagService_->reportError("Exiting SOAP callback for DetectSoftError.",DIAGINFO);
+std::string const msg_info_xgy = "Exiting SOAP callback for DetectSoftError.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xgy);
   *console_<<"PixelSupervisor: Exiting SOAP callback for DetectSoftError."<<std::endl;
 
   return reply;
@@ -4259,12 +4664,14 @@ xoap::MessageReference PixelSupervisor::DetectSoftError (xoap::MessageReference 
 
 xoap::MessageReference PixelSupervisor::DetectDegradation (xoap::MessageReference msg)
 {
-  diagService_->reportError("Entering SOAP callback for DetectDegradation.",DIAGINFO);
+std::string const msg_info_wha = "Entering SOAP callback for DetectDegradation.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_wha);
   *console_<<"PixelSupervisor: Entering SOAP callback for DetectDegradation."<<std::endl;
 
   if (state_!="Running") {
 
-    diagService_->reportError("DetectDegradation transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_yda = "DetectDegradation transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_yda);
     return MakeSOAPMessageReference("DetectDegradationNotDone");
   }
 
@@ -4276,7 +4683,8 @@ xoap::MessageReference PixelSupervisor::DetectDegradation (xoap::MessageReferenc
   bool isOK = fsmTransition("DetectDegradation") ;
   if (!isOK) reply=MakeSOAPMessageReference("DetectDegradationFailed");
 
-  diagService_->reportError("Exiting SOAP callback for DetectDegradation.",DIAGINFO);
+std::string const msg_info_uay = "Exiting SOAP callback for DetectDegradation.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_uay);
   *console_<<"PixelSupervisor: Exiting SOAP callback for DetectDegradation."<<std::endl;
 
   return reply;
@@ -4292,10 +4700,14 @@ void PixelSupervisor::stateRunningSoftErrorDetected (toolbox::fsm::FiniteStateMa
     rcmsStateNotifier_.stateChanged("RunningSoftErrorDetected", "");
   }
   catch(xcept::Exception &e) {
-    diagService_->reportError("Failed to notify state change : "+ xcept::stdformat_exception_history(e),DIAGERROR);
+std::string const msg_error_tia = "Failed to notify state change : "+ xcept::stdformat_exception_history(e);
+LOG4CPLUS_ERROR(sv_logger_,msg_error_tia);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_tia,e);
+this->notifyQualified("fatal",f);
   }
 
-  diagService_->reportError("PixelSupervisor::stateRunningSoftErrorDetected: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_pjg = "PixelSupervisor::stateRunningSoftErrorDetected: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_pjg);
 
 }
 
@@ -4305,30 +4717,37 @@ void PixelSupervisor::stateRunningDegraded (toolbox::fsm::FiniteStateMachine & f
   state_ = fsm_.getStateName (fsm_.getCurrentState());
   *console_<<"Trying to notify RCMS of RunningDegradedDetected"<<std::endl;
   try {
-    rcmsStateNotifier_.stateChanged("RunningDegradedDetected", "");
+    rcmsStateNotifier_.stateChanged("RunningDegradedDetected", "This may not significantly affect data-taking - please monitor DQM and contact Pixel DOC");
   }
   catch(xcept::Exception &e) {
-    diagService_->reportError("Failed to notify state change : "+ xcept::stdformat_exception_history(e),DIAGERROR);
+std::string const msg_error_pxh = "Failed to notify state change : "+ xcept::stdformat_exception_history(e);
+LOG4CPLUS_ERROR(sv_logger_,msg_error_pxh);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_pxh,e);
+this->notifyQualified("fatal",f);
   }
 
-  diagService_->reportError("PixelSupervisor::stateRunningDegraded: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType(),DIAGINFO);
+std::string const msg_info_ahp = "PixelSupervisor::stateRunningDegraded: workloop active: "+stringF(calibWorkloop_->isActive())+", workloop type: "+calibWorkloop_->getType();
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ahp);
 }
 
 
 xoap::MessageReference PixelSupervisor::FixSoftError (xoap::MessageReference msg)
 {
-  diagService_->reportError("Entering SOAP callback for FixSoftError.",DIAGUSERINFO);
+std::string const msg_info_mvr = "Entering SOAP callback for FixSoftError.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_mvr);
   *console_<<"PixelSupervisor: Entering SOAP callback for FixSoftError."<<std::endl;
 
   if (state_!="Running" && state_!="RunningSoftErrorDetected" && state_!="FixingSoftError" && state_!="RunningDegraded") {
-    diagService_->reportError("FixSoftError transition is not allowed from state: "+state_.toString(),DIAGWARN);
+std::string const msg_warn_krl = "FixSoftError transition is not allowed from state: "+state_.toString();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_krl);
     return MakeSOAPMessageReference("FixSoftErrorNotDone");
   }
 
   if( theCalibObject_!=0 )
     {
       calibWorkloop_->cancel();
-      diagService_->reportError("PixelSupervisor::Pause: Calib workloop canceled during FixingSoftError",DIAGUSERINFO);
+std::string const msg_info_zys = "PixelSupervisor::Pause: Calib workloop canceled during FixingSoftError";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zys);
     }
 
   //clear errors
@@ -4340,7 +4759,8 @@ xoap::MessageReference PixelSupervisor::FixSoftError (xoap::MessageReference msg
   bool isOK = fsmTransition("FixSoftError") ;
   if (!isOK) reply=MakeSOAPMessageReference("FixSoftErrorFailed");
 
-  diagService_->reportError("Exiting SOAP callback for FixSoftError.",DIAGINFO);
+std::string const msg_info_dmx = "Exiting SOAP callback for FixSoftError.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_dmx);
   *console_<<"PixelSupervisor: Exiting SOAP callback for FixSoftError."<<std::endl;
 
   return reply;
@@ -4361,7 +4781,8 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
   // Update the state_ member data so that Infospace may publish this information
   // Advertize more on webpage, console etc
   state_=fsm_.getStateName(fsm_.getCurrentState());
-  diagService_->reportError("PixelSupervisor::stateFixingSoftError: Entering",DIAGUSERINFO);
+std::string const msg_info_lft = "PixelSupervisor::stateFixingSoftError: Entering";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_lft);
   *console_<<"PixelSupervisor::stateFixingSoftError: Entering"<<std::endl;
 
   // We're going to time various aspects of configuration
@@ -4424,16 +4845,19 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
   bool initialMessages=false;
 
   if (!PixelTKFECSupervisors_.empty()) {
-    diagService_->reportError("[PixelSupervisor::stateFixingSoftError] TKFECs exist...",DIAGINFO);
+std::string const msg_info_szt = "[PixelSupervisor::stateFixingSoftError] TKFECs exist...";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_szt);
     Supervisors::iterator i_PixelTKFECSupervisor;
     for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
       unsigned int instance=i_PixelTKFECSupervisor->first;
 
-      diagService_->reportError("[PixelSupervisor::stateFixingSoftError] TKFECs instance "+stringF(instance)+" has state "+statePixelTKFECSupervisors_[instance],DIAGINFO);
+std::string const msg_info_kcl = "[PixelSupervisor::stateFixingSoftError] TKFECs instance "+stringF(instance)+" has state "+statePixelTKFECSupervisors_[instance];
+ LOG4CPLUS_INFO(sv_logger_,msg_info_kcl);
 
       if (statePixelTKFECSupervisors_[instance]=="Running"||statePixelTKFECSupervisors_[instance]=="RunningSoftErrorDetected") {
 
-	diagService_->reportError("PixelSupervisor::stateFixingSoftError: Sending SOAP messages to PixelTKFECSupervisor "+stringF(instance),DIAGINFO);
+std::string const msg_info_ecw = "PixelSupervisor::stateFixingSoftError: Sending SOAP messages to PixelTKFECSupervisor "+stringF(instance);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ecw);
 
 	statePixelTKFECSupervisors_[instance]="FixingSoftError";
         std::string reply = Send(i_PixelTKFECSupervisor->second, "FixSoftError", parametersToTKFEC);
@@ -4444,7 +4868,8 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
 	initialMessages=true;
       }
       if (statePixelTKFECSupervisors_[instance]!="FixedSoftError") {
-	diagService_->reportError("[PixelSupervisor::stateFixingSoftError] TKFEC not FixedSoftError yet",DIAGINFO);
+std::string const msg_info_eyz = "[PixelSupervisor::stateFixingSoftError] TKFEC not FixedSoftError yet";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_eyz);
 	FixedSoftErrorTKFECs=false;
       }
     }
@@ -4459,18 +4884,21 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
 
   // Send a SOAP message to PixelFECSupervisor
   if (!PixelFECSupervisors_.empty()) {
-    diagService_->reportError("[PixelSupervisor::stateFixingSoftError] FECs exist...",DIAGINFO);
+std::string const msg_info_zmo = "[PixelSupervisor::stateFixingSoftError] FECs exist...";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zmo);
     Supervisors::iterator i_PixelFECSupervisor;
     for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
       unsigned int instance=i_PixelFECSupervisor->first;
       std::string fsmState=statePixelFECSupervisors_[instance];
 
-      diagService_->reportError("[PixelSupervisor::stateFixingSoftError] FEC instance "+stringF(instance)+" has state "+fsmState,DIAGINFO);
+std::string const msg_info_fcb = "[PixelSupervisor::stateFixingSoftError] FEC instance "+stringF(instance)+" has state "+fsmState;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fcb);
 
       if (fsmState=="Running"||fsmState=="RunningSoftErrorDetected"||state_=="RunningDegraded") {
         FECFixSoftErrorTime.start();
 
-	diagService_->reportError("PixelSupervisor::stateFixingSoftError: Sending SOAP messages to PixelFECSupervisor "+instance,DIAGINFO);
+std::string const msg_info_uga = "PixelSupervisor::stateFixingSoftError: Sending SOAP messages to PixelFECSupervisor "+instance;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_uga);
 
         statePixelFECSupervisors_[instance]="FixingSoftError";
 	//don't actually have to send the global key here anymore, but it doesn't hurt either
@@ -4483,31 +4911,36 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
       }
       if (fsmState!="FixedSoftError") {
 
-	diagService_->reportError("[PixelSupervisor::stateFixingSoftError] Cannot proceed to FixedSoftError because PixelFECSupervisor instance "+stringF(instance)+" is not FixedSoftError yet.",DIAGINFO);
+std::string const msg_info_ksz = "[PixelSupervisor::stateFixingSoftError] Cannot proceed to FixedSoftError because PixelFECSupervisor instance "+stringF(instance)+" is not FixedSoftError yet.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ksz);
         proceed=false;
       }
     }
   }
   else{
-    diagService_->reportError("[PixelSupervisor::stateFixingSoftError] no FECs exist...",DIAGFATAL);
+std::string const msg_fatal_rxo = "[PixelSupervisor::stateFixingSoftError] no FECs exist...";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_rxo);
   }
 
 
   // Send a SOAP message to PixelFEDSupervisor
   if (!PixelFEDSupervisors_.empty()) {
 
-    diagService_->reportError("[PixelSupervisor::stateFixingSoftError] FEDs exist...",DIAGINFO);
+std::string const msg_info_uvd = "[PixelSupervisor::stateFixingSoftError] FEDs exist...";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_uvd);
     Supervisors::iterator i_PixelFEDSupervisor;
     for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
       unsigned int instance=i_PixelFEDSupervisor->first;
       std::string fsmState=statePixelFEDSupervisors_[instance];
 
-      diagService_->reportError("[PixelSupervisor::stateFixingSoftError] FED instance "+stringF(instance)+" has state "+fsmState,DIAGINFO);
+std::string const msg_info_vul = "[PixelSupervisor::stateFixingSoftError] FED instance "+stringF(instance)+" has state "+fsmState;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_vul);
 
       if (fsmState=="Running"||fsmState=="RunningSoftErrorDetected"||state_=="RunningDegraded") {
         FEDFixSoftErrorTime.start();
 
-	diagService_->reportError("PixelSupervisor::stateFixingSoftError: Sending SOAP messages to PixelFEDSupervisor "+stringF(instance),DIAGINFO);
+std::string const msg_info_caj = "PixelSupervisor::stateFixingSoftError: Sending SOAP messages to PixelFEDSupervisor "+stringF(instance);
+ LOG4CPLUS_INFO(sv_logger_,msg_info_caj);
 
         statePixelFEDSupervisors_[instance]="FixingSoftError";
         std::string reply = Send(i_PixelFEDSupervisor->second, "FixSoftError", parametersToFED);
@@ -4516,19 +4949,22 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
           *console_<<"PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be FixedSoftError."<<std::endl;
 	  XCEPT_RAISE (xdaq::exception::Exception,"PixelFEDSupervisor configuration failure, instance="+string(itoa(instance)));
         } else {
-	  diagService_->reportError("PixelSupervisor::stateFixingSoftError: Received SOAP reply from PixelFEDSupervisors",DIAGINFO);
+std::string const msg_info_eqf = "PixelSupervisor::stateFixingSoftError: Received SOAP reply from PixelFEDSupervisors";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_eqf);
         }
       }
 
       if (fsmState!="FixedSoftError") {
-	diagService_->reportError("[PixelSupervisor::stateFixingSoftError] Cannot proceed to FixedSoftError because PixelFEDSupervisor instance "+stringF(instance)+" is not FixedSoftError yet.",DIAGINFO);
+std::string const msg_info_sqh = "[PixelSupervisor::stateFixingSoftError] Cannot proceed to FixedSoftError because PixelFEDSupervisor instance "+stringF(instance)+" is not FixedSoftError yet.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_sqh);
           proceed=false;
       }
     }
   }
   else{
 
-    diagService_->reportError("[PixelSupervisor::stateFixingSoftError] no FEDs exist...",DIAGFATAL);
+std::string const msg_fatal_umr = "[PixelSupervisor::stateFixingSoftError] no FEDs exist...";
+ LOG4CPLUS_FATAL(sv_logger_,msg_fatal_umr);
   }
 
   //// Send a SOAP message to PixelDCStoTrkFECDpInterface
@@ -4538,14 +4974,12 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
   //  for (i_PixelDCStoTrkFECDpInterface=PixelDCStoTrkFECDpInterface_.begin(); i_PixelDCStoTrkFECDpInterface!=PixelDCStoTrkFECDpInterface_.end(); ++i_PixelDCStoTrkFECDpInterface) {
   //    if (  statePixelDCStoTrkFECDpInterface_[i_PixelDCStoTrkFECDpInterface->first] == "Running" || statePixelDCStoTrkFECDpInterface_[i_PixelDCStoTrkFECDpInterface->first] == "RunningSoftErrorDetected" ) {
   //
-  //	diagService_->reportError("PixelSupervisor::stateFixingSoftError: Sending SOAP message to PixelDCStoTrkFECDpInterface",DIAGINFO);
   //	std::string reply = Send(i_PixelDCStoTrkFECDpInterface->second, "FixSoftError");
   //	//at the moment this class never returns anything other than FixSoftErrorDone...so no need to look at the reply
   //      if (reply!= "FixSoftErrorDone") {
   //        *console_<<"PixelDCStoTrkFECDpInterface supervising crate #"<<(i_PixelDCStoTrkFECDpInterface->first)<<" could not be FixedSoftError."<<std::endl;
   //	  XCEPT_RAISE (xdaq::exception::Exception,"PixelFEDSupervisor configuration failure, instance="+string(itoa(instance)));
   //      } else {
-  //	  diagService_->reportError("PixelSupervisor::stateFixingSoftError: Received SOAP reply from PixelFEDSupervisors",DIAGINFO);
   //      }
   //	cout<<"done sending soap to PixelDCStoTrkFECDpInterface"<<endl;
   //	statePixelDCStoTrkFECDpInterface_[i_PixelDCStoTrkFECDpInterface->first] = "FixingSoftError";
@@ -4560,7 +4994,6 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
   //}
 
   if (proceed&&FixedSoftErrorTKFECs) {
-
   //       // Send a SOAP message to PixelLTCSupervisor
   //       if(!PixelLTCSupervisors_.empty()) {
   //
@@ -4612,22 +5045,33 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
   //       //    diagService_->reportError("PLEASE IGNORE: PixelSupervisor::stateFixingSoftError: FED configuration time  :"+stringF(FEDFixSoftErrorTime.tottime()),DIAGINFO);
   //       //    diagService_->reportError("PLEASE IGNORE: PixelSupervisor::stateFixingSoftError: FEC configuration time  :"+stringF(FECFixSoftErrorTime.tottime()),DIAGINFO);
   //
+
     try {
       toolbox::Event::Reference e(new toolbox::Event("FixingSoftErrorDone", this));
       fsm_.fireEvent(e);
     } catch (toolbox::fsm::exception::Exception & e) {
-      diagService_->reportError("[PixelSupervisor::stateFixingSoftError] Invalid command "+stringF(e.what()),DIAGERROR);
+std::string const msg_error_pav = "[PixelSupervisor::stateFixingSoftError] Invalid command "+stringF(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_pav);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_pav, e);
+this->notifyQualified("fatal",f);
     }
 
   }
 
   } catch (xdaq::exception::Exception & e) {
-    diagService_->reportError("[PixelSupervisor::stateFixingSoftError] Failed to FixSoftError with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_tck = "[PixelSupervisor::stateFixingSoftError] Failed to FixSoftError with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_tck);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_tck, e);
+this->notifyQualified("fatal",f);
     try {
       toolbox::Event::Reference ev(new toolbox::Event("Failure", this));
       fsm_.fireEvent(ev);
     } catch (...) {
-      diagService_->reportError("[PixelSupervisor::stateFixingSoftError] Failed to transfer FSM to Error state",DIAGFATAL);
+std::string const msg_fatal_uoi = "[PixelSupervisor::stateFixingSoftError] Failed to transfer FSM to Error state";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_uoi);
+pixel::PixelSupervisorException trivial_exception("pixel::PixelSupervisorException","module",msg_fatal_uoi,4941,"PixelSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine&)");
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_fatal_uoi,trivial_exception);
+this->notifyQualified("fatal",f);
     }
 
   }
@@ -4636,7 +5080,8 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
 
 
   // Advertize the exiting of this method
-  diagService_->reportError("PixelSupervisor::stateFixingSoftError: Exiting",DIAGUSERINFO);
+std::string const msg_info_jdi = "PixelSupervisor::stateFixingSoftError: Exiting";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_jdi);
   *console_<<"PixelSupervisor::stateFixingSoftError: Exiting"<<std::endl;
 }
 
@@ -4645,7 +5090,8 @@ void PixelSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachine & f
 void PixelSupervisor::stateFixedSoftError (toolbox::fsm::FiniteStateMachine & fsm)
 {
 
-  diagService_->reportError("PixelSupervisor::stateFixedSoftError: Entering state FixedSoftError",DIAGINFO);
+std::string const msg_info_fmq = "PixelSupervisor::stateFixedSoftError: Entering state FixedSoftError";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fmq);
   *console_<<"PixelSupervisor::stateFixedSoftError: --- Returning to Running ---"<<std::endl;
 
   try {
@@ -4654,9 +5100,11 @@ void PixelSupervisor::stateFixedSoftError (toolbox::fsm::FiniteStateMachine & fs
   for (i_PixelTKFECSupervisor=PixelTKFECSupervisors_.begin();i_PixelTKFECSupervisor!=PixelTKFECSupervisors_.end();++i_PixelTKFECSupervisor) {
     std::string reply = Send(i_PixelTKFECSupervisor->second, "ResumeFromSoftError");
     if (reply!= "ResumeFromSoftErrorDone") {
-      diagService_->reportError("PixelSupervisor::stateFixedSoftError: PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_drp = "PixelSupervisor::stateFixedSoftError: PixelTKFECSupervisor supervising crate #"+stringF(i_PixelTKFECSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_drp);
       *console_<<"PixelSupervisor::stateFixedSoftError: PixelTKFECSupervisor supervising crate #"<<(i_PixelTKFECSupervisor->first)<<" could not be resumed."<<std::endl;
       fsmTransition("Failure");
+      rcmsStateNotifier_.stateChanged("Failure", msg_error_drp);
       *console_<<"PixelSupervisor::stateFixedSoftError: --- Resuming from Soft Error Failed! ---"<<std::endl;
     }
   }
@@ -4665,9 +5113,11 @@ void PixelSupervisor::stateFixedSoftError (toolbox::fsm::FiniteStateMachine & fs
   for (i_PixelFECSupervisor=PixelFECSupervisors_.begin();i_PixelFECSupervisor!=PixelFECSupervisors_.end();++i_PixelFECSupervisor) {
     std::string reply = Send(i_PixelFECSupervisor->second, "ResumeFromSoftError");
     if (reply!= "ResumeFromSoftErrorDone") {
-      diagService_->reportError("PixelSupervisor::stateFixedSoftError: PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_ikf = "PixelSupervisor::stateFixedSoftError: PixelFECSupervisor supervising crate #"+stringF(i_PixelFECSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ikf);
       *console_<<"PixelSupervisor::stateFixedSoftError: PixelFECSupervisor supervising crate #"<<(i_PixelFECSupervisor->first)<<" could not be resumed."<<std::endl;
       fsmTransition("Failure");
+      rcmsStateNotifier_.stateChanged("Failure", msg_error_ikf);
       *console_<<"PixelSupervisor::stateFixedSoftError: --- Resuming from Soft Error Failed! ---"<<std::endl;
     }
   }
@@ -4676,13 +5126,14 @@ void PixelSupervisor::stateFixedSoftError (toolbox::fsm::FiniteStateMachine & fs
   for (i_PixelFEDSupervisor=PixelFEDSupervisors_.begin();i_PixelFEDSupervisor!=PixelFEDSupervisors_.end();++i_PixelFEDSupervisor) {
     std::string reply = Send(i_PixelFEDSupervisor->second, "ResumeFromSoftError");
     if (reply!= "ResumeFromSoftErrorDone") {
-      diagService_->reportError("PixelSupervisor::stateFixedSoftError: PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be resumed.",DIAGERROR);
+std::string const msg_error_vui = "PixelSupervisor::stateFixedSoftError: PixelFEDSupervisor supervising crate #"+stringF(i_PixelFEDSupervisor->first) + " could not be resumed.";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_vui);
       *console_<<"PixelSupervisor::stateFixedSoftError: PixelFEDSupervisor supervising crate #"<<(i_PixelFEDSupervisor->first)<<" could not be resumed."<<std::endl;
       fsmTransition("Failure");
+      rcmsStateNotifier_.stateChanged("Failure", msg_error_vui);
       *console_<<"PixelSupervisor::stateFixedSoftError: --- Resuming from Soft Error Failed! ---"<<std::endl;
     }
   }
-
  //     Supervisors::iterator i_PixelTTCSupervisor;
  //     for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor) {
  //       std::string reply = Send(i_PixelTTCSupervisor->second, "Resume");
@@ -4720,23 +5171,32 @@ void PixelSupervisor::stateFixedSoftError (toolbox::fsm::FiniteStateMachine & fs
  //       }
  //     }
 
+
   } catch (xcept::Exception & e) {
-    diagService_->reportError("ResumeFromSoftError failed with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_miz = "ResumeFromSoftError failed with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_miz);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_miz, e);
+this->notifyQualified("fatal",f);
     fsmTransition("Failure");
+    rcmsStateNotifier_.stateChanged("Failure", msg_error_miz);
     *console_<<"PixelSupervisor::stateFixedSoftError: --- Resuming from Soft Error Failed! ---"<<std::endl;
   }
 
   if ( theCalibObject_!=0 )
   {
     calibWorkloop_->activate();
-    diagService_->reportError("PixelSupervisor::stateFixedSoftError: Activated calibWorkloop again.",DIAGINFO);
+std::string const msg_info_bkh = "PixelSupervisor::stateFixedSoftError: Activated calibWorkloop again.";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_bkh);
   }
 
   try {
     toolbox::Event::Reference e(new toolbox::Event("ResumeFromSoftError", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
-    diagService_->reportError("[PixelSupervisor::stateFixedSoftError] Invalid command "+stringF(e.what()),DIAGERROR);
+std::string const msg_error_ese = "[PixelSupervisor::stateFixedSoftError] Invalid command "+stringF(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_ese);
+XCEPT_DECLARE_NESTED(pixel::PixelSupervisorException,f,msg_error_ese, e);
+this->notifyQualified("fatal",f);
   }
 
 }

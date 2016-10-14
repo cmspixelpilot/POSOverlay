@@ -38,15 +38,17 @@
 #include "xgi/Utils.h"
 #include "cgicc/HTMLClasses.h"
 
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "toolbox/task/Timer.h"
 #include "toolbox/task/TimerFactory.h"
 #include "toolbox/task/TimerListener.h"
 #include "toolbox/TimeInterval.h"
 #include "toolbox/BSem.h"
-
+#include "toolbox/task/WorkLoopFactory.h"
+#include "toolbox/task/WaitingWorkLoop.h"
+#include "toolbox/task/Action.h"
 
 
 #include "toolbox/fsm/AsynchronousFiniteStateMachine.h"
@@ -73,6 +75,7 @@
 #include "PixelUtilities/PixelTestStandUtilities/include/PixelTimer.h"
 
 #include "PixelFECInterface/include/PixelFECInterface.h"
+#include "PixelFECInterface/include/PixelPh1FECInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelHdwAddress.h"
@@ -92,16 +95,23 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 
+#include "PixelFECSupervisor/include/DiagWrapper.h"
+
+class RegManager;
+
 //class pos::PixelCalibConfiguration;
 //class pos::PixelFECConfig;
+namespace log4cplus{
+	class Logger;
+	}
 
-class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener, public Pixelb2inCommander
+class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public Pixelb2inCommander
 {
   public:
 
     // gio
     toolbox::BSem executeReconfMethodMutex;
-    DiagBagWizard * diagService_;
+    // DiagBagWizard * diagService_;
     //
 
     XDAQ_INSTANTIATOR();
@@ -110,7 +120,7 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     ~PixelFECSupervisor();
 
     //gio
-    void timeExpired (toolbox::task::TimerEvent& e);
+    // void timeExpired (toolbox::task::TimerEvent& e);
 
     void Default(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
     void StateMachineXgiHandler(xgi::Input *in, xgi::Output *out) throw (xgi::exception::Exception);
@@ -186,6 +196,9 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     void b2inEvent(toolbox::mem::Reference* msg, xdata::Properties& plist) throw (b2in::nub::exception::Exception);
     
     void DetectSoftError();
+    
+    inline std::string stringF(int number) { stringstream ss; ss << number; return ss.str(); };
+    inline std::string stringF(const char* text) { stringstream ss; ss << text; return ss.str(); };
 
   protected:
 
@@ -202,6 +215,8 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     unsigned long crate_;
     std::string htmlbase_,datbase_;
     std::string runNumber_;
+
+    std::string connectionFile_;
 
     bool doQPLLLoop_;
     bool doTBMReadoutLoop_;
@@ -239,11 +254,13 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
     std::set<std::string> powerCoordinatesRampingUp_;
 
     //For indexing based on VME address
-    typedef std::map<unsigned long, PixelFECInterface*> FECInterfaceMap;
+    typedef std::map<unsigned long, pos::PixelFECConfigInterface*> FECInterfaceMap;
     FECInterfaceMap FECInterface;
     typedef std::map<unsigned long, HAL::VMEDevice*> VMEPtrMap;
     VMEPtrMap VMEPtr_;
-
+    typedef std::map<unsigned long, RegManager*> RegMgrMap;
+    RegMgrMap RegMgr_;
+    
     //For indexing by FEC number
     std::map<unsigned int,  pos::PixelFECConfigInterface*> FECInterfaceByFECNumber_;
 
@@ -290,11 +307,20 @@ class PixelFECSupervisor: public xdaq::Application, public SOAPCommander, public
 
     vector<string> tbmReadbackBadChannels_;
 #endif
-    void DIAG_CONFIGURE_CALLBACK();
-    void DIAG_APPLY_CALLBACK();
+    // void DIAG_CONFIGURE_CALLBACK();
+    // void DIAG_APPLY_CALLBACK();
 
     /* xgi method called when the link <display_diagsystem> is clicked */
-    void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+    // void callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception);
+    DiagWrapper* diagService_;
+    static const int DIAGDEBUG = 0;
+    static const int DIAGTRACE = 1;
+    static const int DIAGUSERINFO = 2;
+    static const int DIAGINFO = 3;
+    static const int DIAGWARN = 4;
+    static const int DIAGERROR = 5;
+    static const int DIAGFATAL = 6;
 
+    log4cplus::Logger & sv_logger_;	
 };
 #endif

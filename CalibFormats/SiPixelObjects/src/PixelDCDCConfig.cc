@@ -57,6 +57,8 @@ PixelDCDCConfig::PixelDCDCConfig(std::string filename):
     std::cout << __LINE__ << "]\t" << mthn << "Opened: "         << filename << std::endl;
   }
 
+  type_ = "p1fpix"; // by default we do nothing in the trkfecsupervisor for p1fpix boards
+
   do {
       
     std::string settingName;
@@ -68,10 +70,15 @@ PixelDCDCConfig::PixelDCDCConfig(std::string filename):
     // parse the DCDC config
     std::stringstream instr;
     int address=0;
-    if ( settingName == "Enabled:" ){
+
+    if ( settingName == "Type:" ){
+      assert(value == "pilot" || value == "p1fpix" || value == "p1bpix");
+      type_ = value;
+    }
+    else if ( settingName == "Enabled:" ){
       setDCDCEnabled( value == "yes" );
     }
-    if ( settingName == "CCUAddressEnable:" ){
+    else if ( settingName == "CCUAddressEnable:" ){
 	    instr << value;
 	    instr >> std::hex >> address;
 	    setCCUAddressEnable( address );

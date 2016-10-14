@@ -1,0 +1,38 @@
+<?xml version='1.0'?>
+<xc:Partition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xc="http://xdaq.web.cern.ch/xdaq/xsd/2004/XMLConfiguration-30">
+	
+  <xc:Context id="0" url="http://mp72.lns.cornell.edu:1973/">
+
+    <xc:Module>${XDAQ_ROOT}/lib/libconfig.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/liblog4cplus.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libtoolbox.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxalan-c.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxdaq.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxdata.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxgi.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxoap.so</xc:Module>
+    <xc:Module>${XDAQ_ROOT}/lib/libxoapfilter.so</xc:Module>
+
+    <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="mp72.lns.cornell.edu" port="1914" network="xmas"/>
+
+    <xc:Application class="PixelSupervisor" id="51" instance="0" network="xmas" group="daq"/>
+    <xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
+
+    <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="xmas" group="daq"/>
+    <xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
+
+<!--
+    <xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="xmas" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelTKFECSupervisor" xsi:type="soapenc:Struct">
+        <readDCU_workloop_usleep xsi:type="xsd:integer">10000000</readDCU_workloop_usleep>
+      </properties>
+    </xc:Application>
+    <xc:Module>${BUILD_HOME}/pixel/PixelTKFECSupervisor/lib/linux/x86_64_slc6/libPixelTKFECSupervisor.so</xc:Module>
+-->
+
+    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="xmas" group="daq"/>
+    <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
+
+  </xc:Context>
+
+</xc:Partition>

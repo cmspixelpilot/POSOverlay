@@ -36,6 +36,7 @@ using namespace std;
 
 // A flag to enable raw data writting, used for special tests only
 //static const bool WRITE_FILE_FIFO1 = false; //false by default
+static const bool do6thPeakRecovery = true;
 
 PixelFEDAddressLevelCalibrationBase::PixelFEDAddressLevelCalibrationBase(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
   : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr){
@@ -166,7 +167,7 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
 	      <<"Warning, UB-B cut is below ROC-UB."<<endl
 	      <<"Use ROC-UB+50 as the new cut. FED="<<fedNumber<<" channel="
 	      <<channel<<endl;
-	  diagService_->reportError("PixelFEDAddresslevelCalibrationBase: Warning, UB-B cut is below ROC-UB. Use ROC-UB+50 as the new cut.",DIAGWARN);
+	  //diagService_->reportError("PixelFEDAddresslevelCalibrationBase: Warning, UB-B cut is below ROC-UB. Use ROC-UB+50 as the new cut.",DIAGWARN);
 	  meanCut = rocUB + 50.; 
 	}
 	recommendedUB= int(meanCut); 
@@ -206,7 +207,7 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
 	thePixelFEDCard.BlackLo[channel-1]=recommendedBL;
 	thePixelFEDCard.Ublack[channel-1]=recommendedUB;
       } else {
-	diagService_->reportError("Recommended UB level higher than recommended B Low level!",DIAGERROR);
+	//diagService_->reportError("Recommended UB level higher than recommended B Low level!",DIAGERROR);
 	cout<<" Recommended UB level higher than recommended B Low level!"<<endl;
 	summary_channel_short[-2]=0;
 	summary_channel_short[-3]=0;
@@ -272,7 +273,7 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
 	*(summary_channel_long[-1])<<"Recommended TBM L 3 = "<<recommended_L3<<"<br/>"<<std::endl;
       } else {
 	// diagService_->reportError("Number of TBM peaks found is not equal to 4!",DIAGWARN);
-	std::cout<<"    Number of TBM peaks found is not equal to 4!"<<std::endl;
+	std::cout<<"    Number of TBM peaks found is not equal to 4!, fed/chan =  "<<fedNumber<<"/"<<channel<<std::endl;
 	summary_channel_short[-1]=0;
 	summary_channel_short[-3]=0;
 	*(summary_channel_long[-1])<<"Number of TBM peaks found is not equal to 4!"<<"<br/>"<<std::endl;
@@ -371,7 +372,7 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
 		 <<peak[0].mean()<<" "<<thePixelFEDCard.Ublack[channel-1]
 		 <<" fed/channel = "<<fedNumber<<"/"<<channel<<std::endl;
       if( peak[5].mean() > 1000. )
-	std::cout<<" PixelFEDAddresslevelCalibrationBase: Warning, the last ROC level is above 1000"
+	std::cout<<" PixelFEDAddresslevelCalibrationBase: Warning, the last ROC level is above 1000, = "
 		 <<peak[5].mean()<<" fed/channel = "<<fedNumber<<"/"<<channel<<std::endl;
 
       int recommended_L0=(int)((peak[1].mean()+peak[0].mean())/2);
@@ -414,27 +415,92 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
 	
       } else {
 	
-	diagService_->reportError("Recommended Level 0 is less than Ultrablack upper bound! Did not write new file.",DIAGWARN);
+	//diagService_->reportError("Recommended Level 0 is less than Ultrablack upper bound! Did not write new file.",DIAGWARN);
 	cout<<"Recommended Level 0 is less than Ultrablack upper bound! Did not write new file."<<endl;
 	summary_short[fedNumber][channel][fedrocnumber]=0;
 	summary_short[fedNumber][channel][-3]=0;
 	*(summary_long[fedNumber][channel][fedNumber])<<"Recommended Level 0 is less than UltraBlack High Threshold! Did not write new file."<<"<br/>"<<std::endl;
 	*(summary_long[fedNumber][channel][-3])<<"Recommended Level 0 is less than UltraBlack High Threshold! Did not write new file."<<"<br/>"<<std::endl;
       }
-    } else {
-      // levelsLine[fedNumber][channel][fedrocnumber][0]=TLine(0.0,0.0,0.0,0.0);
 
-      diagService_->reportError("Number of ROC peaks found is not equal to 6! Did not write new file.",DIAGWARN);
-      cout<<"Number of ROC peaks found is not equal to 6! Did not write new file."<<std::endl;
-      summary_short[fedNumber][channel][fedrocnumber]=0;
-      summary_short[fedNumber][channel][-3]=0;
-      *(summary_long[fedNumber][channel][fedrocnumber])<<"Number of ROC peaks found is not equal to 6!"<<"<br/>"<<std::endl;
-      *(summary_long[fedNumber][channel][-3])<<"Number of ROC peaks found is not equal to 6!"<<"<br/>"<<std::endl;
+    } else { // no six peaks 
 
-      for(int i=0;i<6;++i){
-	ROClevels[fedrocnumber].push_back(0);
-      }
-    }
+      //diagService_->reportError("Number of ROC peaks found is not equal to 6! Did not write new file.",DIAGWARN);
+      cout<<"Number of ROC peaks found is not equal to 6, is "<<peak.size()<<" fed/chan = "
+	  <<fedNumber<<"/"<<channel<<std::endl;
+
+      bool recovered = false;
+      // but maybe 5 will work?
+      if (do6thPeakRecovery && peak.size()==5) {
+
+        cout<<"Number of ROC peaks found equal 5, try to recover"<<std::endl;
+	int recommended_L0=(int)((peak[1].mean()+peak[0].mean())/2);
+	ROClevels[fedrocnumber].push_back(recommended_L0);
+	//cout<<"Recommended L0 = "<<recommended_L0<<endl;
+	if (recommended_L0>thePixelFEDCard.Ublack[channel-1]) {
+	  cout<<"5 ROC peaks found, try to recover roc"<<fedrocnumber<<std::endl;
+	
+	  // we try to recover if the reason for 5 peaks is that the 6th peak is saturated at adc=1024
+	  // to do this we will check where the 5th peak is and its width
+	  // is the expected positio of 6th peak above the adc range? 
+	  
+	  if( (peak[4].mean() + peak[4].mean() - peak[3].mean()) > 1000. ) {
+	    cout<<peak[4].mean()<<" "<< peak[3].mean()<<" ";
+	    // Is there enough space for a cut?
+	    float lastCut = peak[4].mean() + 3*peak[4].stddev(); 
+	    if(lastCut < 1000.) {
+	      cout<<peak[4].stddev()<<" "<<lastCut<<" ";
+	      
+	      int recommended_L1=(int)((peak[2].mean()+peak[1].mean())/2);
+	      ROClevels[fedrocnumber].push_back(recommended_L1);
+	      //cout<<"Recommended L 1 = "<<recommended_L1<<endl;
+	      int recommended_L2=(int)((peak[3].mean()+peak[2].mean())/2);
+	      ROClevels[fedrocnumber].push_back(recommended_L2);
+	      //cout<<"Recommended L 2 = "<<recommended_L2<<endl;
+	      int recommended_L3=(int)((peak[4].mean()+peak[3].mean())/2);
+	      ROClevels[fedrocnumber].push_back(recommended_L3);
+	      //cout<<"Recommended L 3 = "<<recommended_L3<<endl;	      
+	      int recommended_L4=(int)(lastCut);
+	      ROClevels[fedrocnumber].push_back(recommended_L4);
+	      //cout<<"Recommended L 4 = "<<recommended_L4<<endl;
+	      
+	      thePixelFEDCard.ROC_L0[channel-1][fedrocnumber]=recommended_L0;
+	      thePixelFEDCard.ROC_L1[channel-1][fedrocnumber]=recommended_L1;
+	      thePixelFEDCard.ROC_L2[channel-1][fedrocnumber]=recommended_L2;
+	      thePixelFEDCard.ROC_L3[channel-1][fedrocnumber]=recommended_L3;
+	      thePixelFEDCard.ROC_L4[channel-1][fedrocnumber]=recommended_L4;
+	      
+	      thePixelFEDCard.restoreControlAndModeRegister();
+	      thePixelFEDCard.writeASCII(outputDir());
+	      
+	      *(summary_long[fedNumber][channel][fedrocnumber])<<"Recommended L 0 = "<<recommended_L0<<"<br/>"<<std::endl;
+	      *(summary_long[fedNumber][channel][fedrocnumber])<<"Recommended L 1 = "<<recommended_L1<<"<br/>"<<std::endl;
+	      *(summary_long[fedNumber][channel][fedrocnumber])<<"Recommended L 2 = "<<recommended_L2<<"<br/>"<<std::endl;
+	      *(summary_long[fedNumber][channel][fedrocnumber])<<"Recommended L 3 = "<<recommended_L3<<"<br/>"<<std::endl;
+	      *(summary_long[fedNumber][channel][fedrocnumber])<<"Recommended L 4 = "<<recommended_L4<<"<br/>"<<std::endl;
+	      summary_short[fedNumber][channel][fedrocnumber]=1;
+	
+	      recovered=true;
+	      cout<<" recovered ok, roc= "<<fedrocnumber<<endl;
+	    } // if cut<1000
+	  } // if 6th > 1000
+	} // if L0>UB
+      } // if 5 peaks, recovery
+
+      if(!recovered) {
+	cout<<"Number of ROC peaks found is not equal to 6! Did not write new file."<<std::endl;
+	summary_short[fedNumber][channel][fedrocnumber]=0;
+	summary_short[fedNumber][channel][-3]=0;
+	*(summary_long[fedNumber][channel][fedrocnumber])<<"Number of ROC peaks found is not equal to 6!"<<"<br/>"<<std::endl;
+	*(summary_long[fedNumber][channel][-3])<<"Number of ROC peaks found is not equal to 6!"<<"<br/>"<<std::endl;
+	
+	for(int i=0;i<6;++i){
+	  ROClevels[fedrocnumber].push_back(0);
+	} 
+      } // not recovered, do not save any settings 
+      
+    } // end if 6
+
     //SUMMARY TREE
     strcpy(theBranch.rocName,rocName.c_str());
     theBranch.pass=summary_short[fedNumber][channel][fedrocnumber];
@@ -508,23 +574,25 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
     }
   }
   
-  // Print out the summary collected to console and to an HTML file
-  ofstream summaryFile((outputDir()+"/AddressLevels_"+itoa(crate_)+".html").c_str());
+  // Print out the summary collected to console and to an text file
+  //ofstream summaryFile((outputDir()+"/AddressLevels_"+itoa(crate_)+".html").c_str());
+  ofstream summaryFile((outputDir()+"/AddressLevels_"+itoa(crate_)+".txt").c_str());
   std::cout<<" ### Summary ### "<<std::endl;
-  summaryFile<<"<html>"<<std::endl;
-  summaryFile<<"<head>"<<std::endl;
-  summaryFile<<" <script language=\"JavaScript\">"<<std::endl;
-  summaryFile<<"  function toggle(elementID){"<<std::endl;
-  summaryFile<<"   var listElementStyle=document.getElementById(elementID).style;"<<std::endl;
-  summaryFile<<"   if (listElementStyle.display==\"none\"){"<<std::endl;
-  summaryFile<<"    listElementStyle.display=\"block\";"<<std::endl;
-  summaryFile<<"   } else {"<<std::endl;
-  summaryFile<<"    listElementStyle.display=\"none\";"<<std::endl;
-  summaryFile<<"   }"<<std::endl;
-  summaryFile<<"  }"<<std::endl;
-  summaryFile<<" </script>"<<std::endl;
-  summaryFile<<"</head>"<<std::endl;
-  summaryFile<<"<body>"<<std::endl;
+
+  //summaryFile<<"<html>"<<std::endl;
+  //summaryFile<<"<head>"<<std::endl;
+  //summaryFile<<" <script language=\"JavaScript\">"<<std::endl;
+  //summaryFile<<"  function toggle(elementID){"<<std::endl;
+  //summaryFile<<"   var listElementStyle=document.getElementById(elementID).style;"<<std::endl;
+  //summaryFile<<"   if (listElementStyle.display==\"none\"){"<<std::endl;
+  //summaryFile<<"    listElementStyle.display=\"block\";"<<std::endl;
+  //summaryFile<<"   } else {"<<std::endl;
+  //summaryFile<<"    listElementStyle.display=\"none\";"<<std::endl;
+  //summaryFile<<"   }"<<std::endl;
+  //summaryFile<<"  }"<<std::endl;
+  //summaryFile<<" </script>"<<std::endl;
+  //summaryFile<<"</head>"<<std::endl;
+  //summaryFile<<"<body>"<<std::endl;
 
   
 
@@ -536,48 +604,49 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
     
     std::cout<<" --- FED Board with FED Number = "<<fedNumber<<" --- "<<std::endl;
     std::cout<<"Channel|Overall|UB/B|TBM| 0| 1| 2| 3| 4| 5| 6| 7| 8| 9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|"<<std::endl;
+    summaryFile<<" --- FED Board with FED Number = "<<fedNumber<<" --- "<<std::endl;
+    summaryFile<<"Channel|Overall|UB/B|TBM| 0| 1| 2| 3| 4| 5| 6| 7| 8| 9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|"<<std::endl;
 
-    summaryFile<<"<h2> Pixel FED Board # "<<fedNumber<<" </h2>"<<std::endl;
+    //summaryFile<<"<h2> Pixel FED Board # "<<fedNumber<<" </h2>"<<std::endl;
 
-    summaryFile<<"<a href=\"javascript:toggle('ROC_"<<fedNumber<<"')\">Sum of ROCs</a></br>"<<std::endl;                   // ROC sum over FED
-    summaryFile<<"<div id=\"ROC_"<<fedNumber<<"\" style=\"display:none\">"<<std::endl;
-    summaryFile<<" <a href=\"ROC_peaks_"<<itoa(fedNumber)<<".gif\" target=\"_blank\">"<<std::endl;
-    summaryFile<<"  <img src=\"ROC_peaks_"<<itoa(fedNumber)<<".gif\" width=\"200\" height=\"200\"/>"<<std::endl;
-    summaryFile<<" </a>"<<std::endl;
-    summaryFile<<"</div>"<<std::endl;
-    
-    summaryFile<<"<table border=1>"<<std::endl;
-    summaryFile<<" <tr>";
-    summaryFile<<"<th>Channel</th>";
-    summaryFile<<"<th>Overall</th>";
-    summaryFile<<"<th>UB/B Levels</th>";
-    summaryFile<<"<th>TBM</th>";
-    summaryFile<<"<th>Sum of ROCs</th>";
-    summaryFile<<"<th>ROC 0</th>";
-    summaryFile<<"<th>ROC 1</th>";
-    summaryFile<<"<th>ROC 2</th>";
-    summaryFile<<"<th>ROC 3</th>";
-    summaryFile<<"<th>ROC 4</th>";
-    summaryFile<<"<th>ROC 5</th>";
-    summaryFile<<"<th>ROC 6</th>";
-    summaryFile<<"<th>ROC 7</th>";
-    summaryFile<<"<th>ROC 8</th>";
-    summaryFile<<"<th>ROC 9</th>";
-    summaryFile<<"<th>ROC 10</th>";
-    summaryFile<<"<th>ROC 11</th>";
-    summaryFile<<"<th>ROC 12</th>";
-    summaryFile<<"<th>ROC 13</th>";
-    summaryFile<<"<th>ROC 14</th>";
-    summaryFile<<"<th>ROC 15</th>";
-    summaryFile<<"<th>ROC 16</th>";
-    summaryFile<<"<th>ROC 17</th>";
-    summaryFile<<"<th>ROC 18</th>";
-    summaryFile<<"<th>ROC 19</th>";
-    summaryFile<<"<th>ROC 20</th>";
-    summaryFile<<"<th>ROC 21</th>";
-    summaryFile<<"<th>ROC 22</th>";
-    summaryFile<<"<th>ROC 23</th>";
-    summaryFile<<"</tr>"<<std::endl;
+    //summaryFile<<"<a href=\"javascript:toggle('ROC_"<<fedNumber<<"')\">Sum of ROCs</a></br>"<<std::endl;                   // ROC sum over FED
+    //summaryFile<<"<div id=\"ROC_"<<fedNumber<<"\" style=\"display:none\">"<<std::endl;
+    //summaryFile<<" <a href=\"ROC_peaks_"<<itoa(fedNumber)<<".gif\" target=\"_blank\">"<<std::endl;
+    //summaryFile<<"  <img src=\"ROC_peaks_"<<itoa(fedNumber)<<".gif\" width=\"200\" height=\"200\"/>"<<std::endl;
+    //summaryFile<<" </a>"<<std::endl;
+    //summaryFile<<"</div>"<<std::endl;
+    //summaryFile<<"<table border=1>"<<std::endl;
+    //summaryFile<<" <tr>";
+    //summaryFile<<"<th>Channel</th>";
+    //summaryFile<<"<th>Overall</th>";
+    //summaryFile<<"<th>UB/B Levels</th>";
+    //summaryFile<<"<th>TBM</th>";
+    //summaryFile<<"<th>Sum of ROCs</th>";
+    //summaryFile<<"<th>ROC 0</th>";
+    //summaryFile<<"<th>ROC 1</th>";
+    //summaryFile<<"<th>ROC 2</th>";
+    //summaryFile<<"<th>ROC 3</th>";
+    //summaryFile<<"<th>ROC 4</th>";
+    //summaryFile<<"<th>ROC 5</th>";
+    //summaryFile<<"<th>ROC 6</th>";
+    //summaryFile<<"<th>ROC 7</th>";
+    //summaryFile<<"<th>ROC 8</th>";
+    //summaryFile<<"<th>ROC 9</th>";
+    //summaryFile<<"<th>ROC 10</th>";
+    //summaryFile<<"<th>ROC 11</th>";
+    //summaryFile<<"<th>ROC 12</th>";
+    //summaryFile<<"<th>ROC 13</th>";
+    //summaryFile<<"<th>ROC 14</th>";
+    //summaryFile<<"<th>ROC 15</th>";
+    //summaryFile<<"<th>ROC 16</th>";
+    //summaryFile<<"<th>ROC 17</th>";
+    //summaryFile<<"<th>ROC 18</th>";
+    //summaryFile<<"<th>ROC 19</th>";
+    //summaryFile<<"<th>ROC 20</th>";
+    //summaryFile<<"<th>ROC 21</th>";
+    //summaryFile<<"<th>ROC 22</th>";
+    //summaryFile<<"<th>ROC 23</th>";
+    //summaryFile<<"</tr>"<<std::endl;
 
     
     std::map <unsigned int, std::map<int, unsigned int> >::iterator i_summary_FED_short=summary_FED_short.begin();
@@ -585,47 +654,51 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
       unsigned int channel=i_summary_FED_short->first;
       std::map<int, unsigned int> summary_channel_short=i_summary_FED_short->second;
       std::map<int, std::stringstream*> summary_channel_long=summary_FED_long[channel];
+
       std::cout<<std::right<<std::setw(7)<<channel<<"|";
       std::cout<<std::right<<std::setw(7)<<summary_channel_short[-3]<<"|"; // Overall score
       std::cout<<std::right<<std::setw(4)<<summary_channel_short[-2]<<"|"; // UB/B Levels score
       std::cout<<std::right<<std::setw(3)<<summary_channel_short[-1]<<"|"; // TBM score
-      
-      summaryFile<<" <tr>"<<std::endl;
-      summaryFile<<"  <td>"<<channel<<"</td>";
-      
-      summaryFile<<"<td>"<<summary_channel_short[-3]<<"</td>"<<std::endl;   // Overall score
 
-      summaryFile<<"<td><a href=\"javascript:toggle('UBB_"<<fedNumber<<"_"<<channel<<"')\">"<<summary_channel_short[-2]<<"</a><br/>"<<std::endl;   // UB / B score
-      summaryFile<<" <div id=\"UBB_"<<fedNumber<<"_"<<channel<<"\" style=\"display:none\">"<<std::endl;
-      summaryFile<<"  <font size=1>"<<(summary_channel_long[-2]->str())<<"</font>"<<std::endl;              // UB/ B Levels description
-      summaryFile<<" </div>"<<std::endl;
-      summaryFile<<"</td>"<<std::endl;
+      summaryFile<<std::right<<std::setw(7)<<channel<<"|";
+      summaryFile<<std::right<<std::setw(7)<<summary_channel_short[-3]<<"|"; // Overall score
+      summaryFile<<std::right<<std::setw(4)<<summary_channel_short[-2]<<"|"; // UB/B Levels score
+      summaryFile<<std::right<<std::setw(3)<<summary_channel_short[-1]<<"|"; // TBM score
       
-      summaryFile<<"<td><a href=\"javascript:toggle('TBM_"<<fedNumber<<"_"<<channel<<"')\">"<<summary_channel_short[-1]<<"</a><br/>"<<std::endl;   // TBM score
-      summaryFile<<" <div id=\"TBM_"<<fedNumber<<"_"<<channel<<"\" style=\"display:none\">"<<std::endl;
-      summaryFile<<"  <a href=\"TBM_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" target=\"_blank\">"<<std::endl;
-      summaryFile<<"   <img src=\"TBM_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" width=\"200\" height=\"200\"/>"<<std::endl;
-      summaryFile<<"  </a>"<<std::endl;
-      summaryFile<<"  <font size=1>"<<(summary_channel_long[-1]->str())<<"</font"<<std::endl;               // TBM description
-      summaryFile<<" </div>"<<std::endl;
-      summaryFile<<"</td>"<<std::endl;
-
-      summaryFile<<"<td><a href=\"javascript:toggle('ROC_"<<fedNumber<<"_"<<channel<<"')\">+</a></br>"<<std::endl;                                 // ROC sum over channel
-      summaryFile<<" <div id=\"ROC_"<<fedNumber<<"_"<<channel<<"\" style=\"display:none\">"<<std::endl;
-      summaryFile<<"  <a href=\"ROC_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" target=\"_blank\">"<<std::endl;
-      summaryFile<<"   <img src=\"ROC_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" width=\"200\" height=\"200\"/>"<<std::endl;
-      summaryFile<<"  </a>"<<std::endl;
-      summaryFile<<" </div>"<<std::endl;
-      summaryFile<<"</td>"<<std::endl;
+      //summaryFile<<" <tr>"<<std::endl;
+      //summaryFile<<"  <td>"<<channel<<"</td>";
+      //summaryFile<<"<td>"<<summary_channel_short[-3]<<"</td>"<<std::endl;   // Overall score
+      //summaryFile<<"<td><a href=\"javascript:toggle('UBB_"<<fedNumber<<"_"<<channel<<"')\">"<<summary_channel_short[-2]<<"</a><br/>"<<std::endl;   // UB / B score
+      //summaryFile<<" <div id=\"UBB_"<<fedNumber<<"_"<<channel<<"\" style=\"display:none\">"<<std::endl;
+      //summaryFile<<"  <font size=1>"<<(summary_channel_long[-2]->str())<<"</font>"<<std::endl;              // UB/ B Levels description
+      //summaryFile<<" </div>"<<std::endl;
+      //summaryFile<<"</td>"<<std::endl;   
+      //summaryFile<<"<td><a href=\"javascript:toggle('TBM_"<<fedNumber<<"_"<<channel<<"')\">"<<summary_channel_short[-1]<<"</a><br/>"<<std::endl;   // TBM score
+      //summaryFile<<" <div id=\"TBM_"<<fedNumber<<"_"<<channel<<"\" style=\"display:none\">"<<std::endl;
+      //summaryFile<<"  <a href=\"TBM_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" target=\"_blank\">"<<std::endl;
+      //summaryFile<<"   <img src=\"TBM_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" width=\"200\" height=\"200\"/>"<<std::endl;
+      //summaryFile<<"  </a>"<<std::endl;
+      //summaryFile<<"  <font size=1>"<<(summary_channel_long[-1]->str())<<"</font"<<std::endl;               // TBM description
+      //summaryFile<<" </div>"<<std::endl;
+      //summaryFile<<"</td>"<<std::endl;
+      //summaryFile<<"<td><a href=\"javascript:toggle('ROC_"<<fedNumber<<"_"<<channel<<"')\">+</a></br>"<<std::endl;                                 // ROC sum over channel
+      //summaryFile<<" <div id=\"ROC_"<<fedNumber<<"_"<<channel<<"\" style=\"display:none\">"<<std::endl;
+      //summaryFile<<"  <a href=\"ROC_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" target=\"_blank\">"<<std::endl;
+      //summaryFile<<"   <img src=\"ROC_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<".gif\" width=\"200\" height=\"200\"/>"<<std::endl;
+      //summaryFile<<"  </a>"<<std::endl;
+      //summaryFile<<" </div>"<<std::endl;
+      //summaryFile<<"</td>"<<std::endl;
 
       for (int roc=0;roc<24;++roc) {
 	std::map<int, unsigned int>::iterator i_roc_short=summary_channel_short.find(roc);
 	std::map<int, std::stringstream*>::iterator i_roc_long=summary_channel_long.find(roc);
 	if (i_roc_short!=summary_channel_short.end()) {
 	  std::cout<<std::right<<setw(2)<<i_roc_short->second<<"|";
+	  summaryFile<<std::right<<setw(2)<<i_roc_short->second<<"|";
     
 	  std::string rocName=theNameTranslation_->ROCNameFromFEDChannelROC(fedNumber,channel,roc).rocname();
 
+/*
 	  summaryFile<<"<td><a href=\"javascript:toggle('ROC_"<<fedNumber<<"_"<<channel<<"_"<<roc<<"')\">"<<i_roc_short->second<<"</a><br/>"<<std::endl; // ROC score
 	  summaryFile<<" <div id=\"ROC_"<<fedNumber<<"_"<<channel<<"_"<<roc<<"\" style=\"display:none\">"<<std::endl;
 	  summaryFile<<"  <a href=\"ROC_peaks_"<<itoa(fedNumber)<<"_"<<itoa(channel)<<"_"<<itoa(roc)<<".gif\" target=\"_blank\">"<<std::endl;
@@ -634,19 +707,22 @@ void PixelFEDAddressLevelCalibrationBase::summary(){
 	  summaryFile<<"  <font size=1>"<<((i_roc_long->second)->str())<<"</font>"<<std::endl;
 	  summaryFile<<" </div>"<<std::endl;
 	  summaryFile<<"</td>"<<std::endl;
+*/
 	}
       }
       std::cout<<std::left<<setw(0)<<std::endl;
-      summaryFile<<" </tr>"<<std::endl;
+      summaryFile<<std::left<<setw(0)<<std::endl;
+      //summaryFile<<" </tr>"<<std::endl;
       
     }
     std::cout<<" ---------------------------------------- "<<std::endl;
-    summaryFile<<"</table>"<<std::endl;
+    summaryFile<<" ---------------------------------------- "<<std::endl;
+    //summaryFile<<"</table>"<<std::endl;
   }
   std::cout<<" ### ### ### "<<std::endl;
-  summaryFile<<"</body>"<<std::endl;
+  summaryFile<<" ### ### ### "<<std::endl;
+  //summaryFile<<"</body>"<<std::endl;
   summaryFile.close();
-  
   std::cout<<" Closed summary file"<<std::endl;
 
   //write out root filefullName.c_str()
@@ -684,17 +760,35 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
   for (unsigned int ifed=0; ifed<fedsAndChannels_.size(); ++ifed) {
     unsigned int  fedNumber      = fedsAndChannels_[ifed].first;
     unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fedNumber);
+    PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+    assert(fed);
 
     for (unsigned int ichannel=0; ichannel<fedsAndChannels_[ifed].second.size(); ++ichannel) {
       uint32_t buffer[pos::fifo1TranspDepth];
       unsigned int  channel = fedsAndChannels_[ifed].second[ichannel];
-      
-      int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
-      if (status!=(int)pos::fifo1TranspDataLength) {
+
+      int status = fed->drain_transBuffer(channel, buffer);
+      if (status!=(int)pos::fifo1TranspDataLength) {  // if error 
 	std::cout<<"PixelFEDSupervisor::AddressLevelCalibrationWithPixels -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode status="<<status<<std::endl;
-	diagService_->reportError("PixelFEDSupervisor::AddressLevelCalibrationWithPixels -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
-      }		    
-      
+
+	//diagService_->reportError("PixelFEDSupervisor::AddressLevelCalibrationWithPixels -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
+ 
+
+      if(1) { // dump fifo1 to a file, for testing only, d.k. 01/08
+	//ofstream outfile("data.dat",ios::app);	
+	const int WRITE_LENGTH=256;
+	//outfile<<WRITE_LENGTH<<" "<<channel<<" "<<fedNumber<<" "
+	//    <<FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel)<<endl;
+	cout<<" dump len="<<WRITE_LENGTH<<" "<<channel<<" "<<fedNumber<<" "
+	    <<fed->get_BaselineCorr(channel)<<endl;
+	for(int i=0;i<WRITE_LENGTH;++i) {
+	  int data = (buffer[i]  & 0xffc00000)>>22; // analyze word
+	  //outfile<<data<<" "<<i<<" "<<hex<<buffer[i]<<dec<<endl;
+	  cout<<i<<" "<<data<<" "<<hex<<buffer[i]<<dec<<endl;
+	}
+	//outfile.close();
+      }
+
       /*Debug printout of fifo1
 	if (channel==11) {
 	static ofstream out("fifo1.dmp");
@@ -707,7 +801,10 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	}
 	}
       */
+
+      }	// if error in read
       
+      // scope plot for root       
       for(unsigned int i=0;i<276;i++){
 	scopePlotsMap_[fedNumber][channel]->Fill((double)i,(double)(buffer[i]>>22));
       }
@@ -721,7 +818,7 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	//Pushing back FED Automatic Baseline Correction values into containers
 	Moments *baselineCorrectionOfChannel=&(baselineCorrection[vmeBaseAddress][channel]);
 
-	int baselinecor=FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel);
+	int baselinecor=fed->get_BaselineCorr(channel);
 	//std::cout << "channel="<<channel<<" correction="<<baselinecor<<std::endl;
 	
 	baselineCorrectionOfChannel->push_back(baselinecor);
@@ -735,24 +832,11 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	}
       }
 
-      if(0) { // dump fifo1 to a file, for testing only, d.k. 01/08
-	ofstream outfile("data.dat",ios::app);
-	//outfile.write((char*)errBuffer, (errorLength+1)*sizeof(unsigned long));
-	
-	const int WRITE_LENGTH=256;
-	outfile<<WRITE_LENGTH<<" "<<channel<<" "<<fedNumber<<" "
-	       <<FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel)<<endl;
-	for(int i=0;i<WRITE_LENGTH;++i) {
-	  int data = (buffer[i]  & 0xffc00000)>>22; // analyze word
-	  outfile<<data<<" "<<i<<" "<<hex<<buffer[i]<<dec<<endl;
-	  //cout<<i<<" "<<data<<" "<<hex<<buffer[i]<<dec<<endl;
-	}
-	outfile.close();
-      }
 
       std::vector<PixelROCName> ROCs=theNameTranslation_->getROCsFromFEDChannel(fedNumber, channel);
 
       if (noHits) {
+
 	//FIFO1Decoder decodeThis(buffer, ROCs.size(), UB[vmeBaseAddress][channel], B[vmeBaseAddress][channel], TBM_AddressLevels[vmeBaseAddress][channel]);
 	FIFO1Decoder decodeThis(buffer, ROCs.size(), UB[vmeBaseAddress][channel], B[vmeBaseAddress][channel], 
 				TBM_AddressLevels[vmeBaseAddress][channel],
@@ -768,7 +852,7 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	//cout<<"---------------------"<<endl;
 
 	if (!decodeThis.valid()) {
-	  diagService_->reportError("ROC numbers don't match in Without Hits!",DIAGWARN);
+	  //diagService_->reportError("ROC numbers don't match in Without Hits!",DIAGWARN);
 	  cout<<"[PixelFEDAddressLevelsCalibrationBase] Decoding failed for the above dump in FED Number "
 	      <<fedNumber<<", channel "<<channel<<std::endl;
 	  cout<<"UB mean="<<UB[vmeBaseAddress][channel].mean()<<" with stddev="<<UB[vmeBaseAddress][channel].stddev()<<endl;
@@ -776,21 +860,23 @@ void PixelFEDAddressLevelCalibrationBase::analyze(bool noHits){
 	  cout<<"# ROCs="<<ROCs.size()<<endl;
 	  continue;
 	}
+
       } else {
+
 	//FIFO1Decoder decodeThis(buffer, ROCs, UB[vmeBaseAddress][channel], B[vmeBaseAddress][channel], ROC_AddressLevels, TBM_AddressLevels[vmeBaseAddress][channel]);
 	FIFO1Decoder decodeThis(buffer, ROCs, UB[vmeBaseAddress][channel], B[vmeBaseAddress][channel], 
 				ROC_AddressLevels, TBM_AddressLevels[vmeBaseAddress][channel],
 				UB_TBM[vmeBaseAddress][channel],UB_ROC[vmeBaseAddress][channel]);
 
 	if (!decodeThis.valid()) {
-	  diagService_->reportError("ROC numbers don't match in With Hits!",DIAGWARN);
+	  //diagService_->reportError("ROC numbers don't match in With Hits!",DIAGWARN);
 	  cout<<"[PixelFEDAddressLevelsCalibrationBase] Decoding failed for the above dump in FED Number "
 	      <<fedNumber<<", channel "<<channel<<std::endl;
 	  continue;
 	}
       }
     }
-    VMEPtr_[vmeBaseAddress]->write("LRES",0x80000000); // Local Reset
-    VMEPtr_[vmeBaseAddress]->write("CLRES",0x80000000); // *** MAURO ***
+    // reset the FED
+    FEDInterface_[vmeBaseAddress]->sendResets(3);
   }
 }

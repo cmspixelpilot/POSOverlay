@@ -28,13 +28,13 @@ class PixelRootDirectoryMaker {
  
   // This constructor takes a list of strings
   // As an example consider the input of
-  //  FPix_BmI_D1_BLD1_PNL1_PLQ1_ROC0
-  //  FPix_BmI_D1_BLD1_PNL0_PLQ1_ROC0
+  //  FPix_BmI_D1_BLD1_PNL1_RNG1_ROC0
+  //  FPix_BmI_D1_BLD1_PNL0_RNG1_ROC0
   //  BPix_BmI_SEC1_LYR1_LDR1H_MOD1_ROC0
   //  BPix_BmI_SEC1_LYR1_LDR1H_MOD1_ROC1
   // This would create the following directory structure
-  //  FPix/BmI/D1/BLD1/PNL1/PLQ1/ROC0
-  //                  /PNL0/PLQ1/ROC0
+  //  FPix/BmI/D1/BLD1/PNL1/RNG1/ROC0
+  //                  /PNL0/RNG1/ROC0
   //  BPix/BmI/SEC1/LYR1/LDR1H/MOD1/ROC0
   //                               /ROC1
   // The '_' will generate a new sub directory.

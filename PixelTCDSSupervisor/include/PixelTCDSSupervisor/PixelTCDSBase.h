@@ -46,6 +46,7 @@ namespace pixel {
       unsigned int tcdsAppInstance();
       std::string sessionId();
       std::string hwLeaseRenewalInterval();
+      std::string fedEnableMask();
 
       std::string tcdsQueryFSMState();
       std::string tcdsQueryHwLeaseOwnerId();
@@ -156,6 +157,7 @@ namespace pixel {
       std::auto_ptr<pixel::tcds::HwLeaseHandler> hwLeaseHandlerP_;
       xdata::String hwLeaseRenewalInterval_;
 
+      xdata::String fedEnableMask_;
     };
   } // namespace tcds
 } // namespace pixel

@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <algorithm>
+#include <unistd.h>
 
 using namespace pos;
 using namespace std;
@@ -24,6 +25,7 @@ using namespace std;
 PixelCalibConfiguration::PixelCalibConfiguration(std::vector< std::vector<std::string> > & tableMat):
 						 PixelCalibBase(), PixelConfigBase("","","") 
 {
+  assert(0);
   std::string mthn = "[PixelCalibConfiguration::PixelCalibConfiguration()]\t    " ;
   std::map<std::string , int > colM;
   std::vector<std::string > colNames;
@@ -81,7 +83,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::vector< std::vector<std::s
   
   if (tmp=="Mode:"){
     in >> mode_;
-//    std::cout << __LINE__ << "]\t" << mthn << "mode=" << mode_ << std::endl;
+    //	std::cout << __LINE__ << "]\t" << mthn << "mode=" << mode_ << std::endl;
     in >>tmp;
   } else {
     mode_="FEDChannelOffsetPixel";
@@ -302,7 +304,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::string filename):
 
   std::string mthn = "[PixelCalibConfiguration::PixelCalibConfiguration()]\t    " ;
 
-  _bufferData=true; 
+  _bufferData=true;
   
     std::ifstream in(filename.c_str());
 
@@ -490,6 +492,7 @@ PixelCalibConfiguration::PixelCalibConfiguration(std::string filename):
       dacs_[i].dump();
       printf("\n");
     }
+    printf("high vcal range? %i\n", highVCalRange_);
 
     assert(tmp=="Repeat:");
 
@@ -695,6 +698,28 @@ void PixelCalibConfiguration::buildROCAndModuleListsFromROCSet(const std::set<Pi
     rocs_.push_back(*rocSet_itr);
   }
 
+  // jumble the roc ordering so that there's a new port each roc, stimulates more of the buffer mode problems for Andrew and Nik
+#if 0
+  std::vector<PixelROCName> rocs_tmp = rocs_;
+  assert(rocs_.size() == 16);
+  rocs_[0] = rocs_tmp[0];
+  rocs_[1] = rocs_tmp[4];
+  rocs_[2] = rocs_tmp[8];
+  rocs_[3] = rocs_tmp[12];
+  rocs_[4] = rocs_tmp[1+0];
+  rocs_[5] = rocs_tmp[1+4];
+  rocs_[6] = rocs_tmp[1+8];
+  rocs_[7] = rocs_tmp[1+12];
+  rocs_[8] = rocs_tmp [2+0];
+  rocs_[9] = rocs_tmp [2+4];
+  rocs_[10] = rocs_tmp[2+8];
+  rocs_[11] = rocs_tmp[2+12];
+  rocs_[12] = rocs_tmp[3+0];
+  rocs_[13] = rocs_tmp[3+4];
+  rocs_[14] = rocs_tmp[3+8];
+  rocs_[15] = rocs_tmp[3+12];
+#endif
+
   //t.stop();
   //cout << "buildROCAndModuleListsFromROCSet 1 time="<<t.tottime()<<endl;
   //t.start();
@@ -832,6 +857,136 @@ unsigned int PixelCalibConfiguration::scanROC(unsigned int state) const{
 }
 
 
+unsigned int PixelCalibConfiguration::test(unsigned int iscan,
+					   unsigned int state,
+					   PixelROCName roc,
+					   unsigned int vcthr) const{
+  //std::map< std::string, int > rocVcThrmap)  const{
+
+  //  std::cout<<"Entering ScanValueSCurve: "<<vcthr<<std::endl;
+
+
+  unsigned int i_threshold = scanCounter(iscan, state);
+
+  unsigned int threshold=dacs_[iscan].value(i_threshold);
+
+  unsigned int centralVcal =  (dacs_[iscan].first() + dacs_[iscan].last() ) / 2   ;
+ 
+   
+  if(state==0)std::cout<<"ROC Name: "<<roc.rocname()<<std::endl;
+  //std::cout<<"Old Vcal value: "<<threshold<<std::endl;
+  //std::cout<<"Central Vcal value: "<<centralVcal<<std::endl;
+  
+
+  PixelROC_VcalVcThrMapping* mapping = PixelROC_VcalVcThrMapping::Instance();
+ 
+  /*    std::cout<<"==============================================="<<std::endl; 
+    std::cout<<"MAPPING ROCS - THIS IS A TEST - "<< mapping->getValue(roc.rocname())[0]<<std::endl;
+    std::cout<<"MAPPING ROCS - THIS IS A TEST - "<< mapping->getValue(roc.rocname())[1]<<std::endl;
+    //std::cout<<"The value of the threshold is: "<<threshold<<std::endl;
+    std::cout<<"==============================================="<<std::endl; 
+  */
+
+  //  std::map<std::string, unsigned int> rocdefaultDACValues;
+  //  (*dacs)[PixelModuleName(roc.rocname())]->getDACSettings(roc)->getDACs(rocdefaultDACValues);
+
+  //  std::map<std::string, unsigned int>::const_iterator foundVcThrDAC = defaultDACValues.find("VcThr");
+  //  std::cout<<"DAC Name: "<<foundVcThrDAC->first<<std::endl;
+  //  std::cout<<"DAC Value: "<<foundVcThrDAC->second<<std::endl;
+
+  //  unsigned int vcalThreshold = mapping->getValue(roc.rocname())[0] + (mapping->getValue(roc.rocname())[1] * vcthr ) ;
+
+  double a =  mapping->getValue(roc.rocname())[0];
+  double b =  mapping->getValue(roc.rocname())[1];
+  // std::cout<<"a "<< a<<std::endl;
+  //  std::cout<<"a "<< b<<std::endl;
+  unsigned int vcalThreshold = (1./b) * ( vcthr - a) ;
+  //  std::cout<<"Vcal corresponding to the VcThr "<<vcalThreshold<<std::endl;
+
+  int offset;
+  
+  offset = vcalThreshold - centralVcal;
+  //  std::cout<<"Offset "<<offset<<std::endl;
+  //rocVcThrmap.insert(std::pair<std::string,int>(roc.rocname(), offset) );
+  if(state==0){    
+
+    std::ofstream offsetfile;
+    offsetfile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try{
+      std::cout<<string(getenv("POS_OUTPUT_DIRS"))+"/mapRocOffset.txt"<<std::endl;
+      std::string filename = string(getenv("POS_OUTPUT_DIRS"))+"/mapRocOffset.txt";
+      offsetfile.open(filename.c_str(), std::ios::app);
+      offsetfile << roc.rocname() << "    "<<offset<<"\n"; 
+      offsetfile.close();
+      
+    }//end of try statement
+    catch (std::ifstream::failure e){
+      std::cout<<"Exception opening/reading/closing file"<<std::endl;
+    }
+  }
+
+
+    //else offset = rocVcThrmap.find(roc.rocname())->second;  
+  unsigned int newThreshold  = threshold + offset;
+  //std::cout<<"New Vcal "<<newThreshold<<std::endl;
+
+  return newThreshold;
+  
+}
+
+
+
+unsigned int PixelCalibConfiguration::scanValueSCurve(unsigned int iscan,
+						      unsigned int state,
+						      PixelROCName roc, int VcThr)  const{
+
+  std::cout<<"Entering ScanValueSCurve"<<std::endl;
+  return 0;
+
+  if(0) {
+  unsigned int ROCNumber = ROCNumberOnChannelAmongThoseCalibrated(roc);
+  unsigned int ROCsOnChannel = numROCsCalibratedOnChannel(roc);
+
+  //  std::cout<<"State: "<<state<<" iscan: "<<iscan<<std::endl;  
+  unsigned int i_threshold = scanCounter(iscan, state);
+
+  //  std::cout<<"Within loop over ROCs - iThr"<<i_threshold<<std::endl; 
+  
+  // Spread the DAC values on the different ROCs uniformly across the scan range.
+  if ( dacs_[iscan].mixValuesAcrossROCs() ) {
+    i_threshold = (i_threshold + (nScanPoints(iscan)*ROCNumber)/ROCsOnChannel)%nScanPoints(iscan);
+    //    std::cout<<"mixValuesAccrossROCs "<<std::endl;
+ //    std::cout<<"i_threshold "<<i_threshold<<std::endl;
+  }
+  
+  unsigned int threshold=dacs_[iscan].value(i_threshold);
+  //int centralVcal = (dacs_[iscan].first() + dacs_[iscan].last() ) / 2 ;
+  
+  //assert(threshold==dacs_[iscan].first()+i_threshold*dacs_[iscan].step());
+  //std::cout<<"ROC Name: "<<roc.rocname()<<std::endl;
+
+  //  std::cout<<"Central Vcal value: "<<centralVcal<<std::endl;
+  //PixelROC_VcalVcThrMapping* mapping = PixelROC_VcalVcThrMapping::Instance();
+  //std::cout<<"==============================================="<<std::endl; 
+  //std::cout<<"MAPPING ROCS - THIS IS A TEST - "<< mapping->getValue(roc.rocname())[0]<<std::endl;
+  //std::cout<<"MAPPING ROCS - THIS IS A TEST - "<< mapping->getValue(roc.rocname())[1]<<std::endl;
+  //std::cout<<"The value of the threshold is: "<<threshold<<std::endl;
+  //std::cout<<"==============================================="<<std::endl; 
+  
+  //int trueThreshold = int(mapping->getValue(roc.rocname())[0] + mapping->getValue(roc.rocname())[1]*VcThr);
+  //std::cout<<"Vcal corresponding to the VcThr "<<trueThreshold<<std::endl;
+
+  //int offset = trueThreshold - centralVcal;
+  //std::cout<<"Offset "<<offset<<std::endl;
+  //trueThreshold  = trueThreshold + offset;
+  
+  //  return trueThreshold;
+  return threshold;
+
+  }
+}
+
+
 unsigned int PixelCalibConfiguration::scanValue(unsigned int iscan,
                                                 unsigned int state,
                                                 unsigned int ROCNumber,
@@ -925,13 +1080,15 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 
 //  std::cout << " - - - - - - - - - - nextFECState: " << state << " ; yowza!" << std::endl;
 
+  // JMTBAD shouldn't be setting all these things every nextFECState
+  const int calpixData = parameterValue("CalPixByBump") == "yes" ? 2 : 1;
   std::string mthn = "[PixelCalibConfiguration::nextFECState()]\t\t    " ;
   std::string modeName=parameterValue("ScanMode");
 
   int mode=-1;
 
-  if (modeName=="maskAllPixel")  mode=0;
-  if (modeName=="useAllPixel"||modeName=="")  mode=1;
+  if (modeName=="maskAllPixel")  mode=0; // JMT this means use the masks, not "mask every single pixel away" like the name sounds like.
+  if (modeName=="useAllPixel"||modeName=="")  mode=1; // JMT the "" makes this the actual default!
   if (modeName=="default")  mode=2;
 
 //  cout << "SCANMODE IS " << modeName << " = " << mode << endl;
@@ -951,9 +1108,9 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 
   if (rocInfo_.size()==0){
     //here we will do some initialization...
-    std::cout << "first time, these rocs in the scan:\n";
+    //std::cout << "first time, these rocs in the scan:\n";
     for(unsigned int i=0;i<rocs_.size();i++){
-      std::cout << rocs_[i] << "\n";
+      //std::cout << rocs_[i] << "\n";
       const PixelHdwAddress* hdwadd=trans->getHdwAddress(rocs_[i]);
       PixelROCInfo rocInfo;
       rocInfo.use_=true;
@@ -1179,7 +1336,16 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
       if (dacs_[ii].isTBM() && dacProgCount[moduleName][ii] > 0)
 	continue;
 
-      int dacvalue = scanValue(ii, state, rocs_[i]);
+      int dacvalue = 0;
+      if(dacs_[ii].name()==pos::k_DACName_Vcal && mode_=="SCurveSmartRange") {
+        std::map<std::string, unsigned int> rocdefaultDACValues;
+	(*dacs)[PixelModuleName(rocs_[i].rocname())]->getDACSettings(rocs_[i])->getDACs(rocdefaultDACValues);
+	std::map<std::string, unsigned int>::const_iterator foundVcThrDAC = rocdefaultDACValues.find("VcThr");
+        dacvalue = test(ii, state, rocs_[i], foundVcThrDAC->second);
+      }
+      else {
+        dacvalue = scanValue(ii, state, rocs_[i]);
+      }
 
       //cout << "dacname ii:"<<dacs_[ii].name()<<" "<<ii<<endl;
       
@@ -1297,7 +1463,20 @@ void PixelCalibConfiguration::nextFECState(std::map<unsigned int, PixelFECConfig
 					      theROC.rocid(),
 					      col,
 					      row,
-					      1,_bufferData);
+					      1,
+                                              _bufferData);
+
+        // do the double-secret handshake (yes you have to send 1 then 2 for calib pulse through sensor)
+        if (calpixData == 2)
+          pixelFECs[theROC.fecnumber()]->calpix(theROC.mfec(),
+                                                theROC.mfecchannel(),
+                                                theROC.hubaddress(),
+                                                theROC.portaddress(),
+                                                theROC.rocid(),
+                                                col,
+                                                row,
+                                                2,
+                                                _bufferData);
       }
       
     } // end of instructions for the beginning of a scan
@@ -1586,6 +1765,7 @@ void PixelCalibConfiguration::disablePixels(PixelFECConfigInterface* pixelFEC,
 
   //cout<<" disable ROC "<<theROC.hubaddress()<<" "<<theROC.rocid()<<endl;
   //FIXME This should be done with more efficient commands!
+#if 1
   for (unsigned int row=0;row<80;row++){
     for (unsigned int col=0;col<52;col++){
       unsigned int bits=trims->trim(col,row);
@@ -1599,6 +1779,23 @@ void PixelCalibConfiguration::disablePixels(PixelFECConfigInterface* pixelFEC,
 			bits,_bufferData);
     }
   }
+#else
+  std::vector<unsigned char> pixels(52*80);
+  for (unsigned int col=0;col<52;col++)
+    for (unsigned int row=0;row<80;row++) {
+      unsigned bits=trims->trim(col,row);
+      assert(bits <= 255);
+      pixels[col*80+row] = (unsigned char)(bits);
+    }
+
+      
+  pixelFEC->roctrimload(theROC.mfec(),
+			theROC.mfecchannel(),
+			theROC.hubaddress(),
+			theROC.portaddress(),
+			theROC.rocid(),
+                        pixels);
+#endif
 }
 
 std::string PixelCalibConfiguration::parameterValue(std::string parameterName) const
@@ -1798,6 +1995,7 @@ void PixelCalibConfiguration::writeXML( std::ofstream *outstream,
                                 	std::ofstream *out1stream,
                                 	std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelCalibConfiguration::writeXML()]\t\t    " ;
   
 
@@ -1823,3 +2021,4 @@ void PixelCalibConfiguration::writeXMLTrailer(std::ofstream *outstream,
   std::cout << __LINE__ << "]\t" << mthn << "Data written "   						  << std::endl ;
 
 }
+

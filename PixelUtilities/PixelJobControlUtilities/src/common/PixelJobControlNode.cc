@@ -97,7 +97,8 @@ void PixelJobControlNode::checkStatus( SOAPCommander* soapcommander) {
     }
 
     if (jcstatus_=="responsive") {
-      xoap::SOAPEnvelope responseEnvelope = jcreply->getEnvelope();
+      xoap::SOAPPart responsePart = jcreply->getSOAPPart();
+      xoap::SOAPEnvelope responseEnvelope = responsePart.getEnvelope();
       xoap::SOAPBody responseBody = responseEnvelope.getBody();
       if ( !responseBody.hasFault() ) {
 	

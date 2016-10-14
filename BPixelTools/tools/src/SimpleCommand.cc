@@ -272,21 +272,20 @@ int SimpleCommand::Parse(const string & cmd)
 
       //  group identifier
       }else if( 
-		((l==5) || (l==6)) &&
+		(l==6)&&
 		((word[0]=='+') || (word[0]=='-')) &&
 		( index("12345678",word[1])!=NULL ) &&
 		((word[2]=='P') || (word[2]=='N')) &&
 		(word[3]=='L') &&
-		( ((l==5) && (word[4]=='3')) || ((l==6) && (word[4]=='1') && (word[5]=='2')))
+		( ((word[4]=='1') &&(word[5]=='2')) || ((word[4]=='3') && (word[5]=='4')) ||((word[4]=='1') &&(word[5]=='4')) || ((word[4]=='2') && (word[5]=='3')) )
 		){
 	t.type=kGroup;
 	t.group.phi=atoi(word);
 	t.group.z=word[2];
-	if(word[4]=='3'){
-	  t.group.layer=3;
-	}else{
-	  t.group.layer=1;
-	}
+	if((word[4]=='1')&&(word[5]=='2')){t.group.layer=12;} // grouping of the channels
+	if((word[4]=='3')&&(word[5]=='4')){t.group.layer=34;} //
+	if((word[4]=='1')&&(word[5]=='4')){t.group.layer=14;} // grouping for the power supply
+	if((word[4]=='2')&&(word[5]=='3')){t.group.layer=23;} //
 	t.token=CharToStr(word,l);
 
       // allow shell names +P,-P,N,-N
@@ -757,6 +756,25 @@ bool SimpleCommand::Keyword(const string& keyword,
   }
 }
 
+bool SimpleCommand::Keyword(const string& keyword, int& value1, int& value2, int& value3, int& value4){
+  if( (tokens.size()==5) &&
+      (tokens[0].type==kString) && (tokens[0].token==keyword) &&
+      (tokens[1].type==kInt   ) &&
+      (tokens[2].type==kInt   ) &&
+      (tokens[3].type==kInt   ) &&
+      (tokens[4].type==kInt   )
+) 
+      
+  {
+    value1=tokens[1].i;
+    value2=tokens[2].i;
+    value3=tokens[3].i;
+    value4=tokens[4].i;
+    return true;
+  }else{
+    return false;
+  }
+}
  
 bool SimpleCommand::Keyword(const string& keyword1, int& value1, int& value2, const string& keyword2){
   if( (tokens.size()==4) &&

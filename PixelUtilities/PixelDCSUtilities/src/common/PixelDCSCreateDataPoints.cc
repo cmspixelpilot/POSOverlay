@@ -19,6 +19,7 @@
 #include "xdaq/ApplicationContext.h"
 #include "xdaq/ApplicationStub.h"
 #include "xgi/Utils.h"
+#include "xgi/framework/Method.h"
 #include "cgicc/HTMLClasses.h"
 #include "toolbox/fsm/FailedEvent.h"
 #include "toolbox/task/WorkLoopFactory.h"
@@ -52,7 +53,7 @@ const unsigned int defaultPixelConfigurationKey = 0;
 XDAQ_INSTANTIATOR_IMPL(PixelDCSCreateDataPoints)
 
 PixelDCSCreateDataPoints::PixelDCSCreateDataPoints(xdaq::ApplicationStub* s) throw (xdaq::exception::Exception) 
-  : xdaq::Application(s)
+: xdaq::Application(s), xgi::framework::UIManager(this)
 { 
 //--- define SOAP Bindings to Low Level Commands and Specific Algorithms
   xoap::bind(this, &PixelDCSCreateDataPoints::createDataPointsFED, "CreateDataPointsFED", XDAQ_NS_URI);
@@ -60,8 +61,8 @@ PixelDCSCreateDataPoints::PixelDCSCreateDataPoints(xdaq::ApplicationStub* s) thr
   xoap::bind(this, &PixelDCSCreateDataPoints::createDataPointsTrkFEC_Voltages, "CreateDataPointsTrkFEC_Voltages", XDAQ_NS_URI);
 
 //--define XGI Callback Bindings for messages received from the browser
-  xgi::bind(this, &PixelDCSCreateDataPoints::Default, "Default");
-  xgi::bind(this, &PixelDCSCreateDataPoints::XgiHandler, "XgiHandler");
+  xgi::framework::deferredbind(this, this, &PixelDCSCreateDataPoints::Default, "Default");
+  xgi::framework::deferredbind(this, this, &PixelDCSCreateDataPoints::XgiHandler, "XgiHandler");
 
   httpPageHeader_ = "Pixel DCS Create Data-Points";
 	
@@ -91,7 +92,7 @@ void PixelDCSCreateDataPoints::Default(xgi::Input* in, xgi::Output* out) throw (
 {
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir", "ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, httpPageHeader_);
+  // xgi::Utils::getPageHeader(*out, httpPageHeader_);
   
   // Rendering Low Level GUI
   
@@ -198,14 +199,14 @@ xoap::MessageReference PixelDCSCreateDataPoints::createDataPointsFED(xoap::Messa
       unsigned int diskNumber = (*readOutChip)->disk();
       unsigned int bladeNumber = (*readOutChip)->blade();
       unsigned int panelNumber = (*readOutChip)->panel();
-      unsigned int plaquetteNumber = (*readOutChip)->plaquet();
+      unsigned int ringNumber = (*readOutChip)->ring();
       unsigned int rocNumber = (*readOutChip)->roc();
       
       unsigned int readOutGroupNumber = (bladeNumber/3);
       
       char logicalName[100];
-      sprintf(logicalName, "CMS_Pixel/HalfCylinder/D%d/ROG%d/BLD%d/PNL%d/PLQ%d/ROC%d", 
-	      diskNumber, readOutGroupNumber, bladeNumber, panelNumber, plaquetteNumber, rocNumber);
+      sprintf(logicalName, "CMS_Pixel/HalfCylinder/D%d/ROG%d/BLD%d/PNL%d/RNG%d/ROC%d", 
+	      diskNumber, readOutGroupNumber, bladeNumber, panelNumber, ringNumber, rocNumber);
 
       std::string dpName = hardwareName; // name of data-point in PVSS "hardware" view
       //std::string dpAlias = (*readOutChip)->rocname(); // name of data-point (alias) in PVSS "logical" view

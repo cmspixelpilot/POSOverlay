@@ -17,17 +17,19 @@
 #include "xdaq/ApplicationStub.h"
 #include "xdaq/ApplicationStubImpl.h"
 #include "xdaq/exception/Exception.h"
+#include "xdata/Boolean.h"
 
 #include "xdaq/NamespaceURI.h"
 
 // gio
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigKey.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelNameTranslation.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDetectorConfig.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelAMC13Config.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTKFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDConfig.h"
@@ -37,6 +39,8 @@
 #include "xdaq/Application.h"
 #include "PixelSupervisorConfiguration/include/PixelSupervisorConfigurationBase.h"
 
+// temporary DiagSystem wrapper
+#include "PixelSupervisorConfiguration/include/DiagWrapper.h"
 
 //class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase{
 class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, public Pixelb2inCommander{
@@ -81,6 +85,9 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
   const pos::PixelFEDConfig* getFEDConfiguration() const { return theFEDConfiguration_; }
   std::map<std::string,pos::PixelPortCardConfig*> * getmapNamePortCard();
   const pos::PixelPortcardMap* getPortcardMap() const { return thePortcardMap_; }
+  
+  inline std::string stringF(int number) { stringstream ss; ss << number; return ss.str(); };
+  inline std::string stringF(const char* text) { stringstream ss; ss << text; return ss.str(); };
 
  protected:
 
@@ -94,6 +101,7 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
               PixelLTCSupervisors_,
               PixelTTCSupervisors_,
               PixelTTCControllers_,
+              PixelAMC13Controllers_,
               PixelDCSSupervisors_,
               PixelDCStoTrkFECDpInterface_,
               PixelDCSFSMInterface_,
@@ -118,8 +126,17 @@ class PixelSupervisorConfiguration : public PixelSupervisorConfigurationBase, pu
   pos::PixelFEDConfig *theFEDConfiguration_;
   pos::PixelLTCConfig* theLTCConfig_;
   pos::PixelTTCciConfig* theTTCciConfig_;
+  pos::PixelAMC13Config* theAMC13Config_;
   pos::PixelPortcardMap *thePortcardMap_;
-  DiagBagWizard* diagService_;
+  // DiagBagWizard* diagService_;
+  DiagWrapper* diagService_;
+  static const int DIAGDEBUG = 0;
+  static const int DIAGTRACE = 1;
+  static const int DIAGUSERINFO = 2;
+  static const int DIAGINFO = 3;
+  static const int DIAGWARN = 4;
+  static const int DIAGERROR = 5;
+  static const int DIAGFATAL = 6;
 
   void clearMapNamePortCard() ;
   void writeAllFEDCards(std::vector<std::string> filenames);

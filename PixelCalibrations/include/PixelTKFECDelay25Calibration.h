@@ -41,7 +41,7 @@ class PixelTKFECDelay25Calibration: public PixelTKFECCalibrationBase {
 
   bool SetDelay(pos::PixelPortCardConfig* tempPortCard, std::string delay, unsigned int value, bool update=false, bool write=false);
 
-  void portcardI2CDevice(FecAccess* fecAccess, tscType8 fecAddress, tscType8 ringAddress, tscType8 ccuAddress, tscType8 channelAddress, tscType8 deviceAddress, enumDeviceType modeType, unsigned int value, int flag);
+  bool portcardI2CDevice(FecAccess* fecAccess, tscType8 fecAddress, tscType8 ringAddress, tscType8 ccuAddress, tscType8 channelAddress, tscType8 deviceAddress, enumDeviceType modeType, unsigned int value, int flag);
 
   bool NS(std::set< std::pair<int,int> > CandidatePoints, std::set< std::pair<int,int> > &GoodPoints, int i, int &countRegion);
   bool EW(std::set< std::pair<int,int> > CandidatePoints, std::set< std::pair<int,int> > &GoodPoints, int i, int &countRegion);

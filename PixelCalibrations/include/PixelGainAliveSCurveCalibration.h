@@ -44,6 +44,7 @@ class PixelGainAliveSCurveCalibration: public PixelCalibrationBase {
   unsigned int nTriggersTotal_;
   PixelTimer fecTimer_, fedTimer_;
   bool useLTC_;
+  bool noCal_;
  
 };
 

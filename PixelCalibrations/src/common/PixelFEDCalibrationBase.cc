@@ -45,7 +45,6 @@ xoap::MessageReference PixelFEDCalibrationBase::endCalibration(xoap::MessageRefe
 
 unsigned int PixelFEDCalibrationBase::TransparentDataStart (uint32_t *buffer, int fed, int channel)
 {
-  assert(0);
   const unsigned int max=512;
 
   float B_mean=0, B_stddev=0, B_sum=0, B_squares=0;
@@ -86,11 +85,6 @@ unsigned int PixelFEDCalibrationBase::TransparentDataStart (uint32_t *buffer, in
 }
 
 
-void PixelFEDCalibrationBase::printIfSlinkHeaderMessedup_off() {
-  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED)
-    iFED->second->set_printIfSlinkHeaderMessedup(false);
-}
-
 void PixelFEDCalibrationBase::setFEDModeAndControlRegister(unsigned int mode, 
 							    unsigned int control){
 
@@ -100,29 +94,24 @@ void PixelFEDCalibrationBase::setFEDModeAndControlRegister(unsigned int mode,
   }
 }
 
-void PixelFEDCalibrationBase::sendResets() {
-  for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED)
-    iFED->second->sendResets();
-}
-
-
 void PixelFEDCalibrationBase::baselinecorr_off(){
-  assert(0);
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
-    iFED->second->BaselineCorr_off();
+    PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second); // JMTBAD I didn't like how all the dummy virtual functions in Base were coming out...
+    if (f) f->BaselineCorr_off();
   }
 }
 
 void PixelFEDCalibrationBase::setSpecialDac(unsigned int mode){
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
-    iFED->second->set_SpecialDac(mode);
+    PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second); 
+    if (f) f->set_SpecialDac(mode);
   }
 }
 
 void PixelFEDCalibrationBase::fillTestDAC(xoap::MessageReference fillTestDACmsg){
-  assert(0);
+
   if (theCalibObject_==0) {
 
     std::cout<<"PixelFEDSupervisor::FillTestDAC - theCalibObject_ doesn't exist!"<<std::endl;
@@ -149,8 +138,11 @@ void PixelFEDCalibrationBase::fillTestDAC(xoap::MessageReference fillTestDACmsg)
     }
 
     for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) {
-      iFED->second->setup_testDAC(512);
-      iFED->second->fillDACRegister(pulseTrain1, pulseTrain2, pulseTrain3);
+      PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second);
+      if (f) {
+        f->setup_testDAC(512);
+        f->fillDACRegister(pulseTrain1, pulseTrain2, pulseTrain3);
+      }
     }
 
   }
@@ -159,10 +151,10 @@ void PixelFEDCalibrationBase::fillTestDAC(xoap::MessageReference fillTestDACmsg)
 }
 
 void PixelFEDCalibrationBase::setBlackUBTrans(){
-  assert(0);
 
   for (FEDInterfaceMap::iterator iFED=FEDInterface_.begin();iFED!=FEDInterface_.end();++iFED) { 
-    iFED->second->set_blk_ublk_trans_thold();
+    PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(iFED->second);
+    if (f) f->set_blk_ublk_trans_thold();
   }
 }
 

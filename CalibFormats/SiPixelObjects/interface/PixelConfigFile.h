@@ -34,6 +34,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTKFECConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDConfig.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelAMC13Config.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTTCciConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelLTCConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDTestDAC.h"
@@ -476,6 +477,11 @@ namespace pos{
 	assert(dir=="portcard");
 	data = (T*) new PixelDelay25Calib(fullpath+"delay25.dat");
 	return;
+      }else if (typeid(data)==typeid(PixelAMC13Config*)){
+	//cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelAMC13Config" << std::endl;
+	assert(dir=="amc13");
+	data = (T*) new PixelAMC13Config(fullpath+"amc13.dat");
+	return;
       }else if (typeid(data)==typeid(PixelTTCciConfig*)){
 	//cout << "[pos::PixelConfigFile::get()]\t\t\tWill return PixelTTCciConfig" << std::endl;
 	assert(dir=="ttcciconfig");
@@ -588,6 +594,8 @@ namespace pos{
 	fileName = fullpath+"portcardmap.dat";
       }else if (typeid(data)==typeid(PixelDelay25Calib*)){
 	fileName = fullpath+"delay25.dat";
+      }else if (typeid(data)==typeid(PixelAMC13Config*)){
+	fileName = fullpath+"amc13.dat";
       }else if (typeid(data)==typeid(PixelTTCciConfig*)){
 	fileName = fullpath+"TTCciConfiguration.txt";
       }else if (typeid(data)==typeid(PixelLTCConfig*)){
@@ -799,6 +807,11 @@ namespace pos{
 	//cout << __LINE__ << mthn << "Will return PixelDelay25Calib" << std::endl;
 	assert(dir=="portcard");
 	data = (T*) new PixelDelay25Calib(fullpath+"delay25.dat");
+	return;
+      }else if (typeid(data)==typeid(PixelAMC13Config*)){
+	//cout << __LINE__ << mthn << "Will return PixelAMC13Config" << std::endl;
+	assert(dir=="amc13");
+	data = (T*) new PixelAMC13Config(fullpath+"amc13.dat");
 	return;
       }else if (typeid(data)==typeid(PixelTTCciConfig*)){
 	//cout << __LINE__ << mthn << "Will return PixelTTCciConfig" << std::endl;

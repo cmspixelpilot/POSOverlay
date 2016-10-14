@@ -8,6 +8,7 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigAlias.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelVersionAlias.h"
+
 #include <stdlib.h>
 
 namespace pos{
@@ -242,6 +243,7 @@ namespace pos{
 	  return pixelVersionAliases_[i].version();
 	}
       }
+      std::cout << "alias " << alias << " path " << path << " not found!\n";
       assert(0);
       return 0;
     }

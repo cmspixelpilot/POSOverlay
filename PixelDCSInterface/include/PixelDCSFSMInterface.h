@@ -29,7 +29,7 @@
 
 //diagsystem
 #include "toolbox/task/TimerListener.h"
-#include <diagbag/DiagBagWizard.h>
+// #include <diagbag/DiagBagWizard.h>
 
 #include "PixelUtilities/PixelSOAPUtilities/include/SOAPCommander.h"
 #include "PixelUtilities/PixelDCSUtilities/include/PixelDCSFSMNodeDefinition.h"
@@ -41,6 +41,9 @@
 
 #include "PixelDCSInterface/include/PixelDCSFSMPartition.h"
 
+// temporary DiagSystem wrapper
+#include "PixelDCSInterface/include/DiagWrapper.h"
+
 //class xdaq::ApplicationStub;
 class PixelDCSFSMNode;
 class SOAPCommander;
@@ -48,7 +51,7 @@ class PixelDCSPVSSCommander;
 class PixelDCSSMICommander;
 class PixelDCSSMIConnectionManager;
 
-class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander, public toolbox::task::TimerListener
+class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander //, public toolbox::task::TimerListener
 {
  public:
   XDAQ_INSTANTIATOR();
@@ -72,14 +75,23 @@ class PixelDCSFSMInterface : public xdaq::Application, public SOAPCommander, pub
   xoap::MessageReference FSMStateRequest(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
 
   xoap::MessageReference getPartitionState_Power(xoap::MessageReference soapRequest) throw (xoap::exception::Exception);
-  xoap::MessageReference mynotify(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   xoap::MessageReference updatePartitionState_Power(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   xoap::MessageReference updatePartitionState_ReadoutChips(xoap::MessageReference soapMessage) throw (xoap::exception::Exception);
   
   //for diagsystem
-  void timeExpired (toolbox::task::TimerEvent& e);
+  // void timeExpired (toolbox::task::TimerEvent& e);
   toolbox::BSem executeReconfMethodMutex;
-  DiagBagWizard * diagService_;
+  // DiagBagWizard * diagService_;
+  inline std::string stringF(int number) { std::stringstream ss; ss << number; return ss.str(); };
+  inline std::string stringF(const char* text) { std::stringstream ss; ss << text; return ss.str(); };
+  DiagWrapper* diagService_;
+  static const int DIAGDEBUG = 0;
+  static const int DIAGTRACE = 1;
+  static const int DIAGUSERINFO = 2;
+  static const int DIAGINFO = 3;
+  static const int DIAGWARN = 4;
+  static const int DIAGERROR = 5;
+  static const int DIAGFATAL = 6;
   
  protected:
   template <class T> std::string getPVSSFSMNodeColor(const T* fsmDeviceDefinition, const std::string& fsmNodeState);

@@ -23,7 +23,7 @@
 #include "PixelConfigDBInterface/include/PixelConfigInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "iomanip"
 
@@ -106,12 +106,14 @@ xoap::MessageReference PixelFEDThresholdCalDelayCalibrationFIFO1::execute(xoap::
     unsigned int fednumber=fedsAndChannels[ifed].first;
     //FIXME should look at all FEDs at once...
     if (vmeBaseAddress!=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber)) continue;
+    PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+    assert(fed);
     
     for (unsigned int ichannel=0; ichannel<fedsAndChannels[ifed].second.size(); ++ichannel) {
       uint32_t buffer[pos::fifo1TranspDepth];
       unsigned int channel=fedsAndChannels[ifed].second[ichannel];
       
-      int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+      int status = fed->drain_transBuffer(channel, buffer);
 
       if (status!=(int)pos::fifo1TranspDataLength) {
         std::cout<<"PixelFEDThresholdCalDelayCalibrationFIFO1::execute status="

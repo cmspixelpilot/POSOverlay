@@ -19,7 +19,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelDACNames.h"
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "TFile.h"
 #include "TStyle.h"
@@ -52,7 +52,6 @@ PixelFEDROCUBEqualizationCalibration::PixelFEDROCUBEqualizationCalibration(const
 
 xoap::MessageReference PixelFEDROCUBEqualizationCalibration::execute(xoap::MessageReference msg)
 {
-  assert(0);
 	Attribute_Vector parameters(2);
 	parameters[0].name_="WhatToDo";
 	parameters[1].name_="StateNum";
@@ -96,6 +95,8 @@ void PixelFEDROCUBEqualizationCalibration::RetrieveData(unsigned int state)
 	{
 		unsigned int fednumber=fedsAndChannels[ifed].first;
 		unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+                PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                assert(fed);
 
 		for (unsigned int ichannel=0; ichannel<fedsAndChannels[ifed].second.size(); ++ichannel)
 		{
@@ -104,7 +105,7 @@ void PixelFEDROCUBEqualizationCalibration::RetrieveData(unsigned int state)
 
 			std::vector<PixelROCName> ROCsOnThisChannel=theNameTranslation_->getROCsFromFEDChannel(fednumber, channel);
 
-			int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+			int status = fed->drain_transBuffer(channel, buffer);
 			if (status<0) {
 				std::cout<<"PixelFEDROCUBEqualizationCalibration::execute() -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode!"<<std::endl;
 				diagService_->reportError("PixelFEDROCUBEqualizationCalibration::execute() -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
@@ -166,18 +167,22 @@ void PixelFEDROCUBEqualizationCalibration::RetrieveData(unsigned int state)
 					continue;
 				}
 
-				unsigned int VIbias_DAC_value = 0; //tempCalibObject->scanValue(k_DACName_VIbias_DAC, state , ROCsOnThisChannel[ROCNumber]);
+                                assert(0);
+#if 0
+				unsigned int VIbias_DAC_value = tempCalibObject->scanValue(k_DACName_VIbias_DAC, state , ROCsOnThisChannel[ROCNumber]);
 
 				// Fill in UB and B readings for this ROC.
 				ROC_UB_[ROCsOnThisChannel[ROCNumber]].addEntry(VIbias_DAC_value, decodedRawData.ROCOutput(ROCNumber).header().UB());
 				ROC_B_[ROCsOnThisChannel[ROCNumber]].addEntry(VIbias_DAC_value, decodedRawData.ROCOutput(ROCNumber).header().B());
+#endif
 			}
 
 			// Done filling in information from the decoded data.
 
 		} // end of loop over channels on this FED board
-		VMEPtr_[vmeBaseAddress]->write("LRES",0x80000000); // Local Reset
-		VMEPtr_[vmeBaseAddress]->write("CLRES",0x80000000); // *** MAURO ***
+
+		FEDInterface_[vmeBaseAddress]->sendResets(3);
+
 	} // end of loop over FEDs in this crate
 }
 
@@ -214,6 +219,7 @@ class PixelROCOrderer
 
 void PixelFEDROCUBEqualizationCalibration::Analyze()
 {
+  assert(0); // JMTBAD OLDDACS
 #if 0
 	// Remove gray background from plots.
 	TStyle plainStyle("Plain", "a plain style");
@@ -481,14 +487,20 @@ void PixelFEDROCUBEqualizationCalibration::Analyze()
 
 			// Change VIbias_DAC for this ROC.
 			changedOne = true;
+                        assert(0);
+#if 0
 			delta_VIbias_DAC_values.push_back( foundROC->second - DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getVIbias_DAC() );
+#endif
 			new_VIbias_DAC_values.push_back( foundROC->second );
 			
 			std::string rocName_=nameOfThisROC.rocname();
 			strcpy(theBranch_sum.rocName, rocName_.c_str());
 
 			theBranch_sum.new_VIbias_DAC=foundROC->second;
+                        assert(0);
+#if 0
 			theBranch_sum.delta_VIbias_DAC=foundROC->second-DACSettingsForThisModule->getDACSettings(nameOfThisROC)->getVIbias_DAC();
+#endif
 			tree_sum->Fill();
 
 			DACSettingsForThisModule->getDACSettings(nameOfThisROC)->setVIbias_DAC(foundROC->second);

@@ -15,7 +15,7 @@ import shutil
 
 def getPassword(userName):
   
-  if (userName == "pixelpro") or (userName == "pixeldev"):
+  if (userName == "pixelpro") or (userName == "pixeldev") or (userName == "root"):
     print "%s is not a user that can check out from SVN." %userName
     svnInputName = raw_input( "Please enter your CERN username: ")
     if svnInputName != '':
@@ -25,7 +25,7 @@ def getPassword(userName):
       exit(1)
   print "Using %s as username for SVN checkouts from CERN. Use \'--userName YourUserNameAtCERN\' option to change it." %userName
   userPass = getpass.getpass('Please enter CERN password for user %s: ' %userName)
-  return userPass
+  return userName,userPass
 
 
 def createSoftlinks(linkList, thisDir, force):
@@ -128,6 +128,9 @@ def main():
   
   # option parsing
   parser=optparse.OptionParser(usage="python %prog [options]")
+  parser.add_option("--status", dest="status",
+                    action="store_true", default=False,
+                    help="update all packages")
   parser.add_option("--update", dest="update",
                     action="store_true", default=False,
                     help="update all packages")
@@ -143,12 +146,15 @@ def main():
   parser.add_option("--noauth", dest="noauth",
                     action="store_true", default=False,
                     help="replace all packages deleting old ones")                  
-  parser.add_option("-p", "--packageFile", action="store",
+  parser.add_option("--packageFile", action="store",
                     dest="packagesFileName", default=packagesFileName,
                     help="choose packages.txt file")
   parser.add_option("-u", "--userName", action="store",
                     dest="userName", default=os.environ["USER"],
                     help="username used for SVN operations")
+  parser.add_option("-p", "--userPass", action="store",
+                    dest="userPass", default="",
+                    help="userpassword used for SVN operations")
   
   (options, args)=parser.parse_args()
   print "-"*100
@@ -156,25 +162,28 @@ def main():
   for opt, value in options.__dict__.items():
     print "--> %20s: %s" %(opt, value)
   print "-"*100
+  status = options.status
   update = options.update
   replace = options.replace
   switch = options.switch
   checkout = True
-  if (update or replace or switch):
+  if (update or replace or switch or status):
     checkout = False
   force = options.force
   noauth = options.noauth
   packagesFileName = options.packagesFileName
   userName = options.userName
+  userPass = options.userPass
   option_types = (update, replace, switch, checkout)
   true_count =  sum([1 for ot in option_types if ot])
   if true_count > 1:
-      parser.error("options --update, --replace, --switch and --checkout are mutually exclusive")
+      parser.error("options --status, --update, --replace, --switch and --checkout are mutually exclusive")
 
   # SVN authentication
   authString = ""
-  if (not noauth):
-    userPass = getPassword(userName)
+  if (not noauth and not status):
+    if userPass=="":
+      userName,userPass = getPassword(userName)
     authString = "--username %s" %userName
     if (userPass != ""):
       authString += " --password %s" %userPass
@@ -258,6 +267,16 @@ def main():
       print "-----------------------------------------------"
     print "Updating done."
 
+  elif (status):
+    print "Status of packages in %s" %os.getcwd()
+    for name,package in packageDict.items():
+      print "Working on package %s" %(name)
+      svnCommand = "svn status %s %s" %(authString, name)
+      hasChange = executeSvn(svnCommand, package, logDir)
+#      if hasChange:
+#        print "%s updated successfully" % name
+      print "-----------------------------------------------"
+#    print "Updating done."
 
 
 if __name__ == "__main__":

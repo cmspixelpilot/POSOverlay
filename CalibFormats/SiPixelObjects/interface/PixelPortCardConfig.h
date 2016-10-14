@@ -60,6 +60,7 @@ namespace pos{
     std::string  gettype() const;
     unsigned int getdeviceAddress(unsigned int i) const;
     unsigned int getdeviceValues(unsigned int i) const;
+    std::string getdeviceNameForAddress(unsigned address) const;
     unsigned int getdeviceAddressForSetting(std::string settingName) const;
     unsigned int getdeviceValuesForSetting(std::string settingName) const;
     unsigned int getdeviceValuesForAddress(unsigned int address) const;

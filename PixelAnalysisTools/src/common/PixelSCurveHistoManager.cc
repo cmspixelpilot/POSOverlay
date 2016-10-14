@@ -7,12 +7,13 @@
 #include <sstream>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TTree.h>
 #include <TMath.h>
 #include <TF1.h>
 #include <TDirectory.h>
 #include <TROOT.h>
 #include <TVirtualFitter.h>
+#include <TTree.h>
+#include <TBranch.h>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ struct PixelSCurveBranch{
 	float probability;        
 	float thresholdRMS;       
 	float noiseRMS; 	        
-  char  rocName[38];        
+        char  rocName[38];        
 };
 
 
@@ -259,60 +260,67 @@ void PixelSCurveHistoManager::fit(void){
   map<unsigned int, map< unsigned int, map<unsigned int , vector<TH1 *> > > >::iterator itFed;
   map< unsigned int, map<unsigned int , vector<TH1 *> > > ::iterator                    itChan;
   map<unsigned int , vector<TH1 *> >::iterator                                          itRoc;
-  for (itFed = histoMap_.begin(); itFed != histoMap_.end(); ++itFed){		     
-    for (itChan = itFed->second.begin(); itChan != itFed->second.end(); ++itChan){   
-      for (itRoc = itChan->second.begin(); itRoc != itChan->second.end(); ++itRoc){  
+  for (itFed = histoMap_.begin(); itFed != histoMap_.end(); ++itFed)
+  {		     
+    for (itChan = itFed->second.begin(); itChan != itFed->second.end(); ++itChan)
+    {   
+      for (itRoc = itChan->second.begin(); itRoc != itChan->second.end(); ++itRoc)
+      {  
 	string rocName = rocNameMap_[itFed->first][itChan->first][itRoc->first];
-	for (map<pair<int,int>,unsigned int>::iterator cellIt=cellMap_.begin();cellIt!=cellMap_.end();++cellIt){
+	for (map<pair<int,int>,unsigned int>::iterator cellIt=cellMap_.begin();cellIt!=cellMap_.end();++cellIt)
+        {
 	  int row = cellIt->first.first;
 	  int col = cellIt->first.second;
 	  TH1F* scurve = (TH1F*)itRoc->second[cellIt->second];
 	  scurve->Scale(1./numberOfTriggers_);
 	  
 	  //fit
-	  if(scurve==0){
+	  if(scurve==0)
+          {
 	    *PixelHistoManager::logger_ << mthn << "Histo doesn't exist!Impossible!!!!!!" << endl;
 	    continue;  // only fit if it exist
-	  }
-	  if(scurve->GetEntries()==0) {
+	  }//if scruve == 0
+	  if(scurve->GetEntries()==0)
+          {
 	    //*PixelHistoManager::logger_ << mthn << "Histo empty!!!!!!" << endl;
 	    continue;  // only fit if filled
-	  }
+	  }//if scurve->GetEntries()==0
 	  
 	  int nBins   = scurve->GetNbinsX();
           double binContent=0;
 	  // Determine the starting point of the threshold curve
 	  double lowBin   = 1;
 	  double lowrange = vCalMin;
-	  for (int bin=1; bin<=nBins; ++bin) {
+	  for (int bin=1; bin<=nBins; ++bin)
+  	  {
 	    binContent = scurve->GetBinContent(bin);
-	    if ( binContent > startCurve_ ) {   //XML
+	    if ( binContent > startCurve_ )
+ 	    {   //XML
 	      lowBin = scurve->GetXaxis()->GetBinCenter(bin);
 	      break;
-	    }
-	    if(binContent == 0){
+	    }//if binContent> startCurve_
+	    if(binContent == 0)
 	      lowrange = scurve->GetXaxis()->GetBinCenter(bin);
-	    }
-	  }
+	  }//for int bin = 1
 	  // Determine the ending point of the threshold curve
 	  double highBin = scurve->GetMaximumBin();  
 	  double highrange = vCalMax;  
-	  for (int bin=(int)highBin; bin>=1; --bin) {
+	  for (int bin=(int)highBin; bin>=1; --bin)
+          {
 	    binContent = scurve->GetBinContent(bin);
-	    if ( binContent < endCurve_ ) {   //XML
+	    if ( binContent < endCurve_ )
+	    {   //XML
 	      highBin = scurve->GetXaxis()->GetBinCenter(bin);
 	      break;
-	    } 
-	    if(binContent == 1){
+	    }//if binContent < endCurve_ 
+	    if(binContent == 1)
 	      highrange = scurve->GetXaxis()->GetBinCenter(bin);
-	    }
-	  }
+	  }//for int bin=(int)highBin
 	  // Define the starting values of the fit parameters
 	  double mean  = (highBin + lowBin) / 2.0;
 	  double sigma = (highBin - lowBin) / 2.5;//Tuned manually
-	  if(sigma < 1.5){
+	  if(sigma < 1.5)
 	    sigma = 1.5;
-	  }
 	  lowrange -= 2*sigma;
 	  if (lowrange < vCalMin )
 	    lowrange = lowrange;
@@ -325,21 +333,22 @@ void PixelSCurveHistoManager::fit(void){
 	  
 	  double effo ;
 	  
-	  for ( int i=1; i<=scurve->GetNbinsX(); ++i ){
+	  for ( int i=1; i<=scurve->GetNbinsX(); ++i )
+	  {
 	    effo = scurve->GetBinContent(i);
 	    if (effo>1.0) effo=2.0-effo;
-	    if (effo == 0 || effo >= 1) {
+	    if (effo == 0 || effo >= 1)
 	      effo = 0.1/numberOfTriggers_;
-	    } 
 	    scurve->SetBinError(i, TMath::Sqrt(effo*(1.0-effo)/(1.5*numberOfTriggers_)));
-	  }
+	  }//for int i=1
 	  
 	  // istat = 0,always, so cannot be used for fit discrimination 
 	  double fmin, fedm, errdef ;
 	  int npari, nparx;
 	  double chi2=-999, prob=-999;
 	  int istat = 0;
-	  for (int i=1; i <= fitAttempts_; ++i){   //XML
+	  for (int i=1; i <= fitAttempts_; ++i)
+	  {   //XML
 	    fitFunction_->SetParameters(mean,sigma);
 	    fitFunction_->SetParLimits(1,0.3,20.0);
 	    scurve->Fit("myscurve","QRB");
@@ -347,24 +356,19 @@ void PixelSCurveHistoManager::fit(void){
 	    istat = fitter->GetStats(fmin,fedm,errdef,npari,nparx) ;
 
 	    chi2 = fitFunction_->GetChisquare()/fitFunction_->GetNDF();
-	    if(istat == 3  || chi2<rocChisquareMean_ ){
+	    if(istat == 3  || chi2<rocChisquareMean_ )
 	      break;
-	    }
 
 	    sigma = fitFunction_->GetParameter(1);
 	    //cout<<col<<" "<<row<<" "<<i<<" "<<sigma<<" "<<chi2<<" "<<istat<<endl;
-	  }
+	  }//for int i=1
 	  
 	  sigma = fitFunction_->GetParameter(1);
 	  mean  = fitFunction_->GetParameter(0);
 	  prob = fitFunction_->GetProb();
 
-	  if(writeTrimOutputFile_){
-	    *trimOutputFile_ << mthn << "RocName= " << rocName << " "
-			     << row << " " << col << " "
-			     << sigma << " "
-			     << mean << " "<<istat<<" "<<chi2<<" "<<prob<<endl;
-	  }
+	  if(writeTrimOutputFile_)
+	    *trimOutputFile_ << mthn << "RocName= " << rocName << " " << row << " " << col << " " << sigma << " " << mean << " "<<istat<<" "<<chi2<<" "<<prob<<endl;
 
 	  histoThreshold1DMap_  [rocName]->Fill(mean);
 	  histoNoise1DMap_      [rocName]->Fill(sigma);
@@ -439,7 +443,7 @@ double PixelSCurveHistoManager::fitfcn(double *x, double *par) {
 void PixelSCurveHistoManager::makeSummaryPlots(void){
   string mthn = "[PixelSCurveHistoManager::makeSummaryPlots()]\t";
   PixelHistoManager::makeSummary("Threshold");
-	PixelHistoManager::makeSummary("Noise");
+  PixelHistoManager::makeSummary("Noise");
   PixelHistoManager::makeSummary("Chisquare");
   PixelHistoManager::makeSummary("Probability");
   PixelHistoManager::makeSummary("Threshold2D");
@@ -447,130 +451,180 @@ void PixelSCurveHistoManager::makeSummaryPlots(void){
   PixelHistoManager::makeSummary("Chisquare2D");
   PixelHistoManager::makeSummary("Probability2D");
 
-  PixelHistoManager::initializeSummaries();
-//   gROOT->cd();
-// 	TDirectory * summaryTreeDir = gROOT->mkdir("SummaryTrees");
-// 	TDirectory * summaryDir     = gROOT->mkdir("Summaries");
-// 
-//   /////////////SUMMARY TREE DECLARATION///////////////////////
-// 	summaryTreeDir->cd();
-//   if(summaryTree_ != 0){
-// 		delete summaryTree_;
-// 		summaryTree_=0;
-// 	}
-//  	summaryTree_ = new TTree("PixelSCurveSummary","PixelSCurveSummary");
+//  PixelHistoManager::initializeSummaries();
+  gROOT->cd();
+  TDirectory * summaryTreeDir_ = gROOT->mkdir("SummaryTrees");
+  TDirectory * summaryDir_     = gROOT->mkdir("Summaries");
+ 
+  /////////////SUMMARY TREE DECLARATION///////////////////////
+  summaryTreeDir_->cd();
+  if(summaryTree_ != 0)
+  {
+    delete summaryTree_;
+    summaryTree_=0;
+  }//if summaryTree_
+  summaryTree_ = new TTree("SummaryTree","SummaryTree");
 
-  PixelSCurveBranch theBranch;
-	stringstream branchVariables;
-	branchVariables.str("");
-	branchVariables <<"Rocs with threshold < "    << rocThresholdMean_   << "/F"
-									<<":Rocs with noise < "       << rocNoiseMean_       << "/F"
-									<<":Rocs with Chisquare < "   << rocChisquareMean_   << "/F"
-									<<":Rocs with Probability > " << rocProbabilityMean_ << "/F"
-	                <<":Threshold/F"
-	                <<":Noise/F"
-	                <<":Chisquare/F"
-	                <<":Probability/F"
-	                <<":ThresholdRMS/F"
-	                <<":NoiseRMS/F"
-									<<":ROCName/C";
-  TBranch *pixelBranch = summaryTree_->Branch("Pixels",&theBranch,branchVariables.str().c_str());
+  struct BadDecodingBranch{                                     //added from PixelHistoManager.cc
+        float numberOfBadPixelsGT0;                                    //added from PixelHistoManager.cc
+        float percentOfBadPixels;                                    //added from PixelHistoManager.cc
+        float numberOfBadPixels;                                    //added from PixelHistoManager.cc
+        char rocName[40];                                    //added from PixelHistoManager.cc
+  };
+
+  BadDecodingBranch branch_a;    			//added from PixelHistoManager.cc
+  stringstream branchVariables_a;			//added from PixelHistoManager.cc
+  branchVariables_a.str("");				//added from PixelHistoManager.cc
+  branchVariables_a << "Number_of_wrongly_decoded_pixels=0/i" << ":Percentage_wrongly_decoded_pixels/F" << ":Number_wrongly_decoded_pixels/i" << ":ROCName/C";  //added from PixelHistoManager.cc
+
+  PixelSCurveBranch branch_b;
+  stringstream branchVariables;
+  branchVariables.str("");
+  branchVariables <<"Rocs with threshold < " << rocThresholdMean_ << "/i" <<":Rocs with noise < " << rocNoiseMean_ << "/i" << ":Rocs with Chisquare < " << rocChisquareMean_ << "/i" 
+    << ":Rocs with Probability > " << rocProbabilityMean_ << "/i" << ":Threshold/F" <<":Noise/F" <<":Chisquare/F" <<":Probability/F" <<":ThresholdRMS/F" << ":NoiseRMS/F" << ":ROCName/C";
+
+  summaryTree_->Branch("WronglyDecoded", &branch_a, branchVariables_a.str().c_str());
+  summaryTree_->Branch("Pixels", &branch_b,branchVariables.str().c_str());
 
   /////////////SUMMARY HISTOS DECLARATION///////////////////////
-  PixelHistoManager::summaryDir_->cd();											  
-  //summary plots 									  
-  TH1F * hMeanThreshold 			= new TH1F("MeanThreshold",   "Mean Threshold of all the ROCs",       100,0,200);     
-  TH1F * hMeanNoise     			= new TH1F("MeanNoise",       "Mean Noise of all the ROCs",           100,0,10);      
-  TH1F * hMeanChisquare       = new TH1F("MeanChisquare",   "Mean Chisquare of all the ROCs",       100,0,10);       
-  TH1F * hMeanProbability     = new TH1F("MeanProbability", "Mean Probability of all the ROCs",     100,0,1.);     
-  TH1F * hRmsThreshold  			= new TH1F("RmsThreshold",    "Rms of the threshold of all the ROCs", 100,0,20);      
-  TH1F * hRmsNoise      			= new TH1F("RmsNoise",        "Rms of the noise of all the ROCs",     100,0,2);       
+  summaryDir_->cd();											  
   
-
+  //summary plots 									  
+  TH1F * hMeanThreshold = new TH1F("MeanThreshold",   "Mean Threshold of all the ROCs",       100,0,200);     
+  TH1F * hMeanNoise     = new TH1F("MeanNoise",       "Mean Noise of all the ROCs",           100,0,10);      
+  TH1F * hMeanChisquare = new TH1F("MeanChisquare",   "Mean Chisquare of all the ROCs",       100,0,10);       
+  TH1F * hMeanProbability = new TH1F("MeanProbability", "Mean Probability of all the ROCs",     100,0,1.);     
+  TH1F * hRmsThreshold  = new TH1F("RmsThreshold",    "Rms of the threshold of all the ROCs", 100,0,20);      
+  TH1F * hRmsNoise      = new TH1F("RmsNoise",        "Rms of the noise of all the ROCs",     100,0,2);       
   TH1F * hThresholdOfAllPixels = new TH1F("ThresholdOfAllPixels", "Threshold of all Pixels", 200, 0, 200);
   TH1F * hNoiseOfAllPixels     = new TH1F("NoiseOfAllPixels",  	 "Noise of all Pixels",     100, 0., 10.);
+
+  summaryTreeDir_->cd();
+
   //Initializing the map with the name of all the possible panels present
-  for (vector<pos::PixelROCName>::iterator it=rocList_.begin();it!=rocList_.end();it++){
-    string rocName = it->rocname();
-		if(!thePixelConfigurationsManager_->isDataToAnalyze(rocName)){continue;}
-		strcpy(theBranch.rocName,rocName.c_str());
-    
-		TH1F * tmpHistoThreshold1D = (TH1F *)histoThreshold1DMap_[rocName];
-    if (tmpHistoThreshold1D->GetEntries() != 0) {
-      double meanThr = tmpHistoThreshold1D->GetMean();
-      hMeanThreshold->Fill(meanThr);
-      if (meanThr >= rocThresholdMean_){
-			  *logger_ << mthn << "ROC="<< rocName <<" Mean Threshold=" << meanThr << endl;
-				theBranch.rocsWithThresholdGTN = 0;
-      }else{
-				theBranch.rocsWithThresholdGTN = 1;
-			}
-      double rmsThr = tmpHistoThreshold1D->GetRMS();
-      hRmsThreshold->Fill(rmsThr);
- 		  theBranch.threshold    = meanThr;
-		  theBranch.thresholdRMS = rmsThr;
-   }
-	 else{
- 	   cout << mthn << "No entries for: " << tmpHistoThreshold1D->GetName() << " rocname: " << rocName << endl;
-	 }
+  map<unsigned int, map< unsigned int, map<unsigned int , vector<TH1 *> > > >::iterator itFed; //added from PixelHistoManager.cc
+  map<unsigned int, map<unsigned int , vector<TH1 *> > > ::iterator                    itChan;  //added from PixelHistoManager.cc
+  map<unsigned int , vector<TH1 *> >::iterator                                          itRoc;  //added from PixelHistoManager.cc
+  for (itFed = histoMap_.begin(); itFed != histoMap_.end(); ++itFed)                            //added from PixelHistoManager.cc
+  {
+    int fed = itFed->first;                                                                     //added from PixelHistoManager.cc
+    for (itChan = itFed->second.begin(); itChan != itFed->second.end(); ++itChan)               //added from PixelHistoManager.cc
+    {                                                                                           //added from PixelHistoManager.cc
+      int channel = itChan->first;                                                              //added from PixelHistoManager.cc
+      for (itRoc = itChan->second.begin(); itRoc != itChan->second.end(); ++itRoc)              //added from PixelHistoManager.cc
+      {                                                                                         //added from PixelHistoManager.cc
+        int roc = itRoc->first;                                                                 //added from PixelHistoManager.cc
+        string rocName = rocNameMap_[fed][channel][roc];                                        //added from PixelHistoManager.cc
+        cout << "ROCNAME= " << rocName;
+        unsigned int nOfWronglyDecoded = wrongAddressMap_[fed][channel][roc];                   //added from PixelHistoManager.cc
+        float percentageBAD = 100.0*nOfWronglyDecoded/(52.0*80.0);                                      //added from PixelHistoManager.cc
+        unsigned int GT0 = 1;                                                                   //added from PixelHistoManager.cc
+        if(nOfWronglyDecoded > 0)                                                               //added from PixelHistoManager.cc
+          GT0 = 0.0;                                                                              //added from PixelHistoManager.cc
+        branch_a.numberOfBadPixelsGT0 = GT0;                                                    //added from PixelHistoManager.cc
+        branch_a.percentOfBadPixels = percentageBAD;                                            //added from PixelHistoManager.cc
+	double doubleNOfWronglyDecoded = nOfWronglyDecoded * 1.0;
+        branch_a.numberOfBadPixels  = doubleNOfWronglyDecoded;                                        //added from PixelHistoManager.cc
 
-    TH1F * tmpHistoNoise1D     = (TH1F *)histoNoise1DMap_[rocName];
-    if (tmpHistoNoise1D->GetEntries()>0) {
-      double meanSig = tmpHistoNoise1D->GetMean();
-      hMeanNoise->Fill(meanSig);
-      if (meanSig >= rocNoiseMean_){
-			  *logger_ << mthn << "ROC="<< rocName <<" Mean Noise=" << meanSig << endl;
-				theBranch.rocsWithNoiseGTN = 0;
-      }else{
-				theBranch.rocsWithNoiseGTN = 1;
-			}
-			double rmsSig = tmpHistoNoise1D->GetRMS();
-      hRmsNoise->Fill(rmsSig);
-		  theBranch.noise    = meanSig;
-		  theBranch.noiseRMS = rmsSig;
-    }
+        if(!thePixelConfigurationsManager_->isDataToAnalyze(rocName))
+        {
+          cout << "\n\n\nIN THE IF STATEMENT\n\n\n" << endl;
+          continue;
+        }//if
+        strcpy(branch_a.rocName,rocName.c_str());
+        strcpy(branch_b.rocName,rocName.c_str());
+        
+        TH1F * tmpHistoThreshold1D = (TH1F *)histoThreshold1DMap_[rocName];
+        if (tmpHistoThreshold1D->GetEntries() != 0)
+        {
+          double meanThr = tmpHistoThreshold1D->GetMean();
+          hMeanThreshold->Fill(meanThr);
+          if (meanThr >= rocThresholdMean_)
+          {
+            *logger_ << mthn << "ROC="<< rocName <<" Mean Threshold=" << meanThr << endl;
+	    branch_b.rocsWithThresholdGTN     = 0.0;
+          }//if meanThr >= rocThresholdMean_
+          else
+            branch_b.rocsWithThresholdGTN     = 1.0;
 
-    TH1F * tmpHistoChisquare1D     = (TH1F *)histoChisquare1DMap_[rocName];
-    if (tmpHistoChisquare1D->GetEntries()>0) {
-      double meanSig = tmpHistoChisquare1D->GetMean();
-      hMeanChisquare->Fill(meanSig);
-      if (meanSig >= rocChisquareMean_){
-			  *logger_ << mthn << "ROC="<< rocName <<" Mean Chisquare=" << meanSig << endl;
-				theBranch.rocsWithChisquareGTN = 0;
-      }else{
-				theBranch.rocsWithChisquareGTN = 1;
-			}
-		  theBranch.chisquare    = meanSig;
-    }
+          double rmsThr = tmpHistoThreshold1D->GetRMS();
+          hRmsThreshold->Fill(rmsThr);
+          branch_b.threshold    = meanThr;
+          branch_b.thresholdRMS = rmsThr;
+        }//if tmpHistoThreshold1D->GetEntries()
+        else
+          cout << mthn << "No entries for: " << tmpHistoThreshold1D->GetName() << " rocname: " << rocName << endl;
 
-    TH1F * tmpHistoProbability1D     = (TH1F *)histoProbability1DMap_[rocName];
-    if (tmpHistoProbability1D->GetEntries()>0) {
-      double meanSig = tmpHistoProbability1D->GetMean();
-      hMeanProbability->Fill(meanSig);
-      if (meanSig <= rocProbabilityMean_){
-			  *logger_ << mthn << "ROC="<< rocName <<" Mean Probability=" << meanSig << endl;
-				theBranch.rocsWithProbabilityGTN = 0;
-      }else{
-				theBranch.rocsWithProbabilityGTN = 1;
-			}
-		  theBranch.probability    = meanSig;
-    }
+        TH1F * tmpHistoNoise1D     = (TH1F *)histoNoise1DMap_[rocName];
+        if (tmpHistoNoise1D->GetEntries()>0)
+        {
+          double meanSig = tmpHistoNoise1D->GetMean();
+          hMeanNoise->Fill(meanSig);
+          if (meanSig >= rocNoiseMean_)
+          {
+            *logger_ << mthn << "ROC="<< rocName <<" Mean Noise=" << meanSig << endl;
+	    branch_b.rocsWithNoiseGTN     = 0.0;
+          }//if meanSig >= rocNoiseMean_
+          else
+   	    branch_b.rocsWithNoiseGTN     = 1.0;
 
-    TH2F * tmpHistoThreshold2D = (TH2F *)histoThreshold2DMap_[rocName];
-    TH2F * tmpHistoNoise2D     = (TH2F *)histoNoise2DMap_[rocName];
-    if(tmpHistoThreshold2D->GetEntries() != 0){
-			for(int binX=1; binX <= tmpHistoThreshold2D->GetNbinsX(); ++binX){
-			  for(int binY=1; binY <= tmpHistoThreshold2D->GetNbinsY(); ++binY){
-			    if(tmpHistoThreshold2D->GetBinContent(binX,binY) != 0){
-			      hThresholdOfAllPixels->Fill(tmpHistoThreshold2D->GetBinContent(binX,binY));
-			      hNoiseOfAllPixels    ->Fill(tmpHistoNoise2D->GetBinContent(binX,binY));
-			    } 
-			  }
-			}
-    }   
-		pixelBranch->Fill();
-  }		  					           
-}
+          double rmsSig = tmpHistoNoise1D->GetRMS();
+          hRmsNoise->Fill(rmsSig);
+          branch_b.noise    = meanSig;
+          branch_b.noiseRMS = rmsSig;
+        }//if(tmpHistoNoise1D->GetEntries()>0) 
+
+        TH1F * tmpHistoChisquare1D     = (TH1F *)histoChisquare1DMap_[rocName];
+        if (tmpHistoChisquare1D->GetEntries()>0)
+        {
+          double meanSig = tmpHistoChisquare1D->GetMean();
+          hMeanChisquare->Fill(meanSig);
+          if (meanSig >= rocChisquareMean_)
+          {
+            *logger_ << mthn << "ROC="<< rocName <<" Mean Chisquare=" << meanSig << endl;
+            branch_b.rocsWithChisquareGTN = 0.0;
+          }//if meanSig >=rocChisquareMean
+          else
+            branch_b.rocsWithChisquareGTN = 1.0;
+          branch_b.chisquare    = meanSig;
+        }//if tmpHistoChisquare1D->GetEntries()>0)
+
+        TH1F * tmpHistoProbability1D     = (TH1F *)histoProbability1DMap_[rocName];
+        if (tmpHistoProbability1D->GetEntries()>0) 
+        {
+          double meanSig = tmpHistoProbability1D->GetMean();
+          hMeanProbability->Fill(meanSig);
+          if (meanSig <= rocProbabilityMean_)
+          {
+            *logger_ << mthn << "ROC="<< rocName <<" Mean Probability=" << meanSig << endl;
+	    branch_b.rocsWithProbabilityGTN     = 0.0;
+          }//if tmpHistoProbability1D->GetEntries()>0) 
+          else
+    	    branch_b.rocsWithProbabilityGTN     = 1.0;
+          branch_b.probability    = meanSig;
+        }//if (tmpHistoProbability1D->GetEntries()>0) 
+
+        TH2F * tmpHistoThreshold2D = (TH2F *)histoThreshold2DMap_[rocName];
+        TH2F * tmpHistoNoise2D     = (TH2F *)histoNoise2DMap_[rocName];
+        if(tmpHistoThreshold2D->GetEntries() != 0)
+        {
+          for(int binX=1; binX <= tmpHistoThreshold2D->GetNbinsX(); ++binX)
+          {
+	    for(int     binY=1; binY <= tmpHistoThreshold2D->GetNbinsY(); ++binY)
+     	    {
+              if(tmpHistoThreshold2D->GetBinContent(binX,binY) != 0)
+              {
+      	        hThresholdOfAllPixels->Fill(tmpHistoThreshold2D->GetBinContent(binX,binY));
+                hNoiseOfAllPixels    ->Fill(tmpHistoNoise2D->GetBinContent(binX,binY));
+              }//if (tmpHistoThreshold2D->GetBinContent(binX,binY) != 0) 
+            }//for bin Y
+          }//for bin X
+        }//if (tmpHistoThreshold2D->GetEntries() != 0)   
+      }//Roc
+    }//Channel
+    summaryTree_->Fill();
+  }//FED	  					          
+}//makeSummaryPlots
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void PixelSCurveHistoManager::drawHisto(unsigned int fed, unsigned int channel, unsigned int roc,string summary, string panelType, int plaquette, TH1* &summaryH){

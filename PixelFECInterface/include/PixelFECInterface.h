@@ -17,7 +17,6 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelFECConfigInterface.h"
 
 #define USE_HAL  // to enable HAL use
-#define LINUX
 
 #ifdef USE_HAL // Access VME with HALa
 
@@ -34,13 +33,6 @@
 #include "CAENVMElib.h"  // CAEN library prototypes
 
 #endif //USE_HAL
-
-class TBMReadException: public std::exception {
-   public:
-	virtual const char* what() const throw() {
-		return "Failed to read from TBM";
-	}
-};
 
 class PixelFECInterface: public pos::PixelFECConfigInterface {
 
@@ -207,7 +199,7 @@ class PixelFECInterface: public pos::PixelFECConfigInterface {
 
   /* rocinit: Initialize mask and trim for all pixels of a roc to that
      same mask/trim value.  */
-  int rocinit(int mfec, int mfecchannel, int hubaddress, int portaddress,
+  int rocinit(int NCOLS, int mfec, int mfecchannel, int hubaddress, int portaddress,
 	      int rocid,
 	      int mask, int trim);
 

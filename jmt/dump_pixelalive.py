@@ -4,26 +4,22 @@ from JMTTools import *
 from JMTROOTTools import *
 set_style()
 
+dynrng = 'nodynrng' not in sys.argv
+
 run = run_from_argv()
 run_dir = run_dir(run)
-in_fn = os.path.join(run_dir, 'PixelAlive_Fed_40_Run_%i.root' % run)
-if not os.path.isfile(in_fn):
+in_fn = glob(os.path.join(run_dir, 'PixelAlive_Fed_*_Run_%i.root' % run))
+if not in_fn:
     raise RuntimeError('need to make the root file: /nfshome0/pixelpilot/build/TriDAS/pixel/jmt/pxalive.sh %i' % run)
+if len(in_fn) > 1:
+    raise RuntimeError('too many root files')
+in_fn = in_fn[0]
 out_dir = os.path.join(run_dir, 'dump_pixelalive')
 os.system('mkdir -p %s' % out_dir)
 
 f = ROOT.TFile(in_fn)
 
-dirs = [
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL1/Pilt_BmO_D3_BLD10_PNL1_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL2/Pilt_BmO_D3_BLD10_PNL2_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL1/Pilt_BmO_D3_BLD11_PNL1_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL2/Pilt_BmO_D3_BLD11_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL1/Pilt_BmI_D3_BLD2_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL2/Pilt_BmI_D3_BLD2_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL1/Pilt_BmI_D3_BLD3_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL2/Pilt_BmI_D3_BLD3_PNL2_PLQ1',
-    ]
+dirs = ['FPix/FPix_%(hc)s/FPix_%(hc)s_D%(dsk)i/FPix_%(hc)s_D%(dsk)i_BLD%(bld)i/FPix_%(hc)s_D%(dsk)i_BLD%(bld)i_PNL%(pnl)i/FPix_%(hc)s_D%(dsk)i_BLD%(bld)i_PNL%(pnl)i_RNG%(rng)i' % locals() for hc in ['BmI', 'BmO', 'BpI', 'BpO'] for dsk in range(1,4) for bld in range(1,18) for pnl in range(1,3) for rng in range(1,3)]
 
 by_ntrigs = []
 first = True
@@ -47,14 +43,22 @@ for d in dirs:
         iroc = int(roc)
         if int(roc) < 10:
             name = rest + 'ROC0' + roc
+        mineff, maxeff = 100., 0.
         ntrigs = int(obj.Integral())
         by_ntrigs.append((ntrigs, name))
         for x in xrange(1, obj.GetNbinsX()+1):
             for y in xrange(1, obj.GetNbinsY()+1):
+                eff = obj.GetBinContent(x,y)
+                mineff = min(eff, mineff)
+                maxeff = max(eff, maxeff)
                 if obj.GetBinContent(x,y) < eff_thresh:
                     num_dead[name] += 1
-            
         c.cd(iroc+1)
+        if dynrng:
+            if maxeff - mineff < 1:
+                maxeff += 1
+            obj.SetMinimum(mineff)
+            obj.SetMaximum(maxeff)
         obj.Draw('colz')
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.png')

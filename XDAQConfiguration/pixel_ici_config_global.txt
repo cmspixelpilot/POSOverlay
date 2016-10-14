@@ -1,3 +1,4 @@
+#TCDS iCI global
 ###########################################################
 #
 # Test config to pixel tcds.
@@ -46,7 +47,7 @@ bchannels.bchannel0.configuration.postscale         0x00000001
 bchannels.bchannel0.configuration.initial_prescale  0x00000000
 bchannels.bchannel0.configuration.prescale          0x00000000
 bchannels.bchannel0.configuration.repeat_cycle      0x00000001
-bchannels.bchannel0.ram                             0x00000001 0x00000008
+bchannels.bchannel0.ram                             0x00000000 0x00000000
 bchannels.bchannel0.ram                             0x00000000 0x00000006
 
 # Channel #1 (BC0):
@@ -241,8 +242,7 @@ bchannels.bchannel12.configuration.postscale               0x00000000
 bchannels.bchannel12.configuration.initial_prescale        0x00000000
 bchannels.bchannel12.configuration.prescale                0x00000000
 bchannels.bchannel12.configuration.repeat_cycle            0x00000001
-bchannels.bchannel12.ram                                   0x0000002c 0x00000000
-bchannels.bchannel12.ram                                   0x00000001 0x00000008
+bchannels.bchannel12.ram                                   0x00000000 0x00000000
 bchannels.bchannel12.ram                                   0x00000000 0x00000006
 
 
@@ -275,7 +275,7 @@ bchannels.bchannel14.configuration.postscale        0x00000000
 bchannels.bchannel14.configuration.initial_prescale 0x00000000
 bchannels.bchannel14.configuration.prescale         0x00000000
 bchannels.bchannel14.configuration.repeat_cycle     0x00000001
-bchannels.bchannel14.ram                            0x00000014 0x00000000
+bchannels.bchannel14.ram                            0x00000000 0x00000000
 bchannels.bchannel14.ram                            0x00000000 0x00000006
 
 #Channel #15 (RESET-ROC):
@@ -289,7 +289,7 @@ bchannels.bchannel15.configuration.postscale        0x00000000
 bchannels.bchannel15.configuration.initial_prescale 0x00000000
 bchannels.bchannel15.configuration.prescale         0x00000000
 bchannels.bchannel15.configuration.repeat_cycle     0x00000001
-bchannels.bchannel15.ram                            0x0000001c 0x00000000
+bchannels.bchannel15.ram                            0x00000000 0x00000000
 bchannels.bchannel15.ram                            0x00000000 0x00000006
 
 ################################################################

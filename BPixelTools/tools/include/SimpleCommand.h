@@ -24,7 +24,7 @@ struct sector_t{
 struct group_t{
   int phi;  // +/-1 .. +/-8
   char z;   // P or N
-  int layer;  // [1,3]  1=1&2, 3=3
+  int layer;  // L14 and  L23
 };
 
 struct shell_t{
@@ -69,7 +69,7 @@ public:
   bool Keyword(const string&, int& value1, int& value2, int& value3);
   bool Keyword(const string&, int& value1, int& value2, int& value3, int& value4, int& value5, int& value6);
   bool Keyword(const string&, int& value1, int& value2, const string&);
-
+  bool Keyword(const string& keyword, int& value1, int& value2, int& value3, int& value4);
   bool Keyword(const string&  keyword, float& value1, float& value2);
 
   bool Keyword(const string&, sector_t& sect);

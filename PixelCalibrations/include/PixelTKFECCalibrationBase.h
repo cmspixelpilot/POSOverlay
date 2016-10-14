@@ -15,6 +15,9 @@
 
 #include "PixelSupervisorConfiguration/include/PixelTKFECSupervisorConfiguration.h"
 
+// temporary DiagSystem wrapper
+#include "PixelCalibrations/include/DiagWrapper.h"
+
 class PixelTKFECCalibrationBase : public PixelTKFECSupervisorConfiguration, 
 	    public SOAPCommander {
  public:
@@ -29,6 +32,18 @@ class PixelTKFECCalibrationBase : public PixelTKFECSupervisorConfiguration,
   virtual xoap::MessageReference execute(xoap::MessageReference) = 0;
 
   virtual xoap::MessageReference endCalibration(xoap::MessageReference msg);
+  
+  inline std::string stringF(int number) { std::stringstream ss; ss << number; return ss.str(); };
+  inline std::string stringF(const char* text) { std::stringstream ss; ss << text; return ss.str(); };
+
+  DiagWrapper* diagService_;
+  static const int DIAGDEBUG = 0;
+  static const int DIAGTRACE = 1;
+  static const int DIAGUSERINFO = 2;
+  static const int DIAGINFO = 3;
+  static const int DIAGWARN = 4;
+  static const int DIAGERROR = 5;
+  static const int DIAGFATAL = 6;
 
  private:
 

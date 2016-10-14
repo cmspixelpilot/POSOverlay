@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<node id="FPGA1">
+<!-- DEFAULT CTA GOLDEN FW REGISTERS -->
+   <!-- SYSTEM VERSION INFO -->
+   <node id="board_id" address="0x00000000">
+       <node id="char1" mask="0xFF000000" permission="r" />
+       <node id="char2" mask="0x00FF0000" permission="r" />
+       <node id="char3" mask="0x0000FF00" permission="r" />
+       <node id="char4" mask="0x000000FF" permission="r" />
+   </node>
+   <node id="rev_id" address="0x00000001">
+       <node id="char1" mask="0xFF000000" permission="r" />
+       <node id="char2" mask="0x00FF0000" permission="r" />
+       <node id="char3" mask="0x0000FF00" permission="r" />
+       <node id="char4" mask="0x000000FF" permission="r" />
+   </node>
+   <node id="firmware_id" address="0x00000002" mode="single">
+       <node id="major" mask="0xF0000000" permission="r" />
+       <node id="minor" mask="0x0F000000" permission="r" />
+       <node id="build" mask="0x00FF0000" permission="r" />
+       <node id="yy" mask="0x0000fe00" permission="r" />
+       <node id="mm" mask="0x000001e0" permission="r" />
+       <node id="dd" mask="0x0000001F" permission="r" />
+   </node>
+   <!-- TEST -->
+   <node id="test" address="0x00000003" mask="0xffffffff" permission="rw" />
+   <!-- CONTROL -->
+   <node id="ctrl" address="0x00000004">
+       <node id="pcieclk_pll_sel" mask="0x00000001" permission="rw" />
+       <node id="pcieclk_mr" mask="0x00000002" permission="rw" />
+       <node id="pcieclk_fsel1" mask="0x00000004" permission="rw" />
+       <node id="pcieclk_fsel0" mask="0x00000008" permission="rw" />
+       <node id="cdce_powerup" mask="0x00000010" permission="rw" />
+       <node id="cdce_refsel" mask="0x00000020" permission="rw" />
+       <node id="cdce_sync" mask="0x00000040" permission="rw" />
+       <node id="cdce_ctrl_sel" mask="0x00000080" permission="rw" />
+       <node id="cdce_xpoint_out1" mask="0x00400000" permission="rw" />
+       <node id="cdce_xpoint_out2" mask="0x00000100" permission="rw" />
+       <node id="cdce_xpoint_out3" mask="0x00000200" permission="rw" />
+       <node id="cdce_xpoint_out4" mask="0x00000400" permission="rw" />
+       <node id="ttc_xpoint_B_out4" mask="0x00000800" permission="rw" description="osc_coax_sel" />
+       <node id="ttc_xpoint_A_out1" mask="0x00003000" permission="rw" description="master_xpoint[1:0]" />
+       <node id="ttc_xpoint_A_out2" mask="0x0000c000" permission="rw" description="master_xpoint[3:2]" />
+       <node id="ttc_xpoint_A_out3" mask="0x00030000" permission="rw" description="master_xpoint[5:4]" />
+       <node id="ttc_xpoint_A_out4" mask="0x000c0000" permission="rw" description="master_xpoint[7:6]" />
+       <node id="ttc_xpoint_B_out1" mask="0x00300000" permission="rw" description="master_xpoint[9:8]" />
+       <node id="tclkb_tclkd_en" mask="0x00800000" permission="rw" />
+       <node id="mgt_xpoint_out1" mask="0x03000000" permission="rw" description="osc_xpoint_ctrl[1:0]" />
+       <node id="mgt_xpoint_out2" mask="0x0c000000" permission="rw" description="osc_xpoint_ctrl[3:2]" />
+       <node id="mgt_xpoint_out3" mask="0x30000000" permission="rw" description="osc_xpoint_ctrl[5:4]" />
+       <node id="mgt_xpoint_out4" mask="0xc0000000" permission="rw" description="osc_xpoint_ctrl[7:6]" />
+
+   </node>
+   <!-- CONTROL_2 -->
+   <node id="ctrl_2" address="0x00000005">
+       <node id="icap_page" mask="0x00000003" permission="rw" />
+       <node id="icap_trigg" mask="0x00000010" permission="rw" />
+       <node id="phase_mon_lower" mask="0x0000ff00" permission="rw" />
+       <node id="phase_mon_upper" mask="0x00ff0000" permission="rw" />
+       <node id="phase_mon_strobe" mask="0x01000000" permission="rw" />
+       <node id="phase_mon_refclk_sel" mask="0x02000000" permission="rw" />
+       <node id="phase_mon_auto" mask="0x08000000" permission="rw" />
+       <node id="fmc_l12_pwr_en" mask="0x10000000" permission="rw" />
+       <node id="fmc_l8_pwr_en" mask="0x20000000" permission="rw" />
+       <node id="fmc_pg_c2m" mask="0x40000000" permission="rw" />
+   </node>
+   <!-- STATUS -->
+   <node id="status" address="0x00000006">
+       <node id="cpld2fpga_gpio" mask="0x0000000f" permission="r" />
+       <node id="pca8574_int" mask="0x00000010" permission="r" />
+       <node id="phase_mon_count" mask="0x0000ff00" permission="r" />
+       <node id="phase_mon_done" mask="0x00010000" permission="r" />
+       <node id="phase_mon_ok" mask="0x00020000" permission="r" />
+       <node id="cdce_sync_busy" mask="0x01000000" permission="r" />
+       <node id="cdce_sync_done" mask="0x02000000" permission="r" />
+       <node id="cdce_lock" mask="0x04000000" permission="r" />
+       <node id="fmc_l12_pg_m2c" mask="0x10000000" permission="r" />
+       <node id="fmc_l12_present" mask="0x20000000" permission="r" />
+       <node id="fmc_l8_pg_m2c" mask="0x40000000" permission="r" />
+       <node id="fmc_l8_present" mask="0x80000000" permission="r" />
+   </node>
+   <!-- STATUS_2-->
+   <node id="status_2" address="0x00000007" mask="0xffffffff" permission="r" />
+   <!-- SPI COMMANDS -->
+   <node id="spi_txdata" address="0x0000000a" mask="0xffffffff" permission="rw" />
+   <node id="spi_command" address="0x0000000b" mask="0xffffffff" permission="rw" description="autoclear removed" />
+   <node id="spi_rxdata0x" address="0x0000000c" mask="0xffffffff" permission="r" />
+   <!-- I2C SETTINGS -->
+   <node id="i2c_settings" address="0x0000000d">
+       <node id="enable" mask="0x00000800" permission="rw" />
+       <node id="bus_select" mask="0x00000400" permission="rw" />
+       <node id="prescaler" mask="0x000003ff" permission="rw" />
+   </node>
+   <!-- I2C COMMANDS -->
+   <node id="i2c_command" address="0x0000000e">
+       <node id="strobe" mask="0x80000000" permission="rw" />
+       <node id="mode16" mask="0x02000000" permission="rw" />
+       <node id="mem" mask="0x01000000" permission="rw" />
+       <node id="write" mask="0x00800000" permission="rw" />
+       <node id="slvaddr_7b" mask="0x007f00000" permission="rw" />
+       <node id="regaddr" mask="0x0000ff00" permission="rw" />
+       <node id="wrdata" mask="0x000000ff" permission="rw" />
+   </node>
+   <!-- I2C REPLY -->
+   <node id="i2c_reply" address="0x0000000f">
+       <node id="status" mask="0x0c000000" permission="r" />
+       <node id="error" mask="0x08000000" permission="r" />
+       <node id="done" mask="0x04000000" permission="r" />
+       <node id="8b" mask="0x000000ff" permission="r" />
+       <node id="16b" mask="0x0000ffff" permission="r" />
+   </node>
+   <!-- MISC -->
+   <node id="eep_read_done" address="0x0000001c" mask="0x10000000" permission="r" />
+   <node id="mac_ip_source" address="0x0000001c" mask="0x0fff0000" permission="r" />
+   <node id="mac_b5" address="0x0000001c" mask="0x0000ff00" permission="r" />
+   <node id="mac_b4" address="0x0000001c" mask="0x000000ff" permission="r" />
+   <node id="mac_b3" address="0x0000001d" mask="0xff000000" permission="r" />
+   <node id="mac_b2" address="0x0000001d" mask="0x00ff0000" permission="r" />
+   <node id="mac_b1" address="0x0000001d" mask="0x0000ff00" permission="r" />
+   <node id="mac_b0" address="0x0000001d" mask="0x000000ff" permission="r" />
+   <node id="dipsw" address="0x0000001e" mask="0xff000000" permission="r" />
+   <node id="eui48_hi" address="0x0000001e" mask="0x0000ffff" permission="r" />
+   <node id="eui_b5" address="0x0000001e" mask="0x0000ff00" permission="r" />
+   <node id="eui_b4" address="0x0000001e" mask="0x000000ff" permission="r" />
+   <node id="eui48_lo" address="0x0000001f" mask="0xffffffff" permission="r" />
+   <node id="eui_b3" address="0x0000001f" mask="0xff000000" permission="r" />
+   <node id="eui_b2" address="0x0000001f" mask="0x00ff0000" permission="r" />
+   <node id="eui_b1" address="0x0000001f" mask="0x0000ff00" permission="r" />
+   <node id="eui_b0" address="0x0000001f" mask="0x000000ff" permission="r" />
+   <!-- ICAP MEMORY SPACE -->
+   <node id="icap" address="0x00000200" mask="0xffffffff" permission="rw" />
+
+   <!-- pixel fec registers  -->
+
+    <!-- Output FIFO (Russell calls it Input FIFO)  -->
+    <node id="BOUT_BUF1M1" address="0x40000000" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC01" />
+    <node id="BOUT_BUF2M1" address="0x40000001" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC01" />
+    <node id="BOUT_BUF1M2" address="0x40000002" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC02" />
+    <node id="BOUT_BUF2M2" address="0x40000003" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC02" />
+    <node id="BOUT_BUF1M3" address="0x40000004" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC03" />
+    <node id="BOUT_BUF2M3" address="0x40000005" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC03" />
+    <node id="BOUT_BUF1M4" address="0x40000006" mode="non-incremental" permission="rw" size="16384" description="Chan1 Output FIFO MFEC04" />
+    <node id="BOUT_BUF2M4" address="0x40000007" mode="non-incremental" permission="rw" size="16384" description="Chan2 Output FIFO MFEC04" />
+
+   <!-- Input FIFO (Russell calls it Output FIFO)  -->
+   <node id="INP_BUF1M1" address="0x40000008" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC01" />
+   <node id="INP_BUF2M1" address="0x40000009" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC01" />
+   <node id="INP_BUF1M2" address="0x4000000A" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC02" />
+   <node id="INP_BUF2M2" address="0x4000000B" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC02" />
+   <node id="INP_BUF1M3" address="0x4000000C" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC03" />
+   <node id="INP_BUF2M3" address="0x4000000D" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC03" />
+   <node id="INP_BUF1M4" address="0x4000000E" permission="r" size="16384" mode="non-incremental" description="Chan1 Input FIFO MFEC04" />
+   <node id="INP_BUF2M4" address="0x4000000F" permission="r" size="16384" mode="non-incremental" description="Chan2 Input FIFO MFEC04" />
+   
+   
+   <!-- General Registers  -->
+   <node id="GenRegM1" address="0x4000001C" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC01" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC01" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC01" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC01" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC01" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC01 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC01" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC01" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC01" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC01" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC01" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC01" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC01" />
+   </node>
+   
+   <node id="GenRegM2" address="0x4000001D" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC02" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC02" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC02" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC02" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC02" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC02 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC02" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC02" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC02" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC02" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC02" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC02" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC02" />
+   </node>
+
+
+   <node id="GenRegM3" address="0x4000001E" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC03" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC03" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC03" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC03" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC03" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC03 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC03" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC03" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC03" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC03" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC03" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC03" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC03" />
+   </node>
+
+
+   <node id="GenRegM4" address="0x4000001F" permission="rw" mode="single">
+       <node id="INRSTROC"       mask="0x00000001" description="Inject RST ROC MFEC04" />
+       <node id="INTRIG"         mask="0x00000002" description="Inject Trigger MFEC04" />
+       <node id="INRSTTBM"       mask="0x00000004" description="Inject RST TBM MFEC04" />
+       <node id="INRSTCSR"       mask="0x00000008" description="Inject RST TBM MFEC04" />
+       <node id="ENCALLATENCY"   mask="0x00000010" description="Inject RST CSR MFEC04" />
+       <node id="DISEXTTRIG"     mask="0x00000020" description="Disable Ext Trigger MFEC04 -- > disables AMC13 trigger" />
+       <node id="LOOPNORMTRIG"   mask="0x00000040" description="Loop Normal Trigger MFEC04" />
+       <node id="LOOPCALTRIG"    mask="0x00000080" description="Loop Cal Trigger MFEC04" />
+       <node id="CALLATCNT"      mask="0x0000FF00" description="Cal Latency Count MFEC04" />
+       <node id="DISRDACHECK"    mask="0x00100000" description="Disable RDa Check  MFEC04" />
+       <node id="DISRDA"         mask="0x00200000" description="Disable RDa MFEC04" />
+       <node id="TESTFIBER"      mask="0x00400000" description="Test Fiber MFEC04" />
+       <node id="VERSION"        mask="0xFF000000" description="Version Number  MFEC04" />
+   </node>
+
+
+    <!--  Control-Status Registers  -->
+	<!-- JMTBAD let's make these not have sub nodes -->
+    <node id="CSRegM1" address="0x40000018" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec1" />
+    </node>
+    <node id="CSRegM2" address="0x40000019" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec2" />
+    </node>
+    <node id="CSRegM3" address="0x4000001A" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec3" />
+    </node>
+    <node id="CSRegM4" address="0x4000001B" permission="rw" mode="single">
+        <node id="CSREG"	 mask="0xFFFFFFFF" description="C/S combined reg for mfec4" />
+    </node>
+
+
+    <!--  Hub/Port Register (Fiber Test Registers)  -->
+    <node id="STAT_M1" address="0x40000010" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC01" />
+    </node>
+    <node id="STAT_M1" address="0x40000011" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC01" />
+    </node>
+    <node id="STAT_M2" address="0x40000012" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC02" />
+    </node>
+    <node id="STAT_M2" address="0x40000013" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC02" />
+    </node>
+    <node id="STAT_M3" address="0x40000014" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC03" />
+    </node>
+    <node id="STAT_M3" address="0x40000015" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC03" />
+    </node>
+    <node id="STAT_M4" address="0x40000016" permission="r" mode="single">
+        <node id="StatCh1"	  mask="0xFFFFFFFF" description="Chan1 Status MFEC04" />
+    </node>
+    <node id="STAT_M4" address="0x40000017" permission="r" mode="single">
+        <node id="StatCh2"	  mask="0xFFFFFFFF" description="Chan2 Status MFEC04" />
+    </node>
+
+   <node id="Board0" address="0x40000020" permission="rw" mode="single">
+       <node id="TTCatLHC"       mask="0x00000001" description="TTC at LHC frequency?" />
+       <node id="TTCrst"         mask="0x00000002" description="TTC_rst" />
+       <node id="TransTestCfg0"  mask="0x00000004" description="Trans Test Config0" />
+       <node id="TransTestCfg1"  mask="0x00000008" description="Trans Test Config1" />
+       <node id="TransTestM1C1"  mask="0x00000010" description="Trans Test M1 C1" />
+       <node id="TransTestM1C2"  mask="0x00000020" description="Trans Test M1 C2" />
+       <node id="TransTestM2C1"  mask="0x00000040" description="Trans Test M2 C1" />
+       <node id="TransTestM2C2"  mask="0x00000080" description="Trans Test M2 C2" />
+       <node id="TransTestM3C1"  mask="0x00000100" description="Trans Test M3 C1" />
+       <node id="TransTestM3C2"  mask="0x00000200" description="Trans Test M3 C2" />
+       <node id="TransTestM4C1"  mask="0x00000400" description="Trans Test M4 C1" />
+       <node id="TransTestM4C2"  mask="0x00000800" description="Trans Test M4 C2" />
+       <node id="TTCLostLHC"     mask="0x00001000" description="Trans Test M4 C2" />
+       <node id="RstTTCLostLHC"  mask="0x00002000" description="Trans Test M4 C2" />
+   </node>
+
+   <node id="LHCCount" address="0x40000021" permission="r" mode="single"/>
+   <node id="Version" address="0x40000101" permission="r" mode="single"/>
+
+</node>

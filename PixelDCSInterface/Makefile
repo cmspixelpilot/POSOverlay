@@ -40,7 +40,8 @@ Sources = PixelDCSDpInterface.cc \
 	PixelDCStoFEDDpValueRow.cc \
 	PixelDCStoFEDDpValueTable.cc \
 	PixelDCStoTrkFECDpInterface.cc \
-	version.cc 
+	version.cc \
+	DiagWrapper.cc
 
 IncludeDirs = \
 	$(BUILD_HOME)/$(Project) \
@@ -64,12 +65,7 @@ IncludeDirs = \
 	$(XDAQ_ROOT)/daq/extern/i2o/include/i2o/shared \
 	$(XDAQ_ROOT)/daq/xdaq/include \
 	$(XDAQ_ROOT)/daq/xdaq/include/solaris \
-	$(XDAQ_ROOT)/daq/xdaq/include/linux \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/soapdiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-        $(ENV_CMS_TK_DIAG_ROOT)/ 
+	$(XDAQ_ROOT)/daq/xdaq/include/linux
 
 
 LibraryDirs = $(XDAQ_ROOT)/daq/xoap/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) \
@@ -79,8 +75,7 @@ LibraryDirs = $(XDAQ_ROOT)/daq/xoap/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) \
 	$(XDAQ_ROOT)/daq/xdata/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) \
 	$(XDAQ_ROOT)/daq/xcept/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) \
 	$(XDAQ_ROOT)/daq/pt/lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) \
-	$(XDAQ_ROOT)/daq/extern/mimetic/$(XDAQ_OS)$(XDAQ_PLATFORM)/lib \
-	$(ENV_CMS_TK_DIAG_ROOT)/tools/lib 
+	$(XDAQ_ROOT)/daq/extern/mimetic/$(XDAQ_OS)$(XDAQ_PLATFORM)/lib
 
 
 UserSourcePath = \
@@ -99,10 +94,9 @@ UserExecutableLinkFlags =
 #should be sufficient?
 #DependentLibraryDirs = $(BUILD_HOME)/pixel/lib
 DependentLibraryDirs =  $(BUILD_HOME)/pixel/lib \
-			$(ENV_CMS_TK_DIAG_ROOT)/tools/lib \
                         $(XDAQ_ROOT)/lib	
 
-DependentLibraries = PixelDCSUtilities PixelGUIUtilities PixelConfigDBInterface PixelTestStandUtilities TkDiagBagWizard xmldiagappender 
+DependentLibraries = PixelDCSUtilities PixelGUIUtilities PixelConfigDBInterface PixelTestStandUtilities 
 
 Libraries = 
 ExternalObjects = -L/usr/lib \

@@ -309,7 +309,7 @@ int main(int argc, char **argv){
 
     trimROC.setVcThr(vcThr);
     trimROC.setVtrim(vtrim);
-    trimROC.setThrTrim(80);
+    trimROC.setThrTrim(80.0);
     trimROC.setNsigma(4.0);
 
     cout << "vcthr " << vcThr << endl;

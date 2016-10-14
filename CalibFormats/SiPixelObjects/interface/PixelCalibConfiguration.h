@@ -32,6 +32,8 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelDACScanRange.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortcardMap.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelPortCardConfig.h"
+#include "CalibFormats/SiPixelObjects/interface/PixelROC_VcalVcThrMapping.h"
+
 
 
 namespace pos{
@@ -87,6 +89,11 @@ namespace pos{
 		      std::map<pos::PixelModuleName,pos::PixelTBMSettings*>* tbms,
 		      unsigned int state) const; 
 
+
+    // Added by Annapaola May 15th, 2014 - map used to save roc name and scan range offset wrt to scan range as defined in calib.dat
+   // For New SCurve calibration
+    // std::map< std::string, int > rocVcThrmap;
+
     //return vector of fed# and channels controlled by this fed supervisor
     std::vector<std::pair<unsigned int,std::vector<unsigned int> > >& fedCardsAndChannels(unsigned int crate, PixelNameTranslation* translation, PixelFEDConfig* fedconfig,PixelDetectorConfig* detconfig) const;
 
@@ -132,6 +139,7 @@ namespace pos{
     unsigned int scanValue(std::string dac, unsigned int state, PixelROCName roc) const {
       return scanValue(iScan(dac), state, roc);
     }
+
 
     // This function should not be used -- provided for backwards compatibility only.  It asserts if the scan values for this dac are mixed across different ROCs.
     unsigned int scanValue(std::string dac, unsigned int state) const {
@@ -212,6 +220,9 @@ namespace pos{
 
     unsigned int scanValue(unsigned int iscan, unsigned int state, unsigned int ROCNumber, unsigned int ROCsOnChannel) const;
     unsigned int scanValue(unsigned int iscan, unsigned int state, PixelROCName roc) const;
+    unsigned int scanValueSCurve(unsigned int iscan, unsigned int state, PixelROCName roc, int vcthr) const;
+    //    unsigned int test(unsigned int iscan, unsigned int state, PixelROCName roc, unsigned int vcthr, std::map<std::string,int> rocVcThrmap)const;
+    unsigned int test(unsigned int iscan, unsigned int state, PixelROCName roc, unsigned int vcthr)const;
 
     std::vector<unsigned int> scanValues(unsigned int iscan) const {return dacs_[iscan].values();}
 

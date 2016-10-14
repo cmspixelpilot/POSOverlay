@@ -74,7 +74,7 @@ void PixelDCSTestApplication::Default (xgi::Input *in, xgi::Output *out) throw (
 {
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, "Test-Program for Pixel DCS Supervisor");
+  // xgi::Utils::getPageHeader(*out, "Test-Program for Pixel DCS Supervisor");
   
   // Rendering Low Level GUI
   
@@ -283,7 +283,8 @@ xoap::MessageReference PixelDCSTestApplication::TestDCStoFEDDpInterface(xoap::Me
 xoap::MessageReference PixelDCSTestApplication::composeTestMessageFED()
 {
    xoap::MessageReference message = xoap::createMessage();
-   xoap::SOAPEnvelope envelope = message->getSOAPPart().getEnvelope();
+   xoap::SOAPPart part = message->getSOAPPart();
+   xoap::SOAPEnvelope envelope = part.getEnvelope();
    xoap::SOAPName command = envelope.createName("updateDpValueLastDAC", "xdaq", XDAQ_NS_URI);
    xoap::SOAPBody body = envelope.getBody();
    xoap::SOAPBodyElement commandElement = body.addBodyElement(command);
@@ -591,7 +592,7 @@ xoap::MessageReference PixelDCSTestApplication::composeTestMessageTrkFEC()
 xoap::MessageReference PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout_fakeSOAP(xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
   // xoap::MessageReference message = MakeSOAPMessageReference("readDCU");
-  xoap::MessageReference message = MakeSOAPMessageReference("ReadDCU_workloop_fakeSOAP");
+  xoap::MessageReference soapMessage = MakeSOAPMessageReference("ReadDCU_workloop_fakeSOAP");
   
   cout<< "PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout_fakeSOAP" <<endl;
 
@@ -626,21 +627,23 @@ xoap::MessageReference PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout_
   
   cout << "Sending SOAP request to TrkFEC Supervisor; URL = " << destination->getContextDescriptor()->getURL() << endl;
   cout <<" Request : ------------------------------------ "<<endl;
-  message->writeTo(cout);
+  soapMessage->writeTo(cout);
   cout << endl;
-  message->writeTo(request_);
+  soapMessage->writeTo(request_);
   cout <<" ---------------------------------------------- "<<endl;
 
   try {
-    xoap::MessageReference reply = getApplicationContext()->postSOAP(message, destination);
+   // xoap::MessageReference reply = getApplicationContext()->postSOAP(message, destination);
+    xoap::MessageReference soapReply = this->getApplicationContext()->postSOAP(soapMessage, *this->getApplicationDescriptor(), *destination);
+  
 
     //--- print SOAP reply
     cout <<" Reply : -------------------------------------- "<<endl;
-    reply->writeTo(cout);
+    soapReply->writeTo(cout);
     cout << endl;
-    reply->writeTo(response_);
+    soapReply->writeTo(response_);
     // decode SOAP message
-    std::vector<PortCard::AddressDCU> vdcu = PortCard::SOAP_ReadAll::Decode(reply);
+    std::vector<PortCard::AddressDCU> vdcu = PortCard::SOAP_ReadAll::Decode(soapReply);
     for (std::vector<PortCard::AddressDCU>::const_iterator addressDCU=vdcu.begin(); addressDCU!=vdcu.end(); ++addressDCU) {
       dcu_map_[addressDCU->address_] = addressDCU->dcu_;
     }
@@ -658,7 +661,7 @@ xoap::MessageReference PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout_
 
 xoap::MessageReference PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout(xoap::MessageReference msg) throw (xoap::exception::Exception)
 {
-  xoap::MessageReference message = MakeSOAPMessageReference("readDCU");
+  xoap::MessageReference soapMessage = MakeSOAPMessageReference("readDCU");
   
   cout<< "PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout" <<endl;
 
@@ -693,21 +696,23 @@ xoap::MessageReference PixelDCSTestApplication::TestTrkFECSupervisor_DCUreadout(
   
   cout << "Sending SOAP request to TrkFEC Supervisor; URL = " << destination->getContextDescriptor()->getURL() << endl;
   cout <<" Request : ------------------------------------ "<<endl;
-  message->writeTo(cout);
+  soapMessage->writeTo(cout);
   cout << endl;
-  message->writeTo(request_);
+  soapMessage->writeTo(request_);
   cout <<" ---------------------------------------------- "<<endl;
 
   try {
-    xoap::MessageReference reply = getApplicationContext()->postSOAP(message, destination);
+   // xoap::MessageReference reply = getApplicationContext()->postSOAP(message, destination);
+    xoap::MessageReference soapReply = this->getApplicationContext()->postSOAP(soapMessage, *this->getApplicationDescriptor(), *destination);
+  
 
     //--- print SOAP reply
     cout <<" Reply : -------------------------------------- "<<endl;
-    reply->writeTo(cout);
+    soapReply->writeTo(cout);
     cout << endl;
-    reply->writeTo(response_);
+    soapReply->writeTo(response_);
     // decode SOAP message
-    std::vector<PortCard::AddressDCU> vdcu = PortCard::SOAP_ReadAll::Decode(reply);
+    std::vector<PortCard::AddressDCU> vdcu = PortCard::SOAP_ReadAll::Decode(soapReply);
     for (std::vector<PortCard::AddressDCU>::const_iterator addressDCU=vdcu.begin(); addressDCU!=vdcu.end(); ++addressDCU) {
       dcu_map_[addressDCU->address_] = addressDCU->dcu_;
     }

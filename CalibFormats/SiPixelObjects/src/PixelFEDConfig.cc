@@ -6,6 +6,7 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelFEDConfig.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
+#include "CalibFormats/SiPixelObjects/interface/Utility.h"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -16,7 +17,7 @@ using namespace pos;
 using namespace std;
 
 PixelFEDConfig::PixelFEDConfig(std::vector<std::vector<std::string> >& tableMat ) : PixelConfigBase(" "," "," "){
-
+  assert(0);
   std::string mthn = "[PixelFEDConfig::PixelFEDConfig()]\t\t\t    " ;
 
   std::vector< std::string > ins = tableMat[0];
@@ -148,37 +149,39 @@ PixelFEDConfig::PixelFEDConfig(std::string filename):
       std::cout << __LINE__ << "]\t" << mthn << "Opened: " << filename.c_str() << std::endl;
     }
 
-    std::string dummy;
+    std::string line;
 
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
-    in >> dummy;
+    while (getline(in, line)) {
+      if (line[0] == '#' || line.find_first_not_of(" \t") == std::string::npos) continue;
+      std::vector<std::string> tokens = tokenize(line, true);
+      if (tokens.size() == 0) continue; // a comment line
+      assert(tokens.size() >= 3 && tokens.size() <= 5); // 3 to be backward compatible with VME-only POS, 5 with VME-or-uTCA POS
 
-    do {
-	
-      unsigned int fednumber;
-      unsigned int crate;
-      unsigned int vme_base_address;
+      const unsigned fednumber        = strtoul(tokens[0].c_str(), 0, 10);
+      const unsigned crate            = strtoul(tokens[1].c_str(), 0, 10);
+      const unsigned vme_base_address = strtoul(tokens[2].c_str(), 0, 16);
 
-      in >> fednumber >> crate >> std::hex >> vme_base_address >> std::dec;
+      PixelFEDParameters tmp;
+      tmp.setFEDParameters(fednumber, crate, vme_base_address);
 
-      if (!in.eof() ){
-	//	std::cout << __LINE__ << "]\t" << mthn << std::dec << fednumber <<" "<< crate << " 0x"  
-	//                << std::hex << vme_base_address<<std::dec<<std::endl;
-	PixelFEDParameters tmp;
-	    
-	tmp.setFEDParameters(fednumber , crate , vme_base_address);
-	    
-	fedconfig_.push_back(tmp); 
+      if (tokens.size() == 3) {
+	tmp.setType("VME");
+      }
+      else if (tokens.size() == 4) {
+        assert(tokens[3] == "VME" || tokens[3] == "VMEPiggy");
+        tmp.setType(tokens[3]);
+      }
+      else {
+	tmp.setType(tokens[3]);
+        tmp.setURI(tokens[4]);
       }
 
-    }
-    while (!in.eof());
-    in.close();
+      assert(tmp.getType() == "VME" || tmp.getType() == "VMEPiggy" || tmp.getType() == "CTA");
 
+      fedconfig_.push_back(tmp); 
+    }
+    
+    in.close();
   }
 
 //std::ostream& operator<<(std::ostream& s, const PixelFEDConfig& table){
@@ -204,11 +207,13 @@ void PixelFEDConfig::writeASCII(std::string dir) const {
     assert(0);
   }
 
-  out <<" #FED number     crate     vme base address" <<endl;
+  out <<"#FED number     crate     vme base address     type    URI" <<endl;
   for(unsigned int i=0;i<fedconfig_.size();i++){
     out << fedconfig_[i].getFEDNumber()<<"               "
 	<< fedconfig_[i].getCrate()<<"         "
-	<< "0x"<<hex<<fedconfig_[i].getVMEBaseAddress()<<dec<<endl;
+	<< "0x"<<hex<<fedconfig_[i].getVMEBaseAddress()<<dec
+        << fedconfig_[i].getType() <<"     "
+        << fedconfig_[i].getURI()  <<endl;
   }
   out.close();
 }
@@ -250,6 +255,38 @@ unsigned int PixelFEDConfig::crateFromFEDNumber(unsigned int fednumber) const{
   std::string mthn = "[PixelFEDConfig::crateFromFEDNumber()]\t\t\t    " ;
   for(unsigned int i=0;i<fedconfig_.size();i++){
     if (fedconfig_[i].getFEDNumber()==fednumber) return fedconfig_[i].getCrate();
+  }
+
+  std::cout << __LINE__ << "]\t" << mthn << "Could not find FED number: " << fednumber << std::endl;
+
+  assert(0);
+
+  return 0;
+
+}
+
+std::string PixelFEDConfig::typeFromFEDNumber(unsigned int fednumber) const {
+
+
+  std::string mthn = "[PixelFEDConfig::typeFromFEDNumber()]\t\t\t    " ;
+  for(unsigned int i=0;i<fedconfig_.size();i++){
+    if (fedconfig_[i].getFEDNumber()==fednumber) return fedconfig_[i].getType();
+  }
+
+  std::cout << __LINE__ << "]\t" << mthn << "Could not find FED number: " << fednumber << std::endl;
+
+  assert(0);
+
+  return 0;
+
+}
+
+std::string PixelFEDConfig::URIFromFEDNumber(unsigned int fednumber) const {
+
+
+  std::string mthn = "[PixelFEDConfig::URIFromFEDNumber()]\t\t\t    " ;
+  for(unsigned int i=0;i<fedconfig_.size();i++){
+    if (fedconfig_[i].getFEDNumber()==fednumber) return fedconfig_[i].getURI();
   }
 
   std::cout << __LINE__ << "]\t" << mthn << "Could not find FED number: " << fednumber << std::endl;
@@ -336,6 +373,7 @@ void PixelFEDConfig::writeXML(std::ofstream *outstream,
                               std::ofstream *out1stream,
                               std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelFEDConfig::writeXML()]\t\t\t    " ;
   
   for(unsigned int i=0;i<fedconfig_.size();i++){

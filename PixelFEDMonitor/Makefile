@@ -32,12 +32,7 @@ Sources= PixelFEDMonitor.cc
 
 #Include directories
 IncludeDirs = \
-        $(BUILD_HOME)/$(Project) \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/soapdiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-        $(ENV_CMS_TK_DIAG_ROOT)
+        $(BUILD_HOME)/$(Project)
 
 LibraryDirs = 
 
@@ -54,10 +49,9 @@ UserExecutableLinkFlags =
 #
 
 DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
-       $(ENV_CMS_TK_DIAG_ROOT)/tools/lib \
        $(XDAQ_ROOT)/lib	
 
-DependentLibraries = TkDiagBagWizard xmldiagappender 
+DependentLibraries = 
 
 DependentLibraries += 
 

@@ -17,11 +17,12 @@
 #include "xdaq/ApplicationStub.h"
 #include "xdaq/ApplicationStubImpl.h"
 #include "xdaq/exception/Exception.h"
+#include "toolbox/task/WorkLoopFactory.h"
 
 #include "xdaq/NamespaceURI.h"
 
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
 
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigKey.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibBase.h"
@@ -32,11 +33,12 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelGlobalDelay25.h"
 #include "PixelFEDInterface/include/PixelFEDInterface.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelConfigFile.h"
-#include "VMEDevice.hh" 
 
 #include "PixelSupervisorConfigurationBase.h"
 #include "PixelUtilities/Pixelb2inUtilities/include/Pixelb2inCommander.h"
 #include "xdaq/Application.h"
+
+class PixelFEDInterfaceBase; 
 
 class PixelFEDSupervisorConfiguration : public PixelSupervisorConfigurationBase, public Pixelb2inCommander{
 
@@ -58,23 +60,23 @@ class PixelFEDSupervisorConfiguration : public PixelSupervisorConfigurationBase,
   pos::PixelCalibBase *theCalibObject_;
   pos::PixelGlobalDelay25 *theGlobalDelay25_;
 
-  typedef map <unsigned long, HAL::VMEDevice*> VMEPointerMap;
-  typedef map <unsigned long, PixelFEDInterface*> FEDInterfaceMap;
+  typedef map <unsigned long, PixelFEDInterfaceBase*> FEDInterfaceMap;
   typedef map <unsigned long, std::stringstream*> FIFO;
   
-  VMEPointerMap VMEPtr_;
   FEDInterfaceMap FEDInterface_;
   FEDInterfaceMap FEDInterfaceFromFEDnumber_;
+  // JMTBAD do these need to be here
   FIFO dataFIFO1_, dataFIFO2_, dataFIFO3_, errorFIFO_, tempFIFO_, ttsFIFO_;
 
   std::map<std::pair<unsigned long, unsigned int>, std::set<unsigned int> > vmeBaseAddressAndFEDNumberAndChannels_;
   //         VME Base Address  FED Number              Channel
 
   unsigned long crate_;
-  DiagBagWizard * diagService_;
+  // DiagBagWizard * diagService_;
 
   std::stringstream* console_;
 
+  // JMTBAD and why are these here?
   // A WorkLoop and a Job just for it!
   toolbox::task::WorkLoop *workloop_;
   toolbox::task::ActionSignature *tempTransmitter_;

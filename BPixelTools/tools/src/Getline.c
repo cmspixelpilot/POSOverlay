@@ -235,7 +235,7 @@ char   *Getlinem(int mode, const char *prompt); /* allows reading char by char *
 void    Gl_config(const char *which, int value); /* set some options */
 void    Gl_setwidth(int w);          /* specify width of screen */
 void    Gl_windowchanged();          /* call after SIGWINCH signal */
-void    Gl_histinit(char *file);     /* read entries from old histfile */
+void    Gl_histinit(const char *file);     /* read entries from old histfile */
 void    Gl_histadd(const char *buf);       /* adds entries to hist */
 
 int             (*Gl_in_hook)(char *buf) = 0;
@@ -286,7 +286,7 @@ static void     gl_char_cleanup();      /* undo gl_char_init */
 
 static void     gl_addchar(int c);      /* install specified char */
 static void     gl_del(int loc);        /* del, either left (-1) or cur (0) */
-static void     gl_error(char *buf);    /* write error msg and die */
+static void     gl_error(const char *buf);    /* write error msg and die */
 static void     gl_fixup(const char *p, int c, int cur); /* fixup state variables and screen */
 static int      gl_getc();              /* read one char from terminal */
 static void     gl_kill();              /* delete to EOL */
@@ -675,7 +675,7 @@ gl_puts(const char *buf)
 }
 
 static void
-gl_error(char *buf)
+gl_error(const char *buf)
 {
     int len = strlen(buf);
 
@@ -722,7 +722,7 @@ Gl_setwidth(int w)
         gl_termw = w;
         gl_scroll = w / 3;
     } else {
-      gl_error((char *)"\n*** Error: minimum screen width is 21\n");
+      gl_error("\n*** Error: minimum screen width is 21\n");
     }
 }
 
@@ -760,6 +760,8 @@ Getlinem(int mode, const char *prompt)
        gl_cleanup();
        return NULL;
     }
+
+    gl_prompt = (prompt) ? prompt : "";
 
     if (mode < 1) {
        if (mode == -1) {
@@ -913,10 +915,12 @@ Getlinem(int mode, const char *prompt)
                       switch(c = gl_getc())
                       {
                       case 'A':                           /* up */
+                        if (hist_prev() != NULL) {
                            strcpy(gl_buf, hist_prev());
                            if (Gl_in_hook)
                                 Gl_in_hook(gl_buf);
                            gl_fixup(gl_prompt, 0, BUF_SIZE);
+                        }
                            break;
                       case 'B':                          /* down */
                            strcpy(gl_buf, hist_next());
@@ -1017,7 +1021,7 @@ gl_addchar(int c)
     int  i;
 
     if (gl_cnt >= BUF_SIZE - 1)
-      gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+      gl_error("\n*** Error: Getline(): input buffer overflow\n");
     if (gl_overwrite == 0 || gl_pos == gl_cnt) {
         for (i=gl_cnt; i >= gl_pos; i--)
             gl_buf[i+1] = gl_buf[i];
@@ -1041,7 +1045,7 @@ gl_yank()
         gl_mark = gl_pos;
         if (gl_overwrite == 0) {
 	  if (gl_cnt + len >= BUF_SIZE - 1)
-	    gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+	    gl_error("\n*** Error: Getline(): input buffer overflow\n");
             for (i=gl_cnt; i >= gl_pos; i--)
                 gl_buf[i+len] = gl_buf[i];
             for (i=0; i < len; i++)
@@ -1050,7 +1054,7 @@ gl_yank()
         } else {
             if (gl_pos + len > gl_cnt) {
 	      if (gl_pos + len >= BUF_SIZE - 1)
-		gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+		gl_error("\n*** Error: Getline(): input buffer overflow\n");
                 gl_buf[gl_pos + len] = 0;
             }
             for (i=0; i < len; i++)
@@ -1090,7 +1094,7 @@ gl_newline()
     int loc = gl_width - 5;     /* shifts line back to start position */
 
     if (gl_cnt >= BUF_SIZE - 1)
-      gl_error((char *)"\n*** Error: Getline(): input buffer overflow\n");
+      gl_error("\n*** Error: Getline(): input buffer overflow\n");
     if (Gl_out_hook) {
         change = Gl_out_hook(gl_buf);
         len = strlen(gl_buf);
@@ -1345,13 +1349,13 @@ hist_init()
 
     if (gl_savehist) return;
 
-    hist_buf[0] = (char *)"";
+    hist_buf[0] = '\0';
     for (i=1; i < HIST_SIZE; i++)
       hist_buf[i] = (char *)0;
 }
 
 void
-Gl_histinit(char *file)
+Gl_histinit(const char *file)
 {
    char line[BUFSIZ];
    FILE *fp;
@@ -1507,7 +1511,7 @@ hist_save(const char *p)
         }
     }
     if (s == 0)
-        gl_error((char *)"\n*** Error: hist_save() failed on malloc\n");
+        gl_error("\n*** Error: hist_save() failed on malloc\n");
     return s;
 }
 

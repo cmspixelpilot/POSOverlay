@@ -1,5 +1,5 @@
-#ifndef TP_PIXELFEDINTERFACE_H
-#define TP_PIXELFEDINTERFACE_H
+#ifndef PixelFEDInterface_PixelFEDInterface_h
+#define PixelFEDInterface_PixelFEDInterface_h
 
 // The PixelFEDInterface class for VME access to the pixel FED..
 // Uses HAL calls for VME, the direct CAEN access can be still used..
@@ -12,7 +12,6 @@
     
 #include <string>
 #include <bitset>
-using namespace std;
 
 #define USE_HAL 
 
@@ -22,10 +21,10 @@ using namespace std;
 #include "CAENVMElib.h"  // CAEN library prototypes
 #endif //USE_HAL
 
-#include "CalibFormats/SiPixelObjects/interface/PixelFEDCard.h"
+#include "PixelFEDInterface/include/PixelFEDInterfaceBase.h"
 
 
-class PixelFEDInterface {
+class PixelFEDInterface : public PixelFEDInterfaceBase {
 
  public:
 
@@ -36,12 +35,10 @@ class PixelFEDInterface {
   ~PixelFEDInterface();
 
   // Generic FIFO2 access  
-  int drainFifo2(string item, uint32_t offset, 
+  int drainFifo2(std::string item, uint32_t offset, 
 		 uint32_t *data); // generic
 
   void test(void);
-
-  void sendResets();
 
 #else // direct CAEN
 
@@ -52,30 +49,28 @@ class PixelFEDInterface {
 
 #endif // USE_HAL
 
-  uint32_t testReg(uint32_t data);
-
   // These do not use VME access
-  int configFile(string fileName); // readin the DB parameters
-  int setupFromDB(string fileName); 
-  int setupFromDB(pos::PixelFEDCard pfc); 
-  int setup(void);  // run the setup 
+  void setPilotPiggy() { hasPilotPiggy = true; }
 
-  pos::PixelFEDCard& getPixelFEDCard() {return pixelFEDCard;} // return (a reference) to the current pixelFEDCard settings (private data)
-  void setPixelFEDCard(pos::PixelFEDCard aPixelFEDCard) {pixelFEDCard=aPixelFEDCard;}
+  int setup(const std::string& fileName); 
+  int setup(pos::PixelFEDCard pfc); 
+  int setup(void);  // run the setup 
 
   // Use VME access
   int reset(void); // reset FED (LRES)
+  void resetFED(void); // reset FED (LRES)
   void loadFPGA(); // (re)Loads the FPGA with the program in the EEPROM
 //int loadEEPROM(void);// Re-programs the EEPROMs via VME
+  void sendResets(unsigned); // LRES + CLRES
 
   // For Daughter Cards
   int resetDigFEDpll(void); // reset Piggy Board pll
   int resetDigFEDreg(void); // reset Piggy Board register
   void loadFPGADigFED(); // load fpga to piggy board
-  void readDigFEDStatus(bool verbose, bool override_timeout); // read status of the piggy board
+  void readPhases(bool verbose, bool override_timeout); // read status of the piggy board
   void readDigFEDTempFifo(); 
-  void armDigFEDOSDFifo(int channel, int rochi, int roclo); // arm OSD readback from roc; wait 31 triggers and call read
-  uint32_t readDigFEDOSDFifo(int channel);
+  void armOSDFifo(int channel, int rochi, int roclo); // arm OSD readback from roc; wait 31 triggers and call read
+  uint32_t readOSDFifo(int channel);
   
   
   int TTCRX_I2C_REG_READ( int Register_Nr); 
@@ -95,13 +90,10 @@ class PixelFEDInterface {
   void set_blk_ublk_thold(); // Load UB and B limits
   void set_blk_ublk_trans_thold(); // Load UB and B limits for safe transparent mode
   void set_data_levels();  // Load address levels
-  void toggle_chnls_offon();
   void set_chnls_onoff(); // Set Enable channles
   void set_chnls_onoff(int mode); // Enable/Disable channles
   void set_TBMmask(uint32_t mask); //Set common 8bit mask for TBM trlr
   void set_PrivateWord(uint32_t pword); //Set common gap/fill 8bit word
-  void set_ScopeChannel(int which, uint32_t ch); // Set one of the chips' spy scope channel
-  void set_ScopeChannels(uint32_t N_ch, uint32_t NC_ch, uint32_t SC_ch, uint32_t S_ch); // Set channels for spy scope
   void set_SpecialDac(uint32_t mode); // Set Special Random DAC mode for RNDM Trigs 1on 0off
   void set_MODE_front(); // Set Mode REGs for front(N,NC,SC,S) FPGAs
   void get_MODE_front(); // Print Mode REGs+ for front(N,NC,SC,S) FPGAs
@@ -119,6 +111,7 @@ class PixelFEDInterface {
   void dump_BaselineCorr(); //dumps the baseline corection values from the database and the FED
   void get_BaselineCorr(int * values); //gets the current 36 baseline corection values from the FED
   int get_BaselineCorr(int chnl); //gets the current baseline corection value from the FED for a channel
+  void printBoardInfo(); // fedid, firmware dates, network config, etc.
    uint32_t get_FirmwareDate(int chip);
    uint32_t get_VMEFirmwareDate(void);
    void get_PiggyFirmwareVer();
@@ -133,8 +126,8 @@ class PixelFEDInterface {
   void set_Hold(uint32_t data) ;
 
   // Fills the three test DACchannels  with three given pulse trains
-  void fillDACRegister(vector <uint32_t> pulseTrain_R, vector <uint32_t> pulseTrain_G, 
-		       vector <uint32_t> pulseTrain_B) const; 
+  void fillDACRegister(std::vector <uint32_t> pulseTrain_R, std::vector <uint32_t> pulseTrain_G, 
+		       std::vector <uint32_t> pulseTrain_B) const; 
 
   void fillDACRegister2(void) const; // Fills the test DAC with a linearly increasing ramp from 100 to 1124
   void fillDACRegister(void) const; // Fill the test DAC 
@@ -159,7 +152,8 @@ class PixelFEDInterface {
 
   int loadModeRegister();    // Load Mode Register from DB
   int setModeRegister(int value); // set the mode register to value.
-  int getModeRegister(void) const {return pixelFEDCard.modeRegister;} // return ths mode register value
+  int getModeRegister(void);
+
   int enableSpyMemory(int enable); // enable=1, enable spy memory, 0=disable
   void resetSlink();   // change name?
 
@@ -207,10 +201,6 @@ class PixelFEDInterface {
   int PwordSlink64(uint64_t *data,const int length, uint32_t &totword);
   uint32_t getFifoStatus(void);
   void dump_FifoStatus(uint32_t fword);
-  void set_Printlevel(int level);//0=critical only, 1=all error,2& =info, 4&param file info
-  void set_Printlevel_silent(int level);
-  int get_Printlevel() const { return Printlevel; }
-  void set_printIfSlinkHeaderMessedup(bool x) { printIfSlinkHeaderMessedup = x; }
   void set_TTslevels(void);//Sets adjustable TTs consecutive levels for OOS and ERR from Fedcard
   void set_TTslevels(int inmoos,int inmerr);//Sets adjustable TTs consecutive levels for OOS and ERR
                                         //puts values ioos and ierr into Fedcard
@@ -250,34 +240,40 @@ int FixBBB(int chan,uint32_t *data);
 
 // 2 very stupid bit finding functions for the CRC checker
 
-int lbitval(int ibit,uint64_t wrd)
-{uint64_t valb=((0x1ULL<<ibit)&wrd)>>ibit;
-int val=(int)valb;
-return val; }
-
-int sbitval(int ibit,int wrd)
-{int valb=((0x1<<ibit)&wrd)>>ibit;
-return valb; }
-
-// XY Mechanism
-void setXY( int X, int Y);
-int getXYCount();
-void resetXYCount();
-
-// Fake event mechanism
-int getNumFakeEvents();
-void resetNumFakeEvents();
-
-// Check for channels that don't match FEDCard
-// Passes bitsets which indicate which channel(s) didn't match
-// If something doesn't match, it usually indicates an SEU
-bool checkFEDChannelSEU();
-void incrementSEUCountersFromEnbableBits(vector<int>&, bitset<9>, bitset<9>);
-void resetEnbableBits();
-// Check to see if any channel as too many SEUs
-bool checkSEUCounters(int);
-bool runDegraded;
-void storeEnbableBits();
+  int lbitval(int ibit,uint64_t wrd)
+  {uint64_t valb=((0x1ULL<<ibit)&wrd)>>ibit;
+    int val=(int)valb;
+    return val; }
+  
+  int sbitval(int ibit,int wrd)
+  {int valb=((0x1<<ibit)&wrd)>>ibit;
+    return valb; }
+  
+  // XY Mechanism
+  void setXY( int X, int Y);
+  int getXYCount();
+  void resetXYCount();
+  
+  // Fake event mechanism
+  uint32_t getNumFakeEvents();
+  void resetNumFakeEvents();
+  
+  // Check for channels that don't match FEDCard
+  // Passes bitsets which indicate which channel(s) didn't match
+  // If something doesn't match, it usually indicates an SEU
+  bool checkFEDChannelSEU();
+  void incrementSEUCountersFromEnbableBits(std::vector<int>&, std::bitset<9>, std::bitset<9>);
+  void resetEnbableBits();
+  // Check to see if any channel as too many SEUs
+  bool checkSEUCounters(int);
+  void storeEnbableBits();  
+  void resetSEUCountAndDegradeState(void);
+  bool runDegraded(void) {return runDegraded_;}
+  
+  uint32_t getErrorReport(int ch);
+  uint32_t getTimeoutReport(int ch);
+  uint32_t linkFullFlag();
+  uint32_t numPLLLocks();
 
  private:
 
@@ -285,7 +281,7 @@ void storeEnbableBits();
 #ifdef USE_HAL // Access VME with HAL
 
   // Generic FIFO2 access  
-  int drainFifo2(string item, uint32_t offset, const uint32_t length, 
+  int drainFifo2(std::string item, uint32_t offset, const uint32_t length, 
 		 uint32_t *data); // generic
 #else // direct CAEN
 
@@ -293,35 +289,36 @@ void storeEnbableBits();
 
 #endif // end USE_HAL
 
+  
  private:
+
+  bool hasPilotPiggy; // JMTBAD zarlink vs fitel
 
   // Private variables
   // Channel access 
   uint32_t CHIP[5],CH_SubAddr[9];
-  pos::PixelFEDCard pixelFEDCard; // the FED settings
   
   // Keep track of the expected status of the FED channels
-  bitset<9> N_enbable_expected, NC_enbable_expected, SC_enbable_expected, S_enbable_expected;
+  std::bitset<9> N_enbable_expected, NC_enbable_expected, SC_enbable_expected, S_enbable_expected;
   // Keep track of the status of the FED channels last time we checked
-  bitset<9> N_enbable_last, NC_enbable_last, SC_enbable_last, S_enbable_last;
+  std::bitset<9> N_enbable_last, NC_enbable_last, SC_enbable_last, S_enbable_last;
 
   // Keep track of the number of SEUs in each channel
-  vector<int> N_num_SEU, NC_num_SEU, SC_num_SEU, S_num_SEU;
+  std::vector<int> N_num_SEU, NC_num_SEU, SC_num_SEU, S_num_SEU;
+
+  // keep track of degraded state
+  bool runDegraded_;
 
   uint32_t lastErrorValue[8];
   uint32_t lastDACValue[8];
   uint32_t lastTTS;
-
-  //printing
-  int Printlevel; //0=critical only, 1=all error,2& =info, 4&param file info
-  bool printIfSlinkHeaderMessedup;
 
   long long DauCards_lastStatusPoll;
   
 #ifdef USE_HAL  // Access VME with HAL
   const HAL::VMEDevice *const vmeDevicePtr;
 
-  string FPGAName[5];  // to hold the VME register name for HAL 
+  std::string FPGAName[5];  // to hold the VME register name for HAL 
 
   // Fifo length in BYTES for block readouts
   static const int spyFifo1Length = 4096; // 1024 words
@@ -385,20 +382,20 @@ void storeEnbableBits();
   uint32_t I2C_RD_STAT;
   
   // For Daughter Cards
-  unsigned long  TopDauCard_nConfig;
-  unsigned long  BottomDauCard_nConfig;
-  unsigned long  TopDauCard_pll;
-  unsigned long  BottomDauCard_pll;
-  unsigned long  TopDauCard_com;
-  unsigned long  BottomDauCard_com;
-  unsigned long  TopDauCard_UpStatus;
-  unsigned long  TopDauCard_DownStatus;
-  unsigned long  BottomDauCard_UpStatus;
-  unsigned long  BottomDauCard_DownStatus;
-  unsigned long  TopDauCard_UpTempFifo;
-  unsigned long  TopDauCard_DownTempFifo;
-  unsigned long  BottomDauCard_UpTempFifo;
-  unsigned long  BottomDauCard_DownTempFifo;
+  uint32_t TopDauCard_nConfig;
+  uint32_t BottomDauCard_nConfig;
+  uint32_t TopDauCard_pll;
+  uint32_t BottomDauCard_pll;
+  uint32_t TopDauCard_com;
+  uint32_t BottomDauCard_com;
+  uint32_t TopDauCard_UpStatus;
+  uint32_t TopDauCard_DownStatus;
+  uint32_t BottomDauCard_UpStatus;
+  uint32_t BottomDauCard_DownStatus;
+  uint32_t TopDauCard_UpTempFifo;
+  uint32_t TopDauCard_DownTempFifo;
+  uint32_t BottomDauCard_UpTempFifo;
+  uint32_t BottomDauCard_DownTempFifo;
 
   // For the CAEN VME 
   long BHandle; // pointer to the device
@@ -408,6 +405,9 @@ void storeEnbableBits();
 
 #endif // USE_HAL 
 
+ public:
+  // Stuff that doesn't apply to VME or VME+piggy FED
+  void prepareCalibrationMode(unsigned) {}
 };
 
-#endif // ifdef declare 
+#endif

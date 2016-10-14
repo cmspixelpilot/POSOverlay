@@ -26,6 +26,8 @@ include $(ENV_CMS_TK_ONLINE_ROOT)/config/FecRules.linux
 
 FECSOFTWARE_ROOT:=${ENV_CMS_TK_ONLINE_ROOT}
 
+CACTUS_ROOT=/opt/cactus
+
 Project=pixel
 Package=PixelSupervisorConfiguration
 
@@ -36,11 +38,8 @@ Sources = $(wildcard src/common/*.cc)
 
 IncludeDirs = \
 	$(BUILD_HOME)/$(Project) \
+	$(CACTUS_ROOT)/include \
         $(XDAQ_ROOT)/include/hal \
-	$(ENV_CMS_TK_DIAG_ROOT) \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-	$(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
         $(FECSOFTWARE_ROOT)/generic/include \
         $(FECSOFTWARE_ROOT)/ThirdParty/APIConsoleDebugger/include \
         $(FECSOFT_INCLUDE)
@@ -51,7 +50,7 @@ UserSourcePath = \
 	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x
+UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =

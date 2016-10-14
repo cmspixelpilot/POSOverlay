@@ -1174,27 +1174,31 @@ DetectorNavigator.clickRoc = function() {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DetectorNavigator.expandCallBack = function(success,rocFolder) {	
-
-	if(success){
+DetectorNavigator.expandCallBack = function(success,rocFolder)
+{	
+  if(success)
+  {
 		
-		var objects = "";
-		var count = 0;
-	  var rocName = DetectorNavigator.rocPath;
+  var objects = "";
+  var count = 0;
+  var rocName = DetectorNavigator.rocPath;
 
-		rocFolder.eachChild(function(child){
-		  if(child.id.indexOf(rocName) != -1){
-			  var regExp=new RegExp(rocName+"[0-9]");
-        if(child.id.match(regExp) == null){
-		      objects += child.id + "--"; 
-				  ++count;
-        }
-		  }
-		});
+  rocFolder.eachChild(function(child)
+  {
+    if(child.id.indexOf(rocName) != -1)
+    {
+      var regExp=new RegExp(rocName+"[0-9]");
+      if(child.id.match(regExp) == null)
+      {
+        objects += child.id + "--"; 
+        ++count;
+      }//if 
+    }//if
+  });//rocFolder
 //		rocFolder.eachChild(function(child){objects += child.id; ++count;});
 		
-		Canvas.add("Multi-Canvas",objects);
-	}
+  Canvas.add("Multi-Canvas",objects);
+  }//if success
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1265,68 +1269,80 @@ DetectorNavigator.ajaxRocResponse = function(ajaxObj) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DetectorNavigator.paintWithTree = function(summaryNode){
-
-	if(summaryNode.text.indexOf("Field - ") < 0){ //is the summary root
+DetectorNavigator.paintWithTree = function(summaryNode)
+{
+//  window.alert("DetectorNavigator.paintWithTree");
+//  window.alert("DetectorNavigator.paintWithTree ---->summaryNode.text= " + summaryNode.text);
+  if(summaryNode.text.indexOf("Field - ") < 0)
+  { //is the summary root
+    //remove current children of summary node
+//    window.alert("DetectorNavigator.paintWithTree--->if(summaryNode.text.indexOf(\"Field - \") < 0)");
+    var numOfChildren = summaryNode.childNodes.length;
+  
+    for(i=numOfChildren-1;i>=0;--i)
+      summaryNode.removeChild(summaryNode.childNodes[i]);
 		
-		//remove current children of summary node
-		var numOfChildren = summaryNode.childNodes.length;
-		for(i=numOfChildren-1;i>=0;--i)
-			summaryNode.removeChild(summaryNode.childNodes[i]);
-		
-		DetectorNavigator.currentSummaryNode = summaryNode;
-		Ext.Ajax.request({
-			url:     'XGI_RequestHistogram',
-			success: DetectorNavigator.populateFieldNodes,
-			failure: ajaxFailure,
-			params:  {
-									histoname: summaryNode.id,
-									field: ""
-								}
-		});	
-	}
-	else{ //field is requested
-		DetectorNavigator.currentSummary = summaryNode.id.slice(0,summaryNode.id.lastIndexOf("/"));
-		DetectorNavigator.currentSummaryField = summaryNode.id.slice(summaryNode.id.lastIndexOf("/")+1);
+    DetectorNavigator.currentSummaryNode = summaryNode;
+    Ext.Ajax.request({
+      url:     'XGI_RequestHistogram',
+      success: DetectorNavigator.populateFieldNodes,
+      failure: ajaxFailure,
+      params:  {
+	histoname: summaryNode.id,
+	field: ""
+      }//params
+    });	////Ext.Ajax.request
+  }//if sumaryNode.text.indexOf
+  else
+  { //field is requested
+//    window.alert("DetectorNavigator.paintWithTree--->else");
+    DetectorNavigator.currentSummary = summaryNode.id.slice(0,summaryNode.id.lastIndexOf("/"));
+//    window.alert("DetectorNavigator.paintWithTree--->else--->currentSummary= " + summaryNode.id.slice(0,summaryNode.id.lastIndexOf("/")));
+    DetectorNavigator.currentSummaryField = summaryNode.id.slice(summaryNode.id.lastIndexOf("/")+1);
+//    window.alert("DetectorNavigator.paintWithTree--->else--->currentSummaryField= " + summaryNode.id.lastIndexOf("/")+1);
 
-		Ext.Ajax.request({
-			url:     'XGI_RequestHistogram',
-			success: DetectorNavigator.reload,
-			failure: ajaxFailure,
-			params:  {
-									histoname: DetectorNavigator.currentSummary,
-									field: DetectorNavigator.currentSummaryField,
-									requestId: escape(HistoViewer.globalRequestId)
-								}
-		});		
-	}
-	
-}
+    Ext.Ajax.request({
+      url:     'XGI_RequestHistogram',
+      success: DetectorNavigator.reload,
+      failure: ajaxFailure,
+      params:  {
+	histoname: DetectorNavigator.currentSummary,
+	field: DetectorNavigator.currentSummaryField,
+	requestId: escape(HistoViewer.globalRequestId)
+      }//params
+    });//Ext.Ajax.request		
+  }//else
+}//paintWithTree
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DetectorNavigator.populateFieldNodes = function(ajaxObj){
+DetectorNavigator.populateFieldNodes = function(ajaxObj)
+{
+//  window.alert("DetectorNavigator.populatefieldNodes");
+  var fieldStr = ajaxObj.responseText.slice(1);
+//i  window.alert("DetectorNavigator.populatefieldNodes------>ajaxObj.responseText= " + ajaxObj.responseText);
+//  window.alert("DetectorNavigator.populatefieldNodes------>fieldStr= " + fieldStr);
+  var node;
+  var i;
+  var field;
+  while(((i = fieldStr.indexOf(",")) != -1 || (i = fieldStr.indexOf("]")) != -1) && i != 0)
+  {
+    field = fieldStr.slice(0,i);
+    if(i < fieldStr.length)
+      fieldStr = fieldStr.slice(i+1);	
 
-	var fieldStr = ajaxObj.responseText.slice(1);
-	var node;
-	var i;
-	var field;
-	while(((i = fieldStr.indexOf(",")) != -1 || (i = fieldStr.indexOf("]")) != -1) && i != 0){
-		field = fieldStr.slice(0,i);
-		if(i < fieldStr.length)
-			fieldStr = fieldStr.slice(i+1);	
-
-		DetectorNavigator.currentSummaryNode.appendChild(node = new Ext.tree.TreeNode({
-  		text: 			'Field - ' + field,
-  		id: 				DetectorNavigator.currentSummaryNode.id + "/" + field,
-  		leaf: 			true,
-  		cls:  			'file',
-		}));
+//    window.alert("DetectorNavigator.populatefieldNodes--->field= " + field);
+    DetectorNavigator.currentSummaryNode.appendChild(node = new Ext.tree.TreeNode({
+      text:	'Field - ' + field,
+      id: 	DetectorNavigator.currentSummaryNode.id + "/" + field,
+      leaf:	true,
+      cls: 	'file',
+    }));
 	
-		node.addListener("click",FileTreeWindow.onContentClick);	
-	}
+    node.addListener("click",FileTreeWindow.onContentClick);	
+  }//while
 	
-	DetectorNavigator.currentSummaryNode.expand();	
-}
+  DetectorNavigator.currentSummaryNode.expand();	
+}//populateFieldNodes
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DetectorNavigator.reload = function(ajaxObj){

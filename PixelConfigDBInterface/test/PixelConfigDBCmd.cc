@@ -73,7 +73,7 @@ void printHelp(){
   cout << "PixelConfigDBCmd.exe --printAlias" <<endl;
   cout << "PixelConfigDBCmd.exe --printAliasFull SCurve" <<endl;
   cout << "PixelConfigDBCmd.exe --printVersionAlias dac" <<endl;
-  cout << "PixelConfigDBCmd.exe --insertData ltcconfig LTCConfiguration.txt" << endl;
+  cout << "PixelConfigDBCmd.exe --insertData ltcconfig LTCConfiguration.txt [Default]" << endl;
   cout << "PixelConfigDBCmd.exe --insertDataSet fedcard fedcardlist.txt" << endl;
   cout << "PixelConfigDBCmd.exe --getVersion nametranslation/ 0" << endl;
   cout << "PixelConfigDBCmd.exe --insertConfigAlias PhysicsLowLumi 0" << endl;
@@ -99,27 +99,40 @@ int main(int argc, char* argv[]){
   std::string cmd=argv[1];
 
 
-  if (cmd=="--insertConfigAlias"&&argc==4){
+  if (cmd=="--insertConfigAlias" && argc <= 4){
+    if (argc < 4) {
+      std::cerr << "wrong number of arguments for --insertConfigAlias\n";
+      return 1;
+    }
     std::string alias=argv[2];
     unsigned int key=atoi(argv[3]);
     Iconfig_.addAlias(alias,key);
   }
   else if (cmd=="--getVersion"){
-    assert(argc>3);
+    if (argc < 4) {
+      std::cerr << "wrong number of arguments for --getVersion\n";
+      return 1;
+    }
     std::string path=argv[2];
     unsigned int version=atoi(argv[3]);
     pos::PixelConfigBase* object=getVersion(path,version);
     object->writeASCII();
   }
   else if (cmd=="--insertVersionAlias"){
-    assert(argc>4);
+    if (argc < 5) {
+      std::cerr << "wrong number of arguments for --insertVersionAlias\n";
+      return 1;
+    }
     std::string path=argv[2];
     unsigned int version=atoi(argv[3]);
     std::string alias=argv[4];
     Iconfig_.addVersionAlias(path,version,alias);
   }
   else if (cmd=="--insertConfigAlias"){
-    assert(argc>4);
+    if (argc < 5) {
+      std::cerr << "wrong number of arguments for --insertConfigAlias\n";
+      return 1;
+    }
     std::string alias=argv[2];
     int argcounter=3;
     std::vector<std::pair<std::string, unsigned int> > versions;
@@ -161,6 +174,10 @@ int main(int argc, char* argv[]){
     }
   }
   else if (cmd=="--printAliasFull"){
+    if (argc < 3) {
+      std::cerr << "wrong number of arguments for --printAliasFull\n";
+      return 1;
+    }
     std::string alias=argv[2];
     unsigned int key;
     std::vector<std::pair<std::string, std::string> > versionAliases;
@@ -183,6 +200,10 @@ int main(int argc, char* argv[]){
     }
   }
   else if (cmd=="--printKey"){
+    if (argc < 3) {
+      std::cerr << "wrong number of arguments for --printKey\n";
+      return 1;
+    }
     unsigned int key = atoi(argv[2]);
     std::vector<std::pair<std::string, unsigned int> > versions;
     versions = Iconfig_.getVersions(pos::PixelConfigKey(key));
@@ -198,6 +219,10 @@ int main(int argc, char* argv[]){
     std::cout << "______________________________________________" << std::endl ;
   }
   else if (cmd=="--printVersionAlias"){
+    if (argc < 3) {
+      std::cerr << "wrong number of arguments for --printVersionAlias\n";
+      return 1;
+    }
     std::string path=argv[2];
     std::vector<std::string> aliases = Iconfig_.getVersionAliases(path);
 
@@ -207,6 +232,11 @@ int main(int argc, char* argv[]){
     }
   }
   else if (cmd=="--insertData"){
+    if (argc < 4) {
+      std::cerr << "not enough arguments for --insertData\n";
+      return 1;
+    }
+
     std::string path=argv[2];
     std::string filename=argv[3];
     pos::PixelConfigBase* object=0;
@@ -248,8 +278,18 @@ int main(int argc, char* argv[]){
     Iconfig_.commit(0) ;
 
     std::cout << "Inserted as version:"<<version<< std::endl;
+
+    if (argc > 4) {
+      std::string alias = argv[4];
+      std::cout << "And aliased as: " << alias << std::endl;
+      Iconfig_.addVersionAlias(path,version,alias);
+    }
   }
   else if (cmd=="--insertDataSet"){
+    if (argc < 4) {
+      std::cerr << "wrong number of arguments for --insertDataSet\n";
+      return 1;
+    }
     std::string path=argv[2];
     std::string filename=argv[3];
     std::vector<pos::PixelConfigBase*> objects;
@@ -283,7 +323,10 @@ int main(int argc, char* argv[]){
     std::cout << "Inserted as version:"<<version<< std::endl;
   }
   else if (cmd=="--getFiles"){
-    assert(argc>3);
+    if (argc < 4) {
+      std::cerr << "wrong number of arguments for --getFiles\n";
+      return 1;
+    }
     std::string path=argv[2];
     unsigned int version=atoi(argv[3]);
     PixelConfigKey key(version);
@@ -294,10 +337,10 @@ int main(int argc, char* argv[]){
     system(cmd.c_str());
   }
   else{
-    std::cout << "Unknown option:" << argv[1] << std::endl;
+    std::cerr << "Unknown option:" << argv[1] << std::endl;
+    return 1;
   }
 
   return 0;
-
 }
 

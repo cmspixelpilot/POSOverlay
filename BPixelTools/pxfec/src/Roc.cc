@@ -25,7 +25,7 @@ void Roc::Init(){
   }
   
   // Disable all pixels
-  cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, mask, trim);
+  cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, mask, trim);
   cout<<endl;
 }
 
@@ -51,21 +51,29 @@ void Roc::Execute(SysCommand *command){
 
     if(command->narg==0) return;
     int *value1, *value2;
-    static int trimBits=0;
+    static int trimBits=15;
   
     if(command->Keyword("mask")){
       cout << "masking roc " << iroc << "  on hub " << hubaddress << endl;
-      cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, trimBits); //mask,trim
+      cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, trimBits); //mask,trim
     }else if(command->Keyword("unmask")){
       cout << "unmasking roc " << iroc << "  on hub " << hubaddress << endl;
-      cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 1, trimBits); //mask,trim
+      cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, 1, trimBits); //mask,trim
     }else if(command->Keyword("trim",&value1)){
       trimBits=*value1;
-      cn->interface->rocinit(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, *value1); //mask,trim
+      cn->interface->rocinit(52, cn->mfec, cn->channel, hubaddress, portaddress, iroc, 0, *value1); //mask,trim
     }else if(command->Keyword("clrcal")||command->Keyword("cald")){
       cn->interface->clrcal(cn->mfec, cn->channel, hubaddress, portaddress, iroc);
     }else if(command->Keyword("fullspeed")){     setDAC(0xFD,  0);
     }else if(command->Keyword("halfspeed")){     setDAC(0xFD,  1);
+    }else if(command->Keyword("testbufmode")) {
+      for (int j = 0; j < 80; ++j) {
+        for (int i = 0; i < 52; ++i)
+          cn->interface->progpix1(cn->mfec, cn->channel, hubaddress, portaddress, iroc, i, j, 1, 0x8, 1); //mask,trim
+        if (j == 39)
+          cn->interface->progdac(cn->mfec, cn->channel, hubaddress, portaddress, iroc, 2, 0, 1);
+      }
+      cn->interface->qbufsend();
     }else if(command->Keyword("arm", &value1, &value2)){
       for(int * j=value1; (*j)>=0; j++){
 	for(int * k=value2; (*k)>=0; k++){
@@ -75,8 +83,6 @@ void Roc::Execute(SysCommand *command){
 	  cn->interface->dcolenable(cn->mfec, cn->channel, hubaddress, portaddress, iroc, int((*j)/2), 1);//enable
 	  // Enable only 1 pixel
 	  cn->interface->progpix1(cn->mfec, cn->channel, hubaddress, portaddress, iroc, *j, *k, 1, trimBits); //mask,trim
-	  setDAC(253, 4);
-	  cn->interface->clrcal(cn->mfec, cn->channel, hubaddress, portaddress, iroc);
 	  // Cal enable for one pixel
 	  cn->interface->calpix( cn->mfec, cn->channel, hubaddress, portaddress, iroc, *j, *k, 1); // cal
 	}

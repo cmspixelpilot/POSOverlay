@@ -1,6 +1,5 @@
 # list of all packages
 cmspxldaq/doc
-cmspxldaq/BPixelTools/trunk
 cmspxldaq/JobControl/trunk
 cmspxldaq/PixelAnalysisTools/branches/PixelAnalysisTools-phase1
 cmspxldaq/PixelCalibrations/branches/PixelCalibrations-phase1
@@ -26,3 +25,4 @@ cmspxldaq/PixelTTCSupervisor/trunk
 cmspxldaq/PixelUtilities/branches/PixelUtilities-phase1
 cmspxldaq/XDAQConfiguration/branches/XDAQConfiguration-phase1
 cmspxldaq/PixelTCDSSupervisor/trunk
+cmspxldaq/CalibFormats/SiPixelObjects/branches/SiPixelObjects-phase1

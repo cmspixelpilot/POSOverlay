@@ -8,11 +8,9 @@
 #include "PixelUtilities/PixelFEDDataTools/include/DigScopeDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/DigTransDecoder.h"
 #include "PixelUtilities/PixelFEDDataTools/include/FIFO3Decoder.h"
-#include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
 #include <iomanip>
 
 using namespace pos;
@@ -25,8 +23,6 @@ PixelFEDTBMDelayCalibration::PixelFEDTBMDelayCalibration(const PixelFEDSuperviso
 
 void PixelFEDTBMDelayCalibration::initializeFED() {
   setFEDModeAndControlRegister(0x8, 0x30010);
-  printIfSlinkHeaderMessedup_off();
-  sendResets();
 }
 
 xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::MessageReference msg) {
@@ -40,9 +36,6 @@ xoap::MessageReference PixelFEDTBMDelayCalibration::beginCalibration(xoap::Messa
   OnlyFIFO3 = tempCalibObject->parameterValue("OnlyFIFO3") == "yes";
   DumpFIFOs = tempCalibObject->parameterValue("DumpFIFOs") == "yes";
   PrintHits = tempCalibObject->parameterValue("PrintHits") == "yes";
-
-  //  const std::vector<PixelROCName>& rocs = tempCalibObject->rocList();
-  //PixelRootDirectoryMaker rootDirs(rocs, rootf);
 
   for (unsigned dacnum = 0; dacnum < tempCalibObject->numberOfScanVariables(); ++dacnum) {
     const std::string& dacname = tempCalibObject->scanName(dacnum);
@@ -127,7 +120,7 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
   for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
     const unsigned fednumber = fedsAndChannels[ifed].first;
     const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
-    PixelFEDInterface* iFED = FEDInterface_[vmeBaseAddress];
+    PixelFEDInterfaceBase* iFED = FEDInterface_[vmeBaseAddress];
 
     uint32_t fifoStatus = 0;
     const int MaxChans = 37;    
@@ -164,15 +157,15 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       if (fifoStatus & 0x200) FillEm(state, F37almostFull, 1);
 
       for (int ch = 1; ch <= 36; ++ch)
-	statusFifo1[ch] = iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
+	statusFifo1[ch] = 0; //iFED->drainFifo1(ch, bufferFifo1[ch], 1024);
 
       for (int chip = 1; chip <= 7; chip += 2) {
 	if (chip == 1 || chip == 7) {
-	  iFED->drainDigTransFifo(chip, bufferT[chip]);
+	  //iFED->drainDigTransFifo(chip, bufferT[chip]);
 	  decodeT[chip] = new DigTransDecoder(bufferT[chip]);
 	}
 
-	statusS[chip] = iFED->drainDataFifo2(chip, bufferS[chip]);
+	statusS[chip] = 0; //iFED->drainDataFifo2(chip, bufferS[chip]);
 	decodeS[chip] = new DigScopeDecoder(bufferS[chip], statusS[chip]);
       }
 
@@ -251,40 +244,44 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
       FillEm(state, F3fifoErr, 1);
     else {
       for (unsigned ihit = 0; ihit < decode3->nhits(); ++ihit) {
-	const unsigned channel = decode3->channel(ihit);
-	const unsigned rocid = decode3->rocid(ihit);
-	assert(rocid > 0);
-	const unsigned col = decode3->column(ihit);
-	const unsigned row = decode3->row(ihit);
+        const unsigned channel = decode3->channel(ihit);
+        const unsigned rocid = decode3->rocid(ihit);
+        const unsigned col = decode3->column(ihit);
+        const unsigned row = decode3->row(ihit);
 
-	const PixelROCName& roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
+        // Skip if this ROC is not on the list of ROCs to calibrate.
+        // Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
+        PixelROCName roc;
+        vector<PixelROCName>::const_iterator foundROC;
+        if (rocid > 0) {
+          roc = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, channel, rocid-1);
+          foundROC = find(rocs.begin(), rocs.end(), roc);
+        }
 
-	// Skip if this ROC is not on the list of ROCs to calibrate.
-	// Also skip if we're in singleROC mode, and this ROC is not being calibrated right now.
-	vector<PixelROCName>::const_iterator foundROC = find(rocs.begin(), rocs.end(), roc);
-	if (foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
-	  std::cout << "!! wrong roc: " << roc << " ch " << channel << " col " << col << " row " << row << std::endl;
-	  FillEm(state, F3wrongRoc, 1);
-	}
-	else {
-	  if (PrintHits) std::cout << "c " << col << " r " << row << " ";
-	  if (colrows.find(std::make_pair(col, row)) == colrows.end())
-	    FillEm(state, F3wrongPix, 1);
-	  else
-	    FillEm(state, F3rightPix, 1);
-	}
+        if (rocid == 0 || foundROC == rocs.end()) {// || !tempCalibObject->scanningROCForState(roc, state))
+          std::cout << "!! wrong roc: " << roc << " ch " << channel << " col " << col << " row " << row << std::endl;
+          FillEm(state, F3wrongRoc, 1);
+        }
+        else {
+          if (PrintHits) std::cout << "c " << col << " r " << row << " ";
+          if (colrows.find(std::make_pair(col, row)) == colrows.end())
+            FillEm(state, F3wrongPix, 1);
+          else
+            FillEm(state, F3rightPix, 1);
+        }
       }
     }
+
     if (PrintHits) std::cout << std::endl;
 
     //////
 
     if (DumpFIFOs) {
       if (!OnlyFIFO3) {
-	iFED->readDigFEDStatus(false, false);
+	//iFED->readDigFEDStatus(false, false);
 
-	std::cout << "FIFO statuses:\n";
-	iFED->dump_FifoStatus(fifoStatus);
+	//std::cout << "FIFO statuses:\n";
+	//iFED->dump_FifoStatus(fifoStatus);
 
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "Contents of FIFO 1 for all channels" << std::endl;
@@ -654,13 +651,16 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
 	std::cout << "FIFO3Decoder thinks:\n"
 		  << "nhits: " << decode3->nhits() << std::endl;
 	int hits_by_ch[37] = {0};
-	int hits_by_roc[37][8] = {{0}};
+	int hits_by_roc[37][9] = {{0}};
 	unsigned lastroc = 0;
 	for (unsigned i = 0; i < decode3->nhits(); ++i) {
 	  const PixelROCName& rocname = theNameTranslation_->ROCNameFromFEDChannelROC(fednumber, decode3->channel(i), decode3->rocid(i)-1);
+          unsigned rocidm1 = decode3->rocid(i)-1;
+          if (rocidm1 > 7)
+            rocidm1 = 8;
 	  ++hits_by_ch[decode3->channel(i)];
-	  ++hits_by_roc[decode3->channel(i)][decode3->rocid(i)-1];
-	  if (lastroc != 0 && decode3->rocid(i) != lastroc) {
+	  ++hits_by_roc[decode3->channel(i)][rocidm1];
+	  if (rocidm1 < 8 && lastroc != 0 && decode3->rocid(i) != lastroc) {
 	    std::cout << "\n";
 	    lastroc = decode3->rocid(i);
 	  }
@@ -706,7 +706,11 @@ void PixelFEDTBMDelayCalibration::RetrieveData(unsigned state) {
     delete decodeErr;
   }
 
-  sendResets(); // LRES + CLRES
+  for (unsigned ifed = 0; ifed < fedsAndChannels.size(); ++ifed) {
+    const unsigned fednumber = fedsAndChannels[ifed].first;
+    const unsigned long vmeBaseAddress = theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+    FEDInterface_[vmeBaseAddress]->sendResets(3);
+  }
 }
 
 void PixelFEDTBMDelayCalibration::Analyze() {
@@ -751,9 +755,6 @@ void PixelFEDTBMDelayCalibration::BookEm(const TString& path) {
   for (int idecode = 0; idecode < nDecode; ++idecode) {
     scans1d[idecode].clear();
     scans2d[idecode].clear();
-
-    if (OnlyFIFO3 && idecode < F3fifoErr)
-      continue;
 
     for (size_t i = 0; i < dacsToScan.size(); ++i) {
       const std::string& iname = dacsToScan[i];

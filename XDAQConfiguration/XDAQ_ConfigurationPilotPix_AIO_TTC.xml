@@ -5,12 +5,12 @@
 
     <xc:Endpoint protocol="loopback" service="b2in" interface="eth0" hostname="vmepc-s2b18-08-01.cms" port="1914" network="xmas"/>
 
-    <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq" />
-    <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
-      <UseTCDS xsi:type="xsd:boolean">false</UseTCDS>
-      <UseTTC xsi:type="xsd:boolean">true</UseTTC>
-      <TTCSupervisorApplicationName xsi:type="xsd:string">ttc::TTCciControl</TTCSupervisorApplicationName>
-    </properties>
+    <xc:Application class="PixelSupervisor" id="51" instance="0" network="local" group="daq">
+      <properties xmlns="urn:xdaq-application:PixelSupervisor" xsi:type="soapenc:Struct"> 
+	<UseTCDS xsi:type="xsd:boolean">false</UseTCDS>
+	<UseTTC xsi:type="xsd:boolean">true</UseTTC>
+	<TTCSupervisorApplicationName xsi:type="xsd:string">ttc::TTCciControl</TTCSupervisorApplicationName>
+      </properties>
     <xc:Module>${BUILD_HOME}/pixel/PixelSupervisor/lib/linux/x86_64_slc6/libPixelSupervisor.so</xc:Module>
 
     <xc:Application class="PixelTKFECSupervisor" id="100" instance="1" network="local" group="daq">
@@ -23,12 +23,7 @@
     <xc:Application class="PixelFECSupervisor" id="60" instance="1" network="local" group="daq"/>
     <xc:Module>${BUILD_HOME}/pixel/PixelFECSupervisor/lib/linux/x86_64_slc6/libPixelFECSupervisor.so</xc:Module>
 
-    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq">
-      <properties xmlns="urn:xdaq-application:PixelFEDSupervisor" xsi:type="soapenc:Struct">		        
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>
-        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/clientApp.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
+    <xc:Application class="PixelFEDSupervisor" id="70" instance="1" network="local" group="daq"/>
     <xc:Module>${BUILD_HOME}/pixel/PixelFEDSupervisor/lib/linux/x86_64_slc6/libPixelFEDSupervisor.so</xc:Module>
 
     <xc:Application class="ttc::TTCciControl" id="90" instance="0" network="local" group="daq">
@@ -46,21 +41,8 @@
     </xc:Application>
     <xc:Module>${XDAQ_ROOT}/lib/libttcttcci.so</xc:Module>  
     <xc:Module>${XDAQ_ROOT}/lib/libttcutils.so</xc:Module>  
-
-    <xc:Application class="GlobalErrorDispatcher" id="31" instance="0" network="local">
-      <properties xmlns="urn:xdaq-application:GlobalErrorDispatcher" xsi:type="soapenc:Struct">
-        <UseDiagSystem xsi:type="xsd:string">tuned</UseDiagSystem>  <!-- off / default / tuned / oldway -->
-        <DiagSystemSettings xsi:type="xsd:string">${BUILD_HOME}/pixel/PixelFEDSupervisor/conf/glbEd.set</DiagSystemSettings>
-      </properties>
-    </xc:Application>
-    <xc:Module>${ENV_CMS_TK_DIAG_ROOT}/modules/GlobalErrorDispatcher/lib/linux/x86_64_slc6/libGlobalErrorDispatcher.so</xc:Module>
-
   </xc:Context>
 
-  <!-- P5 PSX server: http://srv-c2c03-16.cms:9923/urn:xdaq-application:lid=30/ -->
-  <!-- 9923 is just pixel port, port for tracker DCS is ~ 9922. If it does not work you can try 9920 (central DCS) -->
-  <!-- <xc:Context id="6" url="http://srv-c2c03-16.cms:9922"> -->
-  <!-- <xc:Context id="6" url="http://cmspsx.cms:9922"> works with PSX running! Otherwise works with 9920 -->
   <xc:Context id="6" url="http://psx-pix.cms:9923">
     <xc:Application class="psx" id="30" instance="0" network="local" group="dcs" service="psx"/>
   </xc:Context>

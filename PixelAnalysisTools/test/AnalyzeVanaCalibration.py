@@ -100,6 +100,10 @@ for iter in range(miniter,maxiter+1):
         #print roc, iter, vanacorr[roc][iter]
         hvanacorr[iter-miniter].Fill(vanacorr[roc][iter-miniter])
         hdt[iter-miniter].Fill(inthr[roc][iter-miniter]-absthr[roc][iter-miniter])
+        if inthr[roc][iter-miniter]-absthr[roc][iter-miniter] < 7 :
+            print 'ROC with DT < 7 (', inthr[roc][iter-miniter]-absthr[roc][iter-miniter] ,') ' + str(roc)
+        if inthr[roc][iter-miniter]-absthr[roc][iter-miniter] > 15 :
+            print 'ROC with DT > 15: (', inthr[roc][iter-miniter]-absthr[roc][iter-miniter],') ' + str(roc)
         habs[iter-miniter].Fill(absthr[roc][iter-miniter])
         #habs[iter-miniter].Fill(inthr[roc][iter-miniter])
 

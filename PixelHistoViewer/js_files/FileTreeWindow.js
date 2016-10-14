@@ -11,8 +11,9 @@ FileTreeWindow.flattenFileDirs = 0;
 
 ////////////////////////////////////
 FileTreeWindow.createWindow = function(){
-	if(!FileTreeWindow.win){
-		var win;
+  if(!FileTreeWindow.win)
+  {
+    var win;
 			
 		// var flattenForm = new Ext.form.FormPanel({
 // 	      baseCls: 'x-plain',
@@ -26,96 +27,79 @@ FileTreeWindow.createWindow = function(){
 //     		  }],
 // 	  });
 		
-	  var fileTree = new Ext.tree.TreePanel({
-									   region:       'west',
-									   animate:      false,
-									   enableDD:     false,
-									   rootVisible:  false,
-									   autoScroll:   true,
-									   width:        450,
-									   split:        true,
-	  							   collapsible:  true,
-									   title:        "Files in /nfshome0/pixelpro/TriDAS/pixel/PixelRuns/Runs",
-										 loader:       new Ext.tree.TreeLoader(
-												              { 																					
-			    													    url: "XGI_RefreshFileDirectory",
-																			}),
-									   buttonAlign:  'center',																					
-									   buttons:      [{
-									                   text: 'Refresh',
-									                   listeners: {click: FileTreeWindow.refreshFiles}
-									                 }
-																	 ,{
-									                    text: 'Toggle Dir.',
-									                    listeners: {click: FileTreeWindow.updateFlattenFileFlag}
-									                  }
-//																	 ,{
-//									                   text: 'Merge',
-//									                   listeners: {click: FileTreeWindow.mergeFiles}
-//									                 }
-																	 ],
-										 //items: 			 [flattenForm],
-	  							 });
+    var fileTree = new Ext.tree.TreePanel({
+      region:       'west',
+      animate:      false,
+      enableDD:     false,
+      rootVisible:  false,
+      autoScroll:   true,
+      width:        450,
+      split:        true,
+      collapsible:  true,
+      title:        "Files in search path (see Configuration/SearchPaths.xml)",
+      loader:       new Ext.tree.TreeLoader(  { url: "XGI_RefreshFileDirectory",	}),
+      buttonAlign:  'center',																					
+      buttons:      [{ text: 'Refresh', listeners: {click: FileTreeWindow.refreshFiles} } , { text: 'Toggle Dir.', listeners: {click: FileTreeWindow.updateFlattenFileFlag} }
+//	  	  ,{text: 'Merge',    listeners: {click: FileTreeWindow.mergeFiles}   }
+                    ],
+      //items: 			 [flattenForm],
+    });
 
-		// set the root node
-		var fileRoot = new Ext.tree.AsyncTreeNode({
-		    						 text:      'fileRoot',
-		    						 draggable: false,
-		    						 id:        'fileRoot'
-		               });
+    //  set the root node
+    var fileRoot = new Ext.tree.AsyncTreeNode({
+      text:      'fileRoot',
+      draggable: false,
+      id:        'fileRoot'
+    });
 	
-		fileTree.setRootNode(fileRoot);
-
+    fileTree.setRootNode(fileRoot);
 		
-		var contentTree = new Ext.tree.TreePanel({
-												region: 			'center', 																													
-												animate:			false,																															
-												enableDD: 		false,																															
-												rootVisible:  false,																															
-												autoScroll: 	true, 																															
-												split:  			true, 																															
-												title:				"File Content", 																										
-												loader: 			new Ext.tree.TreeLoader(
-												              { 																					
-			    													    url: "XGI_RefreshContentList",
-																			})
-	                    });
+    var contentTree = new Ext.tree.TreePanel({
+      region: 		'center',
+      animate:		false,	
+      enableDD:		false,
+      rootVisible:  	false,
+      autoScroll: 	true, 
+      split:		true,
+      title:	 	"File Content",
+      loader: 		new Ext.tree.TreeLoader({  url: "XGI_RefreshContentList",})
+    });
 	
 
-		// set the root node
-		var contentRoot = new Ext.tree.AsyncTreeNode({
-		    						    text:      'contentRoot',  													
-		    						    draggable: false,         													
-		    						    id:        'contentRoot'  													
-		                  }); 											                            
+    // set the root node
+    var contentRoot = new Ext.tree.AsyncTreeNode({
+      text:      'contentRoot',  													
+      draggable: false,         													
+      id:        'contentRoot'  													
+    }); 											                            
 
-		contentTree.setRootNode(contentRoot);
+    contentTree.setRootNode(contentRoot);
 	
-		win = new Ext.Window({
-					  title:        'File Navigator', 						
-					  id:           'File Navigator', 						
-			  	  closable:     false,												
-					  maximizable:  true, 												
-					  minimizable:  true, 												
-					  collapsible:  false,												
-			  	  width:        800,													
-			  	  height:       400,													
-			  	  border:       true, 												
-			  	  plain:        true, 												
-			  	  layout:       'border', 										
-			  	  items:        [fileTree,contentTree] 							
-			    });														       
+    win = new Ext.Window({
+      title:        'File Navigator', 						
+      id:           'File Navigator', 						
+      closable:     false,												
+      maximizable:  true, 												
+      minimizable:  true, 												
+      collapsible:  false,												
+      width:        800,													
+      height:       400,													
+      border:       true, 												
+      plain:        true, 												
+      layout:       'border', 										
+      items:        [fileTree,contentTree] 							
+    });														       
 		        
-		win.addListener("minimize",FileTreeWindow.minimizeMaximizeWindow);
+    win.addListener("minimize",FileTreeWindow.minimizeMaximizeWindow);
 		
-		FileTreeWindow.win         = win;	
-		FileTreeWindow.fileTree    = fileTree;	
-		FileTreeWindow.contentTree = contentTree;
-		FileTreeWindow.fileRoot    = fileRoot;		
-		FileTreeWindow.contentRoot = contentRoot;
+    FileTreeWindow.win         = win;	
+    FileTreeWindow.fileTree    = fileTree;	
+    FileTreeWindow.contentTree = contentTree;
+    FileTreeWindow.fileRoot    = fileRoot;		
+    FileTreeWindow.contentRoot = contentRoot;
 		
-		FileTreeWindow.refreshFiles();
-	}
+    FileTreeWindow.refreshFiles();
+  }//if
 
 };
 
@@ -157,26 +141,32 @@ FileTreeWindow.minimizeMaximizeWindow = function(){
 };
 
 ////////////////////////////////////
-FileTreeWindow.onFileClick = function(node){
-
-	if(!FileTreeWindow.oldFileClickTime) FileTreeWindow.oldFileClickTime = 0;
-	var newTime = (new Date()).getTime();
-	if(newTime - FileTreeWindow.oldFileClickTime < 1000) //only allow every second at most
-		return;
-	FileTreeWindow.oldFileClickTime = newTime;	
+FileTreeWindow.onFileClick = function(node) 
+{
+  if(!FileTreeWindow.oldFileClickTime)
+  {
+    FileTreeWindow.oldFileClickTime = 0;
+  }//if(!FileTreeWindow.oldFileClickTime)
+  var newTime = (new Date()).getTime();
+  if(newTime - FileTreeWindow.oldFileClickTime < 1000) //only allow every second at most
+    return;
+  FileTreeWindow.oldFileClickTime = newTime;	
 	
-	FileTreeWindow.contentRoot.id = node.id;
-	FileTreeWindow.contentTree.loader.load(FileTreeWindow.contentTree.getRootNode());
+  FileTreeWindow.contentRoot.id = node.id;
+  FileTreeWindow.contentTree.loader.load(FileTreeWindow.contentTree.getRootNode());
 }
 
 ////////////////////////////////////
-FileTreeWindow.onContentClick = function(node){
-	if(node.id.indexOf("SummaryTrees") >= 0){ //has "SummaryTrees" in the text from folder name - assumed to be TTree entry
-		DetectorNavigator.paintWithTree(node);
-	}
-	else{ //assume clicked entry is for a histogram
-		Canvas.add(node.text,node.id);
-	}
+FileTreeWindow.onContentClick = function(node)
+{
+  if(node.id.indexOf("SummaryTrees") >= 0)
+  { //has "SummaryTrees" in the text from folder name - assumed to be TTree entry
+    DetectorNavigator.paintWithTree(node);
+  }//if  node.id.indexOf("SummaryTrees") >= 0
+  else
+  { //assume clicked entry is for a histogram
+    Canvas.add(node.text,node.id);
+  }
 }
 
 ////////////////////////////////////
@@ -272,68 +262,73 @@ FileTreeWindow.ajaxFileResponse = function(ajaxObj){
 }
 
 ////////////////////////////////////
-FileTreeWindow.addFolderContent = function(i,depth,parentFolderNode,contentArray){
-	if(i >= contentArray.length){
-		return i;
-	}
+FileTreeWindow.addFolderContent = function(i,depth,parentFolderNode,contentArray)
+{
+  if(i >= contentArray.length)
+  {
+    return i;
+  }//if(i >= contentArray.length)
 	
-	var nodeName;
-	var folderName;
-	var depthSlashIndex;
-	var folderStartIndex;
-	while(i < contentArray.length){
-		folderStartIndex = 0;
-		depthSlashIndex = contentArray[i].indexOf("/");
-		nodeName = contentArray[i].slice(depthSlashIndex+1);		
+  var nodeName;
+  var folderName;
+  var depthSlashIndex;
+  var folderStartIndex;
+  while(i < contentArray.length)
+  {
+    folderStartIndex = 0;
+    depthSlashIndex = contentArray[i].indexOf("/");
+    nodeName = contentArray[i].slice(depthSlashIndex+1);		
 		
-		for(var d=0;d<depth;++d){ 
-			folderStartIndex = depthSlashIndex+1;
-			depthSlashIndex	= nodeName.indexOf("/");
-			nodeName = nodeName.slice(depthSlashIndex+1);
-		}
+    for(var d=0;d<depth;++d){ 
+      folderStartIndex = depthSlashIndex+1;
+      depthSlashIndex	= nodeName.indexOf("/");
+      nodeName = nodeName.slice(depthSlashIndex+1);
+    }//for
 		
-		folderName = contentArray[i].slice(folderStartIndex,folderStartIndex+depthSlashIndex);
+    folderName = contentArray[i].slice(folderStartIndex,folderStartIndex+depthSlashIndex);
 	
-			//have correct folderName and nodeName
+    //have correct folderName and nodeName
 			
-		if(depth != 0 && folderName != parentFolderNode.text){ //reached end of folder
-			return i;
-		}
+    if(depth != 0 && folderName != parentFolderNode.text){ //reached end of folder
+      return i;
+    }//if depth
 		
-		if(nodeName.indexOf("/") >= 0){ //found folder
-			//add folder node
-			var folder = new Ext.tree.TreeNode({
-				 text:  				nodeName.slice(0,nodeName.length-1),
-				 id:	  				contentArray[i],
-				 cls:   				'folder',
-				 leaf:  				false,
-				 renderChilden: true,
-			 }); 
-			 var tmpi = i+1;
-			 i = FileTreeWindow.addFolderContent(tmpi,depth+1,folder,contentArray); //recursively descend structure			
-			 if(tmpi == i){ //no nodes were added to display as folder insert dummy node
-				 folder.appendChild(FileTreeWindow.dummyNode);
-			 }
-			 else{
-			  folder.expand(true);
-			 }
-			 parentFolderNode.appendChild(folder);
-			 
-		}
-		else{ //create leaf
-			var node = new Ext.tree.TreeNode({
-  		  text:       nodeName,
-  		  id:         contentArray[i],
-  		  leaf:       true,
-  		  cls:        'file',
-			})
-			parentFolderNode.appendChild(node);
-			node.addListener("click",FileTreeWindow.onContentClick);
-			++i;
-		}
-	}
+    if(nodeName.indexOf("/") >= 0)
+    { //found folder
+      //add folder node
+      var folder = new Ext.tree.TreeNode({
+         text:  		nodeName.slice(0,nodeName.length-1),
+         id:	  	contentArray[i],
+         cls:   		'folder',
+         leaf:  	 	false,
+         renderChilden: 	true,
+      }); //var folder
 
-	return i;
+      var tmpi = i+1;
+      i = FileTreeWindow.addFolderContent(tmpi,depth+1,folder,contentArray); //recursively descend structure			
+      if(tmpi == i){ //no nodes were added to display as folder insert dummy node
+        folder.appendChild(FileTreeWindow.dummyNode);
+      }//if tmpi
+      else{
+        folder.expand(true);
+      }//else
+      parentFolderNode.appendChild(folder);
+			 
+    }//if nodename.indexof
+    else{ //create leaf
+      var node = new Ext.tree.TreeNode({
+        text:       nodeName,
+        id:         contentArray[i],
+        leaf:       true,
+        cls:        'file',
+      })//var node
+      parentFolderNode.appendChild(node);
+      node.addListener("click",FileTreeWindow.onContentClick);
+      ++i;
+    }//else
+  }//while
+
+  return i;
 }
 
 ////////////////////////////////////

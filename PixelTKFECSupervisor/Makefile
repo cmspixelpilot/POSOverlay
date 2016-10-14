@@ -40,7 +40,7 @@ FECSOFTWARE_ROOT:=${ENV_CMS_TK_ONLINE_ROOT}
 Project=pixel
 Package=PixelTKFECSupervisor
 
-Sources=PixelTKFECSupervisor.cc 
+Sources=PixelTKFECSupervisor.cc DiagWrapper.cc
 
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
@@ -48,13 +48,7 @@ IncludeDirs = \
         $(FECSOFTWARE_ROOT)/ThirdParty/APIConsoleDebugger/include \
 	${FECSOFT_INCLUDE} \
         $(XDAQ_ROOT)/include \
-	$(XDAQ_ROOT)/include/hal \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/soapdiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-        $(ENV_CMS_TK_DIAG_ROOT)
-
+	$(XDAQ_ROOT)/include/hal
 
 
 LibraryDirs = 
@@ -63,7 +57,7 @@ UserSourcePath = \
 	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long -DBT1003 ${BUSADAPTERC++FLAG} -std=c++0x
+UserCCFlags = -g -O -Wno-long-long -DBT1003 ${BUSADAPTERC++FLAG} -std=c++0x -DLINUX
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
@@ -80,12 +74,11 @@ ROOTLibs = AfterImage ASImageGui ASImage \
 
 DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
                        $(ENV_CMS_TK_ONLINE_ROOT)/lib \
-                       $(ENV_CMS_TK_DIAG_ROOT)/tools/lib \
                        $(shell root-config --libdir) \
                        $(XDAQ_ROOT)/lib
 #$(ROOTSYS)/lib \
 
-DependentLibraries = SiPixelObjects TkDiagBagWizard xmldiagappender PixelGUIUtilities PixelTKFECDataTools PixelSupervisorConfiguration PixelCalibrations PixelTestStandUtilities PixelFEDInterface Pixelb2inUtilities PixelDCSUtilities occi nnz11 clntsh
+DependentLibraries = SiPixelObjects PixelGUIUtilities PixelTKFECDataTools PixelSupervisorConfiguration PixelCalibrations PixelTestStandUtilities Pixelb2inUtilities PixelDCSUtilities occi nnz12 clntsh
 
 DependentLibraries += $(ROOTLibs)
 
@@ -104,7 +97,6 @@ ExternalObjects = -L$(XDAQ_ROOT)/lib  \
         -L$(ENV_CMS_TK_CAEN_ROOT) -lCAENVME \
         -L$(BUILD_HOME)/FecSoftwareV3_0/lib \
 	-lAPIFecVme -lDeviceAccess 
-
 
 #
 # Compile the source files and create a shared library

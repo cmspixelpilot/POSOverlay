@@ -18,9 +18,9 @@
  */
 #include "FecVmeRingDevice.h"
 
-#include <diagbag/DiagBagWizard.h>
-#include "DiagCompileOptions.h"
-#include <toolbox/convertstring.h>
+// #include <diagbag/DiagBagWizard.h>
+// #include "DiagCompileOptions.h"
+// #include <toolbox/convertstring.h>
 
 #include "toolbox/task/Timer.h"
 #include "toolbox/task/TimerFactory.h"
@@ -42,6 +42,10 @@
 #include "PixelUtilities/PixelTKFECDataTools/include/PortCardDCU.h"
 
 #include <unistd.h>
+
+#include "PixelTKFECSupervisor/include/exception/Exception.h"
+#include "log4cplus/logger.h"
+#include "log4cplus/loggingmacros.h"
 
 using namespace std;
 using namespace pos;
@@ -86,24 +90,26 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   , workloopContinue_(false)
   , workloopContinueRC_(false)
   , suppressHardwareError_(false)
+  , sv_logger_(getApplicationLogger())
 {
   //gio
-  
-  diagService_ = new DiagBagWizard(
-                                   ("ReconfigurationModule") ,
-                                   this->getApplicationLogger(),
-                                   getApplicationDescriptor()->getClassName(),
-                                   getApplicationDescriptor()->getInstance(),
-                                   getApplicationDescriptor()->getLocalId(),
-                                   (xdaq::WebApplication *)this,
-                                   "Pixel",
-                                   "PixelTKFECSupervisor"
-                                   );
-
-
-  DIAG_DECLARE_USER_APP
-
-  diagService_->reportError("The DiagSystem is installed --- this is a bogus error message",DIAGUSERINFO);
+ // diagService_ = new DiagBagWizard(
+  //                                  ("ReconfigurationModule") ,
+  //                                  this->getApplicationLogger(),
+  //                                  getApplicationDescriptor()->getClassName(),
+  //                                  getApplicationDescriptor()->getInstance(),
+  //                                  getApplicationDescriptor()->getLocalId(),
+  //                                  (xdaq::WebApplication *)this,
+  //                                  "Pixel",
+  //                                  "PixelTKFECSupervisor"
+  //                                  );
+  //
+  //
+  // DIAG_DECLARE_USER_APP
+ 
+  //
+//std::string const msg_info_qok = "The DiagSystem is installed --- this is a bogus error message";
+// LOG4CPLUS_INFO(sv_logger_,msg_info_qok);
 
   // A SOAP callback used for generic handshaking by retrieving the FSM state
   xoap::bind(this, &PixelTKFECSupervisor::FSMStateRequest, "FSMStateRequest", XDAQ_NS_URI);
@@ -148,11 +154,14 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   xgi::bind(this, &PixelTKFECSupervisor::XgiHandler, "XgiHandler");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI, "CCUBoardGUI");
   xgi::bind(this, &PixelTKFECSupervisor::CCUBoardGUI_XgiHandler, "CCUBoardGUI_XgiHandler");
+  xgi::bind(this, &PixelTKFECSupervisor::FPixDCDCSummary, "FPixDCDCSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::FPixDCUSummary, "FPixDCUSummary");
+  xgi::bind(this, &PixelTKFECSupervisor::PortcardDevicesSummary, "PortcardDevicesSummary");
 
   //DIAGNOSTIC REQUESTED CALLBACK
-  xgi::bind(this,&PixelTKFECSupervisor::configureDiagSystem, "configureDiagSystem");
-  xgi::bind(this,&PixelTKFECSupervisor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
-  xgi::bind(this,&PixelTKFECSupervisor::callDiagSystemPage, "callDiagSystemPage");
+  // xgi::bind(this,&PixelTKFECSupervisor::configureDiagSystem, "configureDiagSystem");
+  // xgi::bind(this,&PixelTKFECSupervisor::applyConfigureDiagSystem, "applyConfigureDiagSystem");
+  // xgi::bind(this,&PixelTKFECSupervisor::callDiagSystemPage, "callDiagSystemPage");
 
   // Defining the states of the State Machine
   fsm_.addState('I', "Initial" ,this, &PixelTKFECSupervisor::stateChanged);
@@ -247,14 +256,14 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   PixelDCStoTKFECDpInterface_=0;
   PixelDCSFSMInterface_=0;
 	
-  std::stringstream timerName;
-  timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
-  timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
-  toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
-  toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
-  toolbox::TimeVal start;
-  start = toolbox::TimeVal::gettimeofday() + interval;
-  timer->schedule( this, start,  0, "" );	
+  // std::stringstream timerName;
+  // timerName << getApplicationDescriptor()->getContextDescriptor()->getURL() << ":";
+  // timerName << getApplicationDescriptor()->getClassName() << ":" << getApplicationDescriptor()->getLocalId() << ":" << getApplicationDescriptor()->getInstance();
+  // toolbox::task::Timer * timer = toolbox::task::getTimerFactory()->createTimer(timerName.str());
+  // toolbox::TimeInterval interval(AUTO_UP_CONFIGURE_DELAY,0);
+  // toolbox::TimeVal start;
+  // start = toolbox::TimeVal::gettimeofday() + interval;
+  // timer->schedule( this, start,  0, "" );
 
   GlobalTimer_.setName("PixelTKFECSupervisor");
   GlobalTimer_.setVerbose(true);  
@@ -262,7 +271,7 @@ PixelTKFECSupervisor::PixelTKFECSupervisor(xdaq::ApplicationStub * s) throw (xda
   // Exporting the FSM state to this application's default InfoSpace
   state_=fsm_.getStateName(fsm_.getCurrentState());
   getApplicationInfoSpace()->fireItemAvailable("stateName", &state_);
-	
+ 
 }
 
 PixelTKFECSupervisor::~PixelTKFECSupervisor()
@@ -271,16 +280,16 @@ PixelTKFECSupervisor::~PixelTKFECSupervisor()
 }
 
 //gio
-void PixelTKFECSupervisor::timeExpired (toolbox::task::TimerEvent& e)
-{
-  DIAG_EXEC_FSM_INIT_TRANS
-}
+// void PixelTKFECSupervisor::timeExpired (toolbox::task::TimerEvent& e)
+// {
+//   DIAG_EXEC_FSM_INIT_TRANS
+// }
     
 // DiagSystem XGI Binding
-void PixelTKFECSupervisor::callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception)
-{
-  diagService_->getDiagSystemHtmlPage(in, out,getApplicationDescriptor()->getURN());
-}
+// void PixelTKFECSupervisor::callDiagSystemPage(xgi::Input * in, xgi::Output * out ) throw (xgi::exception::Exception)
+// {
+//   diagService_->getDiagSystemHtmlPage(in, out,getApplicationDescriptor()->getURN());
+// }
 
 
 void PixelTKFECSupervisor::helpMe ( char *programName ){
@@ -328,8 +337,7 @@ void PixelTKFECSupervisor::portcardI2CDevice(FecAccess *fecAccess,
 				modeType,
 				MODE_SHARE) ;
     }
-    catch (FecExceptionHandler e) {
-      
+catch (FecExceptionHandler e) {      
       std::cout << "------------ Exception ---------- fecAccess " << std::endl ;
       std::cout << e.what()  << std::endl ;
       std::cout << "---------------------------------" << std::endl ;
@@ -349,8 +357,8 @@ void PixelTKFECSupervisor::portcardI2CDevice(FecAccess *fecAccess,
     fecAccess_->write(index, value) ;	
     //	  printf("Check... => new value of the device : 0x%x\n",fecAccess_->read(index));
   }
-  catch(FecExceptionHandler e){
-    std::cout<<"--------- Exception --------- write "<<std::endl;
+catch(FecExceptionHandler e){    
+	std::cout<<"--------- Exception --------- write "<<std::endl;
     std::cout<< e.what() <<std::endl;
     std::cout<<"-----------------------------"<<std::endl;
     if(errorCounterFlag_)displayStatus(&e,0,fecAccess_,stdchan_);
@@ -392,8 +400,7 @@ int PixelTKFECSupervisor::portcardI2CDeviceRead(FecAccess *fecAccess,
 			      modeType,
 			      MODE_SHARE) ;
   }
-  catch (FecExceptionHandler e) {
-    
+catch (FecExceptionHandler e) {    
     std::cout << "------------ Exception ----------" << std::endl ;
     std::cout << e.what()  << std::endl ;
     std::cout << "---------------------------------" << std::endl ;
@@ -416,8 +423,7 @@ int PixelTKFECSupervisor::portcardI2CDeviceRead(FecAccess *fecAccess,
     value=fecAccess_->read(index) ;	
     //	  printf("Check... => new value of the device : 0x%x\n",fecAccess_->read(index));
   }
-  catch(FecExceptionHandler e){
-
+catch(FecExceptionHandler e){
     std::cout<<"--------- Exception ---------"<<std::endl;
     std::cout<< e.what() <<std::endl;
     std::cout<<"-----------------------------"<<std::endl;
@@ -454,7 +460,7 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
         
   *out << cgicc::HTMLDoctype(cgicc::HTMLDoctype::eStrict) << std::endl;
   *out << cgicc::html().set("lang", "en").set("dir","ltr") << std::endl;
-  xgi::Utils::getPageHeader(*out, "Pixel Tracker FEC Supervisor", fsm_.getStateName(fsm_.getCurrentState()));
+  // xgi::Utils::getPageHeader(*out, "Pixel Tracker FEC Supervisor", fsm_.getStateName(fsm_.getCurrentState()));
 
   // Rendering the State Machine GUI
   
@@ -536,6 +542,24 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
   
   // Rendering Low Level GUI
   
+  std::string urlDCDC_ = "/"; \
+  urlDCDC_ += getApplicationDescriptor()->getURN(); \
+  urlDCDC_ += "/FPixDCDCSummary"; \
+  *out << "<h2> <a href=\"" << urlDCDC_ << "\">FPixDCDCSummary</a> </h2> "<<std::endl;
+  *out << " <hr/> " << std::endl;
+  
+  std::string urlDCU_ = "/"; \
+  urlDCU_ += getApplicationDescriptor()->getURN(); \
+  urlDCU_ += "/FPixDCUSummary"; \
+  *out << "<h2> <a href=\"" << urlDCU_ << "\">FPixDCUSummary</a> </h2> "<<std::endl;
+  *out << " <hr/> " << std::endl;
+  
+  std::string urlPCDevices_ = "/"; \
+  urlPCDevices_ += getApplicationDescriptor()->getURN(); \
+  urlPCDevices_ += "/PortcardDevicesSummary"; \
+  *out << "<h2> <a href=\"" << urlPCDevices_ << "\">Current portcard devices settings</a> </h2> "<<std::endl;
+  *out << " <hr/> " << std::endl;
+  
   *out<<"<h2>Low Level Commands</h2>"<<std::endl;
   *out<<"<table border=1 bgcolor=gold>"<<std::endl;
   *out<<" Tracker FEC Board"<<std::endl;
@@ -549,7 +573,7 @@ void PixelTKFECSupervisor::Default (xgi::Input *in, xgi::Output *out) throw (xgi
     *out<<" </tr>"<<std::endl;
   }
   *out<<"</table>"<<std::endl;
-  
+
   *out<<"</body>"<<std::endl;
   *out<<"</html>"<<std::endl;
 
@@ -692,7 +716,9 @@ xoap::MessageReference PixelTKFECSupervisor::Initialize (xoap::MessageReference 
 {
 
   std::cout<<"PixelTKFECSupervisor::Initialize - Entering function"<<std::endl;
-  diagService_->reportError("--- INITIALIZE ---",DIAGINFO);
+std::string const msg_info_whi = "--- INITIALIZE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_whi);
+
 
   //needed for delay25 calibration
   try {
@@ -703,11 +729,14 @@ etApplicationDescriptors("PixelFECSupervisor");
           ++i_set_PixelFECSupervisor) {
         PixelFECSupervisors_.insert(make_pair((*i_set_PixelFECSupervisor)->getInstance(), *(i_set_PixelFECSupervisor)));
      }
-     //diagService_->reportError(stringF(PixelFECSupervisors_.size()) + " PixelFECSupervisor(s) found in the \"daq\" group.",DIAGINFO);
+   //diagService_->reportError(stringF(PixelFECSupervisors_.size()) + " PixelFECSupervisor(s) found in the \"daq\" group.",DIAGINFO);
      //cout<<PixelFECSupervisors_.size()<<" PixelFECSupervisor(s) found in the \"daq\" group."<<std::endl;
 
   } catch (xdaq::exception::Exception& e) {
-    //diagService_->reportError("No PixelFECSupervisor(s) found in the \"daq\" group.",DIAGWARN);
+std::string const msg_warn_uxn = "No PixelFECSupervisor(s) found in the \"daq\" group.";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_uxn);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_uxn, e);
+this->notifyQualified("fatal",f);
     std::cout<<"No PixelFECSupervisor(s) found in the \"daq\" group."<<std::endl;
   }
   
@@ -715,24 +744,24 @@ etApplicationDescriptors("PixelFECSupervisor");
   try {
     PixelSupervisor_=getApplicationContext()->getDefaultZone()->getApplicationGroup("daq")->getApplicationDescriptor("PixelSupervisor", 0);
     std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelSupervisor found."<<std::endl;
-  } catch (xdaq::exception::Exception& e) {
-    std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelSupervisor not found!"<<std::endl;    
+} catch (xdaq::exception::Exception& e) {    
+	std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelSupervisor not found!"<<std::endl;    
   }
 
   // Detect PixelDCStoTKFECDpInterface
   try {
     PixelDCStoTKFECDpInterface_ = getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("PixelDCStoTrkFECDpInterface", 0);
     std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCStoTKFECInterface found."<<std::endl;
-  } catch (xdaq::exception::Exception& e) {
-    std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCStoTKFECInterface not found!"<<std::endl;
+} catch (xdaq::exception::Exception& e) {    
+	std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCStoTKFECInterface not found!"<<std::endl;
   }
 
   // Detect PixelDCSFSMInterface
   try {
     PixelDCSFSMInterface_=getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("PixelDCSFSMInterface", 0);
     std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface found."<<std::endl;
-  } catch (xdaq::exception::Exception& e) {
-    std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface not found."
+} catch (xdaq::exception::Exception& e) {   
+	 std::cout<<"PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCSFSMInterface not found."
 	     <<"Automatic Detector Startup procedure will not be followed. The detector must be powered on manually."<<std::endl;    
   }
   
@@ -769,20 +798,21 @@ etApplicationDescriptors("PixelFECSupervisor");
 
   }
 
+
   try
     {
       toolbox::Event::Reference e(new toolbox::Event("Initialize", this));
       fsm_.fireEvent(e);
     }
-  catch (toolbox::fsm::exception::Exception & e)
-    {
+catch (toolbox::fsm::exception::Exception & e)    {
       XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
     }
 
   xoap::MessageReference reply=MakeSOAPMessageReference ("InitializeDone");
-  //diagService_->reportError("PixelTKFECSupervisor:: --- Initialising Done ---",DIAGINFO);
+//diagService_->reportError("PixelTKFECSupervisor:: --- Initialising Done ---",DIAGINFO);
 
-  diagService_->reportError("--- INITIALIZATION DONE ---",DIAGINFO);
+std::string const msg_info_ugd = "--- INITIALIZATION DONE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ugd);
   return reply;
 
 }
@@ -792,13 +822,16 @@ xoap::MessageReference PixelTKFECSupervisor::Configure (xoap::MessageReference m
 
   if (extratimers_)  GlobalTimer_.start("entering Configure");
 
+
+
   Attribute_Vector parameters(1);
   parameters.at(0).name_="GlobalKey";
   Receive(msg, parameters);
   std::cout<<"[PixelTKFECSupervisor::Configure] The Global Key was received as "<<parameters.at(0).value_<<std::endl;
   theGlobalKey_ = new PixelConfigKey (atoi(parameters.at(0).value_.c_str()));
   if (theGlobalKey_==0) {
-    diagService_->reportError("Failure to create GlobalKey",DIAGERROR);
+std::string const msg_error_etn = "Failure to create GlobalKey";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_etn);
     return MakeSOAPMessageReference("ConfigureFailed");
   }
   
@@ -810,8 +843,11 @@ xoap::MessageReference PixelTKFECSupervisor::Configure (xoap::MessageReference m
     toolbox::Event::Reference e(new toolbox::Event("Configure", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
-    diagService_->reportError("[PixelTKFECSupervisor::Configure] Configure is an invalid command for the current state."+state_.toString(), DIAGERROR);
-    reply=MakeSOAPMessageReference("ConfigureFailed");
+std::string const msg_error_oyo = "[PixelTKFECSupervisor::Configure] Configure is an invalid command for the current state."+state_.toString();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_oyo);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_oyo, e);
+this->notifyQualified("fatal",f);
+std::string const msg_error_yrb = "[PixelTKFECSupervisor::Configure] Configure is an invalid command for the current state."+state_.toString();
   }
   
   if (extratimers_) {
@@ -826,7 +862,8 @@ xoap::MessageReference PixelTKFECSupervisor::Configure (xoap::MessageReference m
 xoap::MessageReference PixelTKFECSupervisor::Start (xoap::MessageReference msg) //throw (xoap::exception::Exception)
 {
 
-  diagService_->reportError("--- START",DIAGINFO);
+std::string const msg_info_etx = "--- START";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_etx);
   Attribute_Vector parameter(1);
   parameter[0].name_="RUN_NUMBER";
   Receive(msg, parameter);
@@ -834,7 +871,8 @@ xoap::MessageReference PixelTKFECSupervisor::Start (xoap::MessageReference msg) 
 
   setupOutputDir();
 
-  diagService_->reportError("Start Run "+runNumber_,DIAGINFO);
+std::string const msg_info_eff = "Start Run "+runNumber_;
+ LOG4CPLUS_INFO(sv_logger_,msg_info_eff);
   suppressHardwareError_=false;
 
   // Start workloops
@@ -853,8 +891,7 @@ xoap::MessageReference PixelTKFECSupervisor::Start (xoap::MessageReference msg) 
  	//resetCheckWorkloop_->activate();
 	if ( !resetCheckWorkloop_->isActive() ) resetCheckWorkloop_->activate();
  	std::cout<<"PixelTKFECSupervisor::START:  Activated resetCheck workloop."<<std::endl;
-	//} catch (xcept::Exception & e) {
- 	//diagService_->reportError("PixelTKFECSupervisor::START: Caught exception activating reset check workloop: "+string(e.what()),DIAGERROR);
+      //diagService_->reportError("PixelTKFECSupervisor::START: Caught exception activating reset check workloop: "+string(e.what()),DIAGERROR);
 	//} // try
     }  // if doResetCheck
 
@@ -863,8 +900,8 @@ xoap::MessageReference PixelTKFECSupervisor::Start (xoap::MessageReference msg) 
   try {
     toolbox::Event::Reference e(new toolbox::Event("Start", this));
     fsm_.fireEvent(e);
-  } catch (toolbox::fsm::exception::Exception & e) {
-    XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
+} catch (toolbox::fsm::exception::Exception & e) {    
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
   }
   
   xoap::MessageReference reply = MakeSOAPMessageReference("StartDone");
@@ -874,7 +911,8 @@ xoap::MessageReference PixelTKFECSupervisor::Start (xoap::MessageReference msg) 
 
 xoap::MessageReference PixelTKFECSupervisor::Stop (xoap::MessageReference msg) //throw (xoap::exception::Exception)
 {
-  diagService_->reportError("-- STOP --",DIAGDEBUG);
+std::string const msg_debug_kqg = "-- STOP --";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_kqg);
 
   // Stop workloops
   if (theCalibObject_==0) {
@@ -897,9 +935,9 @@ xoap::MessageReference PixelTKFECSupervisor::Stop (xoap::MessageReference msg) /
        std::cout<<"PixelTKFECSupervisor::Stop - Cancelled resetCheck workloop."<<std::endl;
 	 // 	  diagService_->reportError("PixelTKFECSupervisor::STOP:  Cancelled resetCheck workloop",DIAGTRACE);
 	 // 	}
-	 //       } catch (xcept::Exception & e) {
 	 // 	diagService_->reportError("PixelTKFECSupervisor::STOP: Caught exception canceling reset check workloop: "+string(e.what()),DIAGERROR);
 	 //       }
+
      } // if doResetCheck
      
   }
@@ -907,8 +945,8 @@ xoap::MessageReference PixelTKFECSupervisor::Stop (xoap::MessageReference msg) /
   try {
     toolbox::Event::Reference e(new toolbox::Event("Stop", this));
     fsm_.fireEvent(e);
-  } catch (toolbox::fsm::exception::Exception & e) {
-    XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
+} catch (toolbox::fsm::exception::Exception & e) {    
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
   }
     
   xoap::MessageReference reply = MakeSOAPMessageReference("StopDone");
@@ -925,11 +963,13 @@ xoap::MessageReference PixelTKFECSupervisor::Pause (xoap::MessageReference msg) 
 
     if(doDCULoop_) {
 
-      //    if (dcudebug_) diagService_->reportError("[Pause] about to set DCU workloopContinue_ to false",DIAGTRACE);
+  //    if (dcudebug_) diagService_->reportError("[Pause] about to set DCU workloopContinue_ to false",DIAGTRACE);
+
       dculock_->take(); workloopContinue_=false; dculock_->give();
-      //    if (dcudebug_) diagService_->reportError("[Pause] about to cancel DCU workloop",DIAGTRACE);
+  //    if (dcudebug_) diagService_->reportError("[Pause] about to cancel DCU workloop",DIAGTRACE);
       if( workloop_->isActive() ) workloop_->cancel();
-      diagService_->reportError("[Pause] Cancelled DCU workloop",DIAGTRACE);
+std::string const msg_trace_sdm = "[Pause] Cancelled DCU workloop";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_sdm);
     }
 
     if (doResetCheck_) {
@@ -937,9 +977,8 @@ xoap::MessageReference PixelTKFECSupervisor::Pause (xoap::MessageReference msg) 
       rclock_->take(); workloopContinueRC_=false; rclock_->give();
       if (resetCheckWorkloop_->isActive()) resetCheckWorkloop_->cancel();
       cout<<"PixelTKFECSupervisor::PAUSE:  Cancelled resetCheck workloop"<<endl;
-      //diagService_->reportError("PixelTKFECSupervisor::PAUSE:  Cancelled resetCheck workloop",DIAGTRACE);      
-      //} catch (xcept::Exception & e) {
-      //diagService_->reportError("PixelTKFECSupervisor::PAUSE: Caught exception canceling reset check workloop: "+string(e.what()),DIAGERROR);
+	 //diagService_->reportError("PixelTKFECSupervisor::PAUSE:  Cancelled resetCheck workloop",DIAGTRACE);      
+      	//diagService_->reportError("PixelTKFECSupervisor::PAUSE: Caught exception canceling reset check workloop: "+string(e.what()),DIAGERROR);
       //}
     } // if doResetCheck
  
@@ -949,12 +988,13 @@ xoap::MessageReference PixelTKFECSupervisor::Pause (xoap::MessageReference msg) 
   try {
     toolbox::Event::Reference e(new toolbox::Event("Pause", this));
     fsm_.fireEvent(e);
-  } catch (toolbox::fsm::exception::Exception & e) {
-    XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
+} catch (toolbox::fsm::exception::Exception & e) {    
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
   }
 
   pausetimer.stop();
-  diagService_->reportError("-- Exit PAUSE -- "+stringF(pausetimer.tottime()),DIAGDEBUG);
+std::string const msg_debug_szd = "-- Exit PAUSE -- "+stringF(pausetimer.tottime());
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_szd);
   xoap::MessageReference reply = MakeSOAPMessageReference("PauseDone");
   return reply;
 
@@ -965,15 +1005,21 @@ xoap::MessageReference PixelTKFECSupervisor::Resume (xoap::MessageReference msg)
   cout<<" Enter RESUME "<<endl;
 
   // First try to reprogram portcards (added in 01/12) 
-  // Do we need a try/catch here?
 #ifdef DO_PORTCARD_RECOVERY
   try  {
     // do reporgamming
     cout<<" RESUME: Will reprogram portcrads "<<endl; 
     bool status = programPortcards(false);  
-    if(status) diagService_->reportError("Resume - Error in portcard programming : status = ",DIAGERROR);
+    if(status) {
+std::string const msg_error_ekf = "Resume - Error in portcard programming : status = ";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ekf);
+	}
   } catch (...)  { //exceptions might be thrown by startupHVCheck
-    diagService_->reportError("Resume - Error in portcard programming ",DIAGERROR);
+std::string const msg_error_huc = "Resume - Error in portcard programming ";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_huc);
+pixel::PixelTKFECSupervisorException trivial_exception("pixel::PixelTKFECSupervisorException","module",msg_error_huc,958,"PixelTKFECSupervisor::Resume(xoap::MessageReference)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_huc,trivial_exception);
+this->notifyQualified("fatal",f);
     //reply = MakeSOAPMessageReference("ResumeFailed");
     //diagService_->reportError("Failed to Resume run with exception: "+string(e.what()),DIAGERROR);
     //FIXME maybe we should transition to the Error state in case this happens?
@@ -995,8 +1041,7 @@ xoap::MessageReference PixelTKFECSupervisor::Resume (xoap::MessageReference msg)
       rclock_->take(); workloopContinueRC_=true; rclock_->give();
       if ( !resetCheckWorkloop_->isActive() ) resetCheckWorkloop_->activate();
       std::cout<<"PixelTKFECSupervisor::RESUME:  Activated resetCheck workloop."<<std::endl;
-      //} catch (xcept::Exception & e) {
-      //diagService_->reportError("PixelTKFECSupervisor::RESUME: Caught exception activating reset check workloop: "+string(e.what()),DIAGERROR);
+	//diagService_->reportError("PixelTKFECSupervisor::RESUME: Caught exception activating reset check workloop: "+string(e.what()),DIAGERROR);
       //} // try
     }  // if doResetCheck
 
@@ -1005,8 +1050,8 @@ xoap::MessageReference PixelTKFECSupervisor::Resume (xoap::MessageReference msg)
   try {
     toolbox::Event::Reference e(new toolbox::Event("Resume", this));
     fsm_.fireEvent(e);
-  } catch (toolbox::fsm::exception::Exception & e) {
-    XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
+} catch (toolbox::fsm::exception::Exception & e) {    
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
   }
 
   xoap::MessageReference reply = MakeSOAPMessageReference("ResumeDone");
@@ -1016,7 +1061,8 @@ xoap::MessageReference PixelTKFECSupervisor::Resume (xoap::MessageReference msg)
 
 xoap::MessageReference PixelTKFECSupervisor::Halt (xoap::MessageReference msg) //throw (xoap::exception::Exception)
 {
-  diagService_->reportError("-- HALT --",DIAGDEBUG);
+std::string const msg_debug_ejv = "-- HALT --";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_ejv);
 
   if (theCalibObject_==0) { // do only for global runs
 
@@ -1027,7 +1073,6 @@ xoap::MessageReference PixelTKFECSupervisor::Halt (xoap::MessageReference msg) /
       //diagService_->reportError("Canceling reset check workloop",DIAGDEBUG);
       if (resetCheckWorkloop_->isActive()) resetCheckWorkloop_->cancel();
       resetCheckWorkloop_->remove(resetCheck_);
-      //} catch (xcept::Exception & e) {
       //diagService_->reportError("Caught exception canceling reset check workloop: "+string(e.what()),DIAGDEBUG);
       //}
       //diagService_->reportError("Reset check workloop canceled",DIAGDEBUG);
@@ -1061,8 +1106,8 @@ xoap::MessageReference PixelTKFECSupervisor::Halt (xoap::MessageReference msg) /
   try {
     toolbox::Event::Reference e(new toolbox::Event("Halt", this));
     fsm_.fireEvent(e);
-  } catch (toolbox::fsm::exception::Exception & e) {
-    XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
+} catch (toolbox::fsm::exception::Exception & e) {    
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
   }
   
   xoap::MessageReference reply = MakeSOAPMessageReference("HaltDone");
@@ -1072,7 +1117,8 @@ xoap::MessageReference PixelTKFECSupervisor::Halt (xoap::MessageReference msg) /
 
 xoap::MessageReference PixelTKFECSupervisor::Recover (xoap::MessageReference msg) 
 {
-  diagService_->reportError("-- Enter RECOVER --", DIAGINFO);
+std::string const msg_info_fia = "-- Enter RECOVER --";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_fia);
 
   if (state_!="Error") return MakeSOAPMessageReference("RecoverFailed"); //sanity
 
@@ -1090,7 +1136,10 @@ xoap::MessageReference PixelTKFECSupervisor::Recover (xoap::MessageReference msg
 	  workloop_->remove(readDCU_);
 	}
 	catch (xcept::Exception & e) { //will happen if the task was never submitted
-	  diagService_->reportError("Failed to remove DCU workloop: "+string(e.what()), DIAGDEBUG);
+std::string const msg_error_ogq = "Failed to remove DCU workloop: "+string(e.what());
+LOG4CPLUS_DEBUG(sv_logger_,msg_error_ogq);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_ogq, e);
+this->notifyQualified("fatal",f);
 	}
       }
     }
@@ -1103,7 +1152,10 @@ xoap::MessageReference PixelTKFECSupervisor::Recover (xoap::MessageReference msg
 	if (resetCheckWorkloop_->isActive()) resetCheckWorkloop_->cancel();
 	resetCheckWorkloop_->remove(resetCheck_);
       } catch (xcept::Exception & e) {
-	diagService_->reportError("Caught exception canceling or removing reset check workloop: "+string(e.what()),DIAGDEBUG);
+std::string const msg_error_kpf = "Caught exception canceling or removing reset check workloop: "+string(e.what());
+LOG4CPLUS_DEBUG(sv_logger_,msg_error_kpf);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_kpf, e);
+this->notifyQualified("fatal",f);
       }
     }
   }
@@ -1119,11 +1171,15 @@ xoap::MessageReference PixelTKFECSupervisor::Recover (xoap::MessageReference msg
     toolbox::Event::Reference e(new toolbox::Event("Halt", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
-    diagService_->reportError("Failed to transition to Halted state! message: "+string(e.what()), DIAGERROR);
+std::string const msg_error_xsj = "Failed to transition to Halted state! message: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_xsj);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_xsj, e);
+this->notifyQualified("fatal",f);
     reply = MakeSOAPMessageReference("RecoverFailed");
   }
   
-  diagService_->reportError("-- Exit RECOVER --", DIAGINFO);
+std::string const msg_info_txn = "-- Exit RECOVER --";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_txn);
   return reply;
   
 }
@@ -1161,7 +1217,8 @@ void PixelTKFECSupervisor::cleanupGlobalConfigData() {
 
 xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference msg) {
 
-  diagService_->reportError("-- Enter Reconfigure --",DIAGINFO);
+std::string const msg_info_ykh = "-- Enter Reconfigure --";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ykh);
   xoap::MessageReference reply = MakeSOAPMessageReference("ReconfigureDone");
 
   //cancel the reset check workloop
@@ -1171,13 +1228,12 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
       //try {
       rclock_->take(); workloopContinueRC_=false; rclock_->give();
       if (resetCheckWorkloop_->isActive()) resetCheckWorkloop_->cancel();
-      //} catch (xcept::Exception & e) {
-      //diagService_->reportError("Caught exception canceling reset check workloop: "+string(e.what()),DIAGERROR);
+     //diagService_->reportError("Caught exception canceling reset check workloop: "+string(e.what()),DIAGERROR);
       //}
     } // doresetcheck
 
-    if(doDCULoop_) {      
-      //    if (dcudebug_) diagService_->reportError("[Reconfigure] about to set DCU workloopContinue_ to false",DIAGTRACE);
+    if(doDCULoop_) {     
+       //    if (dcudebug_) diagService_->reportError("[Reconfigure] about to set DCU workloopContinue_ to false",DIAGTRACE);
       dculock_->take(); workloopContinue_=false; dculock_->give();
       //    if (dcudebug_) diagService_->reportError("[Reconfigure] about to cancel DCU workloop",DIAGTRACE);
       // Add IF ACTIVE
@@ -1194,17 +1250,18 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
     Attribute_Vector parameters(1);
     parameters.at(0).name_="GlobalKey";
     Receive(msg, parameters);
-    diagService_->reportError("Will reconfigure TKFEC with global key = "+parameters.at(0).value_,DIAGDEBUG);
+std::string const msg_debug_opc = "Will reconfigure TKFEC with global key = "+parameters.at(0).value_;
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_opc);
     PixelConfigKey* newGlobalKey = new PixelConfigKey (atoi(parameters.at(0).value_.c_str()));
     if (newGlobalKey==0) {
-      diagService_->reportError("Failure to create GlobalKey",DIAGERROR);
+std::string const msg_error_oha = "Failure to create GlobalKey";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_oha);
       return MakeSOAPMessageReference("ReconfigureFailed");
     }
     
     PixelGlobalDelay25* newGlobalDelay25=0;
     PixelConfigInterface::get(newGlobalDelay25, "pixel/globaldelay25/", *newGlobalKey);
     if (newGlobalDelay25==0) XCEPT_RAISE(xdaq::exception::Exception,"The globalDelay25 object is null!");
-    std::cout << "newGlobalDelay25 = " << newGlobalDelay25->getDelay(0);
     
     enumDeviceType modeType = PHILIPS ;
     //loop over portcards
@@ -1256,7 +1313,8 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
 						      modeType, 
 						      1); //again, not used
 	if ((i->second)!=readBack) {
-	  diagService_->reportError("Programming Error in Reconfigure! Read back != value",DIAGERROR);
+std::string const msg_error_cco = "Programming Error in Reconfigure! Read back != value";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_cco);
 	  cout << "ccu address=0x" << std::hex << iportcard->second->getccuAddress() 
 	       << " chan=0x" << iportcard->second->getchannelAddress() << std::dec ;
 	  cout << " deviceAddress = 0x" << std::hex << i->first << ", value = 0x" << i->second << std::dec << ", flag = " << 1 << "\n";
@@ -1271,8 +1329,16 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
     theGlobalKey_=newGlobalKey;
     theGlobalDelay25_=newGlobalDelay25;
   }
+  catch (FecExceptionHandler e) {
+    diagService_->reportError("Failed to configure TKFEC (is the power off?); exception: "+string(e.what()),DIAGERROR);
+  }
   catch (exception & e) {
-    diagService_->reportError("Reconfigure failed with exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_xdt = "Reconfigure failed with exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_xdt);
+std::exception * error_ptr = &e;
+pixel::PixelTKFECSupervisorException *new_exception = dynamic_cast<pixel::PixelTKFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_xdt, *new_exception);
+this->notifyQualified("fatal",f);
     reply = MakeSOAPMessageReference("ReconfigureFailed");
   }
 
@@ -1284,7 +1350,6 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
       //try { //no reason to think this will fail, but can't be too careful
       if ( !resetCheckWorkloop_->isActive() ) resetCheckWorkloop_->activate();
       //}
-      //catch (xcept::Exception & e) {
       //diagService_->reportError("Exception restarting the reset check workloop: "+string(e.what()),DIAGERROR);
       //}
     }
@@ -1295,7 +1360,8 @@ xoap::MessageReference PixelTKFECSupervisor::Reconfigure (xoap::MessageReference
     }
  }
 
-  diagService_->reportError("-- Exit Reconfigure --",DIAGINFO);
+std::string const msg_info_ebe = "-- Exit Reconfigure --";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ebe);
   return reply;
 }
 
@@ -1314,12 +1380,17 @@ void PixelTKFECSupervisor::stateChanged(toolbox::fsm::FiniteStateMachine &fsm) /
     parameters[2].name_="FSMState";   parameters[2].value_=state_;
     Send(PixelSupervisor_, "FSMStateNotification", parameters);
   }
-  diagService_->reportError("New state is:" +std::string(state_),DIAGTRACE);
+std::string const msg_trace_yiz = "New state is:" +std::string(state_);
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_yiz);
  }
  catch (xcept::Exception & ex) {
    ostringstream err;
    err<<"Failed to report FSM state "<<state_.toString()<<" to PixelSupervisor. Exception: "<<ex.what();
-   diagService_->reportError(err.str(),DIAGERROR);
+std::string const msg_error_jgf = err.str();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_jgf);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_jgf,ex);
+this->notifyQualified("fatal",f);
+
  }
 
 }
@@ -1338,9 +1409,9 @@ void PixelTKFECSupervisor::stateConfigured(toolbox::fsm::FiniteStateMachine &fsm
       //try {
       resetCheckWorkloop_->submit(resetCheck_);
       //resetCheckWorkloop_->activate();  // Do not strat it yet
-      diagService_->reportError("Activated reset check workloop",DIAGDEBUG);
+std::string const msg_debug_zjh = "Activated reset check workloop";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_zjh);
       //}
-      //catch (xcept::Exception & e) {
       //diagService_->reportError("Problem activating resetCheck workloop: "+string(e.what()),DIAGWARN);
       //}
     }
@@ -1362,15 +1433,15 @@ void PixelTKFECSupervisor::stateConfigured(toolbox::fsm::FiniteStateMachine &fsm
 
 }
 //==========================================================================================================================
-bool PixelTKFECSupervisor::pixDCDCCommand(tscType8 fecAddress,
-					  tscType8 ringAddress,
-					  tscType8 ccuAddressEnable,
-					  tscType8 ccuAddressPgood,
-					  tscType8 piaChannelAddress,
-					  bool turnOn,
-					  unsigned int portNumber) {
+bool PixelTKFECSupervisor::PilotPixDCDCCommand(tscType8 fecAddress,
+                                               tscType8 ringAddress,
+                                               tscType8 ccuAddressEnable,
+                                               tscType8 ccuAddressPgood,
+                                               tscType8 piaChannelAddress,
+                                               bool turnOn,
+                                               unsigned int portNumber) {
 
-  printf("Doing pixDCDCCommand slot %i ring %i ccuAddrEnable %x ccuAddressPgood %x piaChannelAddr %x portNumber %i turnOn? %i \n", fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, portNumber, turnOn);
+  printf("Doing PilotPixDCDCCommand slot %i ring %i ccuAddrEnable %x ccuAddressPgood %x piaChannelAddr %x portNumber %i turnOn? %i \n", fecAddress, ringAddress, ccuAddressEnable, ccuAddressPgood, piaChannelAddress, portNumber, turnOn);
   usleep(500000);
 
   bool success = true;
@@ -1449,7 +1520,6 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
   bool isfailure=false;
   PixelDetectorConfig* detconfig=0; 
 
-  // Big try-catch loop here 
   try { //load configuration data and access hardware
 
     bool proceed=true;
@@ -1458,8 +1528,10 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
     
     //Use the presence of PixelDCSFSMInterface to trigger the automatic detector startup  
     if (PixelDCSFSMInterface_!=0) {
-      
-      diagService_->reportError("[PixelTKFECSupervisor::stateConfiguring] PixelDCSFSMInterface detected. Automatic detector startup.",DIAGDEBUG);      
+
+     
+std::string const msg_debug_pfh = "[PixelTKFECSupervisor::stateConfiguring] PixelDCSFSMInterface detected. Automatic detector startup.";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_pfh);
       const std::set<std::string>& portcards=thePortcardMap_->portcards(detconfig);
       std::cout << "Number of portcards to configure:"<<portcards.size()<< std::endl;  
       std::set<std::string>::const_iterator iportcard=portcards.begin();
@@ -1467,8 +1539,9 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       for (iportcard=portcards.begin();iportcard!=portcards.end();iportcard++) {
       
 	std::string powerCoordinate= "Pilt_BmI"; //Only one partition for pilot because of the bs connect we have to do //iportcard->substr(0, 8);
-	//      std::cout<<"PixelTKFECSupervisor::stateConfiguring - Portcard "<<*iportcard<<" has power coordinate "<<powerCoordinate<<std::endl;
+	//std::cout<<"PixelTKFECSupervisor::stateConfiguring - Portcard "<<*iportcard<<" has power coordinate "<<powerCoordinate<<std::endl;
 	BiVoltage power=powerMap_.getVoltage(powerCoordinate, std::cout);
+	cout<<powerCoordinate<<" "<<power<<endl;
 	
 	if (power==LV_OFF) {
 	  std::cout<<"[PixelTKFECSupervisor::stateConfiguring] The voltage for "<<powerCoordinate<<" is OFF!"<<std::endl;
@@ -1483,7 +1556,8 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       
     }
     
-    diagService_->reportError("stateConfiguring -- configure portcards",DIAGTRACE);
+std::string const msg_trace_oym = "stateConfiguring -- configure portcards";
+ LOG4CPLUS_TRACE(sv_logger_,msg_trace_oym);
 
     if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- Power check finished");
     
@@ -1498,7 +1572,7 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
       const std::set<std::string>& portcards=thePortcardMap_->portcards(detconfig);
       unsigned int slot=9999; 
       unsigned int ring =9999;
-      static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
+      static bool ringInit[9] = {false,false,false,false,false,false,false,false,false}; // has the ring been reset
       int np=0;
       
       //this first loop loads the portcard information from the database
@@ -1617,18 +1691,33 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 		// overkill, but probably safe
 		if(fecAccess_) {
 #ifndef NO_PILOT_RESET
-		  crateReset( fecAccess_, false , 42, 42 );  //FIXME this is overkill! (but works)
+                  crateReset( slot, fecAccess_, false , 42, 42 );  //FIXME this is overkill! (but works)
 #endif
 		}
 		
 		if (extratimers_)     GlobalTimer_.printTime("stateConfiguring -- After carteReset");
 		
 	      }
+	      else if (type == "CTA") {
+		std::string dummyConnections = "file://";
+		dummyConnections += getenv("ENV_CMS_TK_ONLINE_ROOT");
+		dummyConnections += "/generic/config/connections.xml";
+		std::string addressTablePath = "file://";
+		addressTablePath += getenv("ENV_CMS_TK_ONLINE_ROOT");
+		addressTablePath +="/generic/config/address_mfec.xml";
+	        fecAccess_ = FecAccess::createUtcaFecAccess(dummyConnections,
+							    TKFECID,
+							    theTKFECConfiguration_->URIFromTKFECID(TKFECID),
+							    addressTablePath,
+							    100, false, false);
+		if (!fecAccess_)
+		  std::cerr << "Creation of FecAccess failed. fecAccess pointer null." << std::endl ; 
+	      }
 	      else assert(0);
 	      fecAccessType = type;
 	    }
-	    catch (FecExceptionHandler e) {
-	      cout << "------------ Exception ----------" << std::endl ;
+catch (FecExceptionHandler e) {	      
+	cout << "------------ Exception ----------" << std::endl ;
 	      cout << e.what()  << std::endl ;
 	      cout << "---------------------------------" << std::endl ;
 	      XCEPT_RAISE(xdaq::exception::Exception,"Failed to create FEC access");
@@ -1654,12 +1743,12 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	
 	
 	//send reset, check if ring has been reset alerady 
-	if( !ringInit[(ring-1)]) {  // rings go from 1-8
+	if( !ringInit[(ring)]) {  // rings go from 1-8
 	  cout<<" Reset slot/mfec "<<slot<<"/"<<ring<<endl;
 #ifndef NO_PILOT_RESET
 	  resetPlxFec ( fecAccess_, slot, ring, loop, tms ) ;
 #endif
-	  ringInit[(ring-1)]=true;
+	  ringInit[ring]=true;
 	}
 	else
 	  cout << "NOT RESETTING slot/mfec " << slot << "/" << ring << " since it was already done" << endl;
@@ -1716,7 +1805,6 @@ void PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine &fs
 	}
 	while (! isFecSR0Correct(fecAccess_->getFecRingSR0(indexFecRing)) && timeout > 0) ;
       }
-      catch (FecExceptionHandler & e) {
 	cout << "Problem during the reset of the ring: " << e.getMessage() << endl ;
       }
       
@@ -1870,8 +1958,6 @@ end of redundancy ring comment */
 	
       }
 
-#if !defined SETUP_TIF
-      // JMTBAD plz put dcdc object @ TIF
       // get the dcdc that need to be turned on
       typedef std::map<std::pair<unsigned int, unsigned int>, string> dcdc_map_t;
       dcdc_map_t dcdc_map;
@@ -1886,14 +1972,11 @@ end of redundancy ring comment */
 	dcdc_map[std::make_pair(slot,ring)] = name;
 	std::cout << " DCDC map: slot " << slot << " ring " << ring << " name " << name << std::endl;
       }
-#endif
 
       //std::cout << "Disable the PIA ports "<< std::endl;        
       //program the CCU (this is to disable PIA resets in order not to have the fire by themselves)
-      for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); 
-	   ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
+      for( map<unsigned int, set<pair<unsigned int,bool> > >::const_iterator ringiter = ccuRingMap.begin(); ringiter != ccuRingMap.end(); ++ringiter ) { // loop over mfecs
 
-#if !defined SETUP_TIF
 	dcdc_map_t::const_iterator it = dcdc_map.find(std::make_pair(slot, ringiter->first));
 	if (it != dcdc_map.end()) {
 	  const std::string& name = it->second;
@@ -1902,23 +1985,27 @@ end of redundancy ring comment */
 	  PixelConfigInterface::get(dcdc, "pixel/dcdc/" + name, *theGlobalKey_);
 	  const std::vector<unsigned>& ports = dcdc->getPortNumbers();
 
-	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name << " enabled? " << dcdc->getDCDCEnabled() << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " ports ";
+	  std::cout << " DCDC slot " << slot << " ring " << ringiter->first << " name " << name
+                    << " type? " << dcdc->getType()
+                    << " enabled? " << dcdc->getDCDCEnabled()
+                    << " CCUAddressEnable 0x" << std::hex << dcdc->getCCUAddressEnable() << " CCUAddressPgood 0x" << dcdc->getCCUAddressPgood() << " PIAChannelAddress 0x" << dcdc->getPIAChannelAddress() << std::dec << " ports ";
 	  for (size_t i = 0; i < ports.size(); ++i)
 	    std::cout << ports[i] << " ";
 	  std::cout << std::endl;
 
-	  if (dcdc->getDCDCEnabled()) {
-	    std::cout << "   sending DCDC command" << std::endl;
-	    for (size_t i = 0; i < ports.size(); ++i)
-	      pixDCDCCommand(slot, ringiter->first,
-			     dcdc->getCCUAddressEnable(),
-			     dcdc->getCCUAddressPgood(),
-			     dcdc->getPIAChannelAddress(),
-			     true,
-			     ports[i]);
-	  }
+          if (dcdc->getType() == "pilot") {
+            if (dcdc->getDCDCEnabled()) {
+              std::cout << "   sending DCDC command" << std::endl;
+              for (size_t i = 0; i < ports.size(); ++i)
+                PilotPixDCDCCommand(slot, ringiter->first,
+                                    dcdc->getCCUAddressEnable(),
+                                    dcdc->getCCUAddressPgood(),
+                                    dcdc->getPIAChannelAddress(),
+                                    true,
+                                    ports[i]);
+            }
+          }
 	}
-#endif
 
 	set<pair<unsigned int,bool> >::const_reverse_iterator ccuiter = ringiter->second.rbegin();
 	for( ; ccuiter != ringiter->second.rend(); ++ccuiter ) { //ccu loop
@@ -1985,17 +2072,26 @@ end of redundancy ring comment */
       try {
 	toolbox::Event::Reference e(new toolbox::Event("ConfiguringDone", this));
 	fsm_.fireEvent(e);
-      } catch (toolbox::fsm::exception::Exception & e) {
+} catch (toolbox::fsm::exception::Exception & e) {	
 	XCEPT_RETHROW(xoap::exception::Exception, "Invalid Command.", e);
       }
     }
-  } //end of the BIG try-catch
+  } //end of the BIG try-
   catch (FecExceptionHandler e) {
-    diagService_->reportError("Failed to configure TKFEC (is the power off?); exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_thv = "Failed to configure TKFEC (is the power off?); exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_thv);
+pixel::PixelTKFECSupervisorException fecexception_handler("FecExceptionHandler","module",msg_error_thv,1865,"PixelTKFECSupervisor::stateConfiguring(toolbox::fsm::FiniteStateMachine&)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_thv, fecexception_handler);
+this->notifyQualified("fatal",f);
     isfailure=true;
   }
   catch (std::exception & e) { //failure to load config data raises std::exception (not xcept::Exception)
-    diagService_->reportError("Failed to configure TKFEC; exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_gpv = "Failed to configure TKFEC; exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_gpv);
+std::exception * error_ptr = &e;
+pixel::PixelTKFECSupervisorException *new_exception = dynamic_cast<pixel::PixelTKFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_gpv,*new_exception);
+this->notifyQualified("fatal",f);
     isfailure=true;
   }
 
@@ -2006,14 +2102,19 @@ end of redundancy ring comment */
       //The following line should be commented for normal operation; it can be uncommented to test pxl FEC when there is no power
 #ifdef SKIP_LV_CHECK
       // no power bypass, for special tests without power ON
-      toolbox::Event::Reference ev(new toolbox::Event("ConfiguringDone", this)); diagService_->reportError("Bypassing Error state in TKFEC!",DIAGWARN);
+      toolbox::Event::Reference ev(new toolbox::Event("ConfiguringDone", this)); 
+std::string const msg_warn_pnl = "Bypassing Error state in TKFEC!";
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_pnl);
 #else 
       // For normal default operation with power ON 
       toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
 #endif 
       fsm_.fireEvent(ev);
     } catch (toolbox::fsm::exception::Exception & e2) {
-      diagService_->reportError("Failed to transition to Failed state!",DIAGFATAL);
+std::string const msg_fatal_gqc = "Failed to transition to Failed state!";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_gqc);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_fatal_gqc,e2);
+this->notifyQualified("fatal",f);
     }
 
   }
@@ -2032,7 +2133,7 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 #endif
   //unsigned int slot=9999; 
   unsigned int ring =9999;
-  static bool ringInit[8] = {false,false,false,false,false,false,false,false}; // has the ring been reset
+  static bool ringInit[9] = {false,false,false,false,false,false,false,false,false}; // has the ring been reset
   enumDeviceType modeType = PHILIPS ;
   bool problem = false;
 
@@ -2062,12 +2163,12 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 
     // Try the PLX reset , do it only once per ring (or should we do it for each portcard?)
      ring = tempPortCard->getringAddress();
-     if( !ringInit[(ring-1)]) {  // rings go from 1-8
+     if( !ringInit[ring]) {  // rings go from 1-8
        cout<<" Reset slot/mfec "<<TKFECAddress<<"/"<<ring<<endl;
 #ifndef NO_PILOT_RESET
        resetPlxFec ( fecAccess_, TKFECAddress, ring, loop, tms ) ;
 #endif
-       ringInit[(ring-1)]=true;
+       ringInit[ring]=true;
      }
 
     std::cout <<"Will now configure portcard:"<<std::endl;
@@ -2140,11 +2241,9 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 //        cout<<"I2C SRD = "<<hex<<(int) fecAccess_->geti2cChannelSRD( myindex)<<dec<<endl;
 //        fecAccess_->removei2cAccess (myindex);
 //      }
-//      catch (FecExceptionHandler theError) {
 //        cout<<"Caught an exception: "<<theError.what()<<endl;
 
 //      }
-//      catch (...) {
 //                cout<<"Caught an unknown exception!"<<endl;
 //      }
 
@@ -2160,8 +2259,8 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 			    modeType,
 			    value,
 			    1);
-        } catch (FecExceptionHandler& e) {
-	  cout<<" --------------------------------------------------"<<endl;
+} catch (FecExceptionHandler& e) {	 
+	 cout<<" --------------------------------------------------"<<endl;
 	  cout<<" -- Exception caught during portcardI2CDevice() --"<<hex<<endl
 	      <<"ring address = "<<tempPortCard->getringAddress()<<endl
 	      <<"CCU address  = "<<tempPortCard->getccuAddress()<<endl
@@ -2178,8 +2277,8 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 	  //fecAccess_->removei2cAccess (myindex);
 
 	  //throw; // DO NOT RE-THROW
-	} catch (...) {
-	  cout<<"Caught an unknown exception in PixelTKFECSupervisor::programPortcard!"<<endl;
+} catch (...) {	  
+	cout<<"Caught an unknown exception in PixelTKFECSupervisor::programPortcard!"<<endl;
 	}
 
 	// Now readback
@@ -2194,8 +2293,8 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 					   modeType,
 					   1);
 	  
-	} catch (FecExceptionHandler& e) {
-	  cout<<" --------------------------------------------------"<<endl;
+} catch (FecExceptionHandler& e) {	  
+	cout<<" --------------------------------------------------"<<endl;
 	  cout<<" -- Exception caught during portcardI2CDeviceRead() --"<<hex<<endl
 	      <<"ring address = "<<tempPortCard->getringAddress()<<endl
 	      <<" CCU address = "<<tempPortCard->getccuAddress()<<endl
@@ -2203,8 +2302,8 @@ bool  PixelTKFECSupervisor::programPortcards(bool errorFlag)  {
 	      <<"device address = "<<deviceAddress<<dec<<endl
 	      <<"value = "<<value<<endl;
 	  // throw;
-	} catch (...) {
-	  cout<<"Caught an unknown exception in PixelTKFECSupervisor::programPortcard!"<<endl;
+} catch (...) {	  
+	cout<<"Caught an unknown exception in PixelTKFECSupervisor::programPortcard!"<<endl;
 	}
 
 
@@ -2360,9 +2459,9 @@ void PixelTKFECSupervisor::transitionHaltedToConfiguring (toolbox::Event::Refere
   PixelConfigInterface::get(theGlobalDelay25_, "pixel/globaldelay25/", *theGlobalKey_);
   if (theGlobalDelay25_==0) cout<<"Global delay in Delay25 is not specified. Using only the default Delay25 settings."<<endl;
   }
-  catch (toolbox::fsm::exception::Exception & e) { throw; }
-  catch (std::exception & e) {  //translate std::exception to the correct type
-    XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
+catch (toolbox::fsm::exception::Exception & e) { throw; }
+catch (std::exception & e) { //translate std::exception to the correct type    
+XCEPT_RAISE(toolbox::fsm::exception::Exception, string(e.what()));
   }
 
 
@@ -2387,7 +2486,8 @@ void PixelTKFECSupervisor::enteringError(toolbox::Event::Reference e) //throw (t
 	<<  " to: " 
 	<< fe.getToState() 
 	<< " exception: " << fe.getException().what();
-  diagService_->reportError(errstr.str(),DIAGERROR);
+std::string const msg_error_jtx = errstr.str();
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_jtx);
 
 }
 
@@ -2688,7 +2788,6 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 		const std::string portCardName = portCardAndAOH.first; assert(portCardName!="none");
 		
 		//ben debugging
-		std::cout << "portCardName: " << portCardName << std::endl;
 
 		PixelPortCardConfig* tempPortCard=mapNamePortCard_[portCardName];
 		assert(tempPortCard!=0);
@@ -2696,7 +2795,7 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 		if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
 
 		const int AOHNumber = portCardAndAOH.second;
-		
+
 		std::map<std::string,PixelPortCardConfig*>::const_iterator mapNamePortCard_itr = mapNamePortCard_.find(portCardName);
 		assert( mapNamePortCard_itr != mapNamePortCard_.end() );
 		const PixelPortCardConfig* thisPortCardConfig = mapNamePortCard_itr->second;
@@ -2718,6 +2817,8 @@ xoap::MessageReference PixelTKFECSupervisor::SetAOHGainEnMass (xoap::MessageRefe
 			portCardToChange = newSettings.insert( newSettings.end(), std::make_pair(*thisPortCardConfig, std::set<unsigned int>() ) );
 			portCardToChange->first.setPortCardName(portCardName); // ensure that there will be no problems if the name stored in the configuration file doesn't match
 		}
+		
+
 		
 		// Change the AOH gain and record the address for this AOH.
 		portCardToChange->first.setAOHGain(AOHNumber, AOHGain);
@@ -2897,10 +2998,10 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
   rclock_->take(); if (workloopContinueRC_) rclock_->give();  else {rclock_->give(); return true;}
   //return true so that cancel() never fails
 
-  //#ifdef PRINT_MORE
+#ifdef PRINT_MORE
   cout<<"Running [checkForResets] "<<wait<<endl;
   //  return true;
-  //#endif
+#endif
 
   try {
 
@@ -2973,7 +3074,6 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 	    printPIAinfo(tkfecAddress,ringAddress,ccuAddress,0x33);
 #endif // MYTEST
 	    disablePIAchannels(tkfecAddress,ringAddress,ccuAddress);
-	    //} catch (FecExceptionHandler & e) {
 	    //cout<<" Error in PIA readout: slot "<<tkfecAddress<<" ring "<<ringAddress<<" ccu "<<ccuAddress<<endl;
 	    //}
 #endif // DO_READPIA
@@ -2989,14 +3089,18 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 	} // is supppress
 	
       } catch (FecExceptionHandler & e) {
+std::string const msg_warn_efl = "Caught hardware exception in resetCheck loop: "+string(e.what());
+LOG4CPLUS_WARN(sv_logger_,msg_warn_efl);
+pixel::PixelTKFECSupervisorException fechandler_exception("FecHandlerException","module",msg_warn_efl,2871,"PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop*)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_efl, fechandler_exception);
+this->notifyQualified("fatal",f);
 	  
-	diagService_->reportError("Caught hardware exception in resetCheck loop: "+string(e.what()),DIAGWARN);
 	
 	suppressHardwareError_=false;
 	printStatus=true;	
 	//if (hardwarelock_->value()==toolbox::BSem::EMPTY) hardwarelock_->give();
 	
-      } // end catch
+      } // end 
 
 
 #endif // DO_READCCU
@@ -3013,8 +3117,12 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 					   deviceAddress,  modeType,  1);
 
 	} catch (FecExceptionHandler & e) {
+std::string const msg_warn_vtm = "Caught hardware exception in resetCheck loop: "+string(e.what());
+LOG4CPLUS_WARN(sv_logger_,msg_warn_vtm);
+pixel::PixelTKFECSupervisorException fechandler_exception("FecHandlerException","module",msg_warn_vtm,2899,"PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop*)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_vtm, fechandler_exception);
+this->notifyQualified("fatal",f);
 	  
-	  diagService_->reportError("Caught hardware exception in resetCheck loop: "+string(e.what()),DIAGWARN);
 	
 	  suppressHardwareError_=false;
 	  printStatus=true;	  
@@ -3027,7 +3135,8 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 	  ostringstream errmsg;
 	  errmsg<<"Problem with Delay25_SDA in tkfec=0x"<<hex<<tkfecAddress<<dec<<" ring=0x"<<hex<<ringAddress<<dec
 		<<" ccu=0x"<<hex<<ccuAddress<<dec<<" channel=0x"<<hex<<channelAddress<<dec<<" value=0x"<<hex<<readvalue<<dec;
-	  diagService_->reportError(errmsg.str(),DIAGERROR);
+std::string const msg_error_xmx = errmsg.str();
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_xmx);
 	  status = false;
 	}
 	//uncomment for debugging
@@ -3053,10 +3162,9 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 	readvalue =  portcardI2CDeviceRead(fecAccess_, tkfecAddress, ringAddress,ccuAddress,channelAddress,
 					   deviceAddress,  modeType,  1);
       } catch (FecExceptionHandler & e) {
-	
 	// uncomment the following line if you want the hardware exception to be printed. md 17-07-2012
 	// diagService_->reportError("Caught hardware exception in resetCheck loop: "+string(e.what()),DIAGWARN);
-	
+
 	suppressHardwareError_=false;
 	printStatus=true;	  
 	readoutError = true;
@@ -3084,7 +3192,8 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 	    ostringstream errmsg;
 	    errmsg<<"Problem with PLL CTR1 in tkfec=0x"<<hex<<tkfecAddress<<dec<<" ring=0x"<<hex<<ringAddress<<dec
 		  <<" ccu=0x"<<hex<<ccuAddress<<dec<<" channel=0x"<<hex<<channelAddress<<" value "<<readvalue<<dec;
-	    diagService_->reportError(errmsg.str(),DIAGWARN);
+std::string const msg_warn_udy = errmsg.str();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_udy);
 	    
 	    status = false;
 	  } // end if 
@@ -3095,7 +3204,8 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
 	  ostringstream errmsg;
 	  errmsg<<"Maybe? a SEU in  PLL in tkfec=0x"<<hex<<tkfecAddress<<dec<<" ring=0x"<<hex<<ringAddress<<dec
 		<<" ccu=0x"<<hex<<ccuAddress<<dec<<" channel=0x"<<hex<<channelAddress<<" value "<<readvalue<<dec;
-	  diagService_->reportError(errmsg.str(),DIAGWARN);
+std::string const msg_warn_uzc = errmsg.str();
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_uzc);
 	  status = false;
 	}
       } // if readout error 
@@ -3138,19 +3248,334 @@ bool PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop *w1) {
     hardwarelock_->give();
 
   } catch (FecExceptionHandler & e) {
+std::string const msg_warn_pvj = "Caught hardware exception in resetCheck loop: "+string(e.what());
+LOG4CPLUS_WARN(sv_logger_,msg_warn_pvj);
+pixel::PixelTKFECSupervisorException fechandler_exception("FecHandlerException","module",msg_warn_pvj,3029,"PixelTKFECSupervisor::checkForResets(toolbox::task::WorkLoop*)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_pvj, fechandler_exception);
+this->notifyQualified("fatal",f);
 
-    diagService_->reportError("Caught hardware exception in resetCheck loop: "+string(e.what()),DIAGWARN);
 
     suppressHardwareError_=false;
     //printStatus=true;
     if (hardwarelock_->value()==toolbox::BSem::EMPTY) hardwarelock_->give();
 
-  }  // big try-catch 
+  }  // big try-
 
   return true;
 }
 
 //=============================================================================================
+
+void PixelTKFECSupervisor::FPixDCDCSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+  *out << "<h3>DCDC and QPLL summary for crate " << crate_ << "</h3>\n";
+
+  // slot, ring, ccu, piachannel 31-33
+  unsigned ddr [1][4][4][3] = {{{{0}}}};
+  unsigned data[1][4][4][3] = {{{{0}}}};
+  const unsigned ccus[4] = { 0x7b, 0x7c, 0x7e, 0x7d }; // order for portcards 1 2 3 4 in phi
+
+  {
+    const unsigned slot = 0;
+    const unsigned ring = 0;
+
+    for (int ccu = 0; ccu < 4; ++ccu) {
+      for (unsigned i = 0; i < 3; ++i) {
+        keyType key = buildCompleteKey(slot, ring, ccus[ccu], (0x31 + i), 0); // is this a macro? why is compiler complaining about 0x31 + i needs parens
+        try {
+          fecAccess_->addPiaAccess(key, MODE_SHARE); // JMTBAD use PiaChannelAccess
+          ddr [slot][ring][ccu][i] = fecAccess_->getPiaChannelDDR(key);
+          data[slot][ring][ccu][i] = fecAccess_->getPiaChannelDataReg(key);
+          fecAccess_->removePiaAccess(key);
+        }
+        catch (FecExceptionHandler e) {
+          cout << std::string("Exception caught when doing PIA access: ") + e.what();
+        }
+      }
+    }
+  }
+
+  std::map<std::string, std::pair<unsigned, unsigned> > enable_pgood;
+  std::map<std::string, bool> qpll;
+
+  for (std::map<std::string, PixelPortCardConfig*>::const_iterator it = mapNamePortCard_.begin(), ite = mapNamePortCard_.end(); it != ite; ++it) {
+    const std::string& pc_name = it->first;
+    PixelPortCardConfig* pc = it->second;
+    const std::string TKFECID = pc->getTKFECID();
+
+    if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
+
+    const unsigned slot = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
+    const unsigned ring = pc->getringAddress();
+    const unsigned ccu_addr  = pc->getccuAddress();
+    int ccu = -1;
+    if      (ccu_addr == 0x7b) ccu = 0;
+    else if (ccu_addr == 0x7c) ccu = 1;
+    else if (ccu_addr == 0x7e) ccu = 2;
+    else if (ccu_addr == 0x7d) ccu = 3;
+    assert(slot == 0 && ring < 4 && ccu != -1);
+
+    const int disk = pc_name[10] - '0'; // only works for "FPix_BmI_DX..."
+    assert(disk >= 1 && disk <= 3);
+
+    unsigned enable = 0;
+    unsigned pgood = 0;
+    if (disk == 1) {
+      enable = data[slot][ring][ccu][0] & 0x3;
+      pgood  = data[slot][ring][ccu][1] & 0xf;
+      qpll[pc_name] = data[slot][ring][ccu][2] & 0x10;
+    }
+    else if (disk == 2) {
+      enable = (data[slot][ring][ccu][0] >> 2) & 0x3;
+      pgood  = data[slot][ring][ccu][1] >> 4;
+      qpll[pc_name] = data[slot][ring][ccu][2] & 0x20;
+    }
+    else if (disk == 3) {
+      enable = (data[slot][ring][ccu][0] >> 4) & 0x3;
+      pgood  = data[slot][ring][ccu][2] & 0xf;
+      qpll[pc_name] = data[slot][ring][ccu][2] & 0x40;
+    }
+    
+    enable_pgood[pc_name] = std::make_pair(enable, pgood);
+  }
+  
+  enum PIARegisterType{
+    GoodAndBad=1,
+    OnAndOff=2,
+    EnableAndDisable=3
+  };
+
+  const long N_PIACHANNELS = 3 ; 
+  const long N_PIABITS = 8 ;
+
+  enum PIA_CHANNELS{
+    PIA0x31 = 0 , 
+    PIA0x32 = 1 , 
+    PIA0x33 = 2  
+  };
+
+  PIARegisterType regType[ N_PIACHANNELS ][ N_PIABITS];
+  regType[PIA0x31][0]=EnableAndDisable;
+  regType[PIA0x31][1]=EnableAndDisable;
+  regType[PIA0x31][2]=EnableAndDisable;
+  regType[PIA0x31][3]=EnableAndDisable;
+  regType[PIA0x31][4]=EnableAndDisable;
+  regType[PIA0x31][5]=EnableAndDisable;
+  regType[PIA0x31][6]=GoodAndBad;
+  regType[PIA0x31][7]=GoodAndBad;
+
+  regType[PIA0x32][0]=OnAndOff;
+  regType[PIA0x32][1]=OnAndOff;
+  regType[PIA0x32][2]=OnAndOff;
+  regType[PIA0x32][3]=OnAndOff;
+  regType[PIA0x32][4]=OnAndOff;
+  regType[PIA0x32][5]=OnAndOff;
+  regType[PIA0x32][6]=OnAndOff;
+  regType[PIA0x32][7]=OnAndOff;
+
+  regType[PIA0x33][0]=OnAndOff;
+  regType[PIA0x33][1]=OnAndOff;
+  regType[PIA0x33][2]=OnAndOff;
+  regType[PIA0x33][3]=OnAndOff;
+  regType[PIA0x33][4]=GoodAndBad;
+  regType[PIA0x33][5]=GoodAndBad;
+  regType[PIA0x33][6]=GoodAndBad;
+  regType[PIA0x33][7]=GoodAndBad;
+
+  string MessageMatrix[3][8];
+  MessageMatrix[PIA0x31][0] = "J11 dcdc converter pair setting on P1";
+  MessageMatrix[PIA0x31][1] = "J12 dcdc converter pair setting on P1";
+  MessageMatrix[PIA0x31][2] = "J11 dcdc converter pair setting on P2";
+  MessageMatrix[PIA0x31][3] = "J12 dcdc converter pair setting on P2";
+  MessageMatrix[PIA0x31][4] = "J11 dcdc converter pair setting on P3";
+  MessageMatrix[PIA0x31][5] = "J12 dcdc converter pair setting on P3";
+  MessageMatrix[PIA0x31][6] = "always 1";
+  MessageMatrix[PIA0x31][7] = "always 1";
+
+  MessageMatrix[PIA0x32][0] = "bit 0 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][1] = "bit 1 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][2] = "bit 2 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][3] = "bit 3 dcdc power_Good from P1";
+  MessageMatrix[PIA0x32][4] = "bit 4 dcdc power_Good from P2";
+  MessageMatrix[PIA0x32][5] = "bit 5 dcdc power_Good from P2";
+  MessageMatrix[PIA0x32][6] = "bit 6 dcdc power_Good from P2";
+  MessageMatrix[PIA0x32][7] = "bit 7 dcdc power_Good from P2";
+
+  MessageMatrix[PIA0x33][0] = "bit 0 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][1] = "bit 1 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][2] = "bit 2 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][3] = "bit 3 dcdc power_Good from P3";
+  MessageMatrix[PIA0x33][4] = "qpll lock for P1";
+  MessageMatrix[PIA0x33][5] = "qpll lock for P2";
+  MessageMatrix[PIA0x33][6] = "qpll lock for P3";
+  MessageMatrix[PIA0x33][7] = "always 1 in my experience but I'm not sure what it's hooked to";
+  *out << "raw pia data:<br>\n";
+  *out << std::hex;
+  for (int slot = 0; slot < 1; ++slot) {
+    for (int ring = 0; ring < 1; ++ring) {
+      *out << "slot " << slot << " ring " << ring << "<br>\n";
+      for (int ccu = 0; ccu < 4; ++ccu) {
+        *out << "ccu 0x" << ccus[ccu] << "<br>\n";
+        *out << "<table><tr><td>pia</td><td>0x31</td><td>0x32</td><td>0x33</td></tr>\n";
+        *out << "<tr><td>DDR</td>";
+        for (int i = 0; i < N_PIACHANNELS; ++i)
+          *out << "<td>" << ddr[slot][ring][ccu][i] << "</td>";
+        *out << "</tr>\n";
+        *out << "<tr><td>data</td>";
+        for (int i = 0; i < N_PIACHANNELS; ++i)
+          *out << "<td>" << data[slot][ring][ccu][i] << "</td>";
+        *out << "</tr>\n";
+        *out << "</table>\n";
+        for (int channelnumber = 0; channelnumber < N_PIACHANNELS ; channelnumber++)
+	{
+	  bool *M = new bool[8];
+	  for (int i = 0; i < 8; i++)
+	  {
+	    M[i] = data[slot][ring][ccu][channelnumber] & (1 << i) ;
+	  }
+
+          *out <<"<p>";
+	  for (int i = 0; i < 8; i++)
+	    *out << M[8-1-i];
+	  *out << "<br/>";
+          *out << "</p>";
+	
+         // *out << "</table>\n";
+          *out <<"<p>";
+          for (int bit = 0; bit < N_PIABITS; bit++)
+          {
+            string StatusPIA="";
+            if(regType[channelnumber][bit]==PIARegisterType::OnAndOff)
+              StatusPIA=M[bit]? "On":"Off";
+            else if(regType[channelnumber][bit]==PIARegisterType::GoodAndBad)
+              StatusPIA=M[bit]? "Good":"bad";
+            else
+              StatusPIA=M[bit]? "Disable":"Enable";
+            *out << "Channel=" << channelnumber << ";bit=" << bit << ";value=" << (M[bit]) << ":" << (MessageMatrix[channelnumber][bit].c_str()) << " = "<< StatusPIA << "." << "<br/>";
+          }
+          *out <<"</p>";
+        }
+      }
+    }
+  }
+}
+
+void PixelTKFECSupervisor::FPixDCUSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+  *out << "<h3>DCU for portcards for crate " << crate_ << "</h3>\n";
+
+  if (mapNamePortCard_.size() == 0)
+    *out << "no portcards, are we configured yet?\n";
+
+  for (std::map<std::string, PixelPortCardConfig*>::const_iterator it = mapNamePortCard_.begin(), ite = mapNamePortCard_.end(); it != ite; ++it) {
+    const std::string& pc_name = it->first;
+    PixelPortCardConfig* pc = it->second;
+    const std::string TKFECID = pc->getTKFECID();
+
+    if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
+
+    const std::string dcu_names[2] = {"bottom", "top"};
+    const int dcu_addrs[2] = {0x50, 0x60};
+    const std::string channel_names[6] = {"portcard", "module ana 1", "module dig 1", "module ana 2", "module dig 2", "RTD"};
+    tscType16 raw_vals[2][6] = {{0}};
+    bool seu[2][6] = {{0}};
+
+    for (int which = 0; which < 2; ++which) {
+      dcuAccess dcu(fecAccess_,
+                    theTKFECConfiguration_->addressFromTKFECID(TKFECID),
+                    pc->getringAddress(),
+                    pc->getccuAddress(),
+                    pc->getchannelAddress(),
+                    dcu_addrs[which]);
+
+      const int creg = 0x88; // = start a->d | low input range
+      for (int ch = 0; ch < 6; ++ch) {
+        dcu.setDcuCREG(creg | ch);
+        tscType16 shreg = dcu.getDcuSHREG();
+        if (shreg & 0x40)
+          seu[which][ch] = true;
+        shreg &= 0xf;
+        raw_vals[which][ch] = (shreg << 8) | dcu.getDcuLREG();
+      }
+    }
+
+    tscType16 vals[2][6] = {{0}};
+    for (int which = 0; which < 2; ++which) {
+      for (int ch = 0; ch < 6; ++ch) {
+        tscType16 val = raw_vals[which][ch];
+        //if (ch < 5)
+        //  ; //val *= 2; // all the voltages are half 
+        //else
+        //  val = 519*(vals[which][0] / val - 1);
+        vals[which][ch] = val;
+      }
+    }
+
+    *out << "<h4>" << pc_name << "</h4>\n";
+    *out << "<table border=1><tr><td></td>";
+    for (int ch = 0; ch < 6; ++ch)
+      *out << "<td>" << channel_names[ch] << "</td>";
+    *out << "<td>temp</td>";
+    *out << "</tr>\n";
+    for (int which = 0; which < 2; ++which) {
+      *out << "<tr><td>" << dcu_names[which] << "</td>";
+      for (int ch = 0; ch < 6; ++ch) {
+        *out << "<td>";
+        if (seu[which][ch]) *out << "!SEU! ";
+        *out << vals[which][ch] << "</td>";
+      }
+      *out << "<td>" << 519*(float(vals[which][0]) / vals[which][5] - 1) << "</td>";
+      *out << "</tr>\n";
+    }
+    *out << "</table><br>\n";
+  }
+}
+
+void PixelTKFECSupervisor::PortcardDevicesSummary(xgi::Input* in, xgi::Output* out ) throw (xgi::exception::Exception) {
+  *out << "<h3>Device settings for portcards for crate " << crate_ << "</h3>\n";
+
+  if (mapNamePortCard_.size() == 0)
+    *out << "no portcards, are we configured yet?\n";
+
+  for (std::map<std::string, PixelPortCardConfig*>::const_iterator it = mapNamePortCard_.begin(), ite = mapNamePortCard_.end(); it != ite; ++it) {
+    const std::string& pc_name = it->first;
+    PixelPortCardConfig* pc = it->second;
+    const std::string TKFECID = pc->getTKFECID();
+    if ( theTKFECConfiguration_->crateFromTKFECID(TKFECID) != crate_ ) continue;
+    const unsigned int TKFECAddress = theTKFECConfiguration_->addressFromTKFECID(TKFECID);
+
+    *out << "<h4>" << pc_name << "</h4>\n"
+         << "<table border=1>\n";
+
+    for(int i=0;i<int(pc->getdevicesize());++i) {
+      unsigned deviceAddress = pc->getdeviceAddress(i);
+      int configValue(pc->getdeviceValues(i));
+      int currentValue=-1; // -1 if problem reading
+      try {
+        currentValue = portcardI2CDeviceRead(fecAccess_,
+                                             TKFECAddress,
+                                             pc->getringAddress(),
+                                             pc->getccuAddress(),
+                                             pc->getchannelAddress(),
+                                             deviceAddress,
+                                             PHILIPS,
+                                             1);
+      } catch(FecExceptionHandler e) {
+      }
+
+      *out << "<tr>"
+           << "<td>" << pc->getdeviceNameForAddress(deviceAddress) << "</td>"
+           << "<td>0x" << std::hex << configValue << "</td>"
+           << "<td>";
+      if (currentValue != configValue)
+        *out << "<font color=red>";
+      *out << "0x" << currentValue << std::dec;
+      if (currentValue != configValue)
+        *out << "</font>";
+      *out << "</td></tr>";
+    }
+
+    *out << "</table>\n";
+  }
+}
 
 void PixelTKFECSupervisor::readTemp ()
 {
@@ -3394,7 +3819,7 @@ xoap::MessageReference PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP (xoap::Me
   
   std::ostringstream diagMessage;
   diagMessage << "<PixelTKFECSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::ReadDCU_workloop_SOAP_exception>:";
-  //diagService_->reportError(diagMessage.str(), DIAGINFO);
+     //diagService_->reportError(diagMessage.str(), DIAGINFO);
 
 	//
 	// This section has been taken from PixelTKFECSupervisor::Initialize
@@ -3403,8 +3828,8 @@ xoap::MessageReference PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP (xoap::Me
   try {
     PixelDCStoTKFECDpInterface_ = getApplicationContext()->getDefaultZone()->getApplicationGroup("dcs")->getApplicationDescriptor("PixelDCStoTrkFECDpInterface", 0);
     std::cout<<"// PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP: while doing the same as PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCStoTKFECInterface found."<<std::endl;
-  } catch (xdaq::exception::Exception& e) {
-    std::cout<<"// PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP: while doing the same as PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCStoTKFECInterface not found!"<<std::endl;
+} catch (xdaq::exception::Exception& e) {    
+	std::cout<<"// PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP: while doing the same as PixelTKFECSupervisor::Initialize - Instance 0 of PixelDCStoTKFECInterface not found!"<<std::endl;
   }
 
   if (PixelDCStoTKFECDpInterface_!=0) {
@@ -3416,13 +3841,16 @@ xoap::MessageReference PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP (xoap::Me
       // soapResponse = Send(0, soapRequest);		// intentially set pointer to 0 to test exception handling
     }
     catch  (xdaq::exception::Exception& e) {
-      diagService_->reportError("//-- PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP: Caught exception -- Failed to post SOAP to PixelDCStoTKFECDpInterface",DIAGWARN);
+std::string const msg_warn_any = "//-- PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP: Caught exception -- Failed to post SOAP to PixelDCStoTKFECDpInterface";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_any);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_any, e);
+this->notifyQualified("fatal",f);
     }
     if ( soapResponse != "updateDpValueDone" ) {
       std::cerr << "<PixelTKFECSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::ReadDCU_workloop_fakeSOAP>:"
 		<< " Failed to send DCU temperatures to PixelDCStoTKFECDpInterface" << std::endl;
-      //diagService_->reportError("Failed to send DCU temperatures to PixelDCStoTKFECDpInterface", DIAGDEBUG);
     }
+	//diagService_->reportError("Failed to send DCU temperatures to PixelDCStoTKFECDpInterface", DIAGDEBUG);
 		else {
 			cout<< "PixelTKFECSupervisor::ReadDCU_workloop_fakeSOAP: successfully sent SOAP mess to PixelDCStoTKFECDpInterface" <<endl;
 		}
@@ -3458,22 +3886,27 @@ bool PixelTKFECSupervisor::ReadDCU_workloop (toolbox::task::WorkLoop *w1)
 
     //    if (dcudebug_) diagService_->reportError("[ReadDCU_workloop] done with readDCU()",DIAGTRACE);
 
+
     dculock_->take(); if (workloopContinue_) dculock_->give();  else {dculock_->give(); return true;}
 
     //    if (dcudebug_) diagService_->reportError("[ReadDCU_workloop] about to send SOAP to PixelDCStoTKFECDpInterface",DIAGTRACE);
+
     std::string soapResponse = "";
     try {
       soapResponse = Send(PixelDCStoTKFECDpInterface_, soapRequest);
     }
     catch  (xdaq::exception::Exception& e) {
-      diagService_->reportError("Caught exception -- Failed to post SOAP to PixelDCStoTKFECDpInterface",DIAGWARN);
+std::string const msg_warn_vrz = "Caught exception -- Failed to post SOAP to PixelDCStoTKFECDpInterface";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_vrz);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_vrz, e);
+this->notifyQualified("fatal",f);
     }
     if ( soapResponse != "updateDpValueDone" ) {
       std::cerr << "<PixelTKFECSupervisor " << this->getApplicationDescriptor()->getInstance() << " ::readDCU>:"
 		<< " Failed to send DCU temperatures to PixelDCStoTKFECDpInterface" << std::endl;
-      //diagService_->reportError("Failed to send DCU temperatures to PixelDCStoTKFECDpInterface", DIAGDEBUG);
+    //diagService_->reportError("Failed to send DCU temperatures to PixelDCStoTKFECDpInterface", DIAGDEBUG);
     }
-    //    if (dcudebug_) diagService_->reportError("[ReadDCU_workloop] done sending SOAP to PixelDCStoTKFECDpInterface",DIAGTRACE);
+  //    if (dcudebug_) diagService_->reportError("[ReadDCU_workloop] done sending SOAP to PixelDCStoTKFECDpInterface",DIAGTRACE);
   }
 
   usleep(readDCU_workloop_usleep_);
@@ -3484,7 +3917,8 @@ bool PixelTKFECSupervisor::ReadDCU_workloop (toolbox::task::WorkLoop *w1)
 
 xoap::MessageReference PixelTKFECSupervisor::ResetCCU(xoap::MessageReference msg) //throw (xoap::exception::Exception) 
 {
-  diagService_->reportError("Entering ResetCCU",DIAGDEBUG);
+std::string const msg_debug_cvr = "Entering ResetCCU";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_cvr);
 
   if (0==fecAccess_) {
     cout<<"[PixelTKFECSupervisor] Cannot get pointer to FEC"<<endl;
@@ -3503,10 +3937,15 @@ xoap::MessageReference PixelTKFECSupervisor::ResetCCU(xoap::MessageReference msg
       }
   }
   catch (...) {
-      diagService_->reportError("Caught an exception while trying to reset the CCU!",DIAGERROR);
+std::string const msg_error_olf = "Caught an exception while trying to reset the CCU!";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_olf);
+pixel::PixelTKFECSupervisorException trivial_exception("FecHandlerException","module",msg_error_olf,3397,"PixelTKFECSupervisor::ResetCCU(xoap::MessageReference)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_olf,trivial_exception);
+this->notifyQualified("fatal",f);
   }
   
-  diagService_->reportError("Exiting ResetCCU",DIAGDEBUG);
+std::string const msg_debug_qxs = "Exiting ResetCCU";
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_qxs);
   return MakeSOAPMessageReference("ResetCCUResponse");
 }
 
@@ -3565,8 +4004,8 @@ xoap::MessageReference PixelTKFECSupervisor::readDCU(xoap::MessageReference msg)
   {
     //exit quickly if desired
     dculock_->take();
-    if (workloopContinue_) dculock_->give();  else {dculock_->give(); hardwarelock_->give();  
-      //      if (dcudebug_) diagService_->reportError("[readDCU] got DCU workloop cancel inside of readDCU()",DIAGTRACE);
+    if (workloopContinue_) dculock_->give();  else {dculock_->give(); hardwarelock_->give(); 
+       //      if (dcudebug_) diagService_->reportError("[readDCU] got DCU workloop cancel inside of readDCU()",DIAGTRACE);
       return MakeSOAPMessageReference("DCUWorkloopCancel");}
 
     std::string portcard_name = portcard->first;
@@ -3653,13 +4092,21 @@ xoap::MessageReference PixelTKFECSupervisor::readDCU(xoap::MessageReference msg)
   hardwarelock_->give();
 
   } catch (FecExceptionHandler & e) {
-    if (hardwarelock_->value()==toolbox::BSem::EMPTY) hardwarelock_->give();
-    diagService_->reportError("Caught hardware access exception in readDCU: "+string(e.what()),DIAGWARN);
+if (hardwarelock_->value()==toolbox::BSem::EMPTY) hardwarelock_->give();
+std::string const msg_warn_gwf = "Caught hardware access exception in readDCU: "+string(e.what());
+LOG4CPLUS_WARN(sv_logger_,msg_warn_gwf);
+pixel::PixelTKFECSupervisorException fechandler_exception("FecHandlerException","module",msg_warn_gwf,3552,"PixelTKFECSupervisor::readDCU(xoap::MessageReference)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_gwf, fechandler_exception);
+this->notifyQualified("fatal",f);
     soapMessage = MakeSOAPMessageReference("readDCUFailed");
   }
   catch (...) {
-    if (hardwarelock_->value()==toolbox::BSem::EMPTY) hardwarelock_->give();
-    diagService_->reportError("Caught unknown exception in readDCU",DIAGWARN);
+if (hardwarelock_->value()==toolbox::BSem::EMPTY) hardwarelock_->give();
+std::string const msg_warn_akv = "Caught unknown exception in readDCU";
+LOG4CPLUS_WARN(sv_logger_,msg_warn_akv);
+pixel::PixelTKFECSupervisorException trivial_exception("FecHandlerException","module",msg_warn_akv,3561,"PixelTKFECSupervisor::readDCU(xoap::MessageReference)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_warn_akv,trivial_exception);
+this->notifyQualified("fatal",f);
     soapMessage = MakeSOAPMessageReference("readDCUFailed");
   }
   
@@ -3820,8 +4267,8 @@ xoap::MessageReference PixelTKFECSupervisor::fsmStateNotification(xoap::MessageR
     try {
       toolbox::Event::Reference e(new toolbox::Event("Configure", this));
       fsm_.fireEvent(e);
-    } catch (toolbox::fsm::exception::Exception & e) {
-      XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
+} catch (toolbox::fsm::exception::Exception & e) {      
+	XCEPT_RETHROW(xoap::exception::Exception, "Invalid State Machine Input.", e);
     }
 
   }
@@ -3833,7 +4280,8 @@ xoap::MessageReference PixelTKFECSupervisor::fsmStateNotification(xoap::MessageR
 
 xoap::MessageReference PixelTKFECSupervisor::FixSoftError (xoap::MessageReference msg)
 {
-  diagService_->reportError("--- FixSoftError ---",DIAGINFO);
+std::string const msg_info_zum = "--- FixSoftError ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_zum);
   
   // Extract the Global Key from the SOAP message
   // Update the Global Key member data
@@ -3844,11 +4292,14 @@ xoap::MessageReference PixelTKFECSupervisor::FixSoftError (xoap::MessageReferenc
   // if(theGlobalKey_ != 0) delete theGlobalKey_;
   // theGlobalKey_ = new PixelConfigKey(atoi(parameters[0].value_.c_str()));
   if (theGlobalKey_==0) {
-    diagService_->reportError("GlobalKey does not exist",DIAGERROR);
+std::string const msg_error_axt = "GlobalKey does not exist";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_axt);
     return MakeSOAPMessageReference("FixSoftErrorFailed");
   }
-  diagService_->reportError("The global key is " + stringF(theGlobalKey_->key()),DIAGDEBUG);
-  diagService_->reportError("PixelTKFECSupervisor::FixSoftError: The Global Key is " + stringF(theGlobalKey_->key()),DIAGDEBUG);
+std::string const msg_debug_vjr = "The global key is " + stringF(theGlobalKey_->key());
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_vjr);
+std::string const msg_debug_xix = "PixelTKFECSupervisor::FixSoftError: The Global Key is " + stringF(theGlobalKey_->key());
+ LOG4CPLUS_DEBUG(sv_logger_,msg_debug_xix);
   //*console_<<"PixelTKFECSupervisor::FixSoftError: The Global Key is " + stringF(theGlobalKey_->key())<<std::endl;
   
   xoap::MessageReference reply=MakeSOAPMessageReference("FixSoftErrorDone");
@@ -3859,13 +4310,18 @@ xoap::MessageReference PixelTKFECSupervisor::FixSoftError (xoap::MessageReferenc
     toolbox::Event::Reference e(new toolbox::Event("FixSoftError", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
+std::string const msg_error_csk = "[PixelTKFECSupervisor::FixSoftError] FixSoftError is an invalid command for the current state."+state_.toString();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_csk);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_csk, e);
+this->notifyQualified("fatal",f);
     //*console_<<"[PixelTKFECSupervisor::FixSoftError] FixSoftError is an invalid command for the "<<state_.toString()<<" state."<<std::endl;
-    diagService_->reportError("[PixelTKFECSupervisor::FixSoftError] FixSoftError is an invalid command for the current state."+state_.toString(), DIAGERROR);
     reply=MakeSOAPMessageReference("FixSoftErrorFailed");
   }
   
-  diagService_->reportError("--- FixSoftError DONE ---",DIAGINFO);
-  diagService_->reportError("PixelTKFECSupervisor::FixSoftError: A prompt SOAP reply is sent back before exiting function",DIAGINFO);
+std::string const msg_info_hev = "--- FixSoftError DONE ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_hev);
+std::string const msg_info_xeb = "PixelTKFECSupervisor::FixSoftError: A prompt SOAP reply is sent back before exiting function";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_xeb);
   
   return reply;
   
@@ -3884,12 +4340,13 @@ void PixelTKFECSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachin
     if (theCalibObject_==0) {
 
       if(doDCULoop_) {
-
 	//    if (dcudebug_) diagService_->reportError("[Pause] about to set DCU workloopContinue_ to false",DIAGTRACE);
+
 	dculock_->take(); workloopContinue_=false; dculock_->give();
 	//    if (dcudebug_) diagService_->reportError("[Pause] about to cancel DCU workloop",DIAGTRACE);
 	workloop_->cancel();
-	//diagService_->reportError("PixelTKFECSupervisor::stateFixingSoftError:  Cancelled DCU workloop",DIAGTRACE);
+	//    if (dcudebug_) diagService_->reportError("[Pause] about to cancel DCU workloop",DIAGTRACE);
+
       }
 
       if (doResetCheck_) {
@@ -3899,7 +4356,6 @@ void PixelTKFECSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachin
 	//diagService_->reportError("PixelTKFECSupervisor::stateFixingSoftError:  Cancelled resetCheck workloop",DIAGTRACE);
 	std::cout<<"PixelTKFECSupervisor::stateFixingSoftError:  Canselled resetCheck workloop."<<std::endl;
 	//}
-	//} catch (xcept::Exception & e) {
 	//diagService_->reportError("PixelTKFECSupervisor::stateFixingSoftError: Caught exception canceling reset check workloop: "+string(e.what()),DIAGERROR);
 	//}
       }
@@ -3911,11 +4367,18 @@ void PixelTKFECSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachin
       // do reporgamming
       cout<<" stateFixingSodtError: Will reprogram portcrads "<<endl; 
       bool status = programPortcards(false);  
-      if(status) diagService_->reportError("stateFixingSoftError - Error in portcard programming ",DIAGERROR);
+      if(status){ 
+std::string const msg_error_ies = "stateFixingSoftError - Error in portcard programming ";
+ LOG4CPLUS_ERROR(sv_logger_,msg_error_ies);
+	}
     } catch (...)  { //exceptions
-      diagService_->reportError("stateFixingSoftError - Error in portcard programming ",DIAGERROR);
+std::string const msg_error_mlf = "stateFixingSoftError - Error in portcard programming ";
+LOG4CPLUS_ERROR(sv_logger_,msg_error_mlf);
+pixel::PixelTKFECSupervisorException trivial_exception("FecHandlerException","module",msg_error_mlf,3825,"PixelTKFECSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine&)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_mlf,trivial_exception);
+this->notifyQualified("fatal",f);
+	//diagService_->reportError("Failed to Resume run with exception: "+string(e.what()),DIAGERROR);
       //reply = MakeSOAPMessageReference("ResumeFailed");
-      //diagService_->reportError("Failed to Resume run with exception: "+string(e.what()),DIAGERROR);
       //FIXME maybe we should transition to the Error state in case this happens?
     }      
 #endif    
@@ -3937,7 +4400,6 @@ void PixelTKFECSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachin
 	if ( !resetCheckWorkloop_->isActive() ) resetCheckWorkloop_->activate();
 
 	std::cout<<"PixelTKFECSupervisor::stateFixingSoftError:  Activated resetCheck workloop."<<std::endl;
-	//} catch (xcept::Exception & e) {
 	//diagService_->reportError("PixelTKFECSupervisor::stateFixingSoftError: Caught exception activating reset check workloop: "+string(e.what()),DIAGERROR);
 	//}
       }
@@ -3948,24 +4410,42 @@ void PixelTKFECSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachin
     toolbox::Event::Reference e(new toolbox::Event("FixingSoftErrorDone", this));
     fsm_.fireEvent(e);
   } catch (toolbox::fsm::exception::Exception & e) {
+std::string const msg_error_bjv = "[PixelTKFECSupervisor::FixingSoftError] FixingSoftErrorDone is an invalid command for the current state."+state_.toString();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_bjv);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_bjv, e);
+this->notifyQualified("fatal",f);
 
-    diagService_->reportError("[PixelTKFECSupervisor::FixingSoftError] FixingSoftErrorDone is an invalid command for the current state."+state_.toString(), DIAGERROR);
+std::string const msg_error_lll = "PixelTKFECSupervisor::FixingSoftError Detected Error: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_lll);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,g,msg_error_lll, e);
+this->notifyQualified("fatal",g);
 
-    diagService_->reportError("PixelTKFECSupervisor::stateFixingSoftError: Detected Error: "+string(e.what()),DIAGERROR);
     try {
       toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
       fsm_.fireEvent(ev);
     } catch (toolbox::fsm::exception::Exception & e2) {
-      diagService_->reportError("PixelTKFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!",DIAGFATAL);
+std::string const msg_fatal_mxe = "PixelTKFECSupervisor::stateFixingSoftError: Failed to transition to Failed state!";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_mxe);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_fatal_mxe,e2);
+this->notifyQualified("fatal",f);
     }
     return;
 
   } catch (FecExceptionHandler e) {
-    diagService_->reportError("Failed to configure TKFEC (is the power off?); exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_skq = "Failed to configure TKFEC (is the power off?); exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_skq);
+pixel::PixelTKFECSupervisorException fechandler_exception("FecHandlerException","module",msg_error_skq,3883,"PixelTKFECSupervisor::stateFixingSoftError(toolbox::fsm::FiniteStateMachine&)");
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_skq, fechandler_exception);
+this->notifyQualified("fatal",f);
     isfailure=true;
   }
   catch (std::exception & e) { //failure to load config data raises std::exception (not xcept::Exception)
-    diagService_->reportError("Failed to configure TKFEC; exception: "+string(e.what()),DIAGERROR);
+std::string const msg_error_igo = "Failed to configure TKFEC; exception: "+string(e.what());
+LOG4CPLUS_ERROR(sv_logger_,msg_error_igo);
+std::exception * error_ptr = &e;
+pixel::PixelTKFECSupervisorException *new_exception = dynamic_cast<pixel::PixelTKFECSupervisorException *> (error_ptr);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_igo,*new_exception);
+this->notifyQualified("fatal",f);
     isfailure=true;
   }
   if (isfailure) {
@@ -3973,27 +4453,34 @@ void PixelTKFECSupervisor::stateFixingSoftError (toolbox::fsm::FiniteStateMachin
       //The following line should be commented for normal operation; it can be uncommented to test pxl FEC when there is no power
 #ifdef SKIP_LV_CHECK
       // no power bypass, for special tests without power ON
-      toolbox::Event::Reference ev(new toolbox::Event("FixingSoftErrorDone", this)); diagService_->reportError("Bypassing Error state in TKFEC!",DIAGWARN);
+      toolbox::Event::Reference ev(new toolbox::Event("FixingSoftErrorDone", this)); 
+std::string const msg_warn_aro = "Bypassing Error state in TKFEC!";
+ LOG4CPLUS_WARN(sv_logger_,msg_warn_aro);
 #else 
       // For normal default operation with power ON 
       toolbox::Event::Reference ev(new toolbox::Event("Failure", this)); //comment this out only for testing
 #endif 
       fsm_.fireEvent(ev);
     } catch (toolbox::fsm::exception::Exception & e2) {
-      diagService_->reportError("Failed to transition to Failed state!",DIAGFATAL);
+std::string const msg_fatal_elv = "Failed to transition to Failed state!";
+LOG4CPLUS_FATAL(sv_logger_,msg_fatal_elv);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_fatal_elv,e2);
+this->notifyQualified("fatal",f);
     }
   }
 
   FixingSoftErrorTimer.stop();
 
-  diagService_->reportError("--- Exit PixelTKFECSupervisor::stateFixingSoftError --- "+stringF(FixingSoftErrorTimer.tottime()),DIAGINFO);
+std::string const msg_info_ksm = "--- Exit PixelTKFECSupervisor::stateFixingSoftError --- "+stringF(FixingSoftErrorTimer.tottime());
+ LOG4CPLUS_INFO(sv_logger_,msg_info_ksm);
 
 }
 
 
 xoap::MessageReference PixelTKFECSupervisor::ResumeFromSoftError (xoap::MessageReference msg)
 {
-  diagService_->reportError("--- RESUMEFROMSOFTERROR ---",DIAGINFO);
+std::string const msg_info_jty = "--- RESUMEFROMSOFTERROR ---";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_jty);
   //*console_<<"--- Resuming From Soft Error ---"<<std::endl;
 
   xoap::MessageReference reply = MakeSOAPMessageReference("ResumeFromSoftErrorDone");
@@ -4004,14 +4491,18 @@ xoap::MessageReference PixelTKFECSupervisor::ResumeFromSoftError (xoap::MessageR
     fsm_.fireEvent(e);
 
   } catch (toolbox::fsm::exception::Exception & e) {
+std::string const msg_error_mtt = "[PixelTKFECSupervisor::ResumeFromSoftError] ResumeFromSoftError is an invalid command for the current state."+state_.toString();
+LOG4CPLUS_ERROR(sv_logger_,msg_error_mtt);
+XCEPT_DECLARE_NESTED(pixel::PixelTKFECSupervisorException,f,msg_error_mtt, e);
+this->notifyQualified("fatal",f);
 
     //*console_<<"[PixelTKFECSupervisor::ResumeFromSoftError] ResumeFromSoftError is an invalid command for the "<<state_.toString()<<" state."<<std::endl;
-    diagService_->reportError("[PixelTKFECSupervisor::ResumeFromSoftError] ResumeFromSoftError is an invalid command for the current state."+state_.toString(), DIAGERROR);
 
     reply = MakeSOAPMessageReference("ResumeFromSoftErrorFailed");
 
   }
 
-  diagService_->reportError("-- Exit stateFixingSoftError --",DIAGINFO);
+std::string const msg_info_rbh = "-- Exit stateFixingSoftError --";
+ LOG4CPLUS_INFO(sv_logger_,msg_info_rbh);
   return reply;
 }

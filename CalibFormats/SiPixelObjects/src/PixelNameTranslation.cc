@@ -647,7 +647,7 @@ PixelROCName PixelNameTranslation::ROCNameFromFEDChannelROC(unsigned int fednumb
   std::cout << __LINE__ << "]\t" << mthn << "could not find ROCName "
 	    << " for FED#" << fednumber << " chan=" << channel << " roc#=" << roc << std::endl;
 
-  assert(0);
+  //assert(0);  // take out d.k. 10/1/15
 
   PixelROCName tmp1;
 

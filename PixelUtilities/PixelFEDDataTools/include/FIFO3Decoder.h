@@ -24,6 +24,7 @@ class FIFO3Decoder
     unsigned int column(unsigned int ihit) const {return dcol(ihit)*2 + pxl(ihit)%2;}
     unsigned int row(unsigned int ihit) const {return 80 - (pxl(ihit)/2);}
 
+    bool is_trailer_word(uint64_t) const;
 
  private:
     std::vector<unsigned int> hits_;

@@ -20,6 +20,7 @@ using namespace std;
 #include "xdaq/WebApplication.h"
 //#include "xgi/Utils.h"
 #include "xgi/Method.h"
+#include "xgi/framework/UIManager.h"
 //#include "cgicc/CgiDefs.h"
 //#include "cgicc/Cgicc.h"
 //#include "cgicc/HTTPHTMLHeader.h"
@@ -38,16 +39,17 @@ using namespace std;
 #include "xdata/ItemEvent.h"
 #include "xdata/ItemGroupEvent.h"
 #include "xdata/UnsignedInteger32.h"
+#include "xdata/Integer.h"
 #include "xdata/Float.h"
 #include "xdata/Vector.h"
 #include "xdata/ItemEvent.h"
 
 
 /* Libraries for interfacing with DIAGSYSTEM */
-#include "diagbag/DiagBagWizard.h"
-#include "DiagCompileOptions.h"
-#include "toolbox/convertstring.h"
-#include "toolbox/BSem.h"
+// #include "diagbag/DiagBagWizard.h"
+// #include "DiagCompileOptions.h"
+// #include "toolbox/convertstring.h"
+// #include "toolbox/BSem.h"
 
 
 /* Timing loop tools */
@@ -61,7 +63,7 @@ using namespace std;
 /* PixelFEDMonitor is the XDAQ application that collects black level monitoring 
  * information for a particular crate from a FED Supervisor application, creating
  * a CSV formatted web page. */
-class PixelFEDMonitor: public xdaq::Application, public toolbox::task::TimerListener,
+class PixelFEDMonitor: public xdaq::Application, public xgi::framework::UIManager, public toolbox::task::TimerListener,
 		        public xdata::ActionListener
 {
  public:
@@ -70,13 +72,13 @@ class PixelFEDMonitor: public xdaq::Application, public toolbox::task::TimerList
   PixelFEDMonitor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);	
 
   /* Used for sending error messages to diagnostic system */
-  DiagBagWizard  * diagService_; //FIXME:  might need to be private
-
-  void DIAG_CONFIGURE_CALLBACK();
-  void DIAG_APPLY_CALLBACK();
-  DIAG_FREELCLSEM_CALLBACK();
-  DIAG_FREEGLBSEM_CALLBACK();
-  DIAG_REQUEST_ENTRYPOINT(); 
+  // DiagBagWizard  * diagService_; //FIXME:  might need to be private
+  //
+  // void DIAG_CONFIGURE_CALLBACK();
+  // void DIAG_APPLY_CALLBACK();
+  // DIAG_FREELCLSEM_CALLBACK();
+  // DIAG_FREEGLBSEM_CALLBACK();
+  // DIAG_REQUEST_ENTRYPOINT();
 
   /* Activated when timer is triggered. */ 
   void timeExpired (toolbox::task::TimerEvent& e);

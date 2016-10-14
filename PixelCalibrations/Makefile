@@ -26,6 +26,8 @@ include $(ENV_CMS_TK_ONLINE_ROOT)/config/FecRules.linux
 
 FECSOFTWARE_ROOT:=${ENV_CMS_TK_ONLINE_ROOT}
 
+CACTUS_ROOT=/opt/cactus
+
 Project=pixel
 Package=PixelCalibrations
 
@@ -36,6 +38,7 @@ Sources = $(wildcard src/common/*.cc)
 
 IncludeDirs = \
 	$(BUILD_HOME)/$(Project) \
+	$(CACTUS_ROOT)/include \
         $(XDAQ_ROOT)/include/hal \
         $(ENV_CMS_TK_DIAG_ROOT) \
 	$(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
@@ -51,8 +54,8 @@ LibraryDirs =
 UserSourcePath = \
 	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
-UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long ${BUSADAPTERC++FLAG} -std=c++0x
+UserCFlags = -O0
+UserCCFlags = -g -O0 -Wno-long-long ${BUSADAPTERC++FLAG} -std=c++0x -DLINUX
 UserDynamicLinkFlags =
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
@@ -71,11 +74,11 @@ DependentLibraryDirs = $(BUILD_HOME)/pixel/PixelSupervisorConfiguration/lib/$(XD
 	$(BUILD_HOME)/pixel/lib \
 	$(XDAQ_ROOT)/lib
 
-DependentLibraries = PixelSupervisorConfiguration SiPixelObjects PixelConfigDBInterface tstoreclient PixelDCSUtilities PixelFEDDataTools PixelRootUtilities PixelXmlUtilities
+DependentLibraries = PixelSupervisorConfiguration SiPixelObjects PixelConfigDBInterface tstoreclient PixelDCSUtilities PixelFEDDataTools PixelRootUtilities PixelXmlUtilities PixelFEDInterface
 
 Libraries =
 ExternalObjects = -L$(ENV_CMS_TK_ONLINE_ROOT)/lib \
-                  -lAPIFecVme -lDeviceAccess
+                  -lDeviceAccess
 
 #
 # Compile the source files and create a shared library

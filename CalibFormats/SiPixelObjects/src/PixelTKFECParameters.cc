@@ -34,13 +34,17 @@ unsigned int PixelTKFECParameters::getAddress() const{
     return address_;
 }
 
-void PixelTKFECParameters::setTKFECParameters( std::string TKFECID , unsigned int crate , std::string type, unsigned int address){
+std::string PixelTKFECParameters::getURI() const{
+    return uri_;
+}
+
+void PixelTKFECParameters::setTKFECParameters( std::string TKFECID , unsigned int crate , std::string type, unsigned int address, std::string uri){
 
 TKFECID_ = TKFECID;
 crate_ = crate;
 type_ = type;
 address_ =address;
-
+ uri_ = uri;
 }
 
 void PixelTKFECParameters::setTKFECID(std::string TKFECID) {
@@ -67,12 +71,19 @@ address_=address;
 
 }
 
+void PixelTKFECParameters::setURI(std::string uri){
+
+uri_=uri;
+
+}
+
 std::ostream&  pos::operator <<(std::ostream& s ,const PixelTKFECParameters &pTKFECp){
 
 s <<"TKFEC ID:"<<pTKFECp.TKFECID_<<std::endl;
 s <<"Crate Number:"<<pTKFECp.crate_<<std::endl;
 s <<pTKFECp.type_<<std::endl;
 s <<"Address:"<<pTKFECp.address_<<std::endl;
+ s << "URI:" << pTKFECp.uri_ << std::endl;
 
 return s;
 

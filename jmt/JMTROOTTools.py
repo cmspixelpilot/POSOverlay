@@ -8,6 +8,9 @@ else:
     import ROOT; ROOT.TCanvas # make sure libGui gets initialized while '-b' is specified;
     sys.argv.remove('-b')     # and don't mess up sys.argv.
 
+# don't import this until after the above since it does a from ROOT import *
+import moduleSummaryPlottingTools as FNAL
+
 class plot_saver:
     i = 0
     
@@ -188,23 +191,118 @@ class plot_saver:
             logfcn(0)
         self.saved.append((fn, log, root, pdf, pdf_log, C, C_log))
 
-def set_style(date_pages=False):
-    ROOT.gROOT.SetStyle('Plain')
-    ROOT.gStyle.SetFillColor(0)
-    if date_pages:
-        ROOT.gStyle.SetOptDate()
-    ROOT.gStyle.SetOptStat(1222222)
-    ROOT.gStyle.SetOptFit(2222)
+def set_style(light=False, date_pages=False):
     ROOT.gStyle.SetPadTickX(1)
     ROOT.gStyle.SetPadTickY(1)
-    ROOT.gStyle.SetMarkerSize(.1)
-    ROOT.gStyle.SetMarkerStyle(8)
-    ROOT.gStyle.SetGridStyle(3)
-    ROOT.gStyle.SetStatW(0.25)
-    ROOT.gStyle.SetStatFormat('6.4g')
-    ROOT.gStyle.SetPalette(1)
-    ROOT.gStyle.SetTitleFont(42, 'XYZ')
-    ROOT.gStyle.SetLabelFont(42, 'XYZ')
-    ROOT.gStyle.SetStatFont(42)
-    ROOT.gStyle.SetLegendFont(42)
     ROOT.gErrorIgnoreLevel = 1001 # Suppress TCanvas::SaveAs messages.
+    if not light:
+        ROOT.gROOT.SetStyle('Plain')
+        ROOT.gStyle.SetFillColor(0)
+        if date_pages:
+            ROOT.gStyle.SetOptDate()
+        ROOT.gStyle.SetOptStat(1222222)
+        ROOT.gStyle.SetOptFit(2222)
+        ROOT.gStyle.SetPadTickX(1)
+        ROOT.gStyle.SetPadTickY(1)
+        ROOT.gStyle.SetMarkerSize(.1)
+        ROOT.gStyle.SetMarkerStyle(8)
+        ROOT.gStyle.SetGridStyle(3)
+        ROOT.gStyle.SetStatW(0.25)
+        ROOT.gStyle.SetStatFormat('6.4g')
+        ROOT.gStyle.SetPalette(1)
+        ROOT.gStyle.SetTitleFont(42, 'XYZ')
+        ROOT.gStyle.SetLabelFont(42, 'XYZ')
+        ROOT.gStyle.SetStatFont(42)
+        ROOT.gStyle.SetLegendFont(42)
+
+def differentiate_stat_box(hist, movement=1, new_color=None, new_size=None, color_from_hist=True, offset=None):
+    """Move hist's stat box and change its line/text color. If
+    movement is just an int, that number specifies how many units to
+    move the box downward. If it is a 2-tuple of ints (m,n), the stat
+    box will be moved to the left m units and down n units. A unit is
+    the width or height of the stat box.
+    Call TCanvas::Update first (and use TH1::Draw('sames') if
+    appropriate) or else the stat box will not exist."""
+
+    s = hist.FindObject('stats')
+
+    if color_from_hist:
+        new_color = hist.GetLineColor()
+
+    if new_color is not None:
+        s.SetTextColor(new_color)
+        s.SetLineColor(new_color)
+
+    if type(movement) == int:
+        movement = (0,movement)
+    m,n = movement
+    
+    x1,x2 = s.GetX1NDC(), s.GetX2NDC()
+    y1,y2 = s.GetY1NDC(), s.GetY2NDC()
+
+    if new_size is not None:
+        x1 = x2 - new_size[0]
+        y1 = y2 - new_size[1]
+
+    if offset is None:
+        ox, oy = 0, 0
+    else:
+        ox, oy = offset
+
+    s.SetX1NDC(x1 - (x2-x1)*m + ox)
+    s.SetX2NDC(x2 - (x2-x1)*m + ox)
+    s.SetY1NDC(y1 - (y2-y1)*n + oy)
+    s.SetY2NDC(y2 - (y2-y1)*n + oy)
+
+def flat_to_module(label, module_name, lists, xform=None):
+    ''' Take a list of 16 lists, each of which has 4160 values, one
+    per pixel in row major format, and make TH2Fs suitable for shoving
+    into the fnal_pixel_plot function below.
+
+    label is an extra tag for the histograms so they can be unique
+
+    xform is an optional transformation function of the form
+    xform(label, module_name, rocnum, col, row, val) -> new_val.
+
+    Values can be None if skipping desired.
+    '''
+
+    assert len(lists) == 16
+    hs = []
+    for iroc,l in enumerate(lists):
+        roc = module_name + '_ROC' + str(iroc)
+        h = ROOT.TH2F('h_%s_%s' % (label, roc), label + ' : ' + roc, 52, 0, 52, 80, 0, 80)
+        h.SetStats(0)
+        hs.append(h)
+        for i,val in enumerate(l):
+            col = i / 80
+            row = i % 80
+            if xform is not None:
+                val = xform(label, module_name, iroc, col, row, val)
+            if val is not None:
+                h.SetBinContent(col+1, row+1, float(val))
+    return hs
+
+def fnal_pixel_plot(hs, module_name, title, z_range=None, existing_c=None):
+    h = FNAL.makeMergedPlot(hs, 'pos')
+    if z_range == 'auto':
+        z_range = FNAL.findZRange(hs)
+    if z_range is not None:
+        FNAL.setZRange(h, z_range)
+
+    fc = FNAL.setupSummaryCanvas(h, moduleName=module_name)
+    if existing_c is not None:
+        existing_c.cd()
+        existing_c.Clear()
+        fc.DrawClonePad()
+
+    pt = ROOT.TPaveText(-100,405,1395,432)
+    pt.AddText(title)
+    pt.SetTextAlign(12)
+    pt.SetTextFont(42)
+    pt.SetFillColor(0)
+    pt.SetBorderSize(0)
+    pt.SetFillStyle(0)
+    pt.Draw()
+
+    return h, fc, pt

@@ -23,7 +23,7 @@
 
 #include "PixelUtilities/PixelFEDDataTools/include/PixelHit.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "iomanip"
 #include "TH2F.h"
@@ -62,7 +62,7 @@ xoap::MessageReference PixelFEDCalDelCalibration::execute(xoap::MessageReference
 
       unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
  
-      PixelFEDInterface* iFED=FEDInterface_[vmeBaseAddress];
+      PixelFEDInterfaceBase* iFED=FEDInterface_[vmeBaseAddress];
 
       uint64_t buffer64[fifo3Depth];
       int status=iFED->spySlink64(buffer64);
@@ -136,12 +136,6 @@ xoap::MessageReference PixelFEDCalDelCalibration::execute(xoap::MessageReference
 	std::cout << "Error reading spySlink64 status="<<status<<std::endl;
       }
     }
-  } catch (HAL::HardwareAccessException& e) {
-    diagService_->reportError("Exception occurred :",DIAGTRACE);
-    // cout << "*** Exception occurred : " << endl;
-    string mes = e.what();
-    diagService_->reportError(mes,DIAGINFO);
-    //                cout << e.what() << endl;
   } catch (exception e) {
     diagService_->reportError("*** Unknown exception occurred",DIAGWARN);
     // cout << "*** Unknown exception occurred" << endl;

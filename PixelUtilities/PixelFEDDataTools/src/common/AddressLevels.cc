@@ -53,7 +53,8 @@ unsigned int AddressLevels::findPeaks(unsigned int minimumPeakCount){
       //std::cout<<"a peak mean="<<aPeak.mean()<<" with a stddev="<<aPeak.stddev()<<endl;
       //std::cout<<"N="<<aPeak.count()<<" sum="<<aPeak.sum()<<" squares="<<aPeak.squares()<<endl;
       if (aPeak.count()>minimumPeakCount) peaks_.push_back(aPeak);
-      else std::cout << "[AddressLevels::findPeaks()]\tI'm sorry, peaks with less than " << minimumPeakCount << " data points are not allowed in!" << std::endl;
+      //else std::cout << "[AddressLevels::findPeaks()]\tI'm sorry, peaks with less than " << minimumPeakCount << " data points are not allowed in!" << std::endl;
+
     }
   }
 

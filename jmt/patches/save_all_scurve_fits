@@ -1,0 +1,34 @@
+diff --git a/PixelAnalysisTools/src/common/PixelSCurveHistoManager.cc b/PixelAnalysisTools/src/common/PixelSCurveHistoManager.cc
+index abfbad0..cbc202f 100755
+--- a/PixelAnalysisTools/src/common/PixelSCurveHistoManager.cc
++++ b/PixelAnalysisTools/src/common/PixelSCurveHistoManager.cc
+@@ -70,9 +70,9 @@ PixelSCurveHistoManager::PixelSCurveHistoManager(PixelXmlReader* xmlReader, Pixe
+ 										<< ".dat";
+ 		trimOutputFile_ = new ofstream(trimOutFileName.str().c_str());
+ 	}
+-	saveGoodFits_ = false;
++  saveGoodFits_ = true;
+   if(thePixelXmlReader_->getXMLAttribute("SaveGoodFits","DoIt" ) == "Yes"){
+-		saveGoodFits_ = false;
++    //	saveGoodFits_ = false;
+ 	}
+ 	fitFunction_ = new TF1("myscurve",&fitfcn,0,255,2);
+   fitFunction_->SetParNames("threshold","noise");
+@@ -408,7 +408,7 @@ void PixelSCurveHistoManager::fit(void){
+ 		 << mean << " "<<istat<<" "<<chi2<<" "<<prob<<endl;
+ 
+ 
+-	  } else if(saveGoodFits_ && (--maxNumberOfHistos_/2)>=0 ) { // use only 1/2 of the space for good fits
++	  } else if(1) { //saveGoodFits_ && (--maxNumberOfHistos_/2)>=0 ) { // use only 1/2 of the space for good fits
+ 	    // good fits
+ 	    dirGoodFits_->cd();
+ 	    histoToSave = (TH1*)scurve->Clone();
+@@ -430,7 +430,7 @@ void PixelSCurveHistoManager::fit(void){
+       }
+     }    
+   }
+-  saveGoodFits_ = false; 
++  //  saveGoodFits_ = false; 
+ }
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

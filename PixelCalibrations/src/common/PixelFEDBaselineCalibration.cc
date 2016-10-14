@@ -8,7 +8,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "iomanip"
 
@@ -22,10 +22,14 @@
 
 using namespace pos;
 
-const unsigned int numberOfFEDs=40;
-const unsigned int channelsPerFED=36;
-const unsigned int opticalReceiversPerFED=3;
-const unsigned int blackTolerance=15;
+namespace {
+  const unsigned int numberOfFEDs=40;
+  const unsigned int channelsPerFED=36;
+  const unsigned int opticalReceiversPerFED=3;
+  const unsigned int blackTolerance=15;
+  const bool lowUBSetting = false;
+  const int lowUBValue = 75;
+}
 
 PixelFEDBaselineCalibration::PixelFEDBaselineCalibration(const PixelFEDSupervisorConfiguration & tempConfiguration, SOAPCommander* mySOAPCmdr) 
   : PixelFEDCalibrationBase(tempConfiguration,*mySOAPCmdr)
@@ -63,6 +67,8 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
  
    unsigned int fednumber=fedsAndChannels_[ifed].first;
    unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+   PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+   assert(fed);
 
    targetBlack[fednumber]= (FEDInterface_[vmeBaseAddress]->getPixelFEDCard().Nbaseln & 0xfff); // taking baseline of channel 1 for the whole FED now
 
@@ -113,7 +119,7 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 
       //if(debug) cout<<" 10 "<<channel<<" "<<fednumber<<endl;
 
-      int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+      int status = fed->drain_transBuffer(channel, buffer);
       //if(debug) cout<<" 11 "<<channel<<" "<<fednumber<<endl;
 
       PixelDecodedFEDRawData decodedRawData(buffer, 100., 100., 150., 0., 100., 0., 150.);
@@ -133,7 +139,7 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
         std::cout<<"[PixelFEDBaselineCalibration::execute] Could not drain FIFO 1 in transparent mode!"<<std::endl;
       }
 
-      int baselinecorrection=FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel);
+      int baselinecorrection=fed->get_BaselineCorr(channel);
 
       if (baselinecorrection!=0) {
         std::cout<<"[PixelFEDBaselineCalibration::execute] Baseline Adjust for Channel "<<channel<<" is non-zero: "<<baselinecorrection<<std::endl;
@@ -395,7 +401,8 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
 	float ub = UB_Channel.at(fednumber*channelsPerFED+channel-1).mean();
 	// nomal case when ub=150
 	int lowBCut = int(  (B_Channel.at(fednumber*channelsPerFED+channel-1).mean() + ub )/2. );
-	if(ub<74.) { // for special channels with very low ub
+
+	if(ub<lowUBValue && lowUBSetting) { // for special channels with very low ub
 	  std::cout<<" FED ID = "<<fednumber<<", Channel = "<<channel
 		   <<" Low UB "<< ub <<" make the cut asymmetric "<<lowBCut;
 	  lowBCut = int( (B_Channel.at(fednumber*channelsPerFED+channel-1).mean())*0.45 + ub*0.55 );
@@ -420,8 +427,8 @@ xoap::MessageReference PixelFEDBaselineCalibration::execute(xoap::MessageReferen
       }
     }
 
-    FEDInterface_[vmeBaseAddress]->setupFromDB(fedCard);
-    VMEPtr_[vmeBaseAddress]->write("LRES",0x80000000);
+    FEDInterface_[vmeBaseAddress]->setup(fedCard);
+    FEDInterface_[vmeBaseAddress]->sendResets(1);
     //FEDInterface_[vmeBaseAddress]->BaselineCorr_off();
   }
 

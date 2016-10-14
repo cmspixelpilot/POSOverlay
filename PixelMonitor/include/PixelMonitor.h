@@ -40,8 +40,10 @@
 
 /* Libraries for acting as a XDAQ web applet */ 
 #include "xdaq/WebApplication.h"
-//#include "xgi/Utils.h"
+#include "xdaq/Application.h"
+#include "xgi/Utils.h"
 #include "xgi/Method.h"
+#include "xgi/framework/UIManager.h"
 //#include "cgicc/CgiDefs.h"
 //#include "cgicc/Cgicc.h"
 //#include "cgicc/HTTPHTMLHeader.h"
@@ -55,10 +57,10 @@
 
 
 /* Libraries for interfacing with DIAGSYSTEM */
-#include "diagbag/DiagBagWizard.h"
-#include "DiagCompileOptions.h"
-#include "toolbox/convertstring.h"
-#include "toolbox/BSem.h"
+// #include "diagbag/DiagBagWizard.h"
+// #include "DiagCompileOptions.h"
+// #include "toolbox/convertstring.h"
+// #include "toolbox/BSem.h"
 #include "iomanip"
 #include "toolbox/task/Timer.h"
 #include "toolbox/task/TimerFactory.h"
@@ -155,7 +157,7 @@ public:
 
 
 /* PixelMonitor is the XDAQ applet that collects black level monitoring information */
-class PixelMonitor: public xdaq::Application, public toolbox::task::TimerListener
+class PixelMonitor: public xdaq::Application, public xgi::framework::UIManager, public toolbox::task::TimerListener
 {
  public:
   XDAQ_INSTANTIATOR();
@@ -163,13 +165,13 @@ class PixelMonitor: public xdaq::Application, public toolbox::task::TimerListene
   PixelMonitor(xdaq::ApplicationStub * s) throw (xdaq::exception::Exception);	
 
   /* Used for sending error messages to diagnostic system */
-  DiagBagWizard  * diagService_; //FIXME:  might need to be private
+  // DiagBagWizard  * diagService_; //FIXME:  might need to be private
 
-  void DIAG_CONFIGURE_CALLBACK();
-  void DIAG_APPLY_CALLBACK();
-  DIAG_FREELCLSEM_CALLBACK();
-  DIAG_FREEGLBSEM_CALLBACK();
-  DIAG_REQUEST_ENTRYPOINT(); 
+  // void DIAG_CONFIGURE_CALLBACK();
+  // void DIAG_APPLY_CALLBACK();
+  // DIAG_FREELCLSEM_CALLBACK();
+  // DIAG_FREEGLBSEM_CALLBACK();
+  // DIAG_REQUEST_ENTRYPOINT();
 
 
   // Activated when timer is triggered. 

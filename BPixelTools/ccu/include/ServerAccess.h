@@ -48,9 +48,9 @@ Copyright 2002 - 2003, Frederic DROUHIN - Universite de Haute-Alsace, Mulhouse-F
 #include "FecRingRegisters.h"
 
 const unsigned int init_delay25_delay0 = 28; //RCK
-const unsigned int init_delay25_delay1 = 10; //CTR
-const unsigned int init_delay25_delay2 = 4; //SDA
-const unsigned int init_delay25_delay3 = 0; //RDA
+const unsigned int init_delay25_delay1 = 0; //RDA
+const unsigned int init_delay25_delay2 = 53; //SDA
+const unsigned int init_delay25_delay3 = 8; //CTR
 const unsigned int init_delay25_delay4 = 0; //clk
 
 const unsigned int init_pll_clk = 0;
@@ -112,21 +112,21 @@ const unsigned int init_aoh4b_bias0 = 25;
 const unsigned int init_aoh4b_bias1 = 26;
 const unsigned int init_aoh4b_bias2 = 26;
 
-const unsigned int init_poh1_gain0 = 0;
-const unsigned int init_poh1_gain1 = 1;
-const unsigned int init_poh1_gain2 = 1;
-const unsigned int init_poh1_gain3 = 1;
-const unsigned int init_poh1_bias0 = 29;
-const unsigned int init_poh1_bias1 = 30;
-const unsigned int init_poh1_bias2 = 29;
-const unsigned int init_poh1_bias3 = 29;
+const unsigned int init_poh1_gain0 = 3;
+const unsigned int init_poh1_gain1 = 3;
+const unsigned int init_poh1_gain2 = 3;
+const unsigned int init_poh1_gain3 = 3;
+const unsigned int init_poh1_bias0 = 40;
+const unsigned int init_poh1_bias1 = 40;
+const unsigned int init_poh1_bias2 = 40;
+const unsigned int init_poh1_bias3 = 40;
 
 const unsigned int init_doh_gain0 = 1;
-const unsigned int init_doh_gain1 = 0;
-const unsigned int init_doh_gain2 = 0;
+const unsigned int init_doh_gain1 = 1;
+const unsigned int init_doh_gain2 = 1;
 const unsigned int init_doh_bias0 = 30;
-const unsigned int init_doh_bias1 = 25;
-const unsigned int init_doh_bias2 = 25;
+const unsigned int init_doh_bias1 = 30;
+const unsigned int init_doh_bias2 = 30;
 
 /** to set or the getchar, default false getchar are displayed
  */
@@ -369,7 +369,9 @@ std::string setDoh  ( FecAccess *fecAccess,
 
 /** \brief display all the counters
  */
-void displayStatus ( FecExceptionHandler *e, unsigned int count, FecAccess *fecAccess, FILE *stdchan ) ;
+std::string displayStatus ( FecAccess *fecAccess ,
+		     tscType8 fecAddress,
+		     tscType8 ringAddress ) ;
 
 /** \brief display all FEC/CCU registers in case of error
  */
@@ -389,6 +391,15 @@ std::string crateReset ( FecAccess *fecAccess, bool testCrateReset, long loop, u
 /** \brief test of DC-DC converters
  */
 std::string DCDCenableTest ( FecAccess *fecAccess, 
+			     tscType8 fecAddress,
+			     tscType8 ringAddress, 
+			     tscType8 ccuAddress,
+			     unsigned int dcdcAddress,
+			     bool noBroadcast );
+
+/** \brief test of single DC-DC converter shutdown
+ */
+std::string DCDCdisable    ( FecAccess *fecAccess, 
 			     tscType8 fecAddress,
 			     tscType8 ringAddress, 
 			     tscType8 ccuAddress,
@@ -444,6 +455,12 @@ std::string testRedundancyRing ( FecAccess *fecAccess,
 				 tscType8 ringAddress,
 				 uint ccuAddresses[][3], 
 				 uint numberOfCCU );
+
+std::string scanRedundancyRing ( FecAccess *fecAccess, 
+				 tscType8 fecAddress,
+				 tscType8 ringAddress,
+				 uint ccuAddresses[][3], 
+				 uint numberOfCCU );
      
 /** \brief Access by write/read a register on i2c channel
  */
@@ -460,6 +477,15 @@ std::string setI2CDevice (FecAccess *fecAccess,
 
 
 std::string getI2CDevice (FecAccess *fecAccess,
+		     tscType8 fecAddress,
+		     tscType8 ringAddress,
+		     tscType8 ccuAddress,
+		     tscType8 channelAddress,
+		     tscType8 deviceAddress,
+		     enumDeviceType modeType,
+		     long loop, unsigned long tms) ;
+
+std::string getI2CDevicevalue (FecAccess *fecAccess,
 		     tscType8 fecAddress,
 		     tscType8 ringAddress,
 		     tscType8 ccuAddress,
@@ -511,7 +537,7 @@ std::string displayCCUSRB ( tscType8 SRB ) ;
 /** \brief display a CCU status register
  */
 std::string displayCCUSRC ( tscType8 SRC ) ;
-
+std::string displayCCUSRC1 ( tscType8 SRC ) ;
 /** \brief display a CCU status register
  */
 std::string displayCCUSRD ( tscType8 SRD ) ;
@@ -543,6 +569,10 @@ std::string displayCCUCRD ( tscType8 CRD ) ;
 /** \brief display a CCU control register
  */
 std::string displayCCUCRE ( tscType32 CRE ) ;
+/** \brief Display the CCU status for a given CCU
+ */
+std::string testCCU ( FecAccess *fecAccess, tscType8 fecAddress, tscType8 ringAddress, tscType8 ccuAddress, long loop, unsigned long tms ) ;
+
 
 /** \brief pia reset
  */
@@ -592,6 +622,15 @@ std::string CtrlRegE (FecAccess *fecAccess,
 		     tscType8 ccuAddress,
 		    tscType8 channelAddress=0x30, 
 		    int value=0xFF);
+
+std::string pixDCDCCommand(FecAccess* fecAccess,
+			   tscType8 fecAddress,
+			   tscType8 ringAddress,
+			   tscType8 ccuAddressEnable,
+			   tscType8 ccuAddressPgood,
+			   tscType8 piaChannelAddress,
+			   bool turnOn,
+			   unsigned int portNumber);
 
 #endif
 

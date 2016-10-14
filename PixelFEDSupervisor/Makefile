@@ -29,26 +29,24 @@ include $(ENV_CMS_TK_ONLINE_ROOT)/config/FecRules.linux
 
 FECSOFTWARE_ROOT:=${ENV_CMS_TK_ONLINE_ROOT}
 
+CACTUS_ROOT=/opt/cactus
+
 Project=pixel
 Package=PixelFEDSupervisor
 
 #Give the framework the sources for compilation
-Sources= PixelFEDSupervisor.cc 
+Sources= PixelFEDSupervisor.cc DiagWrapper.cc
 
 #Include directories
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
         $(BUILD_HOME)/pixel/PixelFEDSpySupervisor/include \
         $(BUILD_HOME)/pixel/PixelUtilities/PixelFEDDataTools/include \
+	$(CACTUS_ROOT)/include \
 	$(XDAQ_ROOT)/include/hal \
         $(XDAQ_ROOT)/include/i2o \
         $(XDAQ_ROOT)/include/i2o/shared \
         $(XDAQ_ROOT)/include/interface/evb \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/soapdiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-        $(ENV_CMS_TK_DIAG_ROOT) \
         $(FECSOFTWARE_ROOT)/generic/include \
         $(FECSOFTWARE_ROOT)/ThirdParty/APIConsoleDebugger/include \
         $(FECSOFT_INCLUDE) \
@@ -61,7 +59,7 @@ UserSourcePath = \
 	$(XDAQ_ROOT)/daq/xdaq/src/linux/common/
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long -D_FILE_OFFSET_BITS=64 $(BUSADAPTERC++FLAG) -std=c++0x
+UserCCFlags = -g -O -Wno-long-long -D_FILE_OFFSET_BITS=64 $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX
 #UserDynamicLinkFlags = $(ROOTLibs)
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
@@ -82,15 +80,14 @@ ROOTLibs = AfterImage ASImageGui ASImage \
 
 
 DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
-       $(ENV_CMS_TK_DIAG_ROOT)/tools/lib \
        $(XDAQ_ROOT)/lib	\
 /lib/$(XDAQ_OS)/$(XDAQ_PLATFORM) \
        $(shell root-config --libdir)
 #$(ROOTSYS)/lib
 
-DependentLibraries = PixelFEDInterface TkDiagBagWizard xmldiagappender PixelCalibrations \
+DependentLibraries = PixelFEDInterface PixelCalibrations \
 					 PixelSupervisorConfiguration PixelI2O PixelTestStandUtilities SiPixelObjects \
-					 PixelFEDDataTools PixelSharedDataTools PixelGUIUtilities occi ociei ocijdbc11 GenericHAL \
+					 PixelFEDDataTools PixelSharedDataTools PixelGUIUtilities occi ociei ocijdbc12 GenericHAL \
 					 HALUtilities CAENLinuxBusAdapter CAENVME DummyBusAdapters Pixelb2inUtilities
 
 DependentLibraries += $(ROOTLibs)

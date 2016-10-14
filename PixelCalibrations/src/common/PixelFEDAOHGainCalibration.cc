@@ -19,7 +19,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "PixelUtilities/PixelRootUtilities/include/PixelRootDirectoryMaker.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "TFile.h"
 #include "TStyle.h"
@@ -77,6 +77,8 @@ xoap::MessageReference PixelFEDAOHGainCalibration::execute(xoap::MessageReferenc
 		{
 			unsigned int fednumber=fedsAndChannels[ifed].first;
 			unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+                        PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                        assert(fed);
 
 			for (unsigned int ichannel=0; ichannel<fedsAndChannels[ifed].second.size(); ++ichannel)
 			{
@@ -85,9 +87,9 @@ xoap::MessageReference PixelFEDAOHGainCalibration::execute(xoap::MessageReferenc
 
 				std::vector<PixelROCName> ROCsOnThisChannel=theNameTranslation_->getROCsFromFEDChannel(fednumber, channel);
 
-				const int baselineCorrection=FEDInterface_[vmeBaseAddress]->get_BaselineCorr(channel);
+				const int baselineCorrection=fed->get_BaselineCorr(channel);
 
-				int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+				int status = fed->drain_transBuffer(channel, buffer);
 				if (status<0) {
 				  std::cout<<"PixelFEDAOHGainCalibration::execute() -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode!"<<std::endl;
 				  diagService_->reportError("PixelFEDAOHGainCalibration::execute() -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
@@ -125,8 +127,9 @@ xoap::MessageReference PixelFEDAOHGainCalibration::execute(xoap::MessageReferenc
 				// Done filling in information from the decoded data.
 
 			} // end of loop over channels on this FED board
-			VMEPtr_[vmeBaseAddress]->write("LRES",0x80000000); // Local Reset
-			VMEPtr_[vmeBaseAddress]->write("CLRES",0x80000000); // *** MAURO ***
+
+			FEDInterface_[vmeBaseAddress]->sendResets(3);
+
 		} // end of loop over FEDs in this crate
 	}
 	else if (parameters[0].value_=="Analyze")

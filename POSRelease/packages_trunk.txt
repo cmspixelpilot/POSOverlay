@@ -4,7 +4,6 @@ cmspxldaq/JobControl/trunk
 cmspxldaq/PixelAnalysisTools/trunk
 cmspxldaq/PixelCalibrations/trunk
 cmspxldaq/PixelConfigDataExamples/trunk
-cmspxldaq/PixelConfigDataFormats/trunk
 cmspxldaq/PixelConfigDBGUI/trunk
 cmspxldaq/PixelConfigDBInterface/trunk
 cmspxldaq/PixelDCSInterface/trunk
@@ -19,9 +18,8 @@ cmspxldaq/PixelMonitor/trunk
 cmspxldaq/PixelRun/trunk
 cmspxldaq/PixelSupervisor/trunk
 cmspxldaq/PixelSupervisorConfiguration/trunk
-cmspxldaq/PixelSupervisorGUI/trunk
 cmspxldaq/PixelTKFECSupervisor/trunk
-cmspxldaq/PixelTTCSupervisor/trunk
 cmspxldaq/PixelUtilities/trunk
 cmspxldaq/XDAQConfiguration/trunk
 cmspxldaq/PixelTCDSSupervisor/trunk
+cmspxldaq/CalibFormats/SiPixelObjects/trunk

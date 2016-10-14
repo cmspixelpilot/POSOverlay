@@ -20,8 +20,6 @@
 
 #include "xdaq/exception/Exception.h"
 
-#include <diagbag/DiagBagWizard.h>
-
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelModuleName.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelDACSettings.h"

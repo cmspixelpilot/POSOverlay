@@ -43,6 +43,7 @@ class PixelBaselineCalibrationNew: public PixelCalibrationBase {
   unsigned int MaxIterations_;
 
   float tolerance_;
+  // no need for doCut
 
 };
 

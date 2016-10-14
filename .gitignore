@@ -6,3 +6,4 @@ bin
 *.so
 *.exe
 *.pyc
+auto.xml

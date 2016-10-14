@@ -28,11 +28,13 @@ namespace pos{
     unsigned int getCrate() const;
     std::string  getType() const;
     unsigned int getAddress() const;
-    void setTKFECParameters( std::string TKFECID , unsigned int crate , std::string type, unsigned int address);
+    std::string getURI() const;
+    void setTKFECParameters( std::string TKFECID , unsigned int crate , std::string type, unsigned int address, std::string uri);
     void setTKFECID(std::string TKFECID);
     void setCrate(unsigned int crate);
     void setType(std::string type);
     void setAddress(unsigned int address) ;
+    void setURI(std::string uri);
     friend std::ostream& operator <<(std::ostream& s,const PixelTKFECParameters &pTKFECp);
   private :
 
@@ -40,6 +42,7 @@ namespace pos{
     unsigned int crate_;
     std::string  type_;
     unsigned int address_;
+    std::string uri_;
 
   };
   std::ostream& operator <<(std::ostream& s ,const PixelTKFECParameters &pTKFECp);

@@ -14,16 +14,7 @@ os.system('mkdir -p %s' % out_dir)
 
 f = ROOT.TFile(in_fn)
 
-dirs = [
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL1/Pilt_BmO_D3_BLD10_PNL1_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD10/Pilt_BmO_D3_BLD10_PNL2/Pilt_BmO_D3_BLD10_PNL2_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL1/Pilt_BmO_D3_BLD11_PNL1_PLQ1',
-    'Pilt/Pilt_BmO/Pilt_BmO_D3/Pilt_BmO_D3_BLD11/Pilt_BmO_D3_BLD11_PNL2/Pilt_BmO_D3_BLD11_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL1/Pilt_BmI_D3_BLD2_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD2/Pilt_BmI_D3_BLD2_PNL2/Pilt_BmI_D3_BLD2_PNL2_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL1/Pilt_BmI_D3_BLD3_PNL1_PLQ1',
-    'Pilt/Pilt_BmI/Pilt_BmI_D3/Pilt_BmI_D3_BLD3/Pilt_BmI_D3_BLD3_PNL2/Pilt_BmI_D3_BLD3_PNL2_PLQ1',
-    ]
+dirs = ['FPix/FPix_%(hc)s/FPix_%(hc)s_D%(dsk)i/FPix_%(hc)s_D%(dsk)i_BLD%(bld)i/FPix_%(hc)s_D%(dsk)i_BLD%(bld)i_PNL%(pnl)i/FPix_%(hc)s_D%(dsk)i_BLD%(bld)i_PNL%(pnl)i_RNG%(rng)i' % locals() for hc in ['BmI', 'BmO', 'BpI', 'BpO'] for dsk in range(1,4) for bld in range(1,18) for pnl in range(1,3) for rng in range(1,3)]
 
 by_ntrigs = []
 first = True
@@ -39,6 +30,7 @@ for d in dirs:
         canvas = key.ReadObj()
         name = canvas.GetName().replace(' (inv)', '').replace('_Canvas', '')
         obj = canvas.FindObject(name)
+        #lines = [x for x in canvas.GetListOfPrimitives() if x.Class().GetName() == "TLine"]
         rest, roc = name.split('ROC')
         iroc = int(roc)
         if int(roc) < 10:
@@ -47,9 +39,10 @@ for d in dirs:
         by_ntrigs.append((ntrigs, name))
         c.cd(iroc+1)
         obj.Draw('colz')
-        if 0:
+        if 1:
             for x in canvas.GetListOfPrimitives():
                 if x.GetName() == 'TLine':
+                    x.SetLineWidth(2)
                     x.Draw()
     c.cd(0)
     c.SaveAs(os.path.join(out_dir, d.split('/')[-1]) + '.png')

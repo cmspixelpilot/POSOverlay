@@ -7,6 +7,8 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelTimeFormatter.h"
 
 #include <cassert>
+#include <cstdarg>
+#include <cstring>
 #include <sstream>
 #include <map>
 #include <stdexcept>
@@ -26,6 +28,7 @@ PixelFEDCard::PixelFEDCard():
 // Read configuration from DB
 PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" "," "," ")
 {
+  assert(0);
   std::string mthn = "[PixelFEDCard::PixelFEDCard()]\t\t    " ;
   vector<string> ins = tableMat[0];
   map<string , int > colM;
@@ -111,10 +114,6 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
     NORTHCENTER_PWORD	      NOT NULL NUMBER(38)	     NC_Pword					
     SOUTH_PWORD 	      NOT NULL NUMBER(38)	     S_Pword					
     SOUTHCENTER_PWORD	      NOT NULL NUMBER(38)	     SC_Pword					
-    NORTH_SCOPECH 	      NOT NULL NUMBER(38)	     N_ScopeCh
-    NORTHCENTER_SCOPECH    NOT NULL NUMBER(38)	     NC_ScopeCh
-    SOUTH_SCOPECH 	      NOT NULL NUMBER(38)	     S_ScopeCh
-    SOUTHCENTER_SCOPECH    NOT NULL NUMBER(38)	     SC_ScopeCh
     SPECDAC		      NOT NULL NUMBER(38)	     SpecialDac 				
     OOS_LVL		      NOT NULL NUMBER(38)	     Ooslvl					
     ERR_LVL		      NOT NULL NUMBER(38)	     Errlvl					
@@ -209,10 +208,6 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
   colNames.push_back("NORTHCENTER_PWORD"       ); 
   colNames.push_back("SOUTH_PWORD"	       ); 
   colNames.push_back("SOUTHCENTER_PWORD"       ); 
-  colNames.push_back("NORTH_SCOPECH"        );
-  colNames.push_back("NORTHCENTER_SCOPECH"  );
-  colNames.push_back("SOUTH_SCOPECH"        );
-  colNames.push_back("SOUTHCENTER_SCOPECH"  );
   colNames.push_back("SPECDAC"    	       ); 
   colNames.push_back("OOS_LVL"    	       ); 
   colNames.push_back("ERR_LVL"    	       ); 
@@ -323,12 +318,6 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
       SC_Pword     	= atoi(tableMat[1][colM["SOUTHCENTER_PWORD"]	   ].c_str()) ;
       S_Pword      	= atoi(tableMat[1][colM["SOUTH_PWORD"]      	   ].c_str()) ;
       
-      //Bits (1st 4) used to set the channel you want to read in spy fifo2
-      N_ScopeCh      = atoi(tableMat[1][colM["NORTH_SCOPECH"]      ].c_str()) ;
-      NC_ScopeCh     = atoi(tableMat[1][colM["NORTHCENTER_SCOPECH"]].c_str()) ;
-      SC_ScopeCh     = atoi(tableMat[1][colM["SOUTHCENTER_SCOPECH"]].c_str()) ;
-      S_ScopeCh      = atoi(tableMat[1][colM["SOUTH_SCOPECH"]      ].c_str()) ;
-
       Nbaseln      	= atoi(tableMat[1][colM["NORTH_BADJ"]       	   ].c_str()) ;
       NCbaseln     	= atoi(tableMat[1][colM["NORTHCENTER_BADJ"] 	   ].c_str()) ;
       SCbaseln     	= atoi(tableMat[1][colM["SOUTHCENTER_BADJ"] 	   ].c_str()) ;
@@ -403,6 +392,7 @@ PixelFEDCard::PixelFEDCard(vector<vector<string> > &tableMat):PixelConfigBase(" 
   Ccntrl_original=Ccntrl;
   modeRegister_original=modeRegister;
 
+  cntrl_utca_original = cntrl_utca;
 
   Ncntrl_original=Ncntrl;
   NCcntrl_original=NCcntrl;
@@ -633,6 +623,31 @@ void PixelFEDCard::readDBROCLevels(std::vector<std::vector<std::string> > &table
   
 }
 
+int checked_fscanf(FILE* f, const char* fmt, ...) {
+  int count = 0;
+  const char* tmp = fmt;
+  while (*tmp) {
+    if (*tmp == '%')
+      ++count;
+    ++tmp;
+  }
+  tmp = fmt;
+  while ((tmp = strstr(tmp, "%%"))) {
+    count -= 2;
+    ++tmp;
+  }
+  //printf("count for [%s]: %i\n", fmt, count);
+
+  va_list args;
+  va_start(args, fmt);
+  int ret = vfscanf(f, fmt, args);
+  va_end(args);
+
+  if (ret != count)
+    fprintf(stderr, "PixelFEDCard: problem with scanf with fmt [%s] count %i ret %i\n", fmt, count, ret);
+
+  return ret;
+}
 
 // Read the configuration parameters from file
 PixelFEDCard::PixelFEDCard(string fileName):
@@ -650,10 +665,100 @@ PixelFEDCard::PixelFEDCard(string fileName):
   FILE *infile = fopen((fileName.c_str()),"r");
   if (infile == NULL)  throw std::runtime_error("Failed to open FED Card parameter file: "+fileName); 
 
-  //Fed Base Address
-  fscanf(infile,"FED Base address                         :%lx\n",
+  size_t linelen = 0;
+  char* line = 0;
+  getline(&line, &linelen, infile);
+  if (localDEBUG) printf("first line: %s\n", line);
+
+  if (strcmp(line, "Type: VMEPiggy\n") == 0) {
+    type = VMEPiggy;
+
+    //Bits (1st 4) used to set the channel you want to read in spy fifo2
+    checked_fscanf(infile,"N  Scope channel(0-8):%x\n", &N_ScopeCh);
+    checked_fscanf(infile,"NC Scope channel(0-8):%x\n", &NC_ScopeCh);
+    checked_fscanf(infile,"SC Scope channel(0-8):%x\n", &SC_ScopeCh);
+    checked_fscanf(infile,"S  Scope channel(0-8):%x\n", &S_ScopeCh);
+    if (localDEBUG) {
+      printf("N  Scope channel(0-8):%x\n",N_ScopeCh);
+      printf("NC Scope channel(0-8):%x\n",NC_ScopeCh);
+      printf("SC Scope channel(0-8):%x\n",SC_ScopeCh);
+      printf("S  Scope channel(0-8):%x\n",S_ScopeCh);
+    }
+
+    getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
+  }
+  else if (strcmp(line, "Type: CTA\n") == 0) {
+    type = CTA;
+
+    checked_fscanf(infile, "Control bits: %llx\n", (unsigned long long*)&cntrl_utca);
+    if (localDEBUG) printf("Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
+
+    checked_fscanf(infile, "Control bits override: %d\n", &cntrl_utca_override);
+    if (localDEBUG) printf("Control bits override: %d\n", cntrl_utca_override);
+
+    checked_fscanf(infile, "Transparent+scope channel: %u\n", &TransScopeCh);
+    if (localDEBUG) printf("Transparent+scope channel: %u\n", TransScopeCh);
+
+    checked_fscanf(infile, "PACKET_NB: %x\n", &PACKET_NB);
+    if (localDEBUG) printf("PACKET_NB: %x\n", PACKET_NB);
+
+    checked_fscanf(infile, "Which FMC (lower = 0): %d\n", &which_FMC);
+    if (localDEBUG) printf("Which FMC (lower = 0): %d\n", which_FMC);
+
+    checked_fscanf(infile, "Fitel channel order swapped: %d\n", &swap_Fitel_order);
+    if (localDEBUG) printf("Fitel channel order swapped: %d\n", swap_Fitel_order);
+
+    checked_fscanf(infile, "Acquisition mode (1=TBM fifo, 2=Slink fifo, 4=FEROL): %d\n", &acq_mode);
+    if (localDEBUG) printf("Acquisition mode (1=TBM fifo, 2=Slink fifo, 4=FEROL): %d\n", acq_mode);
+
+    checked_fscanf(infile, "Calibration mode: %d\n", &calib_mode);
+    if (localDEBUG) printf("Calibration mode: %d\n", calib_mode);
+
+    checked_fscanf(infile, "Calibration mode num events: %d\n", &calib_mode_num_events);
+    if (localDEBUG) printf("Calibration mode num events:%d\n", calib_mode_num_events);
+
+    checked_fscanf(infile, "Data type (0=real data, 1=constants, 2=pattern): %d\n", &data_type);
+    if (localDEBUG) printf("Data type (0=real data, 1=constants, 2=pattern):%d\n", data_type);
+
+    checked_fscanf(infile, "TBM trailer mask: %x\n", &tbm_trailer_mask);
+    if (localDEBUG) printf("TBM trailer mask: %x\n", tbm_trailer_mask);
+
+    checked_fscanf(infile, "TBM trailer mask 2: %x\n", &tbm_trailer_mask_2);
+    if (localDEBUG) printf("TBM trailer mask 2: %x\n", tbm_trailer_mask_2);
+
+    checked_fscanf(infile, "Private event number: %d\n", &private_event_number);
+    if (localDEBUG) printf("Private event number:%d\n", private_event_number);
+
+    checked_fscanf(infile, "Timeout checking enabled: %d\n", &timeout_checking_enabled);
+    if (localDEBUG) printf("Timeout checking enabled: %d\n", timeout_checking_enabled);
+
+    checked_fscanf(infile, "Timeout counter start: %d\n", &timeout_counter_start);
+    if (localDEBUG) printf("Timeout counter start: %d\n", timeout_counter_start);
+
+    checked_fscanf(infile, "Timeout number OOS threshold: %d\n", &timeout_number_oos_threshold);
+    if (localDEBUG) printf("Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
+
+    checked_fscanf(infile, "Event count checking enabled: %d\n", &event_count_checking_enabled);
+    if (localDEBUG) printf("Event count checking enabled: %d\n", event_count_checking_enabled);
+
+    checked_fscanf(infile, "Number event count errors before OOS: %d\n", &event_count_num_err_oos);
+    if (localDEBUG) printf("Number event count errors before OOS: %d\n", event_count_num_err_oos);
+
+    checked_fscanf(infile, "Frontend disable backend: %d\n", &frontend_disable_backend);
+    if (localDEBUG) printf("Frontend disable backend: %d\n", frontend_disable_backend);
+
+    getline(&line, &linelen, infile); // for the FED Base address line next with sscanf
+  }
+  else {
+    // VME files don't have to start with Type: line and won't have extra lines for new params -- jump straight to the sscanf.
+  }
+
+  //Fed Base Address = unique key for non-VME
+  sscanf(line,"FED Base address                         :%lx\n",
          &FEDBASE_0);
-  fscanf(infile,"FEDID Number                             :%lx\n",
+  free(line);
+
+  checked_fscanf(infile,"FEDID Number                             :%lx\n",
          &fedNumber);
 
 //  if(localDEBUG) cout << __LINE__ << mthn << "FED Base address, FED # : " << std::hex << FEDBASE_0 << std::dec << std::endl ;
@@ -664,22 +769,23 @@ PixelFEDCard::PixelFEDCard(string fileName):
  
   // Number of ROCs
   int ijx=0;
-  for(int i=0;i<36;i++){
+  int nrocsmax = type == CTA ? 48 : 36;
+  for(int i=0;i<nrocsmax;i++){
   ijx=i+1;
-    fscanf(infile,"Number of ROCs Chnl %d:%d \n",&ijx,&NRocs[i]);
+    checked_fscanf(infile,"Number of ROCs Chnl %d:%d \n",&ijx,&NRocs[i]);
     if(localDEBUG)printf("Number of ROCs per Chnl %d:%d \n",ijx,NRocs[i]);
   }
 
   //Settable optical input parameters
-  fscanf(infile,"Optical reciever 1  Capacitor Adjust(0-3):%d\n",&opt_cap[0]);
-  fscanf(infile,"Optical reciever 2  Capacitor Adjust(0-3):%d\n",&opt_cap[1]);
-  fscanf(infile,"Optical reciever 3  Capacitor Adjust(0-3):%d\n",&opt_cap[2]);
-  fscanf(infile,"Optical reciever 1  Input Offset (0-15)  :%d\n",&opt_inadj[0]);
-  fscanf(infile,"Optical reciever 2  Input Offset (0-15)  :%d\n",&opt_inadj[1]);
-  fscanf(infile,"Optical reciever 3  Input Offset (0-15)  :%d\n",&opt_inadj[2]);
-  fscanf(infile,"Optical reciever 1 Output Offset (0-3)   :%d\n",&opt_ouadj[0]);
-  fscanf(infile,"Optical reciever 2 Output Offset (0-3)   :%d\n",&opt_ouadj[1]);
-  fscanf(infile,"Optical reciever 3 Output Offset (0-3)   :%d\n",&opt_ouadj[2]);
+  checked_fscanf(infile,"Optical reciever 1  Capacitor Adjust(0-3):%d\n",&opt_cap[0]);
+  checked_fscanf(infile,"Optical reciever 2  Capacitor Adjust(0-3):%d\n",&opt_cap[1]);
+  checked_fscanf(infile,"Optical reciever 3  Capacitor Adjust(0-3):%d\n",&opt_cap[2]);
+  checked_fscanf(infile,"Optical reciever 1  Input Offset (0-15)  :%d\n",&opt_inadj[0]);
+  checked_fscanf(infile,"Optical reciever 2  Input Offset (0-15)  :%d\n",&opt_inadj[1]);
+  checked_fscanf(infile,"Optical reciever 3  Input Offset (0-15)  :%d\n",&opt_inadj[2]);
+  checked_fscanf(infile,"Optical reciever 1 Output Offset (0-3)   :%d\n",&opt_ouadj[0]);
+  checked_fscanf(infile,"Optical reciever 2 Output Offset (0-3)   :%d\n",&opt_ouadj[1]);
+  checked_fscanf(infile,"Optical reciever 3 Output Offset (0-3)   :%d\n",&opt_ouadj[2]);
   
   if(localDEBUG) {
     printf("Optical reciever 1  Capacitor Adjust(0-3):%d\n",opt_cap[0]);
@@ -695,15 +801,15 @@ PixelFEDCard::PixelFEDCard(string fileName):
 
   //input offset dac
   for(int i=0;i<36;i++) {
-    fscanf(infile,"Offset DAC channel %d:%d\n",&ijx,&offs_dac[i]);
+    checked_fscanf(infile,"Offset DAC channel %d:%d\n",&ijx,&offs_dac[i]);
     if(localDEBUG) printf("Offset DAC channel %d:%d\n",i+1,offs_dac[i]);
   }
   
   //clock phases
-  fscanf(infile,"Clock Phase Bits ch   1-9:%x\n",& clkphs1_9 );
-  fscanf(infile,"Clock Phase Bits ch 10-18:%x\n",&clkphs10_18);
-  fscanf(infile,"Clock Phase Bits ch 19-27:%x\n",&clkphs19_27);
-  fscanf(infile,"Clock Phase Bits ch 28-36:%x\n",&clkphs28_36);
+  checked_fscanf(infile,"Clock Phase Bits ch   1-9:%x\n",& clkphs1_9 );
+  checked_fscanf(infile,"Clock Phase Bits ch 10-18:%x\n",&clkphs10_18);
+  checked_fscanf(infile,"Clock Phase Bits ch 19-27:%x\n",&clkphs19_27);
+  checked_fscanf(infile,"Clock Phase Bits ch 28-36:%x\n",&clkphs28_36);
   if(localDEBUG)printf("Clock Phase Bits ch    1-9:%x\n",clkphs1_9 );
   if(localDEBUG)printf("Clock Phase Bits ch  10-18:%x\n",clkphs10_18 );
   if(localDEBUG)printf("Clock Phase Bits ch  19-27:%x\n",clkphs19_27 );
@@ -711,9 +817,9 @@ PixelFEDCard::PixelFEDCard(string fileName):
   
   //Blacks 
   for(int i=0;i<36;i++){
-    fscanf(infile,"Black HiThold ch %d:%d \n",&ijx,&BlackHi[i]);
-    fscanf(infile,"Black LoThold ch %d:%d \n",&ijx,&BlackLo[i]);
-    fscanf(infile,"ULblack Thold ch %d:%d \n",&ijx, &Ublack[i]);
+    checked_fscanf(infile,"Black HiThold ch %d:%d \n",&ijx,&BlackHi[i]);
+    checked_fscanf(infile,"Black LoThold ch %d:%d \n",&ijx,&BlackLo[i]);
+    checked_fscanf(infile,"ULblack Thold ch %d:%d \n",&ijx, &Ublack[i]);
     if(localDEBUG)printf("Black HiThold ch %d:%d\n",ijx,BlackHi[i]);
     if(localDEBUG)printf("Black LoThold ch %d:%d\n",ijx,BlackLo[i]);
     if(localDEBUG)printf("ULblack Thold ch %d:%d\n",ijx, Ublack[i]);
@@ -721,18 +827,18 @@ PixelFEDCard::PixelFEDCard(string fileName):
   
   //Channel delays
   for(int i=0;i<36;i++) {
-    fscanf(infile,"Delay channel %d(0-15):%d\n",&ijx,&DelayCh[i]);
+    checked_fscanf(infile,"Delay channel %d(0-15):%d\n",&ijx,&DelayCh[i]);
     if(localDEBUG) 
       printf("Delay channel %d(0-15):%d\n",i+1,DelayCh[i]);
   }
   
   //Signal levels
   for(int i=0;i<36;i++) {
-    fscanf(infile,"TBM level 0 Channel  %d:%d\n",&ijx,&TBM_L0[i]);
-    fscanf(infile,"TBM level 1 Channel  %d:%d\n",&ijx,&TBM_L1[i]);
-    fscanf(infile,"TBM level 2 Channel  %d:%d\n",&ijx,&TBM_L2[i]);
-    fscanf(infile,"TBM level 3 Channel  %d:%d\n",&ijx,&TBM_L3[i]);
-    fscanf(infile,"TBM level 4 Channel  %d:%d\n",&ijx,&TBM_L4[i]);
+    checked_fscanf(infile,"TBM level 0 Channel  %d:%d\n",&ijx,&TBM_L0[i]);
+    checked_fscanf(infile,"TBM level 1 Channel  %d:%d\n",&ijx,&TBM_L1[i]);
+    checked_fscanf(infile,"TBM level 2 Channel  %d:%d\n",&ijx,&TBM_L2[i]);
+    checked_fscanf(infile,"TBM level 3 Channel  %d:%d\n",&ijx,&TBM_L3[i]);
+    checked_fscanf(infile,"TBM level 4 Channel  %d:%d\n",&ijx,&TBM_L4[i]);
     if(localDEBUG)printf("TBM level 0 Channel  %d:%d\n",ijx,TBM_L0[i]);
     if(localDEBUG)printf("TBM level 1 Channel  %d:%d\n",ijx,TBM_L1[i]);
     if(localDEBUG)printf("TBM level 2 Channel  %d:%d\n",ijx,TBM_L2[i]);
@@ -741,15 +847,15 @@ PixelFEDCard::PixelFEDCard(string fileName):
     
     int ijy=0;
     for(int j=0;j<NRocs[i];j++) {
-      fscanf(infile,"ROC%d level 0 Channel  %d :%d\n",
+      checked_fscanf(infile,"ROC%d level 0 Channel  %d :%d\n",
              &ijy,&ijx,&ROC_L0[i][j]);
-      fscanf(infile,"ROC%d level 1 Channel  %d :%d\n",
+      checked_fscanf(infile,"ROC%d level 1 Channel  %d :%d\n",
              &ijy,&ijx,&ROC_L1[i][j]);
-      fscanf(infile,"ROC%d level 2 Channel  %d :%d\n",
+      checked_fscanf(infile,"ROC%d level 2 Channel  %d :%d\n",
              &ijy,&ijx,&ROC_L2[i][j]);
-      fscanf(infile,"ROC%d level 3 Channel  %d :%d\n",
+      checked_fscanf(infile,"ROC%d level 3 Channel  %d :%d\n",
              &ijy,&ijx,&ROC_L3[i][j]);
-      fscanf(infile,"ROC%d level 4 Channel  %d :%d\n",
+      checked_fscanf(infile,"ROC%d level 4 Channel  %d :%d\n",
              &ijy,&ijx,&ROC_L4[i][j]);
       if(localDEBUG)
         printf("ROC%d level 0 Channel  %d :%d\n",ijy,ijx,ROC_L0[i][j]);
@@ -763,11 +869,11 @@ PixelFEDCard::PixelFEDCard(string fileName):
         printf("ROC%d level 4 Channel  %d :%d\n",ijy,ijx,ROC_L4[i][j]);
     }
       
-    fscanf(infile,"TRLR level 0 Channel %d:%d\n",&ijx,&TRL_L0[i]);
-    fscanf(infile,"TRLR level 1 Channel %d:%d\n",&ijx,&TRL_L1[i]);
-    fscanf(infile,"TRLR level 2 Channel %d:%d\n",&ijx,&TRL_L2[i]);
-    fscanf(infile,"TRLR level 3 Channel %d:%d\n",&ijx,&TRL_L3[i]);
-    fscanf(infile,"TRLR level 4 Channel %d:%d\n",&ijx,&TRL_L4[i]);
+    checked_fscanf(infile,"TRLR level 0 Channel %d:%d\n",&ijx,&TRL_L0[i]);
+    checked_fscanf(infile,"TRLR level 1 Channel %d:%d\n",&ijx,&TRL_L1[i]);
+    checked_fscanf(infile,"TRLR level 2 Channel %d:%d\n",&ijx,&TRL_L2[i]);
+    checked_fscanf(infile,"TRLR level 3 Channel %d:%d\n",&ijx,&TRL_L3[i]);
+    checked_fscanf(infile,"TRLR level 4 Channel %d:%d\n",&ijx,&TRL_L4[i]);
     if(localDEBUG)printf("TRLR level 0 Channel %d:%d\n",ijx,TRL_L0[i]);
     if(localDEBUG)printf("TRLR level 1 Channel %d:%d\n",ijx,TRL_L1[i]);
     if(localDEBUG)printf("TRLR level 2 Channel %d:%d\n",ijx,TRL_L2[i]);
@@ -777,13 +883,13 @@ PixelFEDCard::PixelFEDCard(string fileName):
   
   
   //These bits turn off(1) and on(0) channels
-  fscanf(infile,"Channel Enbable bits chnls 1-9  (on = 0):%x\n",
+  checked_fscanf(infile,"Channel Enbable bits chnls 1-9  (on = 0):%x\n",
          &Ncntrl);
-  fscanf(infile,"Channel Enbable bits chnls 10-18(on = 0):%x\n",
+  checked_fscanf(infile,"Channel Enbable bits chnls 10-18(on = 0):%x\n",
          &NCcntrl);
-  fscanf(infile,"Channel Enbable bits chnls 19-27(on = 0):%x\n",
+  checked_fscanf(infile,"Channel Enbable bits chnls 19-27(on = 0):%x\n",
          &SCcntrl);
-  fscanf(infile,"Channel Enbable bits chnls 28-36(on = 0):%x\n",
+  checked_fscanf(infile,"Channel Enbable bits chnls 28-36(on = 0):%x\n",
          &Scntrl);
   if(localDEBUG)
     printf("Channel Enbable bits chnls 1-9  (on = 0):%x\n",Ncntrl);
@@ -795,27 +901,27 @@ PixelFEDCard::PixelFEDCard(string fileName):
     printf("Channel Enbable bits chnls 28-36(on = 0):%x\n",Scntrl);
   
   //These are delays to the TTCrx
-  fscanf(infile,"TTCrx Coarse Delay Register 2:%d\n",&CoarseDel);
-  fscanf(infile,"TTCrc      ClkDes2 Register 3:%x\n",&ClkDes2);
-  fscanf(infile,"TTCrc Fine Dlay ClkDes2 Reg 1:%d\n",&FineDes2Del);
+  checked_fscanf(infile,"TTCrx Coarse Delay Register 2:%d\n",&CoarseDel);
+  checked_fscanf(infile,"TTCrc      ClkDes2 Register 3:%x\n",&ClkDes2);
+  checked_fscanf(infile,"TTCrc Fine Dlay ClkDes2 Reg 1:%d\n",&FineDes2Del);
   if(localDEBUG)printf("TTCrx Coarse Delay Register 2:%d\n",CoarseDel);
   if(localDEBUG)printf("TTCrc      ClkDes2 Register 3:%x\n",ClkDes2);
   if(localDEBUG)printf("TTCrc Fine Dlay ClkDes2 Reg 1:%d\n",FineDes2Del);
   
   // Control register
-  fscanf(infile,"Center Chip Control Reg:%x\n",&Ccntrl);
+  checked_fscanf(infile,"Center Chip Control Reg:%x\n",&Ccntrl);
   if(localDEBUG)printf("Control Reg:0x%x\n",Ccntrl);
-  fscanf(infile,"Initial Slink DAQ mode:%d\n",&modeRegister);
+  checked_fscanf(infile,"Initial Slink DAQ mode:%d\n",&modeRegister);
   if(localDEBUG)printf("Mode Reg:%d\n",modeRegister);
   
    //These bits set ADC Gain/Range 1Vpp(0) and 2Vpp(1) for channels
-  fscanf(infile,"Channel ADC Gain bits chnls  1-12(1Vpp = 0):%x\n",
+  checked_fscanf(infile,"Channel ADC Gain bits chnls  1-12(1Vpp = 0):%x\n",
          &Nadcg);
-  fscanf(infile,"Channel ADC Gain bits chnls 13-20(1Vpp = 0):%x\n",
+  checked_fscanf(infile,"Channel ADC Gain bits chnls 13-20(1Vpp = 0):%x\n",
          &NCadcg);
-  fscanf(infile,"Channel ADC Gain bits chnls 21-28(1Vpp = 0):%x\n",
+  checked_fscanf(infile,"Channel ADC Gain bits chnls 21-28(1Vpp = 0):%x\n",
          &SCadcg);
-  fscanf(infile,"Channel ADC Gain bits chnls 29-36(1Vpp = 0):%x\n",
+  checked_fscanf(infile,"Channel ADC Gain bits chnls 29-36(1Vpp = 0):%x\n",
          &Sadcg);
   if(localDEBUG)
     printf("Channel ADC Gain bits chnls  1-12(1Vpp = 0):%x\n",Nadcg);
@@ -827,13 +933,13 @@ PixelFEDCard::PixelFEDCard(string fileName):
     printf("Channel ADC Gain bits chnls 29-36(1Vpp = 0):%x\n",Sadcg);
 
        //These bits set Baseline adjustment value (common by FPGA)//can turn on by channel 
-  fscanf(infile,"Channel Baseline Enbable chnls 1-9  (on = (0x1ff<<16)+):%x\n",
+  checked_fscanf(infile,"Channel Baseline Enbable chnls 1-9  (on = (0x1ff<<16)+):%x\n",
          &Nbaseln);
-  fscanf(infile,"Channel Baseline Enbable chnls 10-18(on = (0x1ff<<16)+):%x\n",
+  checked_fscanf(infile,"Channel Baseline Enbable chnls 10-18(on = (0x1ff<<16)+):%x\n",
          &NCbaseln);
-  fscanf(infile,"Channel Baseline Enbable chnls 19-27(on = (0x1ff<<16)+):%x\n",
+  checked_fscanf(infile,"Channel Baseline Enbable chnls 19-27(on = (0x1ff<<16)+):%x\n",
          &SCbaseln);
-  fscanf(infile,"Channel Baseline Enbable chnls 28-36(on = (0x1ff<<16)+):%x\n",
+  checked_fscanf(infile,"Channel Baseline Enbable chnls 28-36(on = (0x1ff<<16)+):%x\n",
          &Sbaseln);
   if(localDEBUG)
     printf("Channel Baseline Enbable chnls 1-9  (on = (0x1ff<<16)+):%x\n",Nbaseln);
@@ -845,13 +951,13 @@ PixelFEDCard::PixelFEDCard(string fileName):
     printf("Channel Baseline Enbable chnls 28-36(on = (0x1ff<<16)+):%x\n",Sbaseln);
 
        //These bits set TBM trailer mask (common by FPGA) 
-  fscanf(infile,"TBM trailer mask chnls 1-9  (0xff = all masked):%x\n",
+  checked_fscanf(infile,"TBM trailer mask chnls 1-9  (0xff = all masked):%x\n",
          &N_TBMmask);
-  fscanf(infile,"TBM trailer mask chnls 10-18(0xff = all masked):%x\n",
+  checked_fscanf(infile,"TBM trailer mask chnls 10-18(0xff = all masked):%x\n",
          &NC_TBMmask);
-  fscanf(infile,"TBM trailer mask chnls 19-27(0xff = all masked):%x\n",
+  checked_fscanf(infile,"TBM trailer mask chnls 19-27(0xff = all masked):%x\n",
          &SC_TBMmask);
-  fscanf(infile,"TBM trailer mask chnls 28-36(0xff = all masked):%x\n",
+  checked_fscanf(infile,"TBM trailer mask chnls 28-36(0xff = all masked):%x\n",
          &S_TBMmask);
   if(localDEBUG)
     printf("TBM trailer mask chnls 1-9  (0xff = all masked):%x\n",N_TBMmask);
@@ -863,13 +969,13 @@ PixelFEDCard::PixelFEDCard(string fileName):
     printf("TBM trailer mask chnls 28-36(0xff = all masked):%x\n",S_TBMmask);
 
        //These bits set the Private fill/gap word value (common by FPGA) 
-  fscanf(infile,"Private 8 bit word chnls 1-9  :%x\n",
+  checked_fscanf(infile,"Private 8 bit word chnls 1-9  :%x\n",
          &N_Pword);
-  fscanf(infile,"Private 8 bit word chnls 10-18:%x\n",
+  checked_fscanf(infile,"Private 8 bit word chnls 10-18:%x\n",
          &NC_Pword);
-  fscanf(infile,"Private 8 bit word chnls 19-27:%x\n",
+  checked_fscanf(infile,"Private 8 bit word chnls 19-27:%x\n",
          &SC_Pword);
-  fscanf(infile,"Private 8 bit word chnls 28-36:%x\n",
+  checked_fscanf(infile,"Private 8 bit word chnls 28-36:%x\n",
          &S_Pword);
   if(localDEBUG)
     printf("Private 8 bit word chnls 1-9  :%x\n",N_Pword);
@@ -880,84 +986,66 @@ PixelFEDCard::PixelFEDCard(string fileName):
   if(localDEBUG)
     printf("Private 8 bit word chnls 28-36:%x\n",S_Pword);
 
-      //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fscanf(infile,"N  Scope channel(0-8):%x\n",
-         &N_ScopeCh);
-  fscanf(infile,"NC Scope channel(0-8):%x\n",
-         &NC_ScopeCh);
-  fscanf(infile,"SC Scope channel(0-8):%x\n",
-         &SC_ScopeCh);
-  fscanf(infile,"S  Scope channel(0-8):%x\n",
-         &S_ScopeCh);
-  if(localDEBUG)
-    printf("N  Scope channel(0-8):%x\n",N_ScopeCh);
-  if(localDEBUG)
-    printf("NC Scope channel(0-8):%x\n",NC_ScopeCh);
-  if(localDEBUG)
-    printf("SC Scope channel(0-8):%x\n",SC_ScopeCh);
-  if(localDEBUG)
-    printf("S  Scope channel(0-8):%x\n",S_ScopeCh);
-
        //These bit sets the special dac mode for random triggers 
-  fscanf(infile,"Special Random testDAC mode (on = 0x1, off=0x0):%x\n",
+  checked_fscanf(infile,"Special Random testDAC mode (on = 0x1, off=0x0):%x\n",
          &SpecialDac);
   if(localDEBUG)
     printf("Special Random testDAC mode (on = 0x1, off=0x0):%x\n",SpecialDac);
 
 
       //These bits set the number of Out of consecutive out of sync events until a TTs OOs 
-  fscanf(infile,"Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:%d\n",
+  checked_fscanf(infile,"Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:%d\n",
          &Ooslvl);
   if(localDEBUG)
     printf("Number of Consecutive (max 1023) Out of Syncs till TTs OOS set:%d\n",Ooslvl);
 
       //These bits set the number of Empty events until a TTs Error 
-  fscanf(infile,"Number of Consecutive (max 1023) Empty events till TTs ERR set:%d\n",
+  checked_fscanf(infile,"Number of Consecutive (max 1023) Empty events till TTs ERR set:%d\n",
          &Errlvl);
   if(localDEBUG)
     printf("Number of Consecutive (max 1023) Empty events till TTs ERR set:%d\n",Errlvl);
 
       //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 N
-  fscanf(infile,"N Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
+  checked_fscanf(infile,"N Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
          &Nfifo1Bzlvl);
   if(localDEBUG)
     printf("N Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",Nfifo1Bzlvl);
 
       //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 NC
-  fscanf(infile,"NC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
+  checked_fscanf(infile,"NC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
          &NCfifo1Bzlvl);
   if(localDEBUG)
     printf("NC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",NCfifo1Bzlvl);
 
       //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 SC
-  fscanf(infile,"SC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
+  checked_fscanf(infile,"SC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
          &SCfifo1Bzlvl);
   if(localDEBUG)
     printf("SC Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",SCfifo1Bzlvl);
 
       //These bits set the Almost Full level in fifo-1, Almost full = TTs BUSY in fifo-1 S
-  fscanf(infile,"S Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
+  checked_fscanf(infile,"S Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",
          &Sfifo1Bzlvl);
   if(localDEBUG)
     printf("S Fifo-1 almost full level,sets TTs BUSY (max 1023):%d\n",Sfifo1Bzlvl);
 
       //These bits set the Almost Full level in fifo-3, Almost full = TTs WARN in fifo-3
-  fscanf(infile,"Fifo-3 almost full level,sets TTs WARN (max 8191):%d\n",
+  checked_fscanf(infile,"Fifo-3 almost full level,sets TTs WARN (max 8191):%d\n",
          &fifo3Wrnlvl);
   if(localDEBUG)
     printf("Fifo-3 almost full level,sets TTs WARN (max 8191):%d\n",fifo3Wrnlvl);
 
-  fscanf(infile,"FED Master delay 0=0,1=32,2=48,3=64:%d\n",
+  checked_fscanf(infile,"FED Master delay 0=0,1=32,2=48,3=64:%d\n",
                            &FedTTCDelay);
   if(localDEBUG)
     printf("FED Master delay 0=0,1=32,2=48,3=64:%d\n",FedTTCDelay);
 
-  fscanf(infile,"TTCrx Register 0 fine delay ClkDes1:%d\n",&FineDes1Del);
+  checked_fscanf(infile,"TTCrx Register 0 fine delay ClkDes1:%d\n",&FineDes1Del);
   if(localDEBUG)
     printf("TTCrx Register 0 fine delay ClkDes1:%d\n",FineDes1Del);
 
         int checkword=0;
-  fscanf(infile,"Params FED file check word:%d\n",
+  checked_fscanf(infile,"Params FED file check word:%d\n",
                            &checkword);
         if(checkword!=90508&&checkword!=91509&&checkword!=20211) cout << __LINE__  << "]\t"                             << mthn 
 	                          << "FEDID: "                                      << fedNumber 
@@ -972,93 +1060,93 @@ PixelFEDCard::PixelFEDCard(string fileName):
 
 				if(checkword==20211){
       //These bits set the hit limit in fifo-1 for an event
-  fscanf(infile,"N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&N_hitlimit);
+  checked_fscanf(infile,"N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&N_hitlimit);
   if(localDEBUG)
     printf("N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",N_hitlimit);    
-  fscanf(infile,"NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&NC_hitlimit);
+  checked_fscanf(infile,"NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&NC_hitlimit);
   if(localDEBUG)
     printf("NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",NC_hitlimit);
-  fscanf(infile,"SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&SC_hitlimit);
+  checked_fscanf(infile,"SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&SC_hitlimit);
   if(localDEBUG)
     printf("SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",SC_hitlimit);
-  fscanf(infile,"S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&S_hitlimit);
+  checked_fscanf(infile,"S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&S_hitlimit);
   if(localDEBUG)
     printf("S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",S_hitlimit);
       //These bits allow a ROC to be skipped (1/fpga)
       
-  fscanf(infile,"N  testreg:%x\n",&N_testreg);
+  checked_fscanf(infile,"N  testreg:%x\n",&N_testreg);
   if(localDEBUG)
     printf("N  testreg:%x\n", N_testreg);
-  fscanf(infile,"NC testreg:%x\n",&NC_testreg);
+  checked_fscanf(infile,"NC testreg:%x\n",&NC_testreg);
   if(localDEBUG)
     printf("NC testreg:%x\n", NC_testreg);
-  fscanf(infile,"SC testreg:%x\n",&SC_testreg);
+  checked_fscanf(infile,"SC testreg:%x\n",&SC_testreg);
   if(localDEBUG)
     printf("SC testreg:%x\n", SC_testreg);
-  fscanf(infile,"S  testreg:%x\n",&S_testreg);
+  checked_fscanf(infile,"S  testreg:%x\n",&S_testreg);
   if(localDEBUG)
     printf("S  testreg:%x\n", S_testreg);
 
-  fscanf(infile,"Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",&BusyWhenBehind);
+  checked_fscanf(infile,"Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",&BusyWhenBehind);
   if(localDEBUG)
     printf("Set BUSYWHENBEHIND by this many triggers with timeouts:%d\n",BusyWhenBehind);
 				
- fscanf(infile,"D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):%x\n",&FeatureRegister);
+ checked_fscanf(infile,"D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):%x\n",&FeatureRegister);
 	  if(localDEBUG)
     printf("D[0]=1 enable fed-stuck reset D[1]=1 disable ev# protect(dont):%x\n",FeatureRegister);	 
 		 
- fscanf(infile,"Limit for fifo-2 almost full (point for the TTS flag):%x\n",&FIFO2Limit);
+ checked_fscanf(infile,"Limit for fifo-2 almost full (point for the TTS flag):%x\n",&FIFO2Limit);
 	  if(localDEBUG)
     printf("Limit for fifo-2 almost full (point for the TTS flag):%x\n",FIFO2Limit);	 
 		 
- fscanf(infile,"Limit for consecutive timeout OR OOSs:%d\n",&TimeoutOROOSLimit);
+ checked_fscanf(infile,"Limit for consecutive timeout OR OOSs:%d\n",&TimeoutOROOSLimit);
 	  if(localDEBUG)
     printf("Limit for consecutive timeout OR OOSs:%d\n",TimeoutOROOSLimit);	 
 		 
- fscanf(infile,"Turn off filling of lastdac fifos(exc 1st ROC):%d\n",&LastDacOff);
+ checked_fscanf(infile,"Turn off filling of lastdac fifos(exc 1st ROC):%d\n",&LastDacOff);
 	  if(localDEBUG)
     printf("Turn off filling of lastdac fifos(exc 1st ROC):%d\n",LastDacOff);	 
 		 
- fscanf(infile,"Number of simulated hits per ROC for internal generator:%d\n",&SimHitsPerRoc);
+ checked_fscanf(infile,"Number of simulated hits per ROC for internal generator:%d\n",&SimHitsPerRoc);
 	  if(localDEBUG)
     printf("Number of simulated hits per ROC for internal generator:%d\n",SimHitsPerRoc);	 
 
- fscanf(infile,"Miniumum hold time for busy (changing definition):%d\n",&BusyHoldMin);
+ checked_fscanf(infile,"Miniumum hold time for busy (changing definition):%d\n",&BusyHoldMin);
 	  if(localDEBUG)
     printf("Miniumum hold time for busy (changing definition):%d\n",BusyHoldMin);	 
 		 
- fscanf(infile,"Trigger Holdoff in units of 25us(0=none):%d\n",&TriggerHoldoff);
+ checked_fscanf(infile,"Trigger Holdoff in units of 25us(0=none):%d\n",&TriggerHoldoff);
 	  if(localDEBUG)
     printf("Trigger Holdoff in units of 25us(0=none):%d\n",TriggerHoldoff);	 
 		 
- fscanf(infile,"Spare fedcard input 1:%d\n",&SPARE1);
+ checked_fscanf(infile,"Spare fedcard input 1:%d\n",&SPARE1);
 	  if(localDEBUG)
     printf("Spare fedcard input 1:%d\n",SPARE1);	 
- fscanf(infile,"Spare fedcard input 2:%d\n",&SPARE2);
+ checked_fscanf(infile,"Spare fedcard input 2:%d\n",&SPARE2);
 	  if(localDEBUG)
     printf("Spare fedcard input 2:%d\n",SPARE2);	 
- fscanf(infile,"Spare fedcard input 3:%d\n",&SPARE3);
+ checked_fscanf(infile,"Spare fedcard input 3:%d\n",&SPARE3);
 	  if(localDEBUG)
     printf("Spare fedcard input 3:%d\n",SPARE3);	 
- fscanf(infile,"Spare fedcard input 4:%d\n",&SPARE4);
+ checked_fscanf(infile,"Spare fedcard input 4:%d\n",&SPARE4);
 	  if(localDEBUG)
     printf("Spare fedcard input 4:%d\n",SPARE4);	 
- fscanf(infile,"Spare fedcard input 5:%d\n",&SPARE5);
+ checked_fscanf(infile,"Spare fedcard input 5:%d\n",&SPARE5);
 	  if(localDEBUG)
     printf("Spare fedcard input 5:%d\n",SPARE5);	 
- fscanf(infile,"Spare fedcard input 6:%d\n",&SPARE6);
+ checked_fscanf(infile,"Spare fedcard input 6:%d\n",&SPARE6);
 	  if(localDEBUG)
     printf("Spare fedcard input 6:%d\n",SPARE6);	 
- fscanf(infile,"Spare fedcard input 7:%d\n",&SPARE7);
+ checked_fscanf(infile,"Spare fedcard input 7:%d\n",&SPARE7);
 	  if(localDEBUG)
     printf("Spare fedcard input 7:%d\n",SPARE7);	 
- fscanf(infile,"Spare fedcard input 8:%d\n",&SPARE8);
+ checked_fscanf(infile,"Spare fedcard input 8:%d\n",&SPARE8);
 	  if(localDEBUG)
     printf("Spare fedcard input 8:%d\n",SPARE8);	 
- fscanf(infile,"Spare fedcard input 9:%d\n",&SPARE9);
+ checked_fscanf(infile,"Spare fedcard input 9:%d\n",&SPARE9);
 	  if(localDEBUG)
     printf("Spare fedcard input 9:%d\n",SPARE9);	 
- fscanf(infile,"Spare fedcard input 10:%d\n",&SPARE10);
+ checked_fscanf(infile,"Spare fedcard input 10:%d\n",&SPARE10);
 	  if(localDEBUG)
     printf("Spare fedcard input 10:%d\n",SPARE10);	 
 		 
@@ -1066,30 +1154,30 @@ PixelFEDCard::PixelFEDCard(string fileName):
 		 				
 				}else if(checkword==91509){
       //These bits set the hit limit in fifo-1 for an event
-  fscanf(infile,"N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&N_hitlimit);
+  checked_fscanf(infile,"N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&N_hitlimit);
   if(localDEBUG)
     printf("N fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",N_hitlimit);    
-  fscanf(infile,"NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&NC_hitlimit);
+  checked_fscanf(infile,"NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&NC_hitlimit);
   if(localDEBUG)
     printf("NC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",NC_hitlimit);
-  fscanf(infile,"SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&SC_hitlimit);
+  checked_fscanf(infile,"SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&SC_hitlimit);
   if(localDEBUG)
     printf("SC fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",SC_hitlimit);
-  fscanf(infile,"S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&S_hitlimit);
+  checked_fscanf(infile,"S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",&S_hitlimit);
   if(localDEBUG)
     printf("S fifo-1 hit limit (max 1023 (hard) 900 (soft):%d\n",S_hitlimit);
       //These bits allow a ROC to be skipped (1/fpga)
       
-  fscanf(infile,"N  testreg:%x\n",&N_testreg);
+  checked_fscanf(infile,"N  testreg:%x\n",&N_testreg);
   if(localDEBUG)
     printf("N  testreg:%x\n",N_testreg);
-  fscanf(infile,"NC testreg:%x\n",&NC_testreg);
+  checked_fscanf(infile,"NC testreg:%x\n",&NC_testreg);
   if(localDEBUG)
     printf("NC testreg:%x\n",NC_testreg);
-  fscanf(infile,"SC testreg:%x\n",&SC_testreg);
+  checked_fscanf(infile,"SC testreg:%x\n",&SC_testreg);
   if(localDEBUG)
     printf("SC testreg:%x\n",SC_testreg);
-  fscanf(infile,"S  testreg:%x\n",&S_testreg);
+  checked_fscanf(infile,"S  testreg:%x\n",&S_testreg);
   if(localDEBUG)
     printf("S  testreg:%x\n",S_testreg);
 	
@@ -1148,6 +1236,7 @@ PixelFEDCard::PixelFEDCard(string fileName):
   Ccntrl_original=Ccntrl;
   modeRegister_original=modeRegister;
 
+  cntrl_utca_original = cntrl_utca;
 
   Ncntrl_original=Ncntrl;
   NCcntrl_original=NCcntrl;
@@ -1166,10 +1255,30 @@ PixelFEDCard::PixelFEDCard(string fileName):
 // Added by Dario (March 26th 2008)
 void PixelFEDCard::clear(void) 
 {
+  type = 0;
+  cntrl_utca = cntrl_utca_original = 0;
+  TransScopeCh = 0;
+  PACKET_NB = 0;
+  which_FMC = 0;
+  swap_Fitel_order = 0;
+  timeout_checking_enabled = 0;
+  timeout_counter_start = 0;
+  timeout_number_oos_threshold = 0;
+  frontend_disable_backend = 0;
+  acq_mode = 0;
+  calib_mode = 0;
+  calib_mode_num_events = 0;
+  data_type = 0;
+  tbm_trailer_mask = 0;
+  tbm_trailer_mask_2 = 0;
+  private_event_number = 0;
+  event_count_checking_enabled = 0;
+  event_count_num_err_oos = 0;
   FEDBASE_0 = 0 ;
   fedNumber = 999 ;
-  for(int i=0;i<36;i++){
+  for(int i=0;i<48;i++)
     NRocs[i]    = 0;
+  for(int i=0;i<36;i++){
     offs_dac[i] = 0;
     BlackHi[i]  = 0;
     BlackLo[i]  = 0;
@@ -1283,7 +1392,41 @@ void PixelFEDCard::writeASCII(std::string dir) const{
     cout<< __LINE__ << "]\t" << mthn << "Could not open file: " << filename << " for writing" << endl; 
     return;
   }
-  
+
+  if (type == VMEPiggy) {
+    fprintf(outfile, "Type: VMEPiggy\n");
+
+    //Bits (1st 4) used to set the channel you want to read in spy fifo2
+    fprintf(outfile,"N  Scope channel(0-8):%x\n", N_ScopeCh);
+    fprintf(outfile,"NC Scope channel(0-8):%x\n", NC_ScopeCh);
+    fprintf(outfile,"SC Scope channel(0-8):%x\n", SC_ScopeCh);
+    fprintf(outfile,"S  Scope channel(0-8):%x\n", S_ScopeCh);
+  }
+  else if (type == CTA) {
+    fprintf(outfile, "Type: CTA\n");
+    fprintf(outfile, "Control bits: 0x%llx\n", (unsigned long long)cntrl_utca);
+    fprintf(outfile, "Control bits override: %d\n", cntrl_utca_override);
+    fprintf(outfile, "Transparent+scope channel: %u\n", TransScopeCh);
+    fprintf(outfile, "PACKET_NB: %x\n", PACKET_NB);
+    fprintf(outfile, "Which FMC (lower = 0): %d\n", which_FMC);
+    fprintf(outfile, "Fitel channel order swapped: %d\n", swap_Fitel_order);
+    fprintf(outfile, "Acquisition mode (1=TBM fifo, 2=Slink fifo, 4=FEROL): %d\n", acq_mode);
+    fprintf(outfile, "Calibration mode: %d\n", calib_mode);
+    fprintf(outfile, "Calibration mode num events: %d\n", calib_mode_num_events);
+    fprintf(outfile, "Data type (0=real data, 1=constants, 2=pattern): %d\n", data_type);
+    fprintf(outfile, "TBM trailer mask: 0x%x\n", tbm_trailer_mask);
+    fprintf(outfile, "TBM trailer mask 2: 0x%x\n", tbm_trailer_mask_2);
+    fprintf(outfile, "Private event number: 0x%x\n", private_event_number);
+    fprintf(outfile, "Timeout checking enabled: %d\n", timeout_checking_enabled);
+    fprintf(outfile, "Timeout counter start: %d\n", timeout_counter_start);
+    fprintf(outfile, "Timeout number OOS threshold: %d\n", timeout_number_oos_threshold);
+    fprintf(outfile, "Event count checking enabled: %d\n", event_count_checking_enabled);
+    fprintf(outfile, "Number event count errors before OOS: %d\n", event_count_num_err_oos);
+    fprintf(outfile, "Frontend disable backend: %d\n", frontend_disable_backend);
+  }
+  else
+    fprintf(outfile, "Type: VME\n");
+
   //Fed Base Address
   fprintf(outfile,"FED Base address                         :0x%lx\n",
          FEDBASE_0);
@@ -1292,7 +1435,8 @@ void PixelFEDCard::writeASCII(std::string dir) const{
 
   // Number of ROCs
   int ijx=0;
-  for(int i=0;i<36;i++){
+  int nrocsmax = type == CTA ? 48 : 36;
+  for(int i=0;i<nrocsmax;i++){
   ijx=i+1;
     fprintf(outfile,"Number of ROCs Chnl %d:%d\n",ijx,NRocs[i]);
 }
@@ -1418,16 +1562,6 @@ void PixelFEDCard::writeASCII(std::string dir) const{
          SC_Pword);
   fprintf(outfile,"Private 8 bit word chnls 28-36:0x%x\n",
          S_Pword);
-
-       //Bits (1st 4) used to set the channel you want to read in spy fifo2
-  fprintf(outfile,"N  Scope channel(0-8):%x\n",
-	 N_ScopeCh);
-  fprintf(outfile,"NC Scope channel(0-8):%x\n",
-	 NC_ScopeCh);
-  fprintf(outfile,"SC Scope channel(0-8):%x\n",
-	 SC_ScopeCh);
-  fprintf(outfile,"S  Scope channel(0-8):%x\n",
-	 S_ScopeCh);
 
        //These bit sets the special dac mode for random triggers 
   fprintf(outfile,"Special Random testDAC mode (on = 0x1, off=0x0):0x%x\n",
@@ -1703,6 +1837,7 @@ void PixelFEDCard::writeXMLHeader(pos::PixelConfigKey key, int version, std::str
 //=============================================================================================
 void PixelFEDCard::writeXML( std::ofstream *out) const 
 {
+  assert(0);
   std::string mthn = "[PixelFEDCard::writeXML()]\t\t\t    " ;
 
   *out << "  <DATA>"                                                                              	  << std::endl ;
@@ -1808,6 +1943,7 @@ void PixelFEDCard::writeXML( std::ofstream *fedstream,
                              std::ofstream *rocstream,
                              std::ofstream *tbmstream) const 
 {
+  assert(0);
   std::string mthn = "[PixelFEDCard::writeXML()]\t\t\t    " ;
 
   for(int i=0;i<36;i++)
@@ -2182,6 +2318,9 @@ void PixelFEDCard::writeXML(pos::PixelConfigKey key, int version, std::string pa
 
 //=============================================================================================
 uint64_t PixelFEDCard::enabledChannels() {
+  if (type == CTA)
+    return ~cntrl_utca;
+
   uint64_t channels=0;
 // return a 64-bit word with low 36 bits set if a channel is enabled
 // if bits are set in the control registers, transfer of data from 
@@ -2194,12 +2333,12 @@ uint64_t PixelFEDCard::enabledChannels() {
 }
 
 bool PixelFEDCard::useChannel(unsigned int iChannel){
-  assert(iChannel>0&&iChannel<37);
+  assert(iChannel>0 && iChannel<(type == CTA ? 49 : 37));
   return (enabledChannels()>>(iChannel-1))&0x1LL;
 } 
 
 void PixelFEDCard::setChannel(unsigned int iChannel, bool mode){
-  assert(iChannel>0&&iChannel<37);
+  assert(iChannel>0 && iChannel<(type == CTA ? 49 : 37));
   long long mask=enabledChannels();
   long long bit=0x1LL<<(iChannel-1);
   if (mode) {
@@ -2210,17 +2349,23 @@ void PixelFEDCard::setChannel(unsigned int iChannel, bool mode){
     mask=mask&bit;
   }
   mask=~mask;
-  Ncntrl=(Ncntrl&  0xffff0000LL) | (mask&  0x1ffLL);
-  mask=mask>>9;
-  NCcntrl=(NCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
-  mask=mask>>9;
-  SCcntrl=(SCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
-  mask=mask>>9;
-  Scntrl=(Scntrl&  0xffff0000LL) | (mask&  0x1ffLL);
- 
+
+  if (type == CTA) {
+    cntrl_utca = mask;
+  }
+  else {
+    Ncntrl=(Ncntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+    mask=mask>>9;
+    NCcntrl=(NCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+    mask=mask>>9;
+    SCcntrl=(SCcntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+    mask=mask>>9;
+    Scntrl=(Scntrl&  0xffff0000LL) | (mask&  0x1ffLL);
+  } 
 }  
 
 void PixelFEDCard::restoreBaselinAndChannelMasks(){
+  cntrl_utca = cntrl_utca_original;
 
   Ncntrl=Ncntrl_original;
   NCcntrl=NCcntrl_original;
@@ -2242,10 +2387,3 @@ void PixelFEDCard::restoreControlAndModeRegister(){
   modeRegister=modeRegister_original;
 
 }
-
-/* Emacs specific customization
-   ;;; Local Variables:     ***
-   ;;; indent-tabs-mode:nil ***
-   ;;; c-set-style:gnu      ***
-   ;;; End:                 ***
-*/

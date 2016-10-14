@@ -13,7 +13,7 @@
 #include "PixelCalibrations/include/PixelCalibrationBase.h"
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "PixelCalibrationBase.h"
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 #include <iostream>
 #include <iomanip>
 
@@ -38,7 +38,6 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
 
   percentageOfJob_=0;
 
-  
   if(dynamic_cast <PixelCalibConfiguration*> (theCalibObject_)==0) 
     { 
       sendingMode_="yes";
@@ -51,8 +50,6 @@ PixelCalibrationBase::PixelCalibrationBase(const PixelSupervisorConfiguration & 
 
   ttcCalSyncThrottlingTimer_.start();
 }
-
-
 PixelCalibrationBase::~PixelCalibrationBase(){}
 
 
@@ -147,7 +144,85 @@ void PixelCalibrationBase::reportProgress( double howOften, std::ostream& out, i
 	}
 }
 
+void PixelCalibrationBase::prepareFEDCalibrationMode(unsigned int nevents) {
+  Attribute_Vector parameters(1);
+  parameters[0].name_  = "NEvents";
+  parameters[0].value_ = itoa(nevents); 
+
+  // JMTBAD should this be careful about which feds it sends to?
+  std::string cmd("prepareFEDCalibrationMode");
+  sendToFED(cmd, parameters);
+}
+
+void PixelCalibrationBase::sendTTCLevelOne(bool prep_fed){
+  if (prep_fed) {
+    prepareFEDCalibrationMode(1);
+    usleep(20);
+  }
+
+  if (useTTC_){
+    Attribute_Vector parametersToTTC(2);
+    parametersToTTC[0].name_="xdaq:CommandPar";
+    parametersToTTC[0].value_="Execute Sequence";
+    parametersToTTC[1].name_="xdaq:sequence_name";
+    parametersToTTC[1].value_="LevelOne";
+    
+    Supervisors::iterator i_PixelTTCSupervisor;
+    for (i_PixelTTCSupervisor=PixelTTCSupervisors_.begin();i_PixelTTCSupervisor!=PixelTTCSupervisors_.end();++i_PixelTTCSupervisor)
+      {
+        if (Send(i_PixelTTCSupervisor->second, "userCommand", parametersToTTC)!="userTTCciControlResponse")
+          {
+            cout<<"TTCciControl supervising crate #"<<(i_PixelTTCSupervisor->first)<<" could not be used!"<<endl;
+          }
+      }
+  }
+  
+  
+  if (useTCDS_) {
+    assert(0);
+#if 0
+    //do some throttling
+    ttcCalSyncThrottlingTimer_.stop();
+    double tcalsync = ttcCalSyncThrottlingTimer_.tottime()*1000000;
+    ttcCalSyncThrottlingTimer_.reset();
+    ttcCalSyncThrottlingTimer_.start();
+
+    //limit of open TCP sockets: 20000 (crashes have been observed for >28000 sockets)
+    //time until a socket gets closed again: 240s (TCP connetion timeout 4 minutes)
+    //max calsync frequency: 20000/240 Hz = 83.3Hz --> delta t = 12000us
+    double tcalsync_target = 8000;
+
+    if (tcalsync < tcalsync_target) {
+      usleep(tcalsync_target-tcalsync);
+      //std::cout << "TTCCalSync trigger throttling: dt(CalSyncs)=" << tcalsync << "us, dt(min)="<< tcalsync_target <<"us, sleep= " << tcalsync_target-tcalsync << "us" << std::endl;
+    }
+
+
+    Attribute_Vector paramToTTC(1);
+    paramToTTC[0].name_="actionRequestorId";
+    paramToTTC[0].value_=TCDSSessionID_;
+    Variable_Vector varToTTC(1);
+    varToTTC[0].name_="bgoNumber";
+    varToTTC[0].type_="unsignedInt";
+    varToTTC[0].payload_="12";
+    
+    Supervisors::iterator i_PixelTTCController;
+    for (i_PixelTTCController=PixelTTCControllers_.begin();i_PixelTTCController!=PixelTTCControllers_.end();++i_PixelTTCController)
+      {
+        if (Send(i_PixelTTCController->second, "SendBgo", paramToTTC, varToTTC)!="SendBgoResponse")
+          {
+            std::cout<<"PixelTTCController #"<<(i_PixelTTCController->first)<<" could not be used! Maybe it is not yet configured?"<<std::endl;
+            diagService_->reportError("PixelTTCController #"+stringF(i_PixelTTCController->first) + " could not send CalSync.",DIAGERROR);
+          }
+      }
+#endif
+  }
+}
+
 void PixelCalibrationBase::sendTTCCalSync(){
+  // JMT will this work putting it here always? Sleep after?
+  prepareFEDCalibrationMode(1);
+  usleep(20);
 
   if (useTTC_){
     Attribute_Vector parametersToTTC(2);

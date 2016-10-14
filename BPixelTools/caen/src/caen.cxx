@@ -1,3 +1,5 @@
+
+
 #include <map>
 #include <string>
 #include <iostream>
@@ -21,7 +23,7 @@ PowerSupply* Sys;
 PS_Channel* ps_channel[500]={0}; // 
 int ps_numch=0;
 PS_Slot * sl;
-int defaultSlot=5;
+int defaultSlot=4;
 // group+voltage to channel mapping, to be defined by "channel" commands
 std::map<int, int> vdChannel;
 std::map<int, int> vaChannel;
@@ -139,7 +141,7 @@ int getIndex(const group_t g){
   int idx=abs(g.phi)-1;
   if (g.phi<0)    idx+=16;
   if (g.z=='N')   idx+=8;
-  if (g.layer==3) idx+=32;
+  if (g.layer==23) idx+=32;
   return idx;
 }
 
@@ -252,10 +254,10 @@ void exec(SimpleCommand* c){
   }else if(c->Keyword("channels","*", vdch, vach, hv0ch, hv1ch)){
     setChannelRange(0,64,vdch, vach, hv0ch, hv1ch, -1);
 
-  }else if(c->Keyword("channels","*L12", vdch, vach, hv0ch, hv1ch, optoch)){
+  }else if(c->Keyword("channels","*L14", vdch, vach, hv0ch, hv1ch, optoch)){
     setChannelRange(0,32,vdch, vach, hv0ch, hv1ch, optoch);
 
-  }else if(c->Keyword("channels","*L3", vdch, vach, hv0ch, hv1ch, optoch)){
+  }else if(c->Keyword("channels","*L23", vdch, vach, hv0ch, hv1ch, optoch)){
     setChannelRange(32,64,vdch, vach, hv0ch, hv1ch, optoch);
 
   }else if(c->Keyword("channels")){
@@ -263,8 +265,8 @@ void exec(SimpleCommand* c){
       if (idx & 16){  cout << '-';  }else{ cout<<'+'; }
       cout <<(idx&7)+1; 
       if (idx &  8){  cout <<'N';  }else{ cout << 'P'; }
-      if (idx<32){ cout << "L12";}else{cout <<"L3 ";}
-      cout << setw(4) << vdChannel[idx] << setw(4)  << vaChannel[idx] << setw(4)  << hv0Channel[idx] << setw(4)  << hv1Channel[idx] << setw(4)  << optoChannel[idx] << endl;
+      if (idx<32){ cout << "L14";}else{cout <<"L23";}
+      cout << setw(4) << vdChannel[idx] << setw(4)  << vaChannel[idx] << setw(4)  << hv0Channel[idx] << setw(4)  << hv1Channel[idx] << setw(4)  << optoChannel[idx & 31] << endl;
     }
 
   }else if(c->Keyword("ccu",shell, optoch)){
@@ -318,7 +320,7 @@ void exec(SimpleCommand* c){
   }else if(c->Keyword("get","id")){
     if (invalidIndex(defaultGroup)) return;
     //cout << defaultGroup <<  " " << vdChannel[defaultGroup] << endl;
-    cout << getSCP(Sys,defaultSlot,vdChannel[defaultGroup],8) << endl;
+    cout << getSCP(Sys,defaultSlot,vdChannel[defaultGroup],9) << endl;
 
   }else if(c->Keyword("get","ia")){
     if (invalidIndex(defaultGroup)) return;
@@ -400,10 +402,13 @@ void exec(SimpleCommand* c){
       cout << 0 << endl; // this is just a dummy response
     }
 
-  }else{
+  }else if(c->Keyword("help")){
+    cout << "type channels to see the list of groups, then type group <groupname> to enter the desired group, list of commands in caen/src/caen.cxx, get ia and get id unreliable"<< endl;
+
+ }else{
     cerr << "what? [" << *c << "]" << endl;
   } 
-}
+} 
 
 
 
@@ -438,8 +443,9 @@ int main(int argc, char *argv[])
   // init Caen stuff
   //Sys=initPS();
   const char SystemName[60] = "System0";
+  //const char SystemName[60] = "Group 00";
   //const char IPAddress[60]  = "129.129.202.35";
-  const char IPAddress[60]  = "10.176.11.55";
+  const char IPAddress[60]  = "172.19.4.176";
   const char UserName[60]   = "admin";
   const char PassWd[60]     = "admin";
   
@@ -453,10 +459,13 @@ int main(int argc, char *argv[])
   Sys = new PowerSupply(SystemName, IPAddress, UserName, PassWd);
   PS_CrateMap* SysCrateMap = Sys->getCrateMap();
   Sys->fillCrateSlots(*SysCrateMap);
+  cout << "here" << endl;
   // done
 
   sl=Sys->getSlot(defaultSlot);
+  cout << "slot " << sl << endl;
   int numch=sl->numCh();
+  cout << "numch " << numch;
   cout << "slot "<< defaultSlot <<" has " << numch << " channels " << endl;
   for(unsigned short channel=0; channel<numch; channel++){
       ps_channel[channel]=Sys->getChannel(defaultSlot, channel);

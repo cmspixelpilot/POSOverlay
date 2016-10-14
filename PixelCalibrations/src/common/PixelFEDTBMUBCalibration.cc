@@ -19,7 +19,7 @@
 #include "CalibFormats/SiPixelObjects/interface/PixelCalibConfiguration.h"
 #include "PixelCalibrations/include/PixelTBMDACScanInfo.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "TFile.h"
 #include "TStyle.h"
@@ -44,7 +44,6 @@ PixelFEDTBMUBCalibration::PixelFEDTBMUBCalibration(const PixelFEDSupervisorConfi
 
 xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference msg)
 {
-  assert(0);
 	typedef unsigned char bits8;
 
 	PixelCalibConfiguration* tempCalibObject=dynamic_cast<PixelCalibConfiguration*>(theCalibObject_);
@@ -96,6 +95,8 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 		{
 			unsigned int fednumber=fedsAndChannels[ifed].first;
 			unsigned long vmeBaseAddress=theFEDConfiguration_->VMEBaseAddressFromFEDNumber(fednumber);
+                        PixelFEDInterface* fed = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                        assert(fed);
 
 			for (unsigned int ichannel=0; ichannel<fedsAndChannels[ifed].second.size(); ++ichannel)
 			{
@@ -104,7 +105,7 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 
 				std::vector<PixelROCName> ROCsOnThisChannel=theNameTranslation_->getROCsFromFEDChannel(fednumber, channel);
 
-				int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+				int status = fed->drain_transBuffer(channel, buffer);
 				if (status<0) {
 				  std::cout<<"PixelFEDTBMUBCalibration::execute() -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode!"<<std::endl;
 				  diagService_->reportError("PixelFEDTBMUBCalibration::execute() -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
@@ -140,8 +141,9 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 				// Done filling in information from the decoded data.
 
 			} // end of loop over channels on this FED board
-			VMEPtr_[vmeBaseAddress]->write("LRES",0x80000000); // Local Reset
-			VMEPtr_[vmeBaseAddress]->write("CLRES",0x80000000); // *** MAURO ***
+                        
+			FEDInterface_[vmeBaseAddress]->sendResets(3);
+
 		} // end of loop over FEDs in this crate
 	}
 	else if (parameters[0].value_=="Analyse")
@@ -338,24 +340,27 @@ xoap::MessageReference PixelFEDTBMUBCalibration::execute(xoap::MessageReference 
 			// Now change DACs to the recommended values.
 			for ( std::set<PixelTBMDACScanInfo::TBMDAC>::const_iterator dac_itr = scanInfo.DACsToScan().begin(); dac_itr != scanInfo.DACsToScan().end(); dac_itr++ )
 			{
+                          assert(0); // JMTBAD OLDDACS
+#if 0
 				bits8 new_dac_value = (bits8)(scanInfo.scanValue( *dac_itr, new_scanStep_value )+0.5); // round to the nearest integer
 				new_TBMDAC_values[*dac_itr].push_back(new_dac_value);
-				//if      ( *dac_itr == PixelTBMDACScanInfo::kAnalogInputBias )
-				//{
-				//	delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogInputBias());
-				//	TBMSettingsForThisModule->setAnalogInputBias( new_dac_value );
-				//}
-				//else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputBias )
-				//{
-				//	delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputBias());
-				//	TBMSettingsForThisModule->setAnalogOutputBias( new_dac_value );
-				//}
-				//else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputGain )
-				//{
-				//	delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputGain());
-				//	TBMSettingsForThisModule->setAnalogOutputGain( new_dac_value );
-				//}
-				//else assert(0);
+				if      ( *dac_itr == PixelTBMDACScanInfo::kAnalogInputBias )
+				{
+					delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogInputBias());
+					TBMSettingsForThisModule->setAnalogInputBias( new_dac_value );
+				}
+				else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputBias )
+				{
+					delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputBias());
+					TBMSettingsForThisModule->setAnalogOutputBias( new_dac_value );
+				}
+				else if ( *dac_itr == PixelTBMDACScanInfo::kAnalogOutputGain )
+				{
+					delta_TBMDAC_values[*dac_itr].push_back(new_dac_value-TBMSettingsForThisModule->getAnalogOutputGain());
+					TBMSettingsForThisModule->setAnalogOutputGain( new_dac_value );
+				}
+				else assert(0);
+#endif
 			}
 
 			// Write out new file.

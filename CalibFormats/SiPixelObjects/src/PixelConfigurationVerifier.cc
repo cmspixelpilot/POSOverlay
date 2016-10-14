@@ -22,10 +22,10 @@ void PixelConfigurationVerifier::checkChannelEnable(PixelFEDCard *theFEDCard,
 
   unsigned int fedid=theFEDCard->fedNumber;
 
-  //use slots 1-36
+  unsigned nchannels = theFEDCard->type == PixelFEDCard::CTA ? 48 : 36;
 
-  vector<bool> usedChannel(37);
-  for(unsigned int i=1;i<37;i++){
+  vector<bool> usedChannel(nchannels+1);
+  for(unsigned int i=1;i<nchannels+1;i++){
     usedChannel[i]=false;
   }
 
@@ -37,7 +37,7 @@ void PixelConfigurationVerifier::checkChannelEnable(PixelFEDCard *theFEDCard,
     PixelHdwAddress hdw=theNameTranslation->getHdwAddress(*iChannel);
     if (fedid==hdw.fednumber()){
       unsigned int fedchannel=hdw.fedchannel();
-      assert(fedchannel>0&&fedchannel<37);
+      assert(fedchannel>0&&fedchannel<nchannels+1);
       usedChannel[fedchannel]=true;
       nrocs[fedchannel] = theNameTranslation->getROCsFromChannel(*iChannel).size();
     }
@@ -46,7 +46,9 @@ void PixelConfigurationVerifier::checkChannelEnable(PixelFEDCard *theFEDCard,
   map<PixelROCName, PixelROCStatus> roclistcopy = theDetConfig->getROCsList();
   //Now check the channels
 
-  for(unsigned int jChannel=1;jChannel<37;jChannel++){
+  std::vector<unsigned> chs_used[2];
+
+  for(unsigned int jChannel=1;jChannel<nchannels+1;jChannel++){
     bool used=theFEDCard->useChannel(jChannel);
     //    if (!used) cout << "Channel="<<jChannel<<" is not used"<<endl;
     if (used) { 
@@ -84,18 +86,21 @@ void PixelConfigurationVerifier::checkChannelEnable(PixelFEDCard *theFEDCard,
       }
       
       if (!onehasNAS && (used!=usedChannel[jChannel])) {
-	cout << __LINE__ << "]\t" << mthn << "*******************************************************"     << endl;
-	cout << __LINE__ << "]\t" << mthn << "WARNING for fedid=" << fedid << " and channel=" << jChannel  <<
-	  " found that fedcard has channel as "                         << endl;
-	if (used)  cout << __LINE__ << "]\t" << mthn << "used while configuration not using this channel"
-			<< endl;
-	if (!used) cout << __LINE__ << "]\t" << mthn << "not used while configuration uses this channel"
-			<< endl;
-	cout << __LINE__ << "]\t" << mthn << "The fedcard will be modifed to agree with configuration" 	 << endl;
-	cout << __LINE__ << "]\t" << mthn << "*******************************************************" 	 << endl;
+	if (used) chs_used[0].push_back(jChannel);
+	else chs_used[1].push_back(jChannel);
 	theFEDCard->setChannel(jChannel,usedChannel[jChannel]);
       }
     }
   }
 
+  for (int j = 0; j < 2; ++j) {
+    if (chs_used[j].size()) {
+      cout << "WARNING for fedid=" << fedid << " and channels =";
+      for (size_t i = 0; i < chs_used[j].size(); ++i)
+        cout << " " << chs_used[j][i];
+      if (j == 0) cout << "  found that fedcard has channel as used while configuration not using this channel";
+      else        cout << "  not used while configuration uses this channel";
+      cout << "; the fedcard will be modifed to agree with configuration" << endl;
+    }
+  }
 }

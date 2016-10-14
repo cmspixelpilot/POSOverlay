@@ -5,6 +5,17 @@ from JMTTools import *
 from JMTROOTTools import *
 set_style()
 
+portcardmap_fn = ''
+order = []
+for x in sys.argv:
+    if os.path.basename(x) == 'portcardmap.dat':
+        portcardmap_fn = x
+        pcmap = portcardmap_dat(portcardmap_fn)
+        for pc,mod,ch in pcmap.l:
+            order.append('RDa vs. SDa for portcard %s and module %s' % (pc,mod))
+            for cmd in xrange(1,6):
+                order.append('RDa vs. SDa for portcard %s and module %s_command%i' % (pc,mod,cmd))
+
 def foo(f, path, out_dir, html):
     path_mang = path.replace('/', '_')
     d = f.Get(path)
@@ -17,6 +28,8 @@ def foo(f, path, out_dir, html):
         header = None
         these = []
         keys = f.Get(path).GetListOfKeys()
+        if order:
+            keys.sort(key=lambda k: (order.index(k.GetName())))
         lkeys = len(keys)
         for i, key in enumerate(keys):
             c = key.ReadObj()
@@ -80,9 +93,9 @@ def foo2(in_fn, out_dir):
 
     f = ROOT.TFile(in_fn)
 
-    for which in 'IO':
+    for which in 'I':
         html.write('<h1>Bm%s</h1>\n' % which)
-        foo(f, 'Pilt/Pilt_Bm%s/Pilt_Bm%s_D3' % (which, which), out_dir, html)
+        foo(f, 'FPix/FPix_Bm%s/FPix_Bm%s_D1' % (which, which), out_dir, html)
     
     html.write('</body></html>\n')
     html.close()

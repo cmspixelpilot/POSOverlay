@@ -7,5 +7,5 @@ if test $lock -gt 0 ; then
    ipcrm -S $caensem
 fi
 
-bin/caen -port 2001
+bin/caen -port 2005
 echo  $?

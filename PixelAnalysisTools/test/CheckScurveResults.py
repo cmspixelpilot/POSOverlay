@@ -60,7 +60,7 @@ for roc in thresholds:
 
 print 'ROCs with outliers in threshold distribution:\n'
 for roc in thresholds:
-    if (thresholds[roc]<30 or thresholds[roc]>70):
+    if (thresholds[roc]<30 or thresholds[roc]>60):
         print roc,' thr = ', thresholds[roc]
 
 print 'ROCs with outliers in RMS threshold distribution:\n'
@@ -68,9 +68,9 @@ for roc in thresholds:
     if (thresholdsrms[roc]>7):
         print roc,' thr rms = ', thresholdsrms[roc]
 
-print 'ROCs with nPixels < 81:\n'
+print 'ROCs with nPixels < 74:\n'
 for roc in thresholds:
-    if (npixels[roc]<81 ):
+    if (npixels[roc]<74 ):
         print roc,' npixels = ', npixels[roc]
 
 

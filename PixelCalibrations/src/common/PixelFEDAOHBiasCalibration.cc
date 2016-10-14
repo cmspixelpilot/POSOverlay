@@ -26,7 +26,7 @@
 #include "TText.h"
 #include "TLine.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 #include "iomanip"
 
@@ -136,7 +136,9 @@ void PixelFEDAOHBiasCalibration::RetrieveData(unsigned int AOHBias, std::string 
 
 			if(debug) cout<<"PixelFEDAOHBiasCalibration drain "<<fednumber<<" "<<channel<<" "<<ROCsOnThisChannel.size()<<endl;
 
-			int status = FEDInterface_[vmeBaseAddress]->drain_transBuffer(channel, buffer);
+                        PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                        assert(f);
+			int status = f->drain_transBuffer(channel, buffer);
 			if (status<0) {
 				std::cout<<"PixelFEDAOHBiasCalibration::execute() -- Could not drain FIFO 1 of FED Channel "<<channel<<" in transparent mode!"<<std::endl;
 				diagService_->reportError("PixelFEDAOHBiasCalibration::execute() -- Could not drain FIFO 1 in transparent mode!",DIAGWARN);
@@ -243,7 +245,9 @@ void PixelFEDAOHBiasCalibration::RetrieveData(unsigned int AOHBias, std::string 
 						if (printFEDOffsetAdjustments) cout << "On FED number "<<fednumber<<", channel "<<channel<<", lowering channel offset (AOHBias = "<<AOHBias<<").\n";
 						fedCard.offs_dac[channel-1] -= 64;
 						if ( fedCard.offs_dac[channel-1] < 0 ) fedCard.offs_dac[channel-1] = 0;
-						FEDInterface_[vmeBaseAddress]->set_offset_dacs();
+                                                PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                                                assert(f);
+						f->set_offset_dacs();
 					}
 					else
 					{
@@ -261,7 +265,9 @@ void PixelFEDAOHBiasCalibration::RetrieveData(unsigned int AOHBias, std::string 
 						if (printFEDOffsetAdjustments) cout << "On FED number "<<fednumber<<", channel "<<channel<<", raising channel offset (AOHBias = "<<AOHBias<<").\n";
 						fedCard.offs_dac[channel-1] += 64;
 						if ( fedCard.offs_dac[channel-1] > 255 ) fedCard.offs_dac[channel-1] = 255;
-						FEDInterface_[vmeBaseAddress]->set_offset_dacs();
+                                                PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(FEDInterface_[vmeBaseAddress]);
+                                                assert(f);
+						f->set_offset_dacs();
 					}
 					else
 					{
@@ -314,8 +320,9 @@ void PixelFEDAOHBiasCalibration::RetrieveData(unsigned int AOHBias, std::string 
 			// Done filling in information from the decoded data.
 
 		} // end of loop over channels on this FED board
-		VMEPtr_[vmeBaseAddress]->write("LRES",0x80000000); // Local Reset
-		VMEPtr_[vmeBaseAddress]->write("CLRES",0x80000000); // *** MAURO ***
+
+                FEDInterface_[vmeBaseAddress]->sendResets(3);
+
 	} // end of loop over FEDs in this crate
 } // end of RetrieveData()
 
@@ -503,8 +510,10 @@ xoap::MessageReference PixelFEDAOHBiasCalibration::RaiseFEDReceiverInputOffsets(
 			{
 				raisedFEDReceiverInputOffsets.insert( fedNumberReceiverPair );
 				if (printFEDOffsetAdjustments) cout << "On FED number "<<fedNumber<<", channel "<<channel<<", raising FED receiver input offset from "<< FEDInterface_[VMEBaseAddress]->getPixelFEDCard().opt_inadj[(channel-1)/12] << " to " << FEDInterface_[VMEBaseAddress]->getPixelFEDCard().opt_inadj[(channel-1)/12] + 1 << "\n";
-				FEDInterface_[VMEBaseAddress]->getPixelFEDCard().opt_inadj[(channel-1)/12] += 1;
-				FEDInterface_[VMEBaseAddress]->set_opto_params();
+                                PixelFEDInterface* f = dynamic_cast<PixelFEDInterface*>(FEDInterface_[VMEBaseAddress]);
+                                assert(f);
+				f->getPixelFEDCard().opt_inadj[(channel-1)/12] += 1;
+				f->set_opto_params();
 			}
 		}
 	}

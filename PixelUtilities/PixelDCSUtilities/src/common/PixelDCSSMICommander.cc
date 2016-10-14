@@ -66,7 +66,8 @@ std::string PixelDCSSMICommander::getStateOfFSM(const std::string& fsmNodeName,
   std::cout << std::endl;
   std::cout <<" ---------------------------------------------- "<< std::endl;
 
-  xoap::SOAPEnvelope responseEnvelope = psxResponse->getEnvelope();
+  xoap::SOAPPart responsePart = psxResponse->getSOAPPart();
+  xoap::SOAPEnvelope responseEnvelope = responsePart.getEnvelope();
   xoap::SOAPBody responseBody = responseEnvelope.getBody();
   
   if ( !responseBody.hasFault() ) {
@@ -121,7 +122,9 @@ std::pair<std::string, std::string> PixelDCSSMICommander::connectToFSM(const std
   std::cout << std::endl;
   std::cout <<" ---------------------------------------------- "<< std::endl;
 
-  xoap::SOAPEnvelope responseEnvelope = psxResponse->getEnvelope();
+  // call to xoap::SOAPPart added  4/6/15, K. Burt
+  xoap::SOAPPart responsePart = psxResponse->getSOAPPart();
+  xoap::SOAPEnvelope responseEnvelope = responsePart.getEnvelope();
   xoap::SOAPBody responseBody = responseEnvelope.getBody();
   if ( !responseBody.hasFault() ) {
     xoap::SOAPName commandElement = responseEnvelope.createName("connectResponse");
@@ -220,7 +223,8 @@ std::string PixelDCSSMICommander::disconnectFromFSM(const std::string& psxConnec
 xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmNotifyResponse()
 {
   xoap::MessageReference psxResponse = xoap::createMessage();
-  xoap::SOAPEnvelope responseEnvelope = psxResponse->getEnvelope();
+  xoap::SOAPPart responsePart = psxResponse->getSOAPPart();
+  xoap::SOAPEnvelope responseEnvelope = responsePart.getEnvelope();
   xoap::SOAPBody responseBody = responseEnvelope.getBody();
   xoap::SOAPName commandElement = responseEnvelope.createName("notifyResponse", "smi", PSX_SMI_NS_URI);
   responseBody.addBodyElement(commandElement);
@@ -240,7 +244,8 @@ xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmGetStat
 //--- compose SOAP message requesting PSX server to send State of PVSS FSM node
 
   xoap::MessageReference psxRequest = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = psxRequest->getEnvelope();
+  xoap::SOAPPart part = psxRequest->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   xoap::SOAPName commandElement = envelope.createName("getState", "smi", PSX_SMI_NS_URI);
   xoap::SOAPBodyElement bodyElement = body.addBodyElement(commandElement);
@@ -263,7 +268,8 @@ xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmConnect
 //--- compose SOAP message requesting PSX server to connect to PVSS FSM hierarchy 
 
   xoap::MessageReference psxRequest = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = psxRequest->getEnvelope();
+  xoap::SOAPPart part = psxRequest->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   xoap::SOAPName commandElement = envelope.createName("connect", "smi", PSX_SMI_NS_URI);
   xoap::SOAPBodyElement bodyElement = body.addBodyElement(commandElement);
@@ -294,7 +300,8 @@ xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmTakeOwn
 //--- compose SOAP message requesting Ownership of PVSS FSM hierarchy 
 
   xoap::MessageReference psxRequest = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = psxRequest->getEnvelope();
+  xoap::SOAPPart part = psxRequest->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   xoap::SOAPName commandElement = envelope.createName("take", "smi", PSX_SMI_NS_URI);
   xoap::SOAPBodyElement bodyElement = body.addBodyElement(commandElement);
@@ -316,7 +323,8 @@ xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmSendCom
 //--- compose SOAP message for sending Command to PVSS FSM node
 
   xoap::MessageReference psxRequest = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = psxRequest->getEnvelope();
+  xoap::SOAPPart part = psxRequest->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   xoap::SOAPName commandElement = envelope.createName("send", "smi", PSX_SMI_NS_URI);
   xoap::SOAPBodyElement bodyElement = body.addBodyElement(commandElement);
@@ -336,7 +344,8 @@ xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmRelease
 //--- compose SOAP message to release Ownership of PVSS FSM hierarchy 
 
   xoap::MessageReference psxRequest = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = psxRequest->getEnvelope();
+  xoap::SOAPPart part = psxRequest->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   xoap::SOAPName commandElement = envelope.createName("release", "smi", PSX_SMI_NS_URI);
   xoap::SOAPBodyElement bodyElement = body.addBodyElement(commandElement);
@@ -356,7 +365,8 @@ xoap::MessageReference PixelDCSSMICommander::MakeSOAPMessageReference_fsmDisconn
 //--- compose SOAP message requesting PSX server to disconnect from PVSS FSM hierarchy 
 
   xoap::MessageReference psxRequest = xoap::createMessage();
-  xoap::SOAPEnvelope envelope = psxRequest->getEnvelope();
+  xoap::SOAPPart part = psxRequest->getSOAPPart();
+  xoap::SOAPEnvelope envelope = part.getEnvelope();
   xoap::SOAPBody body = envelope.getBody();
   xoap::SOAPName commandElement = envelope.createName("disconnect", "smi", PSX_SMI_NS_URI);
   xoap::SOAPBodyElement bodyElement = body.addBodyElement(commandElement);

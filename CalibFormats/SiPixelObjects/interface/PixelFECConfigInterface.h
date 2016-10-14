@@ -55,7 +55,7 @@ namespace pos{
 			    int hubaddress, int portaddress, int rocid,
 			    const std::vector<unsigned char>& allPixels)=0;
 
-    virtual int rocinit(int mfec, int fecchannel,
+    virtual int rocinit(int NCOLS, int mfec, int fecchannel,
                         int hubaddress, int portaddress, int rocid,
                         int mask, int trim)=0;
 
@@ -70,6 +70,7 @@ namespace pos{
     virtual int callatencycount(const int mfec, const int latency)=0;
     virtual int getversion(const int mfec, unsigned long *data)=0;
     virtual int getversion(unsigned long *data)=0;
+    virtual int getStatus() = 0;
 
     virtual int progdac(int mfec, int fecchannel, 
 			int hubaddress, int portaddress, int rocid,
@@ -133,6 +134,16 @@ namespace pos{
     virtual int rocreset(int mfec, int fecchannel, 
 			 int tbmchannel, int hubaddress)=0;		 
 
+    virtual int getfecctrlstatus(const int mfec, unsigned long *data) = 0;
+    virtual int getByteHubCount(const int mfec, const int channel, const int byte, int *data) = 0;
+    virtual int resetdoh(const int mfec, const int fecchannel) = 0;
+    virtual int testFiber(const int mfec, const int channel, int* rda, int * rck) = 0;
+    virtual int FullBufRDaDisable(const int mfec, const int disable) = 0;
+    virtual int AllRDaDisable(const int mfec, const int disable) = 0;
+    virtual void mfecbusy(int mfec, int fecchannel, unsigned int *cs1,unsigned int *cs2) = 0;
+    virtual int tbmread(int mfec, int fecchannel, int tbmchannel, int hubaddress, int portaddress, int offset) = 0;
+    virtual int tbmreset(int mfec, int fecchannel, int tbmchannel, int hubaddress) = 0;
+    virtual int tbmspeed2(int mfec, int fecchannel, int tbmchannel, int hubaddress, int portaddress) = 0;
 
     //virtual void setVCalDAC(std::string ROC, unsigned char dac)=0;
  

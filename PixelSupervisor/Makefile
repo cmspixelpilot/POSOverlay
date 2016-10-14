@@ -30,18 +30,16 @@ Project=pixel
 Package=PixelSupervisor
 
 
-Sources= PixelSupervisor.cc
+Sources= PixelSupervisor.cc DiagWrapper.cc
 
+CACTUS_ROOT = /opt/cactus
 
 IncludeDirs = \
         $(BUILD_HOME)/$(Project) \
+        $(CACTUS_ROOT)/include \
 	$(XDAQ_ROOT)/include \
 	$(XDAQ_ROOT)/include/hal \
         $(XDAQ_ROOT)/include/xdaq2rc \
-        $(ENV_CMS_TK_DIAG_ROOT)/tools/diagbag/include \
-	$(ENV_CMS_TK_DIAG_ROOT)/tools/xmldiagappender/include \
-        $(ENV_CMS_TK_DIAG_ROOT)/toolbox \
-	$(ENV_CMS_TK_DIAG_ROOT) \
         $(FECSOFTWARE_ROOT)/generic/include \
         $(FECSOFTWARE_ROOT)/ThirdParty/APIConsoleDebugger/include \
         ${FECSOFT_INCLUDE}
@@ -59,7 +57,7 @@ ROOTLibs =  -L$(shell root-config --libdir) \
 
 
 UserCFlags = -O
-UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x
+UserCCFlags = -g -O -Wno-long-long $(BUSADAPTERC++FLAG) -std=c++0x -DLINUX -Wl,--no-undefined
 UserDynamicLinkFlags = $(ROOTLibs)
 UserStaticLinkFlags =
 UserExecutableLinkFlags =
@@ -74,12 +72,10 @@ DependentLibraryDirs = $(BUILD_HOME)/pixel/lib \
 		       $(BUILD_HOME)/pixel/PixelSupervisorConfiguration/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelCalibrations/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelConfigDBInterface/lib/linux/x86 \
-		       $(BUILD_HOME)/pixel/PixelFEDInterface/lib/linux/x86 \
 		       $(BUILD_HOME)/pixel/PixelUtilities/PixelTestStandUtilities/lib/linux/x86 \
-		       $(BUILD_HOME)/pixel/PixelUtilities/PixelJobControlUtilities/lib/linux/x86 \
-                       $(ENV_CMS_TK_DIAG_ROOT)/tools/lib 	
+		       $(BUILD_HOME)/pixel/PixelUtilities/PixelJobControlUtilities/lib/linux/x86
 
-DependentLibraries = SiPixelObjects TkDiagBagWizard xmldiagappender PixelSupervisorConfiguration PixelCalibrations PixelConfigDBInterface occi nnz11 clntsh PixelFEDInterface Pixelb2inUtilities PixelTestStandUtilities PixelJobControlUtilities GenericHAL CAENLinuxBusAdapter xdaq2rc
+DependentLibraries = SiPixelObjects PixelSupervisorConfiguration PixelCalibrations PixelConfigDBInterface occi nnz12 clntsh Pixelb2inUtilities PixelTestStandUtilities PixelJobControlUtilities GenericHAL CAENLinuxBusAdapter xdaq2rc
 
 Libraries = 
 ExternalObjects = -L$(XDAQ_ROOT)/lib  -L/usr/lib

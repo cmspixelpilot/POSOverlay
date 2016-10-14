@@ -23,17 +23,25 @@ namespace pos{
 *
 *  The structure which holds all the informations needed to setup 
 *  a pixel FED. Danek Kotlinski 18/4/06
+*
+*  This class can describe both the VME and uTCA FED. Making a separate class
+*  or a class hierarchy seemed too cumbersome when looking at how many
+*  places it is used w/o encapsulation besides PixelFEDInterface.
+*  VME-only params are ignored by PixelFEDInterfacePh1 and vice-versa.
+*  Arrays of constants per channel can now go up to 48. The last 16 are just ignored for VME.
+*  Where the arrays of constants are not applicable to uTCA, they remain 36 long... let's make it maximally confusing.
+*  JMTBAD this isn't great. Please make only the Interfaces know about the different fed cards, then have all the access go through them.
 */
   class PixelFEDCard : public PixelConfigBase{
 
   public:
     
     //Return true or false depending on if iChannel is used
-    //iChannel=1..36
+    //iChannel=1..48 if type == CTA else 1..36
     bool useChannel(unsigned int iChannel);
 
     //Set iChannel enable to mode
-    //iChannel=1..36
+    //iChannel=1..48 if type == CTA else 1..36
     void setChannel(unsigned int iChannel, bool mode);
 
     void restoreBaselinAndChannelMasks();
@@ -65,15 +73,18 @@ namespace pos{
     virtual void writeXMLTrailer(std::ofstream *fedstream,
 				 std::ofstream *recostream,
 				 std::ofstream *tbmstream) const ;
-    uint64_t enabledChannels();  // returns 64-bit integer mask 35..0
+    uint64_t enabledChannels();  // returns 64-bit integer mask 47..0 for Ph1 FED or 35..0 for Ph0
 
-
+    enum { VME, VMEPiggy, CTA };
+    int type;
+    
     //Settable optical input parameters (one for each 12-receiver)
     int opt_cap[3];   // Capacitor adjust
     int opt_inadj[3]; // DC-input offset
     int opt_ouadj[3]; // DC-output offset
   
     //input offset dac (one for each channel)
+    //Ph1 FED: these can all be 36-arrays because we don't use them in the code
     int offs_dac[36];
   
     //clock phases, use bits 0-8, select the clock edge
@@ -95,7 +106,13 @@ namespace pos{
       ROC_L4[36][26];
 
     //These bits turn off(1) and on(0) channels
+    //For VME, lower 9 bits of each are used.
     unsigned int Ncntrl,NCcntrl,SCcntrl,Scntrl;
+
+    // Ph1 FED: same as N/NC/SC/Scntrl, but all in one word. Assumes we won't do 96-ch fed.
+    uint64_t cntrl_utca;
+    uint64_t cntrl_utca_original;
+    int cntrl_utca_override; // use _original instead of respecting the PixelConfigurationVerifier choice
 
     //The values as read from file so that they can be restored after
     //calibration
@@ -123,8 +140,8 @@ namespace pos{
     //Mode register
     int modeRegister; // "ModeReg" in LAD_C
   
-    //Number of ROCS per FED channel
-    int NRocs[36];
+    //Number of ROCS per FED channel -- 48 channels for Ph1 FED
+    int NRocs[48];
 
     //Control Regs for setting ADC 1Vpp and 2Vpp
     unsigned int Nadcg,NCadcg,SCadcg,Sadcg;
@@ -144,8 +161,11 @@ namespace pos{
     //data Regs adjustable hit limits in fifo1s by fpga
     int N_hitlimit,NC_hitlimit,SC_hitlimit,S_hitlimit;
     
-    //testregs
+    // data Regs to skip bad ROCs by fpga in old fed, testregs in fed with piggy
     unsigned int N_testreg,NC_testreg,SC_testreg,S_testreg;
+
+    // Ph1 FED: channel you want transparent/scope fifo for
+    unsigned TransScopeCh;
     
     //The values as read from file so that they can be restored after
     //calibration
@@ -155,8 +175,52 @@ namespace pos{
     int Ccntrl_original;
     int modeRegister_original;
 
-    //VME base address 
+    //VME base address  = a unique id in the case of uTCA  JMTBAD redundant with fedNumber...
     unsigned long FEDBASE_0, fedNumber;
+
+    // Ph1 FED: something for the DDRs (this will go away)
+    unsigned PACKET_NB;
+
+    // Ph1 FED: What position the FMC is in
+    int which_FMC;
+
+    // Ph1 FED: whether to swap channel order for fitel
+    int swap_Fitel_order;
+
+    // Ph1 FED: whether timeout checking enabled, where to start the counter, and how many timeouts in a row before going OOS 
+    int timeout_checking_enabled;
+    int timeout_counter_start;
+    int timeout_number_oos_threshold;
+
+    // Ph1 FED: disable data from front end to back end
+    int frontend_disable_backend;
+
+    // Ph1 FED: acquisition mode: 1: TBM fifo, 2: Slink FIFO, 4: FEROL
+    int acq_mode;
+
+    // Ph1 FED: calibration mode on? (JMTBAD can we just keep it on?)
+    int calib_mode;
+
+    // Ph1 FED: number of events per ipbus read in calibration mode (JMTBAD only 1 works with the rest of the POS the moment)
+    int calib_mode_num_events;
+
+    // Ph1 FED: data type: 0: real data, 1: constants after TBM fifo, 2: pattern before TBM fifo
+    int data_type;
+
+    // Ph1 FED: tbm trailer mask: bit = 1 = unmasked. Bit7-0: NoTokenPass - ResetTBM - ResetROC - SyncError - SyncTrigger - ClrTrigCnt - CalTrig - Stackful
+    int tbm_trailer_mask;
+
+    // Ph1 FED: tbm trailer mask 2: bit = 1 = unmasked. Bit2-0: WrongNbOfROCs - AutoResetSent - PKAMReseSent
+    int tbm_trailer_mask_2;
+
+    // Ph1 FED: private event number
+    int private_event_number;
+
+    // Ph1 FED: whether event number error checking is enabled
+    int event_count_checking_enabled;
+
+    // Ph1 FED: how many event number errors lead to OOS
+    int event_count_num_err_oos;
 
     // Most recent additions requested by Will and Danek (Dario)
     int BusyHoldMin       ;

@@ -18,6 +18,7 @@ using namespace std;
 
 PixelTKFECConfig::PixelTKFECConfig(std::vector<std::vector<std::string> >& tableMat ) : PixelConfigBase(" "," "," ")
 {
+  assert(0);
   std::map<std::string , int > colM;
   std::vector<std::string > colNames;
   /**
@@ -81,7 +82,7 @@ PixelTKFECConfig::PixelTKFECConfig(std::vector<std::vector<std::string> >& table
       std::string type     = "VME" ;
       unsigned int address = strtoul(tableMat[r][colM["VME_ADDR"]].c_str() , 0, 16);
       PixelTKFECParameters tmp;
-      tmp.setTKFECParameters(TKFECID , crate , type, address);
+      tmp.setTKFECParameters(TKFECID , crate , type, address, "dummy");
       TKFECconfig_.push_back(tmp);
       //      cout << "[PixelTKFECConfig::PixelTKFECConfig()]\tID: " << TKFECID << " crate: " << crate << " address: " << address << endl;
     }
@@ -107,23 +108,26 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
     std::string dummy;
 
     getline(in, dummy); // skip the column headings
-
+      
     do {
 	
 	std::string TKFECID;
 	unsigned int crate;
 	std::string type;
 	unsigned int address;
+	std::string uri;
 
-	in >> TKFECID >> std::dec >> crate >> type;
+	in >> TKFECID;
+        in >> crate;
+        in >> type;
+
 	if (type=="VME" || type=="PCI")
 	{
 		in >> std::hex>> address >>std::dec ;
 	}
-	else // type not specified, default to "VME"
-	{
-		address = strtoul(type.c_str(), 0, 16); // convert string to integer using base 16
-		type = "VME";
+	else if (type == "GLIB" || type == "CTA") {
+	  in >> uri;
+	  address = 0;
 	}
 
 	if (!in.eof() ){
@@ -132,7 +136,7 @@ PixelTKFECConfig::PixelTKFECConfig(std::string filename):
 	    
 	    PixelTKFECParameters tmp;
 	    
-	    tmp.setTKFECParameters(TKFECID , crate , type, address);
+	    tmp.setTKFECParameters(TKFECID , crate , type, address, uri);
 	    
 	    TKFECconfig_.push_back(tmp);
 	}
@@ -160,12 +164,18 @@ void PixelTKFECConfig::writeASCII(std::string dir) const {
   for(unsigned int i=0;i<TKFECconfig_.size();i++){
     out << TKFECconfig_[i].getTKFECID()<<"          "
 	<< TKFECconfig_[i].getCrate()<<"          ";
-    if (TKFECconfig_[i].getType()=="PCI") {
-      out << "PCI       ";
-    } else {
-      out << "          ";
+    const std::string& type = TKFECconfig_[i].getType();
+    if (type=="GLIB" || type == "CTA") {
+      out << type << " " << TKFECconfig_[i].getURI() << endl;
     }
-    out << "0x"<<hex<<TKFECconfig_[i].getAddress()<<dec<<endl;
+    else {
+      if (TKFECconfig_[i].getType()=="PCI") {
+	out << "PCI       ";
+      } else {
+	out << "          ";
+      }
+      out << "0x"<<hex<<TKFECconfig_[i].getAddress()<<dec<<endl;
+    }
   }
   out.close();
 }
@@ -216,6 +226,14 @@ unsigned int PixelTKFECConfig::getAddress(unsigned int i) const{
 
 }
 
+std::string PixelTKFECConfig::getURI(unsigned int i) const{
+
+    assert(i<TKFECconfig_.size());
+    return TKFECconfig_[i].getURI();
+
+}
+
+
 
 unsigned int PixelTKFECConfig::crateFromTKFECID(std::string TKFECID) const{
 
@@ -249,6 +267,20 @@ unsigned int PixelTKFECConfig::addressFromTKFECID(std::string TKFECID) const{
 
     for(unsigned int i=0;i<TKFECconfig_.size();i++){
 	if (TKFECconfig_[i].getTKFECID()==TKFECID) return TKFECconfig_[i].getAddress();
+    }
+
+    std::cout << "Could not find TKFEC ID:"<<TKFECID<<std::endl;
+
+    assert(0);
+
+    return 0;
+
+}
+
+std::string PixelTKFECConfig::URIFromTKFECID(std::string TKFECID) const{
+
+    for(unsigned int i=0;i<TKFECconfig_.size();i++){
+	if (TKFECconfig_[i].getTKFECID()==TKFECID) return TKFECconfig_[i].getURI();
     }
 
     std::cout << "Could not find TKFEC ID:"<<TKFECID<<std::endl;
@@ -309,6 +341,7 @@ void PixelTKFECConfig::writeXML( std::ofstream *outstream,
                             	 std::ofstream *out1stream,
                             	 std::ofstream *out2stream) const 
 {
+  assert(0);
   std::string mthn = "[PixelTKFECConfig::writeXML()]\t\t\t    " ;
 
   for(unsigned int i=0;i<TKFECconfig_.size();i++){

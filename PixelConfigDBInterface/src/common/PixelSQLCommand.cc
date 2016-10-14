@@ -805,9 +805,9 @@ vector<std::string> PixelSQLCommand::getNamesOfColumns(int numCol)
 }
 
 //====================================================================================================================
-void PixelSQLCommand::setDataBuffer(int index, char * buffer, int size) 
+void PixelSQLCommand::setDataBuffer(int index, void *buffer, sb4 size, ub2 *length, sb2 *ind = NULL, ub2 *rc = NULL) 
 {
-  result_->setDataBuffer(index, buffer, OCCI_SQLT_STR, size) ;
+  result_->setDataBuffer(index, buffer, OCCI_SQLT_STR, size, length, ind, rc);
 }
 
 //====================================================================================================================

@@ -27,7 +27,7 @@
 #include "TAxis.h"
 #include "TTree.h"
 
-#include <toolbox/convertstring.h>
+// #include <toolbox/convertstring.h>
 
 using namespace pos;
 using namespace std;
@@ -134,24 +134,26 @@ bool PixelIanaCalibration::execute()
 	  double iana=0;  unsigned int ntries=0; bool caughtexception=false;
 	  cout<<"Selected ROC:" << aROC<<" "<<endl;
 
-	  if (ManualReads_) {
-	    cout << "let it settle, then tell me the current in A: ";
-	    fflush(stdout);
-	    cin >> iana;
-	  }
-	  else {
-	    do {
-	      caughtexception=false;
-	      try {
-		iana=readIana(idpName->first);
-	      } catch  (xdaq::exception::Exception& e) {
-		cout<<endl<<"ERROR reading current; exception caught"<<endl;
-		caughtexception=true;
-		::sleep(5);
-		ntries++;
-	      }
-	    }  while (caughtexception && ntries<3);
-	  }
+          if (ReadCurrent_) {
+            if (ManualReads_) {
+              cout << "let it settle, then tell me the current in A: ";
+              fflush(stdout);
+              cin >> iana;
+            }
+            else {
+              do {
+                caughtexception=false;
+                try {
+                  iana=readIana(idpName->first);
+                } catch  (xdaq::exception::Exception& e) {
+                  cout<<endl<<"ERROR reading current; exception caught"<<endl;
+                  caughtexception=true;
+                  ::sleep(5);
+                  ntries++;
+                }
+              }  while (caughtexception && ntries<3);
+            }
+          }
 
 	  cout<<"Iana: " << iana<<endl;
 	  Iana_[idpName->first][iROC][ivana].push_back(iana);
@@ -159,10 +161,10 @@ bool PixelIanaCalibration::execute()
 	  const int Readback_values[5] = { 8, 9, 10, 11, 12 };
 	  const char* Readback_names[5] = { "vd", "va", "vana", "vbg", "iana" };
 
-	  for (int Readback = 0; Readback < 5; ++Readback) {
+	  for (int Readback = 4; Readback < 5; ++Readback) {
 	    cout << "Readback: " << Readback_names[Readback] << ": " << flush;
 	    setDAC(aROC, pos::k_DACAddress_Readback, Readback_values[Readback]);
-	    usleep(1000);
+	    usleep(10000);
 
 #if 0
 	    for (int tbmchannel = 14; tbmchannel <= 15; ++tbmchannel) {
@@ -180,21 +182,32 @@ bool PixelIanaCalibration::execute()
 
 	    Attribute_Vector parametersToFED_arm(4);
 	    parametersToFED_arm[0].name_ = "VMEBaseAddress"; parametersToFED_arm[0].value_ = itoa(fedvmebaseaddress);
-	    parametersToFED_arm[1].name_ = "Channel";        parametersToFED_arm[1].value_ = itoa(fedchannel);
-	    parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(aROC.roc() % 8 + 1); // JMTBAD could rework these loops so we take advantage of reading two rocs at a time...
-	    parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(aROC.roc() % 8 + 1);
-	    Send(PixelFEDSupervisors_[fedcrate], "ArmDigFEDOSDFifo", parametersToFED_arm);
-	    usleep(1000);
+	    parametersToFED_arm[1].name_ = "Channel";        parametersToFED_arm[1].value_ = itoa((fedchannel-1)/2); // actually, this is fiber
+	    parametersToFED_arm[2].name_ = "RocHi";          parametersToFED_arm[2].value_ = itoa(aROC.roc() % 8); // JMTBAD could rework these loops so we take advantage of reading two rocs at a time...
+	    parametersToFED_arm[3].name_ = "RocLo";          parametersToFED_arm[3].value_ = itoa(aROC.roc() % 8);
+	    Send(PixelFEDSupervisors_[fedcrate], "ArmOSDFifo", parametersToFED_arm);
+	    usleep(10000);
 
-	    for (int itrig = 0; itrig < 32; ++itrig) {
-	      sendTTCCalSync();
+	    for (int itrig = 0; itrig < 48; ++itrig) {
+	      sendTTCLevelOne(false);
 	      usleep(1000);
 	    }
 
+            usleep(10000);
+
 	    Attribute_Vector parametersToFED_read(2);
 	    parametersToFED_read[0].name_ = "VMEBaseAddress"; parametersToFED_read[0].value_ = itoa(fedvmebaseaddress);
-	    parametersToFED_read[1].name_ = "Channel";        parametersToFED_read[1].value_ = itoa(fedchannel);
-	    Send(PixelFEDSupervisors_[fedcrate], "ReadDigFEDOSDFifo", parametersToFED_read);
+	    parametersToFED_read[1].name_ = "Channel";        parametersToFED_read[1].value_ = itoa((fedchannel-1)/2);
+
+            xoap::MessageReference reply=SendWithSOAPReply(PixelFEDSupervisors_[fedcrate], "ReadOSDFifo", parametersToFED_read);
+            Attribute_Vector returnValuesFromFED(1);
+            returnValuesFromFED[0].name_="Value";
+            Receive(reply, returnValuesFromFED);
+            //std::cout << "hello: " << returnValuesFromFED[0].value_ << std::endl;
+            uint32_t word = strtoul(returnValuesFromFED[0].value_.c_str(), 0, 10);
+            if (aROC.roc() < 8) word = word & 0xffff; // JMTBAD 
+            else                word = word >> 16;
+            Iana_OSD_[idpName->first][iROC][ivana].push_back(word);
 	  }
 	}
       }
@@ -272,8 +285,14 @@ void PixelIanaCalibration::beginCalibration(){
   TurnOffVsf_ = tempCalibObject->parameterValue("TurnOffVsf") != "no";
   cout << "TurnOffVsf? " << TurnOffVsf_ << endl;
 
+  ReadCurrent_ = tempCalibObject->parameterValue("ReadCurrent") != "no";
+  cout << "ReadCurrent? " << ReadCurrent_ << endl;
+
   ManualReads_ = tempCalibObject->parameterValue("ManualReads") == "yes";
   cout << "ManualReads? " << ManualReads_ << endl;
+
+  UseOSD_ = tempCalibObject->parameterValue("UseOSD") == "yes";
+  cout << "UseOSD? " << UseOSD_ << endl;
 
   PixelConfigInterface::get(lowVoltageMap_, "pixel/lowvoltagemap/", *theGlobalKey_); 
   if (lowVoltageMap_==0){
@@ -302,6 +321,7 @@ void PixelIanaCalibration::beginCalibration(){
     vector<Moments> v(npoints_+1);
     
     Iana_[dpName].push_back(v);
+    Iana_OSD_[dpName].push_back(v);
 
     if (dpMap_[dpName].size()>maxROC_) maxROC_=dpMap_[dpName].size();
 
@@ -382,10 +402,11 @@ void PixelIanaCalibration::endCalibration(){
       cout << npoints_ << endl;
       out  << npoints_ << endl;
 
-      std::vector<double> x(npoints_+1), y(npoints_+1), ey(npoints_+1);
+      std::vector<double> x(npoints_+1), yosd(npoints_+1), y(npoints_+1), ey(npoints_+1);
 
       for (unsigned j = 0; j < npoints_; ++j) {
 	y[j] = Iana_[idpName->first][i][j].mean();
+	yosd[j] = Iana_OSD_[idpName->first][i][j].mean() * 0.00025;
 	x[j] = 255/npoints_*j;
 	ey[j] = ianares_/1000.;
       }
@@ -411,6 +432,13 @@ void PixelIanaCalibration::endCalibration(){
       cout << endl;
       out << endl;
 
+      for (unsigned j = 0; j < npoints_; j++) {
+	cout << yosd[j] << " ";
+	out  << yosd[j] << " ";
+      }
+      cout << endl;
+      out << endl;
+
       const int oldVana = dacsettings_[theModule]->getDACSettings(theROC)->getVana();
 
       rootDirs.cdDirectory(theROC);
@@ -418,7 +446,9 @@ void PixelIanaCalibration::endCalibration(){
       analysis.go(theROC.rocname(),
 		  oldVana,
 		  npoints_,
-		  x, y, ey,
+		  x,
+                  UseOSD_ ? yosd : y,
+                  ey,
 		  out);
 
       theBranch_sum.maxIana = analysis.maxIana;

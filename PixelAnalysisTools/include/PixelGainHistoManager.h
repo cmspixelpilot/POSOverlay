@@ -7,6 +7,8 @@
 #include <string>
 #include <map>
 
+#define DEBUG
+
 class PixelXmlReader;
 class PixelCalibConfigurationExtended;
 class PixelConfigurationsManager;
@@ -49,7 +51,11 @@ class PixelGainHistoManager : public PixelHistoManager{
 
   std::map<std::string,TH2F *>  histoSlope2DMap_;
   std::map<std::string,TH2F *>  histoIntercept2DMap_;
-  //std::map<std::string,TH2F *>  histoChisquare2DMap_;
+#ifdef DEBUG
+  std::map<std::string,TH2F *>  histoNpfits2DMap_;
+  std::map<std::string,TH2F *>  histoDeltay2DMap_;
+  std::map<std::string,TH2F *>  histoChisquare2DMap_;
+#endif
   //std::map<std::string,TH2F *>  histoProbability2DMap_;
   //std::map<std::string,TH2F *>  linearFitStatistic2DMap_;
   //std::map<std::string,TH2F *>  histoTanhPar02DMap_;

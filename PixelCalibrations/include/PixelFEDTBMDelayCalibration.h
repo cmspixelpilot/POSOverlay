@@ -3,16 +3,14 @@
 
 #include "CalibFormats/SiPixelObjects/interface/PixelROCName.h"
 #include "PixelCalibrations/include/PixelFEDCalibrationBase.h"
-#include "PixelUtilities/PixelFEDDataTools/include/Moments.h"
-#include "PixelUtilities/PixelFEDDataTools/include/PixelScanRecord.h"
 
 #include <cstdint>
 #include <fstream>
 
+class TString;
 class TFile;
 class TH1F;
 class TH2F;
-class TH3F;
 
 class PixelFEDTBMDelayCalibration: public PixelFEDCalibrationBase {
  public:

@@ -39,14 +39,15 @@ Packages=\
 	PixelUtilities/PixelRootUtilities \
 	PixelUtilities/PixelDCSUtilities \
 	PixelUtilities/Pixelb2inUtilities \
+	PixelUtilities/PixeluTCAUtilities \
+	PixelUtilities/PixeluTCAUtilities/test \
 	PixelUtilities/PixelJobControlUtilities \
+	PixelAMC13Controller \
 	PixelFEDInterface \
 	PixelFECInterface \
 	PixelSupervisorConfiguration \
 	PixelCalibrations \
-	PixelFEDSupervisor \
-        PixelMonitor   \
-        PixelFEDMonitor \
+    PixelFEDSupervisor \
 	PixelFECSupervisor \
 	PixelTKFECSupervisor \
 	PixelSupervisor \
@@ -58,7 +59,8 @@ Packages=\
 endif
 
 #	PixelConfigDBGUI \
-
+#   PixelMonitor   \
+#   PixelFEDMonitor \
 
 #	RUBuilderExample/RUBController \
 #	RUBuilderExample/EventGenerator \
@@ -91,6 +93,9 @@ install:
 	ln -s -f ../PixelUtilities/PixelSharedDataTools/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelSharedDataTools.so lib/.
 	ln -s -f ../PixelUtilities/PixelXmlUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelXmlUtilities.so lib/.
 	ln -s -f ../PixelUtilities/PixelJobControlUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelJobControlUtilities.so lib/.
+	ln -s -f ../PixelUtilities/PixeluTCAUtilities/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixeluTCAUtilities.so lib/.
+	ln -s -f ../PixelUtilities/PixeluTCAUtilities/test/bin/${XDAQ_OS}/${XDAQ_PLATFORM}/amc13.exe bin/.
+	ln -s -f ../PixelUtilities/PixeluTCAUtilities/test/bin/${XDAQ_OS}/${XDAQ_PLATFORM}/banger.exe bin/.
 	ln -s -f ../PixelDCSInterface/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelDCSInterface.so lib/.
 	ln -s -f ../PixelAnalysisTools/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelAnalysisTools.so lib/.
 	ln -s -f ../PixelHistoViewer/lib/${XDAQ_OS}/${XDAQ_PLATFORM}/libPixelHistoViewer.so lib/.

@@ -89,6 +89,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   xoap::MessageReference MakeSOAPMessageReference(std::string cmd)
     {
       xoap::MessageReference msg = xoap::createMessage();
+      msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
       xoap::SOAPEnvelope envelope = msg->getSOAPPart().getEnvelope();
       //envelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
       //envelope.addNamespaceDeclaration("xsd", "http://www.w3.org/2001/XMLSchema");
@@ -101,6 +102,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   xoap::MessageReference MakeSOAPMessageReference(std::string cmd, Attribute_Vector attrib)
     {
       xoap::MessageReference msg = xoap::createMessage();
+      msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
       xoap::SOAPEnvelope envelope = msg->getSOAPPart().getEnvelope();
       //envelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
       //envelope.addNamespaceDeclaration("xsd", "http://www.w3.org/2001/XMLSchema");
@@ -120,6 +122,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   xoap::MessageReference MakeSOAPMessageReference(std::string cmd, Attribute_Vector attrib, Variable_Vector vars)
     {
       xoap::MessageReference msg = xoap::createMessage();
+      msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
       xoap::SOAPEnvelope envelope = msg->getSOAPPart().getEnvelope();
       envelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
       envelope.addNamespaceDeclaration("xsd", "http://www.w3.org/2001/XMLSchema");
@@ -149,6 +152,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
     {
       std::cout << "SOAP XML file path : " << filepath << std::endl;
       xoap::MessageReference msg = xoap::createMessage();
+      msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
       xoap::SOAPPart soap = msg->getSOAPPart();
       xoap::SOAPEnvelope envelope = soap.getEnvelope();
       xoap::AttachmentPart * attachment;
@@ -182,22 +186,28 @@ class SOAPCommander : public virtual toolbox::lang::Class
     }
   
   xoap::MessageReference
+    addElementToSOAPCommand(xoap::MessageReference msg, 
+			    std::string const& subElementName, std::string const& subElementType, std::string const& subElementValue)
+    {
+      xoap::SOAPEnvelope envelope = msg->getSOAPPart().getEnvelope();
+      xoap::SOAPBody body = envelope.getBody();
+      xoap::SOAPElement commandElement = body.getChildElements().at(0);
+      xoap::SOAPName name = envelope.createName(subElementName, "xdaq", "dummy");
+      xoap::SOAPElement element = commandElement.addChildElement(name);
+      xoap::SOAPName typeName = envelope.createName("type", "xsi", "http://www.w3.org/2001/XMLSchema-instance");
+      element.addAttribute(typeName, subElementType);
+      element.setTextContent(subElementValue);
+      return msg;
+    }
+  
+  xoap::MessageReference
     createComplexSOAPCommand(std::string const& command, std::string const& actionRequestorId="",
                              std::string const& subElementName="", unsigned int const subElementValue=0)
     {
       xoap::MessageReference msg = createSimpleSOAPCommand(command, actionRequestorId);
       if (subElementName.size() > 0)
-        {
-          xoap::SOAPEnvelope envelope = msg->getSOAPPart().getEnvelope();
-          xoap::SOAPBody body = envelope.getBody();
-          xoap::SOAPElement commandElement = body.getChildElements().at(0);
-          xoap::SOAPName runNumberName = envelope.createName(subElementName, "xdaq", "dummy");
-          xoap::SOAPElement runNumberElement = commandElement.addChildElement(runNumberName);
-          xoap::SOAPName typeName = envelope.createName("type", "xsi", "http://www.w3.org/2001/XMLSchema-instance");
-          runNumberElement.addAttribute(typeName, "xsd:unsignedInt");
-          runNumberElement.setTextContent(toolbox::toString("%d", subElementValue));
-        }
-      return(msg);
+        addElementToSOAPCommand(msg, subElementName, "xsd:unsignedInt", toolbox::toString("%d", subElementValue));
+      return msg;
     }
   
   xoap::MessageReference
@@ -206,17 +216,8 @@ class SOAPCommander : public virtual toolbox::lang::Class
     {
       xoap::MessageReference msg = createSimpleSOAPCommand(command, actionRequestorId);
       if (subElementName.size() > 0)
-        {
-          xoap::SOAPEnvelope envelope = msg->getSOAPPart().getEnvelope();
-          xoap::SOAPBody body = envelope.getBody();
-          xoap::SOAPElement commandElement = body.getChildElements().at(0);
-          xoap::SOAPName runNumberName = envelope.createName(subElementName, "xdaq", "dummy");
-          xoap::SOAPElement runNumberElement = commandElement.addChildElement(runNumberName);
-          xoap::SOAPName typeName = envelope.createName("type", "xsi", "http://www.w3.org/2001/XMLSchema-instance");
-          runNumberElement.addAttribute(typeName, "xsd:string");
-          runNumberElement.setTextContent(subElementValue);
-        }
-      return(msg);
+        addElementToSOAPCommand(msg, subElementName, "xsd:string", subElementValue);
+      return msg;
     }
   
   xoap::MessageReference
@@ -330,6 +331,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
         {
           msg = MakeSOAPMessageReference(cmd);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           std::string replyString = Receive(reply);
           return replyString;
@@ -353,6 +355,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   	{
           msg = MakeSOAPMessageReference(cmd);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           return reply;
   	}
@@ -375,6 +378,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
         {
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           std::string replyString = Receive(reply);
           return replyString;
         }
@@ -395,6 +399,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   	{
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           return reply;
   	}
       catch (xdaq::exception::Exception& e)
@@ -415,6 +420,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
         {
           msg = MakeSOAPMessageReference(cmd, attrib);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           std::string replyString = Receive(reply);
           return replyString;
@@ -439,6 +445,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   	{
           msg = MakeSOAPMessageReference(cmd, attrib);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           return reply;
   	}
@@ -485,6 +492,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
   	{
           xoap::MessageReference msg = MakeSOAPMessageReference(cmd, attrib, vars);
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           xoap::MessageReference reply = app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           return reply;
   	}
@@ -523,6 +531,7 @@ class SOAPCommander : public virtual toolbox::lang::Class
           std::cout << "SOAP Message : "<< mystring <<std::endl;
 #endif
           msg->getMimeHeaders()->setHeader("Content-Location", d->getURN());
+          msg->getMimeHeaders()->setHeader("xdaq-pthttp-connection-timeout", "60");
           xoap::MessageReference reply=app_->getApplicationContext()->postSOAP(msg, *(app_->getApplicationDescriptor()), *d);
           std::string replyString = Receive(reply);
           return replyString;
