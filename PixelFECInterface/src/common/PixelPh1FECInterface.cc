@@ -59,7 +59,7 @@ PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
 
     pRegManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0);
     usleep(100);
-    //resetttc();
+    resetttc();
     usleep(100);
     if (!hasclock() || clocklost()) {
       std::cerr << "hits go in wrong bx after clock lost until you reload firmware / power cycle\n";
@@ -103,6 +103,7 @@ void PixelPh1FECInterface::resetpll(){
 void PixelPh1FECInterface::ttcdelayinc(){
 
     pRegManager->WriteReg("Board0.IODelayInc", 3);
+    resetttc();
     readdelay();
 }
 
@@ -110,6 +111,7 @@ void PixelPh1FECInterface::ttcdelayinc(){
 void PixelPh1FECInterface::ttcdelaydec(){
     
     pRegManager->WriteReg("Board0.IODelayDec", 1);
+    resetttc();
     readdelay();
 }
 
