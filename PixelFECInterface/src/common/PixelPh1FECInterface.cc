@@ -59,7 +59,7 @@ PixelPh1FECInterface::PixelPh1FECInterface(RegManager * const RegManagerPtr,
 
     pRegManager->WriteReg("ctrl.ttc_xpoint_A_out3", 0);
     usleep(100);
-    //resetttc();
+    resetttc();
     usleep(100);
     if (!hasclock() || clocklost()) {
       std::cerr << "hits go in wrong bx after clock lost until you reload firmware / power cycle\n";
@@ -91,6 +91,38 @@ void PixelPh1FECInterface::resetclocklost() {
   pRegManager->WriteReg("Board0.RstTTCLostLHC", 0);
 }
 
+//-----------------------------------------------------------------------
+void PixelPh1FECInterface::resetpll(){
+    
+    pRegManager->WriteReg("Board0.PLLrst", 1);
+    usleep(1000);
+    pRegManager->WriteReg("Board0.PLLrst", 0);
+}
+
+//-----------------------------------------------------------------------
+void PixelPh1FECInterface::ttcdelayinc(){
+
+    pRegManager->WriteReg("Board0.IODelayInc", 3);
+    resetttc();
+    readdelay();
+}
+
+//-----------------------------------------------------------------------
+void PixelPh1FECInterface::ttcdelaydec(){
+    
+    pRegManager->WriteReg("Board0.IODelayDec", 1);
+    resetttc();
+    readdelay();
+}
+
+//-----------------------------------------------------------------------
+void PixelPh1FECInterface::readdelay(){
+    valword value;
+    value = pRegManager->ReadReg("Board0.IODelay");
+    cout <<" The current io ttc delay setting is: " <<value.value()<<endl;
+}
+
+
 //-------------------------------------------------------------------------
 /* There are two versions of getversion() for both hal and CAEN (4 total)
  The form getversion(unsigned long *data) returns the integer 0..255
@@ -119,6 +151,7 @@ int PixelPh1FECInterface::getStatus(void) {
   // JMT: fake up what was in the trigger fpga status
   return (hasclock() << 1) | (clocklost() << 2);
 }
+
 //--------------------------------------------------------------------------
 int PixelPh1FECInterface::getversion(const int mfec, unsigned long *data) {
 

@@ -278,6 +278,10 @@
        <node id="TransTestM4C2"  mask="0x00000800" description="Trans Test M4 C2" />
        <node id="TTCLostLHC"     mask="0x00001000" description="Trans Test M4 C2" />
        <node id="RstTTCLostLHC"  mask="0x00002000" description="Trans Test M4 C2" />
+       <node id="PLLrst"         mask="0x00004000" description="PPL reset" />
+       <node id="IODelayInc"     mask="0x00030000" description="Increment  io delay by 1 unit" />
+       <node id="IODelayDec"     mask="0x00020000" description="Decrement  io delay by 1 unit" />
+       <node id="IODelay"        mask="0x0f800000" description="Read io delay setting" />
    </node>
 
    <node id="LHCCount" address="0x40000021" permission="r" mode="single"/>
