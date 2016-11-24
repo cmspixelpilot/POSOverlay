@@ -20,13 +20,17 @@
 class PixelPh1FECInterface: public pos::PixelFECConfigInterface {
     
 public:
-  PixelPh1FECInterface(RegManager* const RegManagerPtr, const char* boardid);
-
-  bool hasclock();
-  bool clocklost();
-  void resetttc();
-  void resetclocklost();
-
+    PixelPh1FECInterface(RegManager* const RegManagerPtr, const char* boardid);
+    
+    bool hasclock();
+    bool clocklost();
+    void resetttc();
+    void resetclocklost();
+    void resetpll();
+    void ttcdelayinc();
+    void ttcdelaydec();
+    void readdelay();
+    
     int senddata(const int mfec, const int fecchannel);
     int injectrstroc(const int mfec, const int bitstate);
     int injecttrigger(const int mfec, const int bitstate);
@@ -43,8 +47,11 @@ public:
     int getversion(const int mfec, unsigned long *data);
     int getversion(unsigned long *data);
     int getStatus(void);
+    
+    
+    
     unsigned getGeneral();
-
+    
     int writeCSregister(int mfec, int fecchannel, int cscommand);
     
     void mfecbusy(int mfec, int fecchannel, unsigned int *cs1,unsigned int *cs2);
@@ -205,21 +212,21 @@ public:
                           unsigned char mask,
                           const bool buffermode = false);
     
-    void setAllDAC(const pos::PixelHdwAddress& theROC, 
+    void setAllDAC(const pos::PixelHdwAddress& theROC,
                    const std::vector<unsigned int>& dacs,
                    const bool buffermode = false);
     
     // from wolfram
     int testFiberEnable(const int mfec, const int enable);
     int testFiber(const int mfec, const int channel, int* rda, int * rck);
-
+    
     unsigned int flipByte(unsigned int input);
-	    
+    
 private:
     typedef uhal::ValWord<uint32_t> valword;
     typedef uhal::ValVector<uint32_t> valvec;
     RegManager * const pRegManager;
-
+    
     const std::string board_id;
     
     // ordering mfecs to match designations on vme card
@@ -243,7 +250,7 @@ private:
     //int qbuflastport[9][3];
     
     int fecdebug;
-
+    
     std::vector<unsigned char> d25_trimloadtest;
 };
 
